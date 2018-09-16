@@ -1,0 +1,84 @@
+
+* {
+	-fx-text-fill: white;
+}
+
+.border-pane {
+    -fx-background-color: red;
+}
+
+.timelinerow,#content-area {
+	-fx-background-color: #333333;
+}
+
+.menu-item,.context-menu,.menu-bar {
+    -fx-background-color: #444444;
+}
+
+.scroll-pane,.scroll-pane > .corner {
+    -fx-background-color: #222222;
+}
+
+.scroll-bar:horizontal, .scroll-bar:vertical{
+    -fx-background-color:transparent;
+}
+
+.scroll-bar:horizontal .thumb,
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #333333;
+    -fx-background-radius: 5em;
+}
+
+#effect-view,#clip-view,#timeline-view {
+    -fx-border-color: rgba(100,100,100,0.3);
+    -fx-border-insets: 2;
+    -fx-border-width: 1;
+    -fx-border-style: solid;
+}
+
+.icon {
+	-fx-opacity: 0.8;
+    -fx-background-radius: 10;
+}
+
+.icon:hover {
+    -fx-opacity: 1.0;
+    -fx-rotate: 2;
+}
+
+.icon:hover > * {
+	    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.9), 30, 0, 0, 0);
+}
+
+.timelinerow {
+    -fx-border-color: rgba(150,150,150,0.4);
+    -fx-border-insets: 5;
+    -fx-border-width: 1;
+    -fx-border-style: hidden hidden dashed hidden;
+}
+
+.menu:hover {
+    -fx-background-color: #111111;
+}
+
+.menu:hover > .label {
+    -fx-background-color: #111111;
+}
+
+.menu-item:hover {
+    -fx-background-color: #111111;
+}
+
+.menu-item:hover > .label {
+    -fx-background-color: #111111;
+}
+
+.timeline-title {
+    -fx-border-color: rgba(150,150,150,0.4);
+    -fx-background-color: #444444;
+    -fx-pref-height: 50px;
+}
+
+/* .timeline-clips { */
+/*     -fx-background-color: red; */
+/* } */
