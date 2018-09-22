@@ -13,22 +13,22 @@
     <dependency>
       <groupId>com.helospark</groupId>
       <artifactId>lightdi</artifactId>
-      <version>0.0.3-SNAPSHOT</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency> <!-- Needed, because Eclipse's annotationprocessor is not good -->
       <groupId>io.github.lukehutch</groupId>
       <artifactId>fast-classpath-scanner</artifactId>
       <version>2.4.5</version>
     </dependency>
-    <dependency> <!-- Only here temporarily, as testing -->
-      <groupId>com.helospark.tactview</groupId>
-      <artifactId>tactview-ui</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
       <version>4.5.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.helospark.tactview</groupId>
+      <artifactId>tactview-ui-api</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
   </dependencies>

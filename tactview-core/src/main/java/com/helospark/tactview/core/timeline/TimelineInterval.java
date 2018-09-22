@@ -1,0 +1,32 @@
+package com.helospark.tactview.core.timeline;
+
+public class TimelineInterval {
+    private TimelinePosition startPosition;
+    private TimelineLength length;
+    private TimelinePosition endPosition;
+
+    public TimelineInterval(TimelinePosition startPosition, TimelineLength length) {
+        this.startPosition = startPosition;
+        this.length = length;
+        this.endPosition = startPosition.add(length);
+    }
+
+    public TimelineInterval(TimelinePosition startPosition, TimelinePosition endPosition) {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.length = TimelineLength.getLength(startPosition, endPosition);
+    }
+
+    public static TimelineInterval ofPoint(TimelinePosition position) {
+        return new TimelineInterval(position, TimelineLength.ofZero());
+    }
+
+    public TimelinePosition getEndPosition() {
+        return endPosition;
+    }
+
+    public TimelinePosition getStartPosition() {
+        return startPosition;
+    }
+
+}

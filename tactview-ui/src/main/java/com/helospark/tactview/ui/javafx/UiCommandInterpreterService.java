@@ -1,6 +1,8 @@
-package com.helospark.tactview.api;
+package com.helospark.tactview.ui.javafx;
 
 import java.util.concurrent.CompletableFuture;
+
+import com.helospark.tactview.api.UiCommand;
 
 public interface UiCommandInterpreterService {
 

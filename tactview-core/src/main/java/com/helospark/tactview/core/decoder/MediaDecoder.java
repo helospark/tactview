@@ -6,4 +6,5 @@ public interface MediaDecoder {
 
     public MediaMetadata readMetadata(File file);
 
+    public MediaDataResponse readFrames(MediaDataRequest request);
 }

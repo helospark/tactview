@@ -5,15 +5,27 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
 import org.controlsfx.control.NotificationPane;
-import org.controlsfx.control.Notifications;
 
-import com.helospark.tactview.api.UiCommandInterpreterService;
-import com.helospark.tactview.api.commands.ClipAddedResponse;
-import com.helospark.tactview.api.commands.VideoClipAddedCommand;
+import com.helospark.lightdi.LightDi;
+import com.helospark.lightdi.LightDiContext;
+import com.helospark.lightdi.LightDiContextConfiguration;
+import com.helospark.tactview.core.Main;
+import com.helospark.tactview.core.decoder.MediaDataRequest;
+import com.helospark.tactview.core.decoder.MediaDataResponse;
+import com.helospark.tactview.core.decoder.MediaMetadata;
+import com.helospark.tactview.core.decoder.ffmpeg.FFmpegBasedMediaDecoderDecorator;
+import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
@@ -26,7 +38,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -63,17 +74,28 @@ public class JavaFXUiMain extends Application {
     public static final int W = 320; // canvas dimensions.
     public static final int H = 260;
 
+    static LightDiContext lightDi;
+
     public static final double D = 20; // diameter.
 
     private static UiCommandInterpreterService commandInterpreter;
+    private static FFmpegBasedMediaDecoderDecorator mediaDecoder;
+    private static MediaMetadata metadata;
+
+    static BufferedImage bufferedImage;
 
     int frames = 0;
     double zoom = 1.0;
     long currentTime = System.currentTimeMillis();
+    static int second = 0;
 
     Rectangle draggedItem = null;
     int dragIndex = -1;
     Pane draggedChannel = null;
+
+    static List<BufferedImage> images = new ArrayList<>(30);
+    static List<BufferedImage> backBuffer = new ArrayList<>(30);
+    volatile static boolean backBufferReady = false;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -148,7 +170,6 @@ public class JavaFXUiMain extends Application {
             timeline.setPrefWidth(2000);
             timeline.setMinWidth(2000);
 
-
             VBox timelineTitle = new VBox();
             timelineTitle.getChildren().add(new Label("Video line 1"));
             timelineTitle.setMaxWidth(200);
@@ -161,7 +182,6 @@ public class JavaFXUiMain extends Application {
             timelineClipsGroup.minHeight(50);
             timelineClipsGroup.getStyleClass().add("timeline-clips");
             timeline.getChildren().add(timelineClipsGroup);
-
 
             //            Rectangle rec = new Rectangle(100, 50);
             //            rec.setTranslateX(600);
@@ -199,26 +219,23 @@ public class JavaFXUiMain extends Application {
             });
             timeline.setOnDragDropped(event -> {
                 System.out.println("CHANNEL " + index + " dragdone " + event.getX() + " " + event.getY() + " " + timeLineScrollPane.getVvalue());
-                commandInterpreter.sendAndGetCommand(new VideoClipAddedCommand("file:doesntmatter", 1234), ClipAddedResponse.class)
-                        .thenAccept(response -> {
-                            Platform.runLater(() -> {
-                                Notifications.create()
-                                        .title("Some cool info")
-                                        .text("It was updated as you requested")
-                                        .position(Pos.BOTTOM_RIGHT)
-                                        .hideAfter(Duration.seconds(2))
-                                        .darkStyle()
-                                        .showInformation();
-                            });
-                        });
+                //                commandInterpreter.sendAndGetCommand(new VideoClipAddedCommand("file:doesntmatter", 1234), ClipAddedResponse.class)
+                //                        .thenAccept(response -> {
+                //                            Platform.runLater(() -> {
+                //                                Notifications.create()
+                //                                        .title("Some cool info")
+                //                                        .text("It was updated as you requested")
+                //                                        .position(Pos.BOTTOM_RIGHT)
+                //                                        .hideAfter(Duration.seconds(2))
+                //                                        .darkStyle()
+                //                                        .showInformation();
+                //                            });
+                //                        });
                 draggedItem = null;
             });
 
-
-
             group.getChildren().add(timeline);
         }
-
 
         /// ZZZOOOMM
 
@@ -230,9 +247,7 @@ public class JavaFXUiMain extends Application {
             }
         });
 
-
         /// ZOOOM
-
 
         timeLineScrollPane.setContent(group);
         lower.getChildren().add(timeLineScrollPane);
@@ -301,26 +316,35 @@ public class JavaFXUiMain extends Application {
                 @Override
                 public void handle(long now) {
                     GraphicsContext gc = canvas.getGraphicsContext2D();
-                    BufferedImage imageToDraw = (frames % 2) == 0 ? asd : bsd;
+                    if (frames == images.size()) {
+                        if (!backBufferReady) {
+                            return;
+                        }
+                        List<BufferedImage> tmp = images;
+                        images = backBuffer;
+                        backBuffer = tmp;
+                        fillImageBuffers();
+                        frames = 0;
+                    }
+                    if (images.size() == 0) {
+                        return;
+                    }
+                    BufferedImage imageToDraw = images.get(frames);
 
                     WritableImage actualImage = SwingFXUtils.toFXImage(imageToDraw, null);
 
-                    gc.setFill(Color.CORNSILK);
-                    gc.fillRect(0, 0, W, H);
-                    gc.setFill(Color.FORESTGREEN);
                     gc.drawImage(actualImage, 0, 0, W, H);
 
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(30);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     ++frames;
-                    if (System.currentTimeMillis() - currentTime > 1000) {
-                        System.out.println((double) frames / ((System.currentTimeMillis() - currentTime) / 1000.0));
-                        frames = 0;
-                        currentTime = System.currentTimeMillis();
-                    }
+                    //                    if (System.currentTimeMillis() - currentTime > 1000) {
+                    //                        System.out.println((double) frames / ((System.currentTimeMillis() - currentTime) / 1000.0));
+                    //                        currentTime = System.currentTimeMillis();
+                    //                    }
                 }
             };
 
@@ -331,9 +355,40 @@ public class JavaFXUiMain extends Application {
         }
     }
 
-    //    public static void main(String[] args) {
-    //        launch(args);
-    //    }
+    public static void main(String[] args) {
+        LightDiContextConfiguration configuration = LightDiContextConfiguration.builder()
+                .withThreadNumber(4)
+                .withCheckForIntegrity(true)
+                .withAdditionalDependencies(Collections.singletonList(new JnaLightDiPlugin()))
+                .build();
+        lightDi = LightDi.initContextByClass(Main.class, configuration);
+        //        commandInterpreter = lightDi.getBean(UiCommandInterpreterService.class);
+        mediaDecoder = lightDi.getBean(FFmpegBasedMediaDecoderDecorator.class);
+        metadata = mediaDecoder.readMetadata(new File("/home/black/Documents/pic_tetris.mp4"));
+        System.out.println(metadata);
+
+        fillImageBuffers();
+
+        launch(args);
+    }
+
+    private static void fillImageBuffers() {
+        System.out.println("loading: " + second);
+        new Thread(() -> {
+            backBufferReady = false;
+            MediaDataResponse response = mediaDecoder.readFrames(MediaDataRequest.builder()
+                    .withFile(new File("/home/black/Documents/pic_tetris.mp4"))
+                    .withWidth(320)
+                    .withHeight(260)
+                    .withStart(new TimelinePosition(BigDecimal.valueOf(second)))
+                    .withLength(new TimelineLength(new BigDecimal(5)))
+                    .withMetadata(metadata)
+                    .build());
+            setImage(response.getVideoFrames(), backBuffer);
+            second += 5;
+            backBufferReady = true;
+        }).start();
+    }
 
     public Image getJavaFXImage(BufferedImage bufferedImage, int width, int height) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -373,5 +428,34 @@ public class JavaFXUiMain extends Application {
 
     public void launchUi() {
         launch();
+    }
+
+    public static void setImage(List<ByteBuffer> byteBuffers, List<BufferedImage> currentList) {
+        currentList.clear();
+        long start = System.currentTimeMillis();
+        for (ByteBuffer byteBuffer : byteBuffers) {
+            bufferedImage = new BufferedImage(W, H, BufferedImage.TYPE_INT_RGB);
+            for (int i = 0; i < H; ++i) {
+                for (int j = 0; j < W; ++j) {
+                    int in = i * W * 4 + (j * 4);
+                    int r = printByte(byteBuffer.get(in + 0));
+                    int g = printByte(byteBuffer.get(in + 1));
+                    int b = printByte(byteBuffer.get(in + 2));
+                    bufferedImage.setRGB(j, i, new java.awt.Color(r, g, b).getRGB());
+                }
+            }
+            currentList.add(bufferedImage);
+        }
+        System.out.println("Processing images took " + (System.currentTimeMillis() - start));
+    }
+
+    public static int printByte(byte b) {
+        int value;
+        if (b < 0) {
+            value = 256 + b;
+        } else {
+            value = b;
+        }
+        return value;
     }
 }

@@ -1,2 +1,5 @@
 target
 .factorypath
+*.log
+*.so
+*.ppm
