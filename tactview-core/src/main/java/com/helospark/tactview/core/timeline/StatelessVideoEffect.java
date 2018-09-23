@@ -1,7 +1,9 @@
 package com.helospark.tactview.core.timeline;
 
-public interface StatelessVideoEffect {
+import java.nio.ByteBuffer;
 
-    public void fillFrame(VideoFrame result, VideoFrame currentFrame);
+public interface StatelessVideoEffect extends IntervalAware, StatelessEffect {
+
+    public void fillFrame(ByteBuffer result, ByteBuffer currentFrame);
 
 }

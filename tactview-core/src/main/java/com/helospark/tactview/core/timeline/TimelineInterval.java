@@ -29,4 +29,10 @@ public class TimelineInterval {
         return startPosition;
     }
 
+    public boolean contains(TimelinePosition position) {
+        boolean isLargerThanStart = position.getSeconds().compareTo(startPosition.getSeconds()) >= 0;
+        boolean isSmallerThanEnd = position.getSeconds().compareTo(endPosition.getSeconds()) <= 0;
+        return isLargerThanStart && isSmallerThanEnd;
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.decoder;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelineLength;
@@ -8,14 +10,14 @@ public class MediaMetadata {
     private double fps;
     private int width;
     private int height;
-    private TimelineLength lengthInMilliseconds;
+    private TimelineLength length;
 
     @Generated("SparkTools")
     private MediaMetadata(Builder builder) {
         this.fps = builder.fps;
         this.width = builder.width;
         this.height = builder.height;
-        this.lengthInMilliseconds = builder.lengthInMilliseconds;
+        this.length = builder.length;
     }
 
     public double getFps() {
@@ -30,13 +32,17 @@ public class MediaMetadata {
         return height;
     }
 
-    public TimelineLength getLengthInMilliseconds() {
-        return lengthInMilliseconds;
+    public TimelineLength getLength() {
+        return length;
+    }
+
+    public long getNumberOfFrames() {
+        return length.getSeconds().multiply(BigDecimal.valueOf(fps)).longValue();
     }
 
     @Override
     public String toString() {
-        return "MediaMetadata [fps=" + fps + ", width=" + width + ", height=" + height + ", lengthInMilliseconds=" + lengthInMilliseconds + "]";
+        return "MediaMetadata [fps=" + fps + ", width=" + width + ", height=" + height + ", lengthInMilliseconds=" + length + "]";
     }
 
     @Generated("SparkTools")
@@ -49,7 +55,7 @@ public class MediaMetadata {
         private double fps;
         private int width;
         private int height;
-        private TimelineLength lengthInMilliseconds;
+        private TimelineLength length;
 
         private Builder() {
         }
@@ -69,8 +75,8 @@ public class MediaMetadata {
             return this;
         }
 
-        public Builder withLengthInMilliseconds(TimelineLength lengthInMilliseconds) {
-            this.lengthInMilliseconds = lengthInMilliseconds;
+        public Builder withLength(TimelineLength lengthInMilliseconds) {
+            this.length = lengthInMilliseconds;
             return this;
         }
 

@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import static java.math.RoundingMode.HALF_DOWN;
+
 import java.math.BigDecimal;
 
 public class TimelinePosition {
@@ -19,5 +21,13 @@ public class TimelinePosition {
 
     public boolean isLessThan(TimelinePosition other) {
         return this.getSeconds().compareTo(other.getSeconds()) < 0;
+    }
+
+    public TimelinePosition from(TimelinePosition startPosition) {
+        return new TimelinePosition(seconds.subtract(startPosition.seconds));
+    }
+
+    public static TimelinePosition fromFrameIndexWithFps(long frame, double fps) {
+        return new TimelinePosition(new BigDecimal(frame).divide(new BigDecimal(fps), 3, HALF_DOWN));
     }
 }

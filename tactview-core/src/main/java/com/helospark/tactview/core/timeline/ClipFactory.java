@@ -4,8 +4,8 @@ import java.io.File;
 
 public interface ClipFactory {
 
-    public TimelineClip createClip(File file);
+    boolean doesSupport(File file);
 
-    public boolean doesSupport(File file);
+    TimelineClip createClip(File file, TimelinePosition position);
 
 }

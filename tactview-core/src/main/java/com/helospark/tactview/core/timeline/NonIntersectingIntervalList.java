@@ -2,9 +2,10 @@ package com.helospark.tactview.core.timeline;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class NonIntersectingIntervalList<T extends IntervalAware> {
-    private List<T> intervalAwares;
+    private List<T> intervalAwares = new ArrayList<>();
 
     public boolean canAddInterval(TimelineInterval interval) {
         return computeIntersectingIntervals(interval).isEmpty();
@@ -29,5 +30,24 @@ public class NonIntersectingIntervalList<T extends IntervalAware> {
 
     private boolean intervalStartIsGreaterThanOtherIntervalEndPosition(T intervalAware, TimelineInterval other) {
         return other.getEndPosition().isLessThan(intervalAware.getInterval().getStartPosition());
+    }
+
+    public Optional<T> getElementWithIntervalContainingPoint(TimelinePosition position) {
+        for (int i = 0; i < intervalAwares.size(); ++i) {
+            T current = intervalAwares.get(i);
+            if (current.getInterval().contains(position)) {
+                return Optional.of(current);
+            }
+        }
+        return Optional.empty();
+    }
+
+    // TODO: not thread safe
+    public void addInterval(T clip) {
+        int i = 0;
+        while (i < intervalAwares.size() && intervalAwares.get(i).getInterval().getEndPosition().isLessThan(clip.getInterval().getStartPosition())) {
+            ++i;
+        }
+        intervalAwares.add(i, clip);
     }
 }

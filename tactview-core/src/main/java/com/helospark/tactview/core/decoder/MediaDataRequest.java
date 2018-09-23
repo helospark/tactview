@@ -13,6 +13,7 @@ public class MediaDataRequest {
 
     private TimelinePosition start;
     private TimelineLength length;
+    private int numberOfFrames;
 
     private boolean shouldRescale;
     private int width;
@@ -24,6 +25,7 @@ public class MediaDataRequest {
         this.metadata = builder.metadata;
         this.start = builder.start;
         this.length = builder.length;
+        this.numberOfFrames = builder.numberOfFrames;
         this.shouldRescale = builder.shouldRescale;
         this.width = builder.width;
         this.height = builder.height;
@@ -61,6 +63,10 @@ public class MediaDataRequest {
         return height;
     }
 
+    public int getNumberOfFrames() {
+        return numberOfFrames;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -72,6 +78,7 @@ public class MediaDataRequest {
         private MediaMetadata metadata;
         private TimelinePosition start;
         private TimelineLength length;
+        private int numberOfFrames;
         private boolean shouldRescale;
         private int width;
         private int height;
@@ -96,6 +103,11 @@ public class MediaDataRequest {
 
         public Builder withLength(TimelineLength length) {
             this.length = length;
+            return this;
+        }
+
+        public Builder withNumberOfFrames(int numberOfFrames) {
+            this.numberOfFrames = numberOfFrames;
             return this;
         }
 
