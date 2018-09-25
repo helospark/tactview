@@ -20,4 +20,13 @@ public class TimelineChannel {
     public void addResource(TimelineClip clip) {
         clips.addInterval(clip);
     }
+
+    public Optional<TimelineClip> findClipById(String id) {
+        for (TimelineClip clip : clips) {
+            if (clip.getId().equals(id)) {
+                return Optional.of(clip);
+            }
+        }
+        return Optional.empty();
+    }
 }

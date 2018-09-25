@@ -1,13 +1,11 @@
 package com.helospark.tactview.ui.javafx;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -16,18 +14,14 @@ import org.controlsfx.glyphfont.Glyph;
 import com.helospark.lightdi.LightDi;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
-import com.helospark.tactview.core.decoder.MediaMetadata;
-import com.helospark.tactview.core.decoder.ffmpeg.FFmpegBasedMediaDecoderDecorator;
-import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
+import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -36,7 +30,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
@@ -50,13 +43,10 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 public class JavaFXUiMain extends Application {
@@ -65,12 +55,8 @@ public class JavaFXUiMain extends Application {
 
     static LightDiContext lightDi;
 
-    private static final BigDecimal PIXEL_PER_SECOND = new BigDecimal(10L);
-
     private static UiCommandInterpreterService commandInterpreter;
-    private static FFmpegBasedMediaDecoderDecorator mediaDecoder;
     private static PlaybackController playbackController;
-    private static TimelineManager timelineManager; // todo: not directly here, have to be via commands
 
     static BufferedImage bufferedImage;
 
@@ -78,11 +64,6 @@ public class JavaFXUiMain extends Application {
     double zoom = 1.0;
     long currentTime = System.currentTimeMillis();
     static int second = 0;
-
-    Rectangle draggedItem = null;
-    int dragIndex = -1;
-    Pane draggedChannel = null;
-    private static TimelineImagePatternService timelineImagePatternService;
 
     static List<BufferedImage> images = new ArrayList<>(30);
     static List<BufferedImage> backBuffer = new ArrayList<>(30);
@@ -92,6 +73,7 @@ public class JavaFXUiMain extends Application {
     private static Line line;
     private static Canvas canvas;
     private static Label videoTimestampLabel;
+    static UiTimeline uiTimeline;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -180,153 +162,7 @@ public class JavaFXUiMain extends Application {
         lower.setPrefWidth(scene.getWidth());
         lower.setId("timeline-view");
 
-        ScrollPane timeLineScrollPane = new ScrollPane();
-        Group timelineGroup = new Group();
-        VBox timelineBoxes = new VBox();
-        timelineBoxes.setPrefWidth(2000);
-        timelineGroup.getChildren().add(timelineBoxes);
-
-        line = new Line();
-        line.setStartY(0);
-        line.setEndY(300);
-        line.setStartX(0);
-        line.setEndX(0);
-        line.setId("timeline-position-line");
-        timelineGroup.getChildren().add(line);
-
-        for (int i = 0; i < 10; ++i) {
-            HBox timeline = new HBox();
-            timeline.setPrefHeight(50);
-            timeline.setMinHeight(50);
-            timeline.getStyleClass().add("timelinerow");
-            timeline.setPrefWidth(2000);
-            timeline.setMinWidth(2000);
-
-            VBox timelineTitle = new VBox();
-            timelineTitle.getChildren().add(new Label("Video line 1"));
-            timelineTitle.setMaxWidth(200);
-            timelineTitle.setPrefHeight(50);
-            timelineTitle.getStyleClass().add("timeline-title");
-            timeline.getChildren().add(timelineTitle);
-
-            Pane timelineClipsGroup = new Pane();
-            timelineClipsGroup.minWidth(2000);
-            timelineClipsGroup.minHeight(50);
-            timelineClipsGroup.getStyleClass().add("timeline-clips");
-            timeline.getChildren().add(timelineClipsGroup);
-
-            final int index = i;
-
-            timeline.setOnDragEntered(event -> {
-                Dragboard db = event.getDragboard();
-                System.out.println("a " + db.getFiles().size());
-                if (!db.getFiles().isEmpty()) {
-                    draggedItem = new Rectangle(300, 50);
-                    dragIndex = index;
-                    draggedChannel = timelineClipsGroup;
-                    timelineClipsGroup.getChildren().add(draggedItem);
-                    File file = db.getFiles().get(0);
-                    System.out.println(file);
-                    CompletableFuture.supplyAsync(() -> {
-                        return mediaDecoder.readMetadata(file);
-                    }).exceptionally(e -> {
-                        e.printStackTrace();
-                        return null;
-                    }).thenAccept(b -> {
-                        int width = b.getLength().getSeconds().multiply(PIXEL_PER_SECOND).intValue();
-                        System.out.println("Setting width to " + width);
-                        if (draggedItem != null) {
-                            draggedItem.setWidth(width);
-                        }
-                    });
-                }
-            });
-
-            timeline.setOnDragExited(event -> {
-                if (draggedItem != null) {
-                    timelineClipsGroup.getChildren().remove(draggedItem);
-                    draggedItem = null;
-                }
-            });
-
-            timeline.setOnDragOver(event -> {
-                System.out.println("c " + event.getDragboard().getFiles().size());
-                System.out.println("CHANNEL " + index + " onDragOver " + event.getX() + " " + event.getY() + " " + timeLineScrollPane.getVvalue());
-
-                draggedItem.setTranslateX(event.getX() - timelineClipsGroup.getLayoutX());
-
-                if (event.getY() > 180) {
-                    timeLineScrollPane.setVvalue(timeLineScrollPane.getVvalue() + 0.01);
-                }
-                if (event.getDragboard().hasString()) {
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                }
-
-                event.consume();
-            });
-            timeline.setOnDragDropped(event -> {
-                Rectangle droppedElement = draggedItem;
-                draggedItem = null;
-                System.out.println("CHANNEL " + index + " dragdone " + event.getX() + " " + event.getY() + " " + timeLineScrollPane.getVvalue());
-                if (event.getDragboard().hasFiles()) {
-                    File file = event.getDragboard().getFiles().get(0);
-                    MediaMetadata metadata = mediaDecoder.readMetadata(file);
-                    int timelineWidth = (int) (droppedElement.getWidth() * timelineBoxes.getScaleX());
-                    // map x to position
-                    BigDecimal position = new BigDecimal(event.getX())
-                            .multiply(BigDecimal.ONE) // zoom dummy
-                            .subtract(BigDecimal.ZERO) // scroll dummy
-                            .divide(PIXEL_PER_SECOND);
-
-                    // todo: command pattern here
-                    timelineManager.onResourceAdded(index, new TimelinePosition(position), file.getAbsolutePath());
-
-                    timelineImagePatternService.createTimelinePattern(file, metadata, timelineWidth)
-                            .exceptionally(e -> {
-                                e.printStackTrace();
-                                return null;
-                            })
-                            .thenAccept(fillImage -> {
-                                System.out.println("Setting image");
-                                if (droppedElement != null) {
-                                    Platform.runLater(() -> droppedElement.setFill(new ImagePattern(fillImage)));
-                                }
-                            });
-
-                }
-            });
-            timelineBoxes.getChildren().add(timeline);
-        }
-        /// ZZZOOOMM
-
-        timelineBoxes.setOnScroll(evt -> {
-            if (evt.isControlDown()) {
-                evt.consume();
-                double factor = 1.0;
-                factor += evt.getDeltaY() > 0 ? 0.1 : -0.1;
-
-                VBox node = timelineBoxes;
-                double x = evt.getX();
-
-                double oldScale = node.getScaleX();
-                double scale = oldScale * factor;
-                if (scale < 0.05)
-                    scale = 0.05;
-                if (scale > 50)
-                    scale = 50;
-                node.setScaleX(scale);
-
-                double f = (scale / oldScale) - 1;
-                Bounds bounds = node.localToScene(node.getBoundsInLocal());
-                double dx = (x - (bounds.getWidth() / 2 + bounds.getMinX()));
-
-                node.setTranslateX(node.getTranslateX() - f * dx);
-            }
-        });
-        /// ZOOOM
-
-        timeLineScrollPane.setContent(timelineGroup);
-        lower.getChildren().add(timeLineScrollPane);
+        lower.getChildren().add(uiTimeline.getTimelineNode());
 
         vbox.getChildren().addAll(upper, lower);
 
@@ -373,12 +209,10 @@ public class JavaFXUiMain extends Application {
                 .withAdditionalDependencies(Collections.singletonList(new JnaLightDiPlugin()))
                 .build();
         lightDi = LightDi.initContextByClass(MainApplicationConfiguration.class, configuration);
-        mediaDecoder = lightDi.getBean(FFmpegBasedMediaDecoderDecorator.class);
-        timelineImagePatternService = lightDi.getBean(TimelineImagePatternService.class);
         playbackController = lightDi.getBean(PlaybackController.class);
-        timelineManager = lightDi.getBean(TimelineManager.class);
+        uiTimeline = lightDi.getBean(UiTimeline.class);
         uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
-        uiTimelineManager.registerUiConsumer(position -> updateLine(position));
+        uiTimelineManager.registerUiConsumer(position -> uiTimeline.updateLine(position));
         uiTimelineManager.registerUiConsumer(position -> updateTime(position));
         uiTimelineManager.registerConsumer(position -> updateDisplay(position));
 
@@ -404,12 +238,6 @@ public class JavaFXUiMain extends Application {
             GraphicsContext gc = canvas.getGraphicsContext2D();
             gc.drawImage(actualImage, 0, 0, W, H);
         });
-    }
-
-    private static void updateLine(TimelinePosition position) {
-        int pixel = position.getSeconds().multiply(PIXEL_PER_SECOND).intValue();
-        line.setStartX(pixel);
-        line.setEndX(pixel);
     }
 
     /**

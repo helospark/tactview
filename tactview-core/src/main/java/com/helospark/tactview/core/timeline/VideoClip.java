@@ -27,19 +27,20 @@ public class VideoClip extends TimelineClip {
     }
 
     public ByteBuffer getFrame(TimelinePosition position, int width, int height) {
+        TimelinePosition relativePosition = position.from(startPosition);
         MediaDataRequest request = MediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withHeight(height)
                 .withWidth(width)
                 .withMetadata(mediaMetadata)
-                .withStart(position.from(startPosition))
+                .withStart(relativePosition)
                 .withNumberOfFrames(1)
                 .build();
         ByteBuffer frame = backingSource.decoder.readFrames(request).getVideoFrames().get(0);
         ByteBuffer newBuffer = ByteBuffer.allocateDirect(frame.capacity()); // move to cache
         ByteBuffer tmp;
 
-        List<StatelessVideoEffect> actualEffects = getEffectsAt(position);
+        List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition);
 
         for (StatelessVideoEffect effect : actualEffects) {
             effect.fillFrame(newBuffer, frame);
@@ -60,5 +61,11 @@ public class VideoClip extends TimelineClip {
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
+    }
+
+    public void addEffect(StatelessVideoEffect effect) {
+        NonIntersectingIntervalList<StatelessVideoEffect> newList = new NonIntersectingIntervalList<>();
+        effectChannels.add(newList);
+        newList.addInterval(effect);
     }
 }

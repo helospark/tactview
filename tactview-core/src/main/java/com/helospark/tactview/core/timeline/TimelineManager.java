@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.effect.EffectFactory;
 
 @Component
 public class TimelineManager {
@@ -19,11 +20,14 @@ public class TimelineManager {
 
     // stateless
     private List<ClipFactory> clipFactoryChain;
+    private List<EffectFactory> effectFactoryChain;
     private EmptyByteBufferFactory emptyByteBufferFactory;
 
-    public TimelineManager(List<ClipFactory> clipFactoryChain, EmptyByteBufferFactory emptyByteBufferFactory) {
+    public TimelineManager(List<ClipFactory> clipFactoryChain, EmptyByteBufferFactory emptyByteBufferFactory,
+            List<EffectFactory> effectFactoryChain) {
         this.clipFactoryChain = clipFactoryChain;
         this.emptyByteBufferFactory = emptyByteBufferFactory;
+        this.effectFactoryChain = effectFactoryChain;
     }
 
     public boolean canAddClipAt(int channelNumber, TimelinePosition position, TimelineLength length) {
@@ -37,7 +41,7 @@ public class TimelineManager {
         return channel.canAddResourceAt(position, length);
     }
 
-    public void onResourceAdded(int channelNumber, TimelinePosition position, String filePath) {
+    public TimelineClip addResource(int channelNumber, TimelinePosition position, String filePath) {
         File file = new File(filePath);
         if (!file.exists()) {
             throw new IllegalArgumentException(filePath + " does not exists");
@@ -53,7 +57,7 @@ public class TimelineManager {
         } else {
             throw new IllegalArgumentException("Cannot add clip");
         }
-
+        return clip;
     }
 
     public ByteBuffer getFrames(TimelineManagerFramesRequest request) {
@@ -83,6 +87,30 @@ public class TimelineManager {
 
     private ByteBuffer executeGlobalEffectsOn(ByteBuffer finalImage) {
         return finalImage; // todo: do implementation
+    }
+
+    public StatelessEffect addEffectForClip(String id, String effectId, TimelineInterval timelineInterval) {
+        VideoClip clipById = (VideoClip) findClipById(id).get();
+        StatelessVideoEffect effect = (StatelessVideoEffect) createEffect(effectId, timelineInterval); // sound?
+        clipById.addEffect(effect);
+        return effect;
+    }
+
+    private StatelessEffect createEffect(String effectId, TimelineInterval timelineInterval) {
+        return effectFactoryChain.stream()
+                .filter(effectFactory -> effectFactory.doesSupport(effectId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No factory for " + effectId))
+                .createEffect(effectId, timelineInterval);
+    }
+
+    private Optional<TimelineClip> findClipById(String id) {
+        return channels.values()
+                .stream()
+                .map(channel -> channel.findClipById(id))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
     }
 
 }

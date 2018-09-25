@@ -1,10 +1,11 @@
 package com.helospark.tactview.core.timeline;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-public class NonIntersectingIntervalList<T extends IntervalAware> {
+public class NonIntersectingIntervalList<T extends IntervalAware> implements Iterable<T> {
     private List<T> intervalAwares = new ArrayList<>();
 
     public boolean canAddInterval(TimelineInterval interval) {
@@ -50,4 +51,10 @@ public class NonIntersectingIntervalList<T extends IntervalAware> {
         }
         intervalAwares.add(i, clip);
     }
+
+    @Override
+    public Iterator<T> iterator() {
+        return intervalAwares.iterator();
+    }
+
 }
