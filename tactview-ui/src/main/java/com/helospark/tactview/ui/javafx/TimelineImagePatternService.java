@@ -43,13 +43,14 @@ public class TimelineImagePatternService {
                     .withFile(file)
                     .withStart(start)
                     .withNumberOfFrames(1)
-                    .withWidth(scaledWidth)
-                    .withHeight(50)
+                    .withWidth(320) // same res
+                    .withHeight(260)
                     .withMetadata(metadata)
                     .withShouldRescale(true)
                     .build();
-            BufferedImage bf = ByteBufferToImageConverter.byteBufferToBufferedImage(decoder.readFrames(request).getVideoFrames().get(0), scaledWidth, 50);
-            graphics.drawImage(bf, i * scaledWidth, 0, null);
+            BufferedImage bf = ByteBufferToImageConverter.byteBufferToBufferedImage(decoder.readFrames(request).getVideoFrames().get(0), 320, 260);
+            java.awt.Image img = bf.getScaledInstance(scaledWidth, 50, BufferedImage.SCALE_FAST);
+            graphics.drawImage(img, i * scaledWidth, 0, null);
         }
         return ByteBufferToImageConverter.convertToJavafxImage(result);
     }

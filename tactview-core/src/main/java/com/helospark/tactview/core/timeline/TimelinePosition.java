@@ -30,4 +30,16 @@ public class TimelinePosition {
     public static TimelinePosition fromFrameIndexWithFps(long frame, double fps) {
         return new TimelinePosition(new BigDecimal(frame).divide(new BigDecimal(fps), 3, HALF_DOWN));
     }
+
+    public TimelinePosition add(BigDecimal increment) {
+        return new TimelinePosition(this.getSeconds().add(increment));
+    }
+
+    public static TimelinePosition ofZero() {
+        return new TimelinePosition(BigDecimal.ZERO);
+    }
+
+    public boolean isLessThan(int i) {
+        return isLessThan(new TimelinePosition(new BigDecimal(i)));
+    }
 }

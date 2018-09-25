@@ -9,8 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import javax.imageio.ImageIO;
-
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -24,16 +22,8 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 
-import javafx.animation.AnimationTimer;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -68,7 +58,6 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
     public static final int W = 320; // canvas dimensions.
@@ -76,12 +65,10 @@ public class JavaFXUiMain extends Application {
 
     static LightDiContext lightDi;
 
-    public static final double D = 20; // diameter.
     private static final BigDecimal PIXEL_PER_SECOND = new BigDecimal(10L);
 
     private static UiCommandInterpreterService commandInterpreter;
     private static FFmpegBasedMediaDecoderDecorator mediaDecoder;
-    private static MediaMetadata metadata;
     private static PlaybackController playbackController;
     private static TimelineManager timelineManager; // todo: not directly here, have to be via commands
 
@@ -101,8 +88,10 @@ public class JavaFXUiMain extends Application {
     static List<BufferedImage> backBuffer = new ArrayList<>(30);
     volatile static boolean backBufferReady = false;
 
-    static TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
-    static IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
+    static UiTimelineManager uiTimelineManager;
+    private static Line line;
+    private static Canvas canvas;
+    private static Label videoTimestampLabel;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -155,12 +144,12 @@ public class JavaFXUiMain extends Application {
         rightVBox.setPrefWidth(300);
         rightVBox.setId("clip-view");
 
-        final Canvas canvas = new Canvas(W, H);
+        canvas = new Canvas(W, H);
         canvas.getGraphicsContext2D().setFill(new Color(0.0, 0.0, 0.0, 1.0));
         canvas.getGraphicsContext2D().fillRect(0, 0, W, H);
         rightVBox.getChildren().add(canvas);
 
-        Label videoTimestampLabel = new Label("00:00:00.000");
+        videoTimestampLabel = new Label("00:00:00.000");
         videoTimestampLabel.setId("video-timestamp-label");
         HBox videoStatusBar = new HBox(10);
         videoStatusBar.setId("video-status-bar");
@@ -169,9 +158,13 @@ public class JavaFXUiMain extends Application {
 
         HBox underVideoBar = new HBox(1);
         Button playButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.PLAY));
+        playButton.setOnMouseClicked(e -> uiTimelineManager.startPlayback());
         Button stopButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STOP));
+        stopButton.setOnMouseClicked(e -> uiTimelineManager.stopPlayback());
         Button jumpBackButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FAST_BACKWARD));
+        jumpBackButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(-10)));
         Button jumpForwardButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FAST_FORWARD));
+        jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
 
         underVideoBar.getChildren().add(jumpBackButton);
         underVideoBar.getChildren().add(playButton);
@@ -193,11 +186,11 @@ public class JavaFXUiMain extends Application {
         timelineBoxes.setPrefWidth(2000);
         timelineGroup.getChildren().add(timelineBoxes);
 
-        Line line = new Line();
+        line = new Line();
         line.setStartY(0);
         line.setEndY(300);
-        line.startXProperty().bind(timelinePosition);
-        line.endXProperty().bind(timelinePosition);
+        line.setStartX(0);
+        line.setEndX(0);
         line.setId("timeline-position-line");
         timelineGroup.getChildren().add(line);
 
@@ -328,14 +321,6 @@ public class JavaFXUiMain extends Application {
                 double dx = (x - (bounds.getWidth() / 2 + bounds.getMinX()));
 
                 node.setTranslateX(node.getTranslateX() - f * dx);
-
-                /**
-                zoom += evt.getDeltaY() > 0 ? 0.1 : -0.1;
-                if (zoom < 1.0) {
-                zoom = 1.0;
-                }
-                group.setScaleX(zoom);
-                timeLineScrollPane.setHvalue(0);*/
             }
         });
         /// ZOOOM
@@ -348,7 +333,6 @@ public class JavaFXUiMain extends Application {
         root.setCenter(vbox);
         pane.setContent(root);
 
-        updateImage(canvas);
         stage.show();
     }
 
@@ -382,59 +366,6 @@ public class JavaFXUiMain extends Application {
         return vbox;
     }
 
-    private void updateImage(Canvas canvas) {
-        DoubleProperty x = new SimpleDoubleProperty();
-        DoubleProperty y = new SimpleDoubleProperty();
-
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(0),
-                        new KeyValue(x, 0),
-                        new KeyValue(y, 0)),
-                new KeyFrame(Duration.seconds(3),
-                        new KeyValue(x, W - D),
-                        new KeyValue(y, H - D)));
-        timeline.setAutoReverse(true);
-        timeline.setCycleCount(Timeline.INDEFINITE);
-
-        try {
-            BufferedImage asd = ImageIO.read(new File("/home/black/Pictures/b.PNG"));
-            BufferedImage bsd = ImageIO.read(new File("/home/black/Pictures/a.png"));
-
-            AnimationTimer timer = new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    GraphicsContext gc = canvas.getGraphicsContext2D();
-                    Image actualImage = playbackController.getFrameAt(currentPosition);
-                    BigDecimal newSeconds = currentPosition.getSeconds().add(BigDecimal.valueOf(1 / 30.0));
-                    if (newSeconds.doubleValue() > 10.0) {
-                        newSeconds = BigDecimal.ZERO;
-                    }
-
-                    currentPosition = new TimelinePosition(newSeconds);
-
-                    timelinePosition.setValue(currentPosition.getSeconds().multiply(PIXEL_PER_SECOND).intValue());
-
-                    gc.drawImage(actualImage, 0, 0, W, H);
-
-                    try {
-                        Thread.sleep(30);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //                    if (System.currentTimeMillis() - currentTime > 1000) {
-                    //                        System.out.println((double) frames / ((System.currentTimeMillis() - currentTime) / 1000.0));
-                    //                        currentTime = System.currentTimeMillis();
-                    //                    }
-                }
-            };
-
-            timer.start();
-            timeline.play();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void main(String[] args) {
         LightDiContextConfiguration configuration = LightDiContextConfiguration.builder()
                 .withThreadNumber(4)
@@ -442,17 +373,43 @@ public class JavaFXUiMain extends Application {
                 .withAdditionalDependencies(Collections.singletonList(new JnaLightDiPlugin()))
                 .build();
         lightDi = LightDi.initContextByClass(MainApplicationConfiguration.class, configuration);
-        //        commandInterpreter = lightDi.getBean(UiCommandInterpreterService.class);
         mediaDecoder = lightDi.getBean(FFmpegBasedMediaDecoderDecorator.class);
         timelineImagePatternService = lightDi.getBean(TimelineImagePatternService.class);
         playbackController = lightDi.getBean(PlaybackController.class);
         timelineManager = lightDi.getBean(TimelineManager.class);
-        //        metadata = mediaDecoder.readMetadata(new File("/home/black/Documents/pic_tetris.mp4"));
-        //        System.out.println(metadata);
-
-        //        fillImageBuffers();
+        uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
+        uiTimelineManager.registerUiConsumer(position -> updateLine(position));
+        uiTimelineManager.registerUiConsumer(position -> updateTime(position));
+        uiTimelineManager.registerConsumer(position -> updateDisplay(position));
 
         launch(args);
+    }
+
+    private static void updateTime(TimelinePosition position) {
+        long wholePartOfTime = position.getSeconds().longValue();
+        long hours = wholePartOfTime / 3600;
+        long minutes = (wholePartOfTime - hours * 3600) / 60;
+        long seconds = (wholePartOfTime - hours * 3600 - minutes * 60);
+        long millis = position.getSeconds().remainder(BigDecimal.ONE).multiply(BigDecimal.valueOf(1000)).longValue();
+
+        String newLabel = String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+
+        videoTimestampLabel.setText(newLabel);
+    }
+
+    private static void updateDisplay(TimelinePosition currentPosition) {
+        Image actualImage = playbackController.getFrameAt(currentPosition);
+
+        Platform.runLater(() -> {
+            GraphicsContext gc = canvas.getGraphicsContext2D();
+            gc.drawImage(actualImage, 0, 0, W, H);
+        });
+    }
+
+    private static void updateLine(TimelinePosition position) {
+        int pixel = position.getSeconds().multiply(PIXEL_PER_SECOND).intValue();
+        line.setStartX(pixel);
+        line.setEndX(pixel);
     }
 
     /**
