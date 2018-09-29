@@ -15,6 +15,7 @@ public class TimelinePosition implements SecondsAware {
         return new TimelinePosition(seconds.add(length.getSeconds()));
     }
 
+    @Override
     public BigDecimal getSeconds() {
         return seconds;
     }
@@ -42,4 +43,18 @@ public class TimelinePosition implements SecondsAware {
     public boolean isLessThan(int i) {
         return isLessThan(new TimelinePosition(new BigDecimal(i)));
     }
+
+    public TimelinePosition add(TimelinePosition position) {
+        return new TimelinePosition(this.getSeconds().add(position.getSeconds()));
+    }
+
+    public TimelineLength toLength() {
+        return new TimelineLength(seconds);
+    }
+
+    @Override
+    public String toString() {
+        return "TimelinePosition [seconds=" + seconds + "]";
+    }
+
 }

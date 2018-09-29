@@ -1,16 +1,13 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
-import java.util.Optional;
-
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
-import javafx.scene.Group;
+import javafx.application.Platform;
 import javafx.scene.Node;
-import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 
 @Component
@@ -25,15 +22,11 @@ public class EffectAddedListener {
 
     @PostConstruct
     public void setUp() {
-        messagingService.register(EffectAddedMessage.class, message -> addEffectClip(message));
+        messagingService.register(EffectAddedMessage.class, message -> Platform.runLater(() -> addEffectClip(message)));
     }
 
     private void addEffectClip(EffectAddedMessage message) {
-        Optional<Group> clip = timelineState.findClipById(message.getClipId());
-        if (clip.isPresent()) {
-            Pane channel = (Pane) clip.get().getProperties().get("CHANNEL");
-            channel.getChildren().add(createEffect(message));
-        }
+        timelineState.addEffectToClip(message.getClipId(), createEffect(message));
     }
 
     public Node createEffect(EffectAddedMessage clipAddedMessage) {

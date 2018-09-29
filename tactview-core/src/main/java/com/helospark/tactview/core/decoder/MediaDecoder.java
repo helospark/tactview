@@ -4,7 +4,7 @@ import java.io.File;
 
 public interface MediaDecoder {
 
-    public MediaMetadata readMetadata(File file);
+    public VisualMediaMetadata readMetadata(File file);
 
     public MediaDataResponse readFrames(MediaDataRequest request);
 }

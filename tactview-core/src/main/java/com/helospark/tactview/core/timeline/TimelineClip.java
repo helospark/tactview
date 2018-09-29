@@ -2,7 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.util.UUID;
 
-public class TimelineClip implements IntervalAware {
+public abstract class TimelineClip implements IntervalAware {
     private String id;
     private TimelineInterval interval;
     private TimelineClipType type;

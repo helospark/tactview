@@ -15,6 +15,7 @@ public class TimelineLength implements SecondsAware {
         return new TimelineLength(BigDecimal.ZERO);
     }
 
+    @Override
     public BigDecimal getSeconds() {
         return seconds;
     }
@@ -55,6 +56,10 @@ public class TimelineLength implements SecondsAware {
         } else if (!seconds.equals(other.seconds))
             return false;
         return true;
+    }
+
+    public static TimelineLength ofMillis(int i) {
+        return new TimelineLength(BigDecimal.valueOf(i).divide(BigDecimal.valueOf(1000)));
     }
 
 }

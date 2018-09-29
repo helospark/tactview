@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.MediaDecoder;
+import com.helospark.tactview.core.timeline.ClipFactoryChain;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -18,15 +18,15 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class TimelineDragAndDropHandler {
-    private MediaDecoder mediaDecoder;
+    private ClipFactoryChain clipFactoryChain;
     private TimelineManager timelineManager;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineState timelineState;
 
     private Rectangle draggedItem = null;
 
-    public TimelineDragAndDropHandler(MediaDecoder mediaDecoder, TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState) {
-        this.mediaDecoder = mediaDecoder;
+    public TimelineDragAndDropHandler(ClipFactoryChain clipFactoryChain, TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState) {
+        this.clipFactoryChain = clipFactoryChain;
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
         this.timelineState = timelineState;
@@ -41,7 +41,7 @@ public class TimelineDragAndDropHandler {
                 timelineRow.getChildren().add(draggedItem);
                 File file = db.getFiles().get(0);
                 CompletableFuture.supplyAsync(() -> {
-                    return mediaDecoder.readMetadata(file);
+                    return clipFactoryChain.readMetadata(file);
                 }).exceptionally(e -> {
                     e.printStackTrace();
                     return null;

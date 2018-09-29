@@ -23,17 +23,17 @@ public class TimelineManager {
     private CopyOnWriteArrayList<TimelineChannel> channels = new CopyOnWriteArrayList<>();
 
     // stateless
-    private List<ClipFactory> clipFactoryChain;
     private List<EffectFactory> effectFactoryChain;
     private EmptyByteBufferFactory emptyByteBufferFactory;
     private MessagingService messagingService;
+    private ClipFactoryChain clipFactoryChain;
 
-    public TimelineManager(List<ClipFactory> clipFactoryChain, EmptyByteBufferFactory emptyByteBufferFactory,
-            List<EffectFactory> effectFactoryChain, MessagingService messagingService) {
-        this.clipFactoryChain = clipFactoryChain;
+    public TimelineManager(EmptyByteBufferFactory emptyByteBufferFactory,
+            List<EffectFactory> effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain) {
         this.emptyByteBufferFactory = emptyByteBufferFactory;
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
+        this.clipFactoryChain = clipFactoryChain;
     }
 
     public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
@@ -49,11 +49,7 @@ public class TimelineManager {
         if (!file.exists()) {
             throw new IllegalArgumentException(filePath + " does not exists");
         }
-        TimelineClip clip = clipFactoryChain.stream()
-                .filter(a -> a.doesSupport(file))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No clip factory found for " + file))
-                .createClip(file, position);
+        TimelineClip clip = clipFactoryChain.createClip(file, position);
         TimelineChannel channelToAddResourceTo = findChannelWithId(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
         if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
             channelToAddResourceTo.addResource(clip);
@@ -79,8 +75,8 @@ public class TimelineManager {
                 .parallelStream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
                 .flatMap(Optional::stream)
-                .filter(clip -> clip.getType().equals(TimelineClipType.VIDEO)) // audio separate?
-                .map(clip -> (VideoClip) clip)
+                .filter(clip -> clip instanceof VisualTimelineClip) // audio separate?
+                .map(clip -> (VisualTimelineClip) clip)
                 .map(clip -> clip.getFrame(request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight()))
                 .collect(Collectors.toList());
         ByteBuffer finalImage = alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());

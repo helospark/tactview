@@ -15,7 +15,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.MediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.MediaDecoder;
-import com.helospark.tactview.core.decoder.MediaMetadata;
+import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashKey;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
@@ -35,13 +35,13 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
 
     @Override
     @Cacheable
-    public MediaMetadata readMetadata(File file) {
+    public VideoMetadata readMetadata(File file) {
         if (!file.exists()) {
             throw new RuntimeException(file.getAbsolutePath() + " does not exists");
         }
 
         FFmpegResult result = implementation.readMediaMetadata(file.getAbsolutePath());
-        return MediaMetadata.builder()
+        return VideoMetadata.builder()
                 .withFps(result.fps)
                 .withHeight(result.height)
                 .withWidth(result.width)
@@ -49,9 +49,11 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
                 .build();
     }
 
+    @Override
     public MediaDataResponse readFrames(MediaDataRequest request) {
+        VideoMetadata metadata = (VideoMetadata) request.getMetadata();
         int numberOfFrames = calculateNumberOfFrames(request);
-        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(request.getMetadata().getFps())).intValue();
+        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).intValue();
         String filePath = request.getFile().getAbsolutePath();
 
         Map<Integer, ByteBuffer> framesFromCache = findInCache(request, numberOfFrames, startFrame, filePath);
@@ -60,9 +62,13 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
         if (!framesFromCache.isEmpty()) { // todo handle frames partially in cache
             result = new ArrayList<>(framesFromCache.values());
         } else {
+            System.out.println("Reading " + startFrame + " " + numberOfFrames);
             // Always read in chunks to minimize overhead
             int additionalFramesToReadInBeginning = startFrame % CHUNK_SIZE;
             int newStartFrame = startFrame - additionalFramesToReadInBeginning;
+            if (newStartFrame < 0) {
+                newStartFrame = 0;
+            }
 
             int newEndFrame = newStartFrame;
             while (startFrame + numberOfFrames > newEndFrame) {
@@ -83,7 +89,7 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
     private int calculateNumberOfFrames(MediaDataRequest request) {
         int numberOfFrames = 1;
         if (request.getLength() != null) {
-            numberOfFrames = lengthToFrames(request.getLength(), request.getMetadata().getFps());
+            numberOfFrames = lengthToFrames(request.getLength(), ((VideoMetadata) request.getMetadata()).getFps());
         } else {
             numberOfFrames = request.getNumberOfFrames();
         }
@@ -129,13 +135,14 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
         ffmpegRequest.width = request.getWidth();
         ffmpegRequest.path = filePath;
 
-        ffmpegRequest.startMicroseconds = frameToTimestamp(startFrame, request.getMetadata().getFps())
+        ffmpegRequest.startMicroseconds = frameToTimestamp(startFrame, ((VideoMetadata) request.getMetadata()).getFps())
                 .getSeconds()
                 .multiply(BigDecimal.valueOf(1000000L))
                 .longValue();
 
         ByteBuffer[] buffers = new ByteBuffer[numberOfFrames];
         ffmpegRequest.frames = new FFMpegFrame();
+        System.out.println("Requesting frames " + numberOfFrames);
         FFMpegFrame[] array = (FFMpegFrame[]) ffmpegRequest.frames.toArray(numberOfFrames);
         for (int i = 0; i < numberOfFrames; ++i) {
             array[i].data = mediaCache.requestBuffers(ffmpegRequest.width * ffmpegRequest.height * 4, 1).get(0);

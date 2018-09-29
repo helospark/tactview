@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -43,8 +44,7 @@ public class EffectDragAdder {
 
         droppedElement.setOnDragExited(event -> {
             if (draggedEffect != null) {
-                timelineRow.getChildren().remove(draggedEffect);
-                draggedEffect = null;
+                removeDraggedEffect(timelineRow);
             }
         });
 
@@ -60,9 +60,8 @@ public class EffectDragAdder {
         });
 
         droppedElement.setOnDragDropped(event -> {
-            Rectangle droppedEffect = draggedEffect;
-
-            draggedEffect = null;
+            double width = draggedEffect.getWidth();
+            removeDraggedEffect(timelineRow);
             if (event.getDragboard().hasString()) {
                 String effectId = event.getDragboard().getString();
 
@@ -72,22 +71,23 @@ public class EffectDragAdder {
                     // TODO! needed?
                     TimelineClip foundClip = timelineManager.findClipById(clipId).orElseThrow(() -> new IllegalStateException("No such clip"));
                     // map x to position
-                    TimelinePosition position = timelineState.pixelsToSeconds(event.getX())
-                            .from(foundClip.getInterval().getStartPosition());
-                    TimelinePosition length = timelineState.pixelsToSeconds(droppedEffect.getWidth()).from(position);
+                    TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
+                    TimelineLength length = timelineState.pixelsToSeconds(width).toLength();
 
                     AddEffectCommand addEffectCommand = new AddEffectCommand(foundClip.getId(), effectId, new TimelineInterval(position, length), timelineManager);
 
                     commandInterpreter.sendWithResult(addEffectCommand);
-                    //                        idToNode.put(addedEffectId, () -> timelineRow.getChildren().remove(droppedEffect));
-
-                    //                        droppedEffect.setUserData(addedEffectId);
                 } else {
                     System.out.println("Null clip");
                 }
             }
         });
 
+    }
+
+    private void removeDraggedEffect(Group timelineRow) {
+        timelineRow.getChildren().remove(draggedEffect);
+        draggedEffect = null;
     }
 
 }

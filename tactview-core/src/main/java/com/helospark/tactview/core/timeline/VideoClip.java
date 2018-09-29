@@ -4,85 +4,45 @@ import static com.helospark.tactview.core.timeline.TimelineClipType.VIDEO;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.MediaDataRequest;
-import com.helospark.tactview.core.decoder.MediaMetadata;
+import com.helospark.tactview.core.decoder.VideoMetadata;
 
-public class VideoClip extends TimelineClip {
-    private MediaMetadata mediaMetadata;
-    private VideoSource backingSource;
+public class VideoClip extends VisualTimelineClip {
+    private VideoMetadata mediaMetadata;
+    private MediaSource backingSource;
     private TimelinePosition startPosition;
 
-    private List<NonIntersectingIntervalList<StatelessVideoEffect>> effectChannels = new ArrayList<>();
-
-    public VideoClip(MediaMetadata mediaMetadata, VideoSource backingSource, TimelinePosition startPosition, TimelineLength length) {
+    public VideoClip(VideoMetadata mediaMetadata, MediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
         super(new TimelineInterval(startPosition, length), VIDEO);
         this.mediaMetadata = mediaMetadata;
         this.backingSource = backingSource;
         this.startPosition = startPosition;
     }
 
-    public ByteBuffer getFrame(TimelinePosition position, int width, int height) {
-        TimelinePosition relativePosition = position.from(startPosition);
+    @Override
+    public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
         MediaDataRequest request = MediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withHeight(height)
                 .withWidth(width)
                 .withMetadata(mediaMetadata)
-                .withStart(relativePosition)
+                .withStart(position)
                 .withNumberOfFrames(1)
                 .build();
-        ByteBuffer frame = backingSource.decoder.readFrames(request).getVideoFrames().get(0);
-        ByteBuffer newBuffer = ByteBuffer.allocateDirect(frame.capacity()); // move to cache
-        ByteBuffer tmp;
-
-        List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition);
-
-        for (StatelessVideoEffect effect : actualEffects) {
-            effect.fillFrame(newBuffer, frame);
-
-            // swap buffers around
-            tmp = newBuffer;
-            newBuffer = frame;
-            frame = tmp;
-        }
-
-        return frame;
+        return backingSource.decoder.readFrames(request).getVideoFrames().get(0);
     }
 
-    private List<StatelessVideoEffect> getEffectsAt(TimelinePosition position) {
-        return effectChannels.stream()
-                .map(effectChannel -> effectChannel.getElementWithIntervalContainingPoint(position))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-
-    }
-
-    public void addEffect(StatelessVideoEffect effect) {
-        NonIntersectingIntervalList<StatelessVideoEffect> newList = new NonIntersectingIntervalList<>();
-        effectChannels.add(newList);
-        newList.addInterval(effect);
-    }
-
-    public MediaMetadata getMediaMetadata() {
+    public VideoMetadata getMediaMetadata() {
         return mediaMetadata;
     }
 
-    public VideoSource getBackingSource() {
+    public MediaSource getBackingSource() {
         return backingSource;
     }
 
     public TimelinePosition getStartPosition() {
         return startPosition;
-    }
-
-    public List<NonIntersectingIntervalList<StatelessVideoEffect>> getEffectChannels() {
-        return effectChannels;
     }
 
 }

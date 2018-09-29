@@ -39,7 +39,7 @@ public class ClipAddedListener {
         //            // create channel
         //        }
         //        Pane actualChannel = channel.get();
-        timelineState.addClipForChannel(message.getChannelId(), createClip(message));
+        timelineState.addClipForChannel(message.getChannelId(), message.getClipId(), createClip(message));
     }
 
     public Group createClip(ClipAddedMessage clipAddedMessage) {

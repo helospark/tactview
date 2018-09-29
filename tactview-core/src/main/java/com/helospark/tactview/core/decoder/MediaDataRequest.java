@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class MediaDataRequest {
     private File file;
-    private MediaMetadata metadata;
+    private VisualMediaMetadata metadata;
 
     private TimelinePosition start;
     private TimelineLength length;
@@ -39,7 +39,7 @@ public class MediaDataRequest {
         return file;
     }
 
-    public MediaMetadata getMetadata() {
+    public VisualMediaMetadata getMetadata() {
         return metadata;
     }
 
@@ -75,7 +75,7 @@ public class MediaDataRequest {
     @Generated("SparkTools")
     public static final class Builder {
         private File file;
-        private MediaMetadata metadata;
+        private VisualMediaMetadata metadata;
         private TimelinePosition start;
         private TimelineLength length;
         private int numberOfFrames;
@@ -91,7 +91,7 @@ public class MediaDataRequest {
             return this;
         }
 
-        public Builder withMetadata(MediaMetadata metadata) {
+        public Builder withMetadata(VisualMediaMetadata metadata) {
             this.metadata = metadata;
             return this;
         }

@@ -40,7 +40,7 @@ public class TimelineState {
 
     private ObservableList<HBox> channels = FXCollections.observableArrayList();
     private Map<String, ObservableList<Group>> channelToClips = new HashMap<>();
-    private Map<String, ObservableList<Pane>> clipsToEffects = new HashMap<>();
+    private Map<String, ObservableList<Node>> clipsToEffects = new HashMap<>();
 
     public TimelineState(
             MessagingService messagingService) {
@@ -99,12 +99,15 @@ public class TimelineState {
                 .findFirst();
     }
 
-    public void addClipForChannel(String channelId, Group createClip) {
+    public void addClipForChannel(String channelId, String clipId, Group createClip) {
         ObservableList<Group> channel = channelToClips.get(channelId);
         if (channel == null) {
             throw new IllegalArgumentException("Channel doesn't exist");
         }
         channel.add(createClip);
+        ObservableList<Node> effects = FXCollections.observableArrayList();
+        Bindings.bindContentBidirectional(effects, createClip.getChildren());
+        clipsToEffects.put(clipId, effects);
     }
 
     public Optional<Group> findClipById(String clipId) {
@@ -125,15 +128,15 @@ public class TimelineState {
     }
 
     public void removeEffect(String effectId) {
-        Optional<Pane> effectToRemove = findEffectById(effectId);
+        Optional<Node> effectToRemove = findEffectById(effectId);
         if (effectToRemove.isPresent()) {
-            Pane actualClip = effectToRemove.get();
+            Node actualClip = effectToRemove.get();
             Pane parent = (Pane) actualClip.getParent();
             parent.getChildren().remove(actualClip);
         }
     }
 
-    private Optional<Pane> findEffectById(String effectId) {
+    private Optional<Node> findEffectById(String effectId) {
         return clipsToEffects.values()
                 .stream()
                 .flatMap(a -> a.stream())
@@ -160,6 +163,19 @@ public class TimelineState {
             channels.remove(channel.get());
         }
         channelToClips.remove(channelId);
+    }
+
+    public Optional<HBox> findChannelForClip(Group group) {
+        return channelToClips.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().contains(group))
+                .findFirst()
+                .flatMap(entry -> findChannelById(entry.getKey()));
+    }
+
+    public void addEffectToClip(String clipId, Node createEffect) {
+        ObservableList<Node> effectList = clipsToEffects.get(clipId);
+        effectList.add(createEffect);
     }
 
 }

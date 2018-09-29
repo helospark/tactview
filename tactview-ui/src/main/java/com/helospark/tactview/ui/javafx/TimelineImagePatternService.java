@@ -10,7 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.MediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDecoder;
-import com.helospark.tactview.core.decoder.MediaMetadata;
+import com.helospark.tactview.core.decoder.VideoMetadata;
+import com.helospark.tactview.core.decoder.ffmpeg.FFmpegBasedMediaDecoderDecorator;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 import javafx.scene.image.Image;
@@ -19,15 +20,15 @@ import javafx.scene.image.Image;
 public class TimelineImagePatternService {
     private MediaDecoder decoder;
 
-    public TimelineImagePatternService(MediaDecoder decoder) {
+    public TimelineImagePatternService(FFmpegBasedMediaDecoderDecorator decoder) {
         this.decoder = decoder;
     }
 
-    public CompletableFuture<Image> createTimelinePattern(String file, MediaMetadata metadata, int timelineWidth) {
+    public CompletableFuture<Image> createTimelinePattern(String file, VideoMetadata metadata, int timelineWidth) {
         return CompletableFuture.supplyAsync(() -> doIt(file, metadata, timelineWidth));
     }
 
-    private Image doIt(String file, MediaMetadata metadata, int timelineWidth) {
+    private Image doIt(String file, VideoMetadata metadata, int timelineWidth) {
         int scaledWidth = (int) (((double) metadata.getWidth() / metadata.getHeight()) * 50);
         int numberOfFrames = (int) Math.ceil((double) timelineWidth / scaledWidth);
         numberOfFrames = numberOfFrames <= 0 ? 1 : numberOfFrames;

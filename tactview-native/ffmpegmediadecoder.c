@@ -141,6 +141,8 @@ MediaMetadata readMediaMetadata(const char* path) {
   mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
   mediaMetadata.fps = st->avg_frame_rate.num / (double)st->avg_frame_rate.den;
 
+    fprintf(stderr, "Length 1=%ldd 2=%ldd!\n", mediaMetadata.lengthInMicroseconds, (st->duration / (AV_TIME_BASE / 1000000)));
+
   av_frame_free(&pFrameRGB);
   
   av_frame_free(&pFrame);
