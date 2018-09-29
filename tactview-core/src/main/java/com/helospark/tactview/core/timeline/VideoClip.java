@@ -68,4 +68,21 @@ public class VideoClip extends TimelineClip {
         effectChannels.add(newList);
         newList.addInterval(effect);
     }
+
+    public MediaMetadata getMediaMetadata() {
+        return mediaMetadata;
+    }
+
+    public VideoSource getBackingSource() {
+        return backingSource;
+    }
+
+    public TimelinePosition getStartPosition() {
+        return startPosition;
+    }
+
+    public List<NonIntersectingIntervalList<StatelessVideoEffect>> getEffectChannels() {
+        return effectChannels;
+    }
+
 }

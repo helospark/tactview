@@ -20,6 +20,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
@@ -37,6 +38,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -81,6 +83,20 @@ public class JavaFXUiMain extends Application {
         NotificationPane pane = new NotificationPane();
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);
+
+        final KeyCombination keyComb1 = new KeyCodeCombination(KeyCode.Z,
+                KeyCombination.CONTROL_DOWN);
+
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (keyComb1.match(event)) {
+                    commandInterpreter.revertLast();
+                    event.consume(); // <-- stops passing the event to next node
+                }
+            }
+        });
+
         root.getStylesheets().add("stylesheet.css");
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("_File");
@@ -162,7 +178,7 @@ public class JavaFXUiMain extends Application {
         lower.setPrefWidth(scene.getWidth());
         lower.setId("timeline-view");
 
-        lower.getChildren().add(uiTimeline.getTimelineNode());
+        lower.getChildren().add(uiTimeline.createTimeline());
 
         vbox.getChildren().addAll(upper, lower);
 
@@ -215,6 +231,8 @@ public class JavaFXUiMain extends Application {
         uiTimelineManager.registerUiConsumer(position -> uiTimeline.updateLine(position));
         uiTimelineManager.registerUiConsumer(position -> updateTime(position));
         uiTimelineManager.registerConsumer(position -> updateDisplay(position));
+        commandInterpreter = lightDi.getBean(UiCommandInterpreterService.class);
+        lightDi.eagerInitAllBeans();
 
         launch(args);
     }
@@ -238,14 +256,6 @@ public class JavaFXUiMain extends Application {
             GraphicsContext gc = canvas.getGraphicsContext2D();
             gc.drawImage(actualImage, 0, 0, W, H);
         });
-    }
-
-    /**
-     * Required param, however JavaFx required empty constructor and create the instance by itself.
-     * Why do you do this to me JavaFx???
-     */
-    public static void setCommandInterpreter(UiCommandInterpreterService commandInterpreter) {
-        JavaFXUiMain.commandInterpreter = commandInterpreter;
     }
 
     public void launchUi() {

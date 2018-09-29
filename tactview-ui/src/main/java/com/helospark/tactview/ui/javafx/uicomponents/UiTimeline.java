@@ -1,16 +1,24 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
-import javax.annotation.PostConstruct;
+import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
+
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 
+import javafx.beans.binding.Bindings;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 
@@ -18,20 +26,36 @@ import javafx.scene.shape.Line;
 public class UiTimeline {
 
     private TimeLineZoomCallback timeLineZoomCallback;
-    private TimelineDragAndDropHandler timelineDragAndDropHandler;
+    private TimelineState timelineState;
+    private UiCommandInterpreterService commandInterpreter;
+    private TimelineManager timelineManager;
 
     private Line positionIndicatorLine;
 
     private ScrollPane timeLineScrollPane;
 
-    public UiTimeline(TimelineDragAndDropHandler timelineDragAndDropHandler,
-            TimeLineZoomCallback timeLineZoomCallback) {
-        this.timelineDragAndDropHandler = timelineDragAndDropHandler;
+    public UiTimeline(TimeLineZoomCallback timeLineZoomCallback, MessagingService messagingService,
+            TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
+            TimelineManager timelineManager) {
         this.timeLineZoomCallback = timeLineZoomCallback;
+        this.timelineState = timelineState;
+        this.commandInterpreter = commandInterpreter;
+        this.timelineManager = timelineManager;
     }
 
-    @PostConstruct
-    public void asd() {
+    public Node createTimeline() {
+        BorderPane borderPane = new BorderPane();
+
+        Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
+        addChannelButton.setOnMouseClicked(event -> {
+            commandInterpreter.sendWithResult(new CreateChannelCommand(timelineManager, LAST_INDEX));
+        });
+
+        HBox titleBarTop = new HBox();
+        titleBarTop.getChildren().add(addChannelButton);
+
+        borderPane.setTop(titleBarTop);
+
         timeLineScrollPane = new ScrollPane();
         Group timelineGroup = new Group();
         VBox timelineBoxes = new VBox();
@@ -41,41 +65,19 @@ public class UiTimeline {
         positionIndicatorLine = new Line();
         positionIndicatorLine.setStartY(0);
         positionIndicatorLine.endYProperty().bind(timelineBoxes.heightProperty());
-        positionIndicatorLine.setStartX(0);
-        positionIndicatorLine.setEndX(0);
+        positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
+        positionIndicatorLine.endXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.setId("timeline-position-line");
         timelineGroup.getChildren().add(positionIndicatorLine);
 
-        for (int i = 0; i < 10; ++i) {
-            HBox timeline = new HBox();
-            timeline.setPrefHeight(50);
-            timeline.setMinHeight(50);
-            timeline.getStyleClass().add("timelinerow");
-            timeline.setPrefWidth(2000);
-            timeline.setMinWidth(2000);
+        Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
-            VBox timelineTitle = new VBox();
-            timelineTitle.getChildren().add(new Label("Video line 1"));
-            timelineTitle.setMaxWidth(200);
-            timelineTitle.setPrefHeight(50);
-            timelineTitle.getStyleClass().add("timeline-title");
-            timeline.getChildren().add(timelineTitle);
-
-            Pane timelineRow = new Pane();
-            timelineRow.minWidth(2000);
-            timelineRow.minHeight(50);
-            timelineRow.getStyleClass().add("timeline-clips");
-            timeline.getChildren().add(timelineRow);
-
-            final int index = i;
-
-            timelineDragAndDropHandler.addDragAndDrop(timeline, timelineRow, index, timeLineZoomCallback.getScale());
-
-            timelineBoxes.getChildren().add(timeline);
-        }
         timelineBoxes.setOnScroll(timeLineZoomCallback::onScroll);
 
         timeLineScrollPane.setContent(timelineGroup);
+
+        borderPane.setCenter(timeLineScrollPane);
+        return borderPane;
     }
 
     public Node getTimelineNode() {
@@ -83,9 +85,7 @@ public class UiTimeline {
     }
 
     public void updateLine(TimelinePosition position) {
-        int pixel = position.getSeconds().multiply(TimelineDragAndDropHandler.PIXEL_PER_SECOND).intValue();
-        positionIndicatorLine.setStartX(pixel);
-        positionIndicatorLine.setEndX(pixel);
+        timelineState.setLinePosition(position);
     }
 
 }

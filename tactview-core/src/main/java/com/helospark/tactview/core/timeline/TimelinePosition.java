@@ -4,7 +4,7 @@ import static java.math.RoundingMode.HALF_DOWN;
 
 import java.math.BigDecimal;
 
-public class TimelinePosition {
+public class TimelinePosition implements SecondsAware {
     private BigDecimal seconds;
 
     public TimelinePosition(BigDecimal seconds) {

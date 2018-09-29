@@ -57,4 +57,11 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         return intervalAwares.iterator();
     }
 
+    public void remove(TimelineClip clip) {
+        boolean result = intervalAwares.remove(clip);
+        if (result == false) {
+            throw new IllegalArgumentException("Remove was unsuccesful, because list no longer contains clip");
+        }
+    }
+
 }

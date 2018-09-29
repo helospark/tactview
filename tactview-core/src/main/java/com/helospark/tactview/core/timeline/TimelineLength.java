@@ -2,7 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 
-public class TimelineLength {
+public class TimelineLength implements SecondsAware {
     private static final BigDecimal MICROSECONDS = BigDecimal.valueOf(1000000L);
 
     private BigDecimal seconds;

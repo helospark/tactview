@@ -1,47 +1,50 @@
 package com.helospark.tactview.core.timeline;
 
-import static com.helospark.tactview.core.timeline.TimelineClipType.VIDEO;
-
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
+import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
+import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
+import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
+import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
+import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class TimelineManager {
     // state
     private List<StatelessVideoEffect> globalEffects;
-    private ConcurrentHashMap<Integer, TimelineChannel> channels = new ConcurrentHashMap<>();
+    private CopyOnWriteArrayList<TimelineChannel> channels = new CopyOnWriteArrayList<>();
 
     // stateless
     private List<ClipFactory> clipFactoryChain;
     private List<EffectFactory> effectFactoryChain;
     private EmptyByteBufferFactory emptyByteBufferFactory;
+    private MessagingService messagingService;
 
     public TimelineManager(List<ClipFactory> clipFactoryChain, EmptyByteBufferFactory emptyByteBufferFactory,
-            List<EffectFactory> effectFactoryChain) {
+            List<EffectFactory> effectFactoryChain, MessagingService messagingService) {
         this.clipFactoryChain = clipFactoryChain;
         this.emptyByteBufferFactory = emptyByteBufferFactory;
         this.effectFactoryChain = effectFactoryChain;
+        this.messagingService = messagingService;
     }
 
-    public boolean canAddClipAt(int channelNumber, TimelinePosition position, TimelineLength length) {
-        if (channelNumber < 0) {
-            throw new IllegalArgumentException("Channel must be greater than 0");
+    public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
+        if (!findChannelForId(channelId).isPresent()) {
+            return false;
         }
-        if (channels.containsKey(channelNumber)) {
-            return true;
-        }
-        TimelineChannel channel = channels.get(channelNumber);
+        TimelineChannel channel = findChannelForId(channelId).get();
         return channel.canAddResourceAt(position, length);
     }
 
-    public TimelineClip addResource(int channelNumber, TimelinePosition position, String filePath) {
+    public TimelineClip addResource(String channelId, TimelinePosition position, String filePath) {
         File file = new File(filePath);
         if (!file.exists()) {
             throw new IllegalArgumentException(filePath + " does not exists");
@@ -51,13 +54,20 @@ public class TimelineManager {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No clip factory found for " + file))
                 .createClip(file, position);
-        TimelineChannel channelToAddResourceTo = channels.computeIfAbsent(channelNumber, key -> new TimelineChannel());
+        TimelineChannel channelToAddResourceTo = findChannelWithId(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
         if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
             channelToAddResourceTo.addResource(clip);
         } else {
             throw new IllegalArgumentException("Cannot add clip");
         }
+        messagingService.sendAsyncMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), position, clip));
         return clip;
+    }
+
+    private Optional<TimelineChannel> findChannelWithId(String channelId) {
+        return channels.stream()
+                .filter(channel -> channel.getId().equals(channelId))
+                .findFirst();
     }
 
     public ByteBuffer getFrames(TimelineManagerFramesRequest request) {
@@ -65,11 +75,11 @@ public class TimelineManager {
     }
 
     public ByteBuffer getSingleFrame(TimelineManagerFramesRequest request) {
-        List<ByteBuffer> frames = channels.values()
+        List<ByteBuffer> frames = channels
                 .parallelStream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
                 .flatMap(Optional::stream)
-                .filter(clip -> clip.getType().equals(VIDEO)) // audio separate?
+                .filter(clip -> clip.getType().equals(TimelineClipType.VIDEO)) // audio separate?
                 .map(clip -> (VideoClip) clip)
                 .map(clip -> clip.getFrame(request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight()))
                 .collect(Collectors.toList());
@@ -93,6 +103,7 @@ public class TimelineManager {
         VideoClip clipById = (VideoClip) findClipById(id).get();
         StatelessVideoEffect effect = (StatelessVideoEffect) createEffect(effectId, timelineInterval); // sound?
         clipById.addEffect(effect);
+        messagingService.sendAsyncMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), timelineInterval.getStartPosition(), effect));
         return effect;
     }
 
@@ -104,13 +115,47 @@ public class TimelineManager {
                 .createEffect(effectId, timelineInterval);
     }
 
-    private Optional<TimelineClip> findClipById(String id) {
-        return channels.values()
+    public void removeResource(String clipId) {
+        TimelineChannel channel = findChannelForId(clipId)
+                .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
+        channel.removeClip(clipId);
+        messagingService.sendAsyncMessage(new ClipRemovedMessage(clipId));
+    }
+
+    public Optional<TimelineClip> findClipById(String id) {
+        return channels
                 .stream()
                 .map(channel -> channel.findClipById(id))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst();
+    }
+
+    private Optional<TimelineChannel> findChannelForId(String id) {
+        return channels
+                .stream()
+                .filter(channel -> channel.findClipById(id).isPresent())
+                .findFirst();
+    }
+
+    public TimelineChannel createChannel(int index) {
+        TimelineChannel channelToInsert = new TimelineChannel();
+        if (index >= 0 && index < channels.size()) {
+            channels.add(index, channelToInsert);
+        } else {
+            channels.add(channelToInsert);
+        }
+        messagingService.sendAsyncMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert)));
+        return channelToInsert;
+    }
+
+    public void removeChannel(String channelId) {
+        boolean success = findChannelForId(channelId)
+                .map(channelToRemove -> channels.remove(channelToRemove))
+                .orElse(false);
+        if (success) {
+            messagingService.sendAsyncMessage(new ChannelRemovedMessage(channelId));
+        }
     }
 
 }

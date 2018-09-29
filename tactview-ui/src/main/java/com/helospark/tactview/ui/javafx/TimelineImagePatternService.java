@@ -23,11 +23,11 @@ public class TimelineImagePatternService {
         this.decoder = decoder;
     }
 
-    public CompletableFuture<Image> createTimelinePattern(File file, MediaMetadata metadata, int timelineWidth) {
+    public CompletableFuture<Image> createTimelinePattern(String file, MediaMetadata metadata, int timelineWidth) {
         return CompletableFuture.supplyAsync(() -> doIt(file, metadata, timelineWidth));
     }
 
-    private Image doIt(File file, MediaMetadata metadata, int timelineWidth) {
+    private Image doIt(String file, MediaMetadata metadata, int timelineWidth) {
         int scaledWidth = (int) (((double) metadata.getWidth() / metadata.getHeight()) * 50);
         int numberOfFrames = (int) Math.ceil((double) timelineWidth / scaledWidth);
         numberOfFrames = numberOfFrames <= 0 ? 1 : numberOfFrames;
@@ -40,7 +40,7 @@ public class TimelineImagePatternService {
         for (int i = 0; i < numberOfFrames; ++i) {
             TimelinePosition start = TimelinePosition.fromFrameIndexWithFps(i * frameGap, metadata.getFps());
             MediaDataRequest request = MediaDataRequest.builder()
-                    .withFile(file)
+                    .withFile(new File(file))
                     .withStart(start)
                     .withNumberOfFrames(1)
                     .withWidth(320) // same res

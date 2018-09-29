@@ -35,4 +35,8 @@ public class TimelineInterval {
         return isLargerThanStart && isSmallerThanEnd;
     }
 
+    public TimelineLength getWidth() {
+        return new TimelineLength(endPosition.from(startPosition).getSeconds());
+    }
+
 }
