@@ -21,6 +21,7 @@ public class VideoMetadata extends VisualMediaMetadata {
         return fps;
     }
 
+    @Override
     public TimelineLength getLength() {
         return length;
     }

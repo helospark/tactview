@@ -1,13 +1,18 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import java.math.BigDecimal;
+
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.VideoClip;
+import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.TimelineImagePatternService;
+import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -20,12 +25,17 @@ public class ClipAddedListener {
     private MessagingService messagingService;
     private TimelineState timelineState;
     private EffectDragAdder effectDragAdder;
+    private ProjectRepository projectRepository;
+    private UiProjectRepository uiProjectRepository;
 
-    public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder) {
+    public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder, ProjectRepository projectRepository,
+            UiProjectRepository uiProjectRepository) {
         this.timelineImagePatternService = timelineImagePatternService;
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectDragAdder = effectDragAdder;
+        this.projectRepository = projectRepository;
+        this.uiProjectRepository = uiProjectRepository;
     }
 
     @PostConstruct
@@ -34,11 +44,27 @@ public class ClipAddedListener {
     }
 
     private void addClip(ClipAddedMessage message) {
-        //        Optional<Pane> channel = timelineState.findChannelById(message.getChannelId());
-        //        if (!channel.isPresent()) {
-        //            // create channel
-        //        }
-        //        Pane actualChannel = channel.get();
+        TimelineClip clip = message.getClip();
+        if (!projectRepository.isInitialized() && clip instanceof VisualTimelineClip) {
+            VisualTimelineClip visualClip = (VisualTimelineClip) clip;
+            projectRepository.initializer()
+                    .withWidth(visualClip.getMediaMetadata().getWidth())
+                    .withHeight(visualClip.getMediaMetadata().getHeight())
+                    .withFps(visualClip instanceof VideoClip ? new BigDecimal(((VideoClip) visualClip).getMediaMetadata().getFps()) : new BigDecimal("30"))
+                    .withIsInitialized(true)
+                    .init();
+            double horizontalScaleFactor = 320.0 / projectRepository.getWidth();
+            double verticalScaleFactor = 260.0 / projectRepository.getHeight();
+            double scale = Math.min(horizontalScaleFactor, verticalScaleFactor);
+            double aspectRatio = ((double) visualClip.getMediaMetadata().getWidth()) / ((double) visualClip.getMediaMetadata().getHeight());
+            int previewWidth = (int) (scale * visualClip.getMediaMetadata().getWidth());
+            int previewHeight = (int) (scale * visualClip.getMediaMetadata().getHeight());
+            uiProjectRepository.setScaleFactor(scale);
+            uiProjectRepository.setPreviewWidth(previewWidth);
+            uiProjectRepository.setPreviewHeight(previewHeight);
+            uiProjectRepository.setAspectRatio(aspectRatio);
+        }
+
         timelineState.addClipForChannel(message.getChannelId(), message.getClipId(), createClip(message));
     }
 

@@ -33,6 +33,7 @@ public class VideoClip extends VisualTimelineClip {
         return backingSource.decoder.readFrames(request).getVideoFrames().get(0);
     }
 
+    @Override
     public VideoMetadata getMediaMetadata() {
         return mediaMetadata;
     }

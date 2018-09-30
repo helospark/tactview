@@ -16,6 +16,7 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
+import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
 import javafx.application.Application;
@@ -76,6 +77,8 @@ public class JavaFXUiMain extends Application {
     private static Canvas canvas;
     private static Label videoTimestampLabel;
     static UiTimeline uiTimeline;
+    static UiProjectRepository uiProjectRepository;
+    private static UiProjectRepository uiProjectRepostiory;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -142,7 +145,9 @@ public class JavaFXUiMain extends Application {
         rightVBox.setPrefWidth(300);
         rightVBox.setId("clip-view");
 
-        canvas = new Canvas(W, H);
+        canvas = new Canvas();
+        canvas.widthProperty().bind(uiProjectRepository.getPreviewWidthProperty());
+        canvas.heightProperty().bind(uiProjectRepository.getPreviewHeightProperty());
         canvas.getGraphicsContext2D().setFill(new Color(0.0, 0.0, 0.0, 1.0));
         canvas.getGraphicsContext2D().fillRect(0, 0, W, H);
         rightVBox.getChildren().add(canvas);
@@ -232,6 +237,8 @@ public class JavaFXUiMain extends Application {
         uiTimelineManager.registerUiConsumer(position -> updateTime(position));
         uiTimelineManager.registerConsumer(position -> updateDisplay(position));
         commandInterpreter = lightDi.getBean(UiCommandInterpreterService.class);
+        uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
+        uiProjectRepostiory = lightDi.getBean(UiProjectRepository.class);
         lightDi.eagerInitAllBeans();
 
         launch(args);
@@ -253,8 +260,10 @@ public class JavaFXUiMain extends Application {
         Image actualImage = playbackController.getFrameAt(currentPosition);
 
         Platform.runLater(() -> {
+            int width = uiProjectRepostiory.getPreviewWidth();
+            int height = uiProjectRepostiory.getPreviewHeight();
             GraphicsContext gc = canvas.getGraphicsContext2D();
-            gc.drawImage(actualImage, 0, 0, W, H);
+            gc.drawImage(actualImage, 0, 0, width, height);
         });
     }
 

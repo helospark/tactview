@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+
 public abstract class VisualTimelineClip extends TimelineClip {
     private List<NonIntersectingIntervalList<StatelessVideoEffect>> effectChannels = new ArrayList<>();
 
@@ -53,5 +55,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     public List<NonIntersectingIntervalList<StatelessVideoEffect>> getEffectChannels() {
         return effectChannels;
     }
+
+    public abstract VisualMediaMetadata getMediaMetadata();
 
 }

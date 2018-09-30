@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.opencv.OpenCvImageDecorderDecorator;
 import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.MediaSource;
@@ -33,12 +33,12 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
     @Override
     public TimelineClip createClip(File file, TimelinePosition position) {
         MediaSource mediaSource = new MediaSource(file, mediaDecoder);
-        VisualMediaMetadata metadata = readMetadata(file);
-        return new ImageClip(mediaSource, position, metadata.getLength());
+        ImageMetadata metadata = readMetadata(file);
+        return new ImageClip(mediaSource, metadata, position, metadata.getLength());
     }
 
     @Override
-    public VisualMediaMetadata readMetadata(File file) {
+    public ImageMetadata readMetadata(File file) {
         return mediaDecoder.readMetadata(file);
     }
 

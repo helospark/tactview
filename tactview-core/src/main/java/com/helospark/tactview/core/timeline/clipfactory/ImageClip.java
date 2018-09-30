@@ -3,8 +3,10 @@ package com.helospark.tactview.core.timeline.clipfactory;
 import java.io.File;
 import java.nio.ByteBuffer;
 
+import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.MediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
+import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.MediaSource;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -14,10 +16,12 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 
 public class ImageClip extends VisualTimelineClip {
     private MediaSource mediaSource;
+    private ImageMetadata metadata;
 
-    public ImageClip(MediaSource mediaSource, TimelinePosition position, TimelineLength length) {
+    public ImageClip(MediaSource mediaSource, ImageMetadata metadata, TimelinePosition position, TimelineLength length) {
         super(new TimelineInterval(position, length), TimelineClipType.IMAGE);
         this.mediaSource = mediaSource;
+        this.metadata = metadata;
     }
 
     @Override
@@ -30,6 +34,11 @@ public class ImageClip extends VisualTimelineClip {
                 .build(); // todo: cache and scale
         MediaDataResponse result = mediaSource.decoder.readFrames(request);
         return result.getVideoFrames().get(0);
+    }
+
+    @Override
+    public VisualMediaMetadata getMediaMetadata() {
+        return metadata;
     }
 
 }
