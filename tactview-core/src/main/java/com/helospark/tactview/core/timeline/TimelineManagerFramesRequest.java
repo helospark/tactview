@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline;
 import javax.annotation.Generated;
 
 public class TimelineManagerFramesRequest {
+    private double scale;
     private Integer previewWidth;
     private Integer previewHeight;
     private Integer frameBufferSize;
@@ -10,10 +11,15 @@ public class TimelineManagerFramesRequest {
 
     @Generated("SparkTools")
     private TimelineManagerFramesRequest(Builder builder) {
+        this.scale = builder.scale;
         this.previewWidth = builder.previewWidth;
         this.previewHeight = builder.previewHeight;
         this.frameBufferSize = builder.frameBufferSize;
         this.position = builder.position;
+    }
+
+    public double getScale() {
+        return scale;
     }
 
     public Integer getPreviewWidth() {
@@ -39,12 +45,18 @@ public class TimelineManagerFramesRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
+        private double scale;
         private Integer previewWidth;
         private Integer previewHeight;
         private Integer frameBufferSize;
         private TimelinePosition position;
 
         private Builder() {
+        }
+
+        public Builder withScale(double scale) {
+            this.scale = scale;
+            return this;
         }
 
         public Builder withPreviewWidth(Integer previewWidth) {

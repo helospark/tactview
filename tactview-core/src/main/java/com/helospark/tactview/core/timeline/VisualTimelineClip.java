@@ -10,12 +10,16 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 
 public abstract class VisualTimelineClip extends TimelineClip {
     private List<NonIntersectingIntervalList<StatelessVideoEffect>> effectChannels = new ArrayList<>();
+    private VisualMediaMetadata mediaMetadata;
 
-    public VisualTimelineClip(TimelineInterval interval, TimelineClipType type) {
+    public VisualTimelineClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
+        this.mediaMetadata = visualMediaMetadata;
     }
 
-    public ByteBuffer getFrame(TimelinePosition position, int width, int height) {
+    public ClipFrameResult getFrame(TimelinePosition position, double scale) {
+        int width = (int) (mediaMetadata.getWidth() * scale);
+        int height = (int) (mediaMetadata.getHeight() * scale);
         TimelinePosition relativePosition = position.from(getInterval().getStartPosition());
         ByteBuffer frame = requestFrame(relativePosition, width, height);
         ByteBuffer newBuffer = ByteBuffer.allocateDirect(frame.capacity()); // move to cache
@@ -24,15 +28,17 @@ public abstract class VisualTimelineClip extends TimelineClip {
         List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition);
 
         for (StatelessVideoEffect effect : actualEffects) {
-            effect.fillFrame(newBuffer, frame);
+            if (effect.isLocal()) {
+                effect.fillFrame(newBuffer, frame);
 
-            // swap buffers around
-            tmp = newBuffer;
-            newBuffer = frame;
-            frame = tmp;
+                // swap buffers around
+                tmp = newBuffer;
+                newBuffer = frame;
+                frame = tmp;
+            }
         }
 
-        return frame;
+        return new ClipFrameResult(frame, width, height);
     }
 
     public abstract ByteBuffer requestFrame(TimelinePosition position, int width, int height);

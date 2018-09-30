@@ -6,4 +6,7 @@ public interface StatelessVideoEffect extends StatelessEffect {
 
     public void fillFrame(ByteBuffer result, ByteBuffer currentFrame);
 
+    public default boolean isLocal() {
+        return true;
+    }
 }

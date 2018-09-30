@@ -14,7 +14,7 @@ public class VideoClip extends VisualTimelineClip {
     private TimelinePosition startPosition;
 
     public VideoClip(VideoMetadata mediaMetadata, MediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
-        super(new TimelineInterval(startPosition, length), VIDEO);
+        super(mediaMetadata, new TimelineInterval(startPosition, length), VIDEO);
         this.mediaMetadata = mediaMetadata;
         this.backingSource = backingSource;
         this.startPosition = startPosition;

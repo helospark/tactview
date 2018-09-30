@@ -24,16 +24,16 @@ public class TimelineManager {
 
     // stateless
     private List<EffectFactory> effectFactoryChain;
-    private EmptyByteBufferFactory emptyByteBufferFactory;
     private MessagingService messagingService;
     private ClipFactoryChain clipFactoryChain;
+    private FrameBufferMerger frameBufferMerger;
 
-    public TimelineManager(EmptyByteBufferFactory emptyByteBufferFactory,
+    public TimelineManager(FrameBufferMerger frameBufferMerger,
             List<EffectFactory> effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain) {
-        this.emptyByteBufferFactory = emptyByteBufferFactory;
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
+        this.frameBufferMerger = frameBufferMerger;
     }
 
     public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
@@ -71,27 +71,39 @@ public class TimelineManager {
     }
 
     public ByteBuffer getSingleFrame(TimelineManagerFramesRequest request) {
-        List<ByteBuffer> frames = channels
+        List<ClipFrameResult> frames = channels
                 .parallelStream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
                 .flatMap(Optional::stream)
                 .filter(clip -> clip instanceof VisualTimelineClip) // audio separate?
                 .map(clip -> (VisualTimelineClip) clip)
-                .map(clip -> clip.getFrame(request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight()))
+                .map(clip -> clip.getFrame(request.getPosition(), request.getScale()))
+                .map(clip -> expandFrame(clip, request.getPreviewWidth(), request.getPreviewHeight()))
                 .collect(Collectors.toList());
-        ByteBuffer finalImage = alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
-        return executeGlobalEffectsOn(finalImage);
+        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
+        ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
+        return finalResult.getBuffer();
     }
 
-    private ByteBuffer alphaMergeFrames(List<ByteBuffer> frames, Integer width, Integer height) {
-        if (frames.size() > 0) {
-            return frames.get(0); // todo: do implementation
-        } else {
-            return emptyByteBufferFactory.createEmptyByteImage(width, height);
+    private ClipFrameResult expandFrame(ClipFrameResult clip, Integer previewWidth, Integer previewHeight) {
+        ByteBuffer outputBuffer = ByteBuffer.allocateDirect(previewHeight * previewWidth * 4);
+        ByteBuffer inputBuffer = clip.getBuffer();
+        int widthTo = Math.min(clip.getWidth(), previewWidth);
+        int heightTo = Math.min(clip.getHeight(), previewHeight);
+        int numberOfBytesInARow = widthTo * 4;
+        byte[] tmpBuffer = new byte[numberOfBytesInARow];
+
+        for (int i = 0; i < heightTo; ++i) {
+            inputBuffer.position(i * clip.getWidth() * 4);
+            inputBuffer.get(tmpBuffer, 0, numberOfBytesInARow);
+
+            outputBuffer.position(i * previewWidth * 4);
+            outputBuffer.put(tmpBuffer, 0, numberOfBytesInARow);
         }
+        return new ClipFrameResult(outputBuffer, previewWidth, previewHeight);
     }
 
-    private ByteBuffer executeGlobalEffectsOn(ByteBuffer finalImage) {
+    private ClipFrameResult executeGlobalEffectsOn(ClipFrameResult finalImage) {
         return finalImage; // todo: do implementation
     }
 

@@ -26,6 +26,7 @@ public class PlaybackController {
         TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
                 .withFrameBufferSize(1)
                 .withPosition(position)
+                .withScale(uiProjectRepository.getScaleFactor())
                 .withPreviewWidth(width)
                 .withPreviewHeight(height)
                 .build();

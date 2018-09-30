@@ -16,12 +16,12 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 
 public class ImageClip extends VisualTimelineClip {
     private MediaSource mediaSource;
-    private ImageMetadata metadata;
+    private ImageMetadata mediaMetadata;
 
     public ImageClip(MediaSource mediaSource, ImageMetadata metadata, TimelinePosition position, TimelineLength length) {
-        super(new TimelineInterval(position, length), TimelineClipType.IMAGE);
+        super(metadata, new TimelineInterval(position, length), TimelineClipType.IMAGE);
         this.mediaSource = mediaSource;
-        this.metadata = metadata;
+        this.mediaMetadata = metadata;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ImageClip extends VisualTimelineClip {
 
     @Override
     public VisualMediaMetadata getMediaMetadata() {
-        return metadata;
+        return mediaMetadata;
     }
 
 }
