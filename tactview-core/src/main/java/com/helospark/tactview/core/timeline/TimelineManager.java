@@ -78,27 +78,44 @@ public class TimelineManager {
                 .flatMap(Optional::stream)
                 .filter(clip -> clip instanceof VisualTimelineClip) // audio separate?
                 .map(clip -> (VisualTimelineClip) clip)
-                .map(clip -> clip.getFrame(request.getPosition(), request.getScale()))
-                .map(clip -> expandFrame(clip, request.getPreviewWidth(), request.getPreviewHeight()))
+                .map(clip -> {
+                    ClipFrameResult frameResult = clip.getFrame(request.getPosition(), request.getScale());
+                    return expandFrame(frameResult, clip, request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight());
+                })
                 .collect(Collectors.toList());
         ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
         return finalResult.getBuffer();
     }
 
-    private ClipFrameResult expandFrame(ClipFrameResult clip, Integer previewWidth, Integer previewHeight) {
+    private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelinePosition timelinePosition, Integer previewWidth, Integer previewHeight) {
         ByteBuffer outputBuffer = ByteBuffer.allocateDirect(previewHeight * previewWidth * 4);
-        ByteBuffer inputBuffer = clip.getBuffer();
-        int widthTo = Math.min(clip.getWidth(), previewWidth);
-        int heightTo = Math.min(clip.getHeight(), previewHeight);
-        int numberOfBytesInARow = widthTo * 4;
+        ByteBuffer inputBuffer = frameResult.getBuffer();
+
+        int requestedXPosition = clip.getXPosition(timelinePosition);
+        int requestedYPosition = clip.getYPosition(timelinePosition);
+
+        int destinationStartX = Math.max(requestedXPosition, 0);
+        int destinationStartY = Math.max(requestedYPosition, 0);
+
+        int destinationEndX = Math.min(requestedXPosition + frameResult.getWidth(), previewWidth);
+        int destinationEndY = Math.min(requestedYPosition + frameResult.getHeight(), previewHeight);
+
+        int sourceX = Math.max(0, -requestedXPosition);
+        int sourceY = Math.max(0, -requestedYPosition);
+
+        int width = Math.max(0, destinationEndX - destinationStartX);
+        int height = Math.max(0, destinationEndY - destinationStartY);
+
+        int numberOfBytesInARow = width * 4;
         byte[] tmpBuffer = new byte[numberOfBytesInARow];
 
-        for (int i = 0; i < heightTo; ++i) {
-            inputBuffer.position(i * clip.getWidth() * 4);
+        int toY = sourceY + height;
+        for (int i = sourceY; i < toY; ++i) {
+            inputBuffer.position(i * frameResult.getWidth() * 4 + sourceX * 4);
             inputBuffer.get(tmpBuffer, 0, numberOfBytesInARow);
 
-            outputBuffer.position(i * previewWidth * 4);
+            outputBuffer.position((destinationStartY + i) * previewWidth * 4 + destinationStartX * 4);
             outputBuffer.put(tmpBuffer, 0, numberOfBytesInARow);
         }
         return new ClipFrameResult(outputBuffer, previewWidth, previewHeight);
@@ -109,7 +126,7 @@ public class TimelineManager {
     }
 
     public StatelessEffect addEffectForClip(String id, String effectId, TimelineInterval timelineInterval) {
-        VideoClip clipById = (VideoClip) findClipById(id).get();
+        VisualTimelineClip clipById = (VisualTimelineClip) findClipById(id).get();
         StatelessVideoEffect effect = (StatelessVideoEffect) createEffect(effectId, timelineInterval); // sound?
         clipById.addEffect(effect);
         messagingService.sendAsyncMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), timelineInterval.getStartPosition(), effect));

@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,33 +23,27 @@ public abstract class VisualTimelineClip extends TimelineClip {
         int width = (int) (mediaMetadata.getWidth() * scale);
         int height = (int) (mediaMetadata.getHeight() * scale);
         TimelinePosition relativePosition = position.from(getInterval().getStartPosition());
-        ByteBuffer frame = requestFrame(relativePosition, width, height);
-        ByteBuffer newBuffer = ByteBuffer.allocateDirect(frame.capacity()); // move to cache
-        ClipFrameResult tmp;
 
+        ByteBuffer frame = requestFrame(relativePosition, width, height);
+        ClipFrameResult frameResult = new ClipFrameResult(frame, width, height);
+
+        return applyEffects(relativePosition, frameResult);
+    }
+
+    private ClipFrameResult applyEffects(TimelinePosition relativePosition, ClipFrameResult frameResult) {
         List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition);
 
-        ClipFrameResult frameResult = new ClipFrameResult(frame, width, height);
-        ClipFrameResult newBufferResult = new ClipFrameResult(newBuffer, width, height);
-
         for (StatelessVideoEffect effect : actualEffects) {
-            if (effect.isLocal()) {
+            StatelessEffectRequest request = StatelessEffectRequest.builder()
+                    .withClipPosition(relativePosition)
+                    .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
+                    .withCurrentFrame(frameResult)
+                    .build();
 
-                StatelessEffectRequest request = StatelessEffectRequest.builder()
-                        .withClipPosition(relativePosition)
-                        .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
-                        .withCurrentFrame(frameResult)
-                        .build();
+            ClipFrameResult appliedEffectsResult = effect.createFrame(request);
 
-                effect.fillFrame(newBufferResult, request);
-
-                // swap buffers around
-                tmp = newBufferResult;
-                newBufferResult = frameResult;
-                frameResult = tmp;
-            }
+            frameResult = appliedEffectsResult; // todo: free up bytebuffer
         }
-
         return frameResult;
     }
 
@@ -75,4 +70,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public abstract VisualMediaMetadata getMediaMetadata();
 
+    public int getXPosition(TimelinePosition timelinePosition) {
+        return timelinePosition.getSeconds().multiply(BigDecimal.valueOf(10)).intValue() % 50;
+    }
+
+    public int getYPosition(TimelinePosition timelinePosition) {
+        return timelinePosition.getSeconds().multiply(BigDecimal.valueOf(10)).intValue() % 30;
+    }
 }

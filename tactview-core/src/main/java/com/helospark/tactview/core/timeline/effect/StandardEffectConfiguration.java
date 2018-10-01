@@ -5,6 +5,8 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
+import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
+import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Configuration
@@ -30,4 +32,13 @@ public class StandardEffectConfiguration {
                 .build();
     }
 
+    @Bean
+    public StandardEffectFactory scaleEffect(OpenCVScaleEffectImplementation implementation, MessagingService messagingService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ScaleEffect(request.getInterval(), implementation))
+                .withMessagingService(messagingService)
+                .withName("Scale")
+                .withSupportedEffectId("scale")
+                .build();
+    }
 }

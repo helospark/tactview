@@ -200,6 +200,8 @@ public class JavaFXUiMain extends Application {
         root.setCenter(vbox);
         pane.setContent(root);
 
+        lightDi.getBean(UiInitializer.class).initialize();
+
         stage.show();
     }
 

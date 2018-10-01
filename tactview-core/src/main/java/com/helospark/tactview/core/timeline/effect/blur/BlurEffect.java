@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.blur;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,16 +28,19 @@ public class BlurEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void fillFrame(ClipFrameResult result, StatelessEffectRequest request) {
+    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(request.getCurrentFrame().getBuffer().capacity());
         ClipFrameResult currentFrame = request.getCurrentFrame();
         OpenCVGaussianBlurRequest nativeRequest = new OpenCVGaussianBlurRequest();
         nativeRequest.input = currentFrame.getBuffer();
-        nativeRequest.output = result.getBuffer();
+        nativeRequest.output = buffer;
         nativeRequest.width = currentFrame.getWidth();
         nativeRequest.height = currentFrame.getHeight();
         nativeRequest.kernelWidth = kernelWidthProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
         nativeRequest.kernelHeight = kernelHeightProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
         openCVBasedBlur.applyGaussianBlur(nativeRequest);
+
+        return new ClipFrameResult(buffer, currentFrame.getWidth(), currentFrame.getHeight());
     }
 
     @Override

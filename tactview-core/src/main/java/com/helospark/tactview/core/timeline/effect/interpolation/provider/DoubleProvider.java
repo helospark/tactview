@@ -6,11 +6,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Do
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 
 public class DoubleProvider extends KeyframeableEffect {
-    private double min = -Double.MAX_VALUE;
-    private double max = Double.MAX_VALUE;
+    private double min;
+    private double max;
     private DoubleInterpolator interpolator;
 
-    public DoubleProvider(DoubleInterpolator interpolator) {
+    public DoubleProvider(double min, double max, DoubleInterpolator interpolator) {
+        this.min = min;
+        this.max = max;
         this.interpolator = interpolator;
     }
 

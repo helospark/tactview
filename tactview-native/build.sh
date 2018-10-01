@@ -6,3 +6,6 @@ cp libopencvimagedecorder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvblur.so -o libopencvblur.so opencvblur.cpp `pkg-config --libs opencv` 
 cp libopencvblur.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvscale.so -o libopencvscale.so opencvscale.cpp `pkg-config --libs opencv` 
+cp libopencvscale.so ../tactview-core/src/main/resources/linux-x86-64/.

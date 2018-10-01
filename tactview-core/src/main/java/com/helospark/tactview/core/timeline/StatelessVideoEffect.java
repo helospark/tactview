@@ -8,7 +8,7 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
         super(interval);
     }
 
-    public abstract void fillFrame(ClipFrameResult result, StatelessEffectRequest request);
+    public abstract ClipFrameResult createFrame(StatelessEffectRequest request);
 
     public boolean isLocal() {
         return true;

@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
@@ -116,10 +117,16 @@ public class EffectPropertyView {
                 effectLine.currentValueProvider = () -> textField.getText();
                 return effectLine;
             }
-        } else {
-            System.out.println("LAter...");
-            throw new IllegalArgumentException("Later...");
+        } else if (keyframeableEffect instanceof DoubleProvider) {
+            DoubleProvider doubleProvider = (DoubleProvider) keyframeableEffect;
+            TextField textField = new TextField();
+            effectLine.visibleNode = textField;
+            effectLine.updateFunction = position -> textField.setText(doubleProvider.getValueAt(position).toString());
+            effectLine.currentValueProvider = () -> textField.getText();
+            return effectLine;
         }
+        System.out.println("LAter...");
+        throw new IllegalArgumentException("Later...");
     }
 
     public FlowPane getPropertyWindow() {

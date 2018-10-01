@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.desaturize;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,8 +17,10 @@ public class DesaturizeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void fillFrame(ClipFrameResult result, StatelessEffectRequest request) {
+    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(request.getCurrentFrame().getBuffer().capacity());
         ClipFrameResult currentFrame = request.getCurrentFrame();
+        ClipFrameResult result = new ClipFrameResult(buffer, currentFrame.getWidth(), currentFrame.getHeight());
         int[] pixel = new int[4];
         int[] resultPixel = new int[4];
         for (int i = 0; i < currentFrame.getHeight(); ++i) {
@@ -31,6 +34,7 @@ public class DesaturizeEffect extends StatelessVideoEffect {
                 result.setPixel(resultPixel, j, i);
             }
         }
+        return result;
     }
 
     @Override
