@@ -8,6 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
@@ -116,11 +117,12 @@ public class TimelineManager {
     }
 
     private StatelessEffect createEffect(String effectId, TimelineInterval timelineInterval) {
+        CreateEffectRequest request = new CreateEffectRequest(timelineInterval, effectId);
         return effectFactoryChain.stream()
-                .filter(effectFactory -> effectFactory.doesSupport(effectId))
+                .filter(effectFactory -> effectFactory.doesSupport(request))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No factory for " + effectId))
-                .createEffect(effectId, timelineInterval);
+                .createEffect(request);
     }
 
     public void removeResource(String clipId) {

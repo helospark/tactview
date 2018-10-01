@@ -18,6 +18,9 @@ public class UiCommandInterpreterService {
             uiCommand.execute();
             commandHistory.push(uiCommand);
             return uiCommand;
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            return null;
         });
     }
 

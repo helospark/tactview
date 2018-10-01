@@ -1,12 +1,17 @@
 package com.helospark.tactview.core.timeline;
 
-import java.nio.ByteBuffer;
+import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 
-public interface StatelessVideoEffect extends StatelessEffect {
+public abstract class StatelessVideoEffect extends StatelessEffect {
 
-    public void fillFrame(ByteBuffer result, ByteBuffer currentFrame);
+    public StatelessVideoEffect(TimelineInterval interval) {
+        super(interval);
+    }
 
-    public default boolean isLocal() {
+    public abstract void fillFrame(ClipFrameResult result, StatelessEffectRequest request);
+
+    public boolean isLocal() {
         return true;
     }
+
 }

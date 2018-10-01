@@ -14,10 +14,12 @@ import javafx.scene.shape.Rectangle;
 public class EffectAddedListener {
     private MessagingService messagingService;
     private TimelineState timelineState;
+    private EffectPropertyView effectPropertyView;
 
-    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState) {
+    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, EffectPropertyView effectPropertyView) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
+        this.effectPropertyView = effectPropertyView;
     }
 
     @PostConstruct
@@ -37,6 +39,10 @@ public class EffectAddedListener {
         rectangle.translateXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
         rectangle.translateYProperty().set(40);
         rectangle.setUserData(clipAddedMessage.getEffectId());
+
+        rectangle.setOnMouseClicked(event -> {
+            effectPropertyView.showProperties(clipAddedMessage.getEffectId());
+        });
 
         return rectangle;
     }

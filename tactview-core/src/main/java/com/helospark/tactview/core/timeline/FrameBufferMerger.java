@@ -37,10 +37,11 @@ public class FrameBufferMerger {
                 result.getPixelComponents(background, j, i);
                 clipFrameResult.getPixelComponents(forground, j, i);
                 double alpha = forground[3] / 255.0;
+                double backgroundAlpha = background[3] / 255.0;
                 resultPixel[0] = (int) ((forground[0] * alpha) + (background[0] * (1.0 - alpha)));
                 resultPixel[1] = (int) ((forground[1] * alpha) + (background[1] * (1.0 - alpha)));
                 resultPixel[2] = (int) ((forground[2] * alpha) + (background[2] * (1.0 - alpha)));
-                resultPixel[3] = (int) (background[3] + (1.0 - background[3]) * forground[3]);
+                resultPixel[3] = (int) (background[3] + (1.0 - backgroundAlpha) * forground[3]);
 
                 result.setPixel(resultPixel, j, i);
             }

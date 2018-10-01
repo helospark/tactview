@@ -47,10 +47,10 @@ public class ClipFrameResult {
     }
 
     public void setPixel(int[] resultPixel, Integer x, Integer y) {
-        byte r = (byte) resultPixel[0];
-        byte g = (byte) resultPixel[1];
-        byte b = (byte) resultPixel[2];
-        byte a = (byte) resultPixel[3];
+        byte r = (byte) (resultPixel[0] & 0xFF);
+        byte g = (byte) (resultPixel[1] & 0xFF);
+        byte b = (byte) (resultPixel[2] & 0xFF);
+        byte a = (byte) (resultPixel[3] & 0xFF);
         buffer.put(y * width * 4 + x * 4 + 0, r);
         buffer.put(y * width * 4 + x * 4 + 1, g);
         buffer.put(y * width * 4 + x * 4 + 2, b);

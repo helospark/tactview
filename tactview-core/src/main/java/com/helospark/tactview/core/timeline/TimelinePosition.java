@@ -4,11 +4,15 @@ import static java.math.RoundingMode.HALF_DOWN;
 
 import java.math.BigDecimal;
 
-public class TimelinePosition implements SecondsAware {
+public class TimelinePosition implements SecondsAware, Comparable<TimelinePosition> {
     private BigDecimal seconds;
 
     public TimelinePosition(BigDecimal seconds) {
         this.seconds = seconds;
+    }
+
+    public TimelinePosition(double seconds) {
+        this(new BigDecimal(seconds));
     }
 
     public TimelinePosition add(TimelineLength length) {
@@ -55,6 +59,15 @@ public class TimelinePosition implements SecondsAware {
     @Override
     public String toString() {
         return "TimelinePosition [seconds=" + seconds + "]";
+    }
+
+    @Override
+    public int compareTo(TimelinePosition o) {
+        return this.getSeconds().compareTo(o.getSeconds());
+    }
+
+    public boolean isGreaterThan(TimelinePosition key) {
+        return this.compareTo(key) > 0;
     }
 
 }

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 
 public abstract class VisualTimelineClip extends TimelineClip {
     private List<NonIntersectingIntervalList<StatelessVideoEffect>> effectChannels = new ArrayList<>();
@@ -23,22 +24,32 @@ public abstract class VisualTimelineClip extends TimelineClip {
         TimelinePosition relativePosition = position.from(getInterval().getStartPosition());
         ByteBuffer frame = requestFrame(relativePosition, width, height);
         ByteBuffer newBuffer = ByteBuffer.allocateDirect(frame.capacity()); // move to cache
-        ByteBuffer tmp;
+        ClipFrameResult tmp;
 
         List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition);
 
+        ClipFrameResult frameResult = new ClipFrameResult(frame, width, height);
+        ClipFrameResult newBufferResult = new ClipFrameResult(newBuffer, width, height);
+
         for (StatelessVideoEffect effect : actualEffects) {
             if (effect.isLocal()) {
-                effect.fillFrame(newBuffer, frame);
+
+                StatelessEffectRequest request = StatelessEffectRequest.builder()
+                        .withClipPosition(relativePosition)
+                        .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
+                        .withCurrentFrame(frameResult)
+                        .build();
+
+                effect.fillFrame(newBufferResult, request);
 
                 // swap buffers around
-                tmp = newBuffer;
-                newBuffer = frame;
-                frame = tmp;
+                tmp = newBufferResult;
+                newBufferResult = frameResult;
+                frameResult = tmp;
             }
         }
 
-        return new ClipFrameResult(frame, width, height);
+        return frameResult;
     }
 
     public abstract ByteBuffer requestFrame(TimelinePosition position, int width, int height);

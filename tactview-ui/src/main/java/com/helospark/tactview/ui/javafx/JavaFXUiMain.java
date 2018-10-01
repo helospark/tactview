@@ -15,8 +15,10 @@ import com.helospark.lightdi.LightDi;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
 import javafx.application.Application;
@@ -49,7 +51,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
 public class JavaFXUiMain extends Application {
@@ -73,12 +74,12 @@ public class JavaFXUiMain extends Application {
     volatile static boolean backBufferReady = false;
 
     static UiTimelineManager uiTimelineManager;
-    private static Line line;
     private static Canvas canvas;
     private static Label videoTimestampLabel;
     static UiTimeline uiTimeline;
     static UiProjectRepository uiProjectRepository;
     private static UiProjectRepository uiProjectRepostiory;
+    static EffectPropertyView effectPropertyView;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -131,15 +132,23 @@ public class JavaFXUiMain extends Application {
         upper.getColumnConstraints().addAll(column1, column2);
 
         FlowPane leftHBox = new FlowPane(Orientation.HORIZONTAL, 5, 5);
-        leftHBox.setPrefWidth(scene.getWidth() - 300);
+        //        leftHBox.setPrefWidth(scene.getWidth() - 300);
         leftHBox.setId("effect-view");
 
-        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
+        List<EffectFactory> effects = lightDi.getListOfBeans(EffectFactory.class);
+
+        effects.stream()
+                .forEach(factory -> {
+                    leftHBox.getChildren().add(createIcon(factory.getEffectId(),
+                            factory.getEffectName(),
+                            "file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
+                });
+
+        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
+        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
+        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
+        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
+        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
 
         VBox rightVBox = new VBox(5);
         rightVBox.setPrefWidth(300);
@@ -176,8 +185,9 @@ public class JavaFXUiMain extends Application {
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 
-        upper.add(leftHBox, 0, 0);
-        upper.add(rightVBox, 1, 0);
+        upper.add(effectPropertyView.getPropertyWindow(), 0, 0);
+        upper.add(leftHBox, 1, 0);
+        upper.add(rightVBox, 2, 0);
 
         VBox lower = new VBox(5);
         lower.setPrefWidth(scene.getWidth());
@@ -193,12 +203,12 @@ public class JavaFXUiMain extends Application {
         stage.show();
     }
 
-    private VBox createIcon(String file) {
+    private VBox createIcon(String effectId, String name, String file) {
         ImageView image = new ImageView(file);
         image.setPreserveRatio(true);
         image.setFitWidth(50);
         Label text = new Label();
-        text.setText("effect1");
+        text.setText(name);
 
         VBox vbox = new VBox();
         vbox.getStyleClass().add("icon");
@@ -214,7 +224,7 @@ public class JavaFXUiMain extends Application {
 
             /* put a string on dragboard */
             ClipboardContent content = new ClipboardContent();
-            content.putString("effect1");
+            content.putString(effectId);
             db.setContent(content);
 
             event.consume();
@@ -233,7 +243,9 @@ public class JavaFXUiMain extends Application {
         playbackController = lightDi.getBean(PlaybackController.class);
         uiTimeline = lightDi.getBean(UiTimeline.class);
         uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
+        effectPropertyView = lightDi.getBean(EffectPropertyView.class);
         uiTimelineManager.registerUiConsumer(position -> uiTimeline.updateLine(position));
+        uiTimelineManager.registerUiConsumer(position -> effectPropertyView.updateValues(position));
         uiTimelineManager.registerUiConsumer(position -> updateTime(position));
         uiTimelineManager.registerConsumer(position -> updateDisplay(position));
         commandInterpreter = lightDi.getBean(UiCommandInterpreterService.class);

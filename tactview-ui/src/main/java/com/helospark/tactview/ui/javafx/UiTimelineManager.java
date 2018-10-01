@@ -87,4 +87,8 @@ public class UiTimelineManager {
         }
     }
 
+    public TimelinePosition getCurrentPosition() {
+        return currentPosition;
+    }
+
 }

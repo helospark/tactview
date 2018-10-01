@@ -45,6 +45,12 @@ public class ClipAddedListener {
 
     private void addClip(ClipAddedMessage message) {
         TimelineClip clip = message.getClip();
+        initializeProjectOnFirstVideoClipAdded(clip);
+
+        timelineState.addClipForChannel(message.getChannelId(), message.getClipId(), createClip(message));
+    }
+
+    private void initializeProjectOnFirstVideoClipAdded(TimelineClip clip) {
         if (!projectRepository.isInitialized() && clip instanceof VisualTimelineClip) {
             VisualTimelineClip visualClip = (VisualTimelineClip) clip;
             projectRepository.initializer()
@@ -64,8 +70,6 @@ public class ClipAddedListener {
             uiProjectRepository.setPreviewHeight(previewHeight);
             uiProjectRepository.setAspectRatio(aspectRatio);
         }
-
-        timelineState.addClipForChannel(message.getChannelId(), message.getClipId(), createClip(message));
     }
 
     public Group createClip(ClipAddedMessage clipAddedMessage) {
