@@ -1,9 +1,9 @@
 package com.helospark.tactview.core.timeline.effect.scale;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -37,7 +37,7 @@ public class ScaleEffect extends StatelessVideoEffect {
         nativeRequest.newWidth = newWidth;
         nativeRequest.originalWidth = currentFrame.getWidth();
         nativeRequest.originalHeight = currentFrame.getHeight();
-        nativeRequest.output = ByteBuffer.allocateDirect(newWidth * newHeight * 4);
+        nativeRequest.output = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(newWidth * newHeight * 4);
 
         implementation.scaleImage(nativeRequest);
 

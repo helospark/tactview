@@ -12,6 +12,7 @@ import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.MediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.MediaDecoder;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashKey;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
@@ -53,7 +54,7 @@ public class OpenCvImageDecorderDecorator implements MediaDecoder {
         } else {
             ImageRequest imageRequest = new ImageRequest();
 
-            imageRequest.data = ByteBuffer.allocateDirect(request.getWidth() * request.getHeight() * 4);
+            imageRequest.data = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4);
             imageRequest.width = request.getWidth();
             imageRequest.height = request.getHeight();
             imageRequest.path = request.getFile().getAbsolutePath();
@@ -65,11 +66,23 @@ public class OpenCvImageDecorderDecorator implements MediaDecoder {
         }
 
         List<ByteBuffer> frames = new ArrayList<>();
+
         for (int i = 0; i < request.getNumberOfFrames(); ++i) {
-            frames.add(image); // todo: clone?
+            frames.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4));
+        }
+
+        for (int i = 0; i < request.getNumberOfFrames(); ++i) {
+            copyToResult(frames.get(i), image);
         }
 
         return new MediaDataResponse(frames);
+    }
+
+    private void copyToResult(ByteBuffer result, ByteBuffer fromCopy) {
+        result.position(0);
+        fromCopy.position(0);
+        result.put(fromCopy);
+
     }
 
 }

@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx;
 import java.nio.ByteBuffer;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -31,6 +32,8 @@ public class PlaybackController {
                 .withPreviewHeight(height)
                 .build();
         ByteBuffer frame = timelineManager.getFrames(request);
-        return ByteBufferToImageConverter.convertToJavaxImage(frame, width, height);
+        Image javafxImage = ByteBufferToImageConverter.convertToJavaxImage(frame, width, height);
+        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame);
+        return javafxImage;
     }
 }

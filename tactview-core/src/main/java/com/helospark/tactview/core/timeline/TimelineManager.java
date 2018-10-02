@@ -8,6 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
@@ -80,16 +81,22 @@ public class TimelineManager {
                 .map(clip -> (VisualTimelineClip) clip)
                 .map(clip -> {
                     ClipFrameResult frameResult = clip.getFrame(request.getPosition(), request.getScale());
-                    return expandFrame(frameResult, clip, request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight());
+                    ClipFrameResult expandedFrame = expandFrame(frameResult, clip, request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight());
+                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
+                    return expandedFrame;
                 })
                 .collect(Collectors.toList());
         ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
+
+        frames.stream()
+                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.getBuffer()));
+
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
         return finalResult.getBuffer();
     }
 
     private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelinePosition timelinePosition, Integer previewWidth, Integer previewHeight) {
-        ByteBuffer outputBuffer = ByteBuffer.allocateDirect(previewHeight * previewWidth * 4);
+        ByteBuffer outputBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(previewHeight * previewWidth * 4);
         ByteBuffer inputBuffer = frameResult.getBuffer();
 
         int requestedXPosition = clip.getXPosition(timelinePosition);

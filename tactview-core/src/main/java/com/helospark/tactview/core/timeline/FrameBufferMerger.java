@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 
 @Component
 public class FrameBufferMerger {
@@ -15,7 +16,7 @@ public class FrameBufferMerger {
 
     public ClipFrameResult alphaMergeFrames(List<ClipFrameResult> frames, Integer width, Integer height) {
         if (frames.size() > 0) {
-            ClipFrameResult output = new ClipFrameResult(ByteBuffer.allocateDirect(width * height * 4), width, height);
+            ClipFrameResult output = new ClipFrameResult(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4), width, height);
 
             for (int i = frames.size() - 1; i >= 0; --i) {
                 alphaBlitFrame(output, frames.get(i), width, height);

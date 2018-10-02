@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import com.helospark.tactview.core.decoder.MediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.MediaDecoder;
 import com.helospark.tactview.core.decoder.VideoMetadata;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashKey;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
@@ -58,9 +60,13 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
 
         Map<Integer, ByteBuffer> framesFromCache = findInCache(request, numberOfFrames, startFrame, filePath);
 
-        List<ByteBuffer> result;
+        List<ByteBuffer> result = new ArrayList<>(request.getNumberOfFrames());
+        for (int i = 0; i < request.getNumberOfFrames(); ++i) {
+            result.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4));
+        }
+
         if (!framesFromCache.isEmpty()) { // todo handle frames partially in cache
-            result = new ArrayList<>(framesFromCache.values());
+            copyToResult(result, framesFromCache.values());
         } else {
             System.out.println("Reading " + startFrame + " " + numberOfFrames);
             // Always read in chunks to minimize overhead
@@ -81,9 +87,24 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
 
             storeInCache(request, newStartFrame, filePath, readFrames);
 
-            result = readResultBetweenIndices(readFrames, additionalFramesToReadInBeginning, numberOfFrames);
+            List<ByteBuffer> resultWithSharedPointers = readResultBetweenIndices(readFrames, additionalFramesToReadInBeginning, numberOfFrames);
+            copyToResult(result, resultWithSharedPointers);
         }
         return new MediaDataResponse(result);
+    }
+
+    private void copyToResult(List<ByteBuffer> result, Collection<ByteBuffer> collection) {
+        int i = 0;
+        for (ByteBuffer elementToCopy : collection) {
+            ByteBuffer copyTo = result.get(i);
+
+            copyTo.position(0);
+            elementToCopy.position(0);
+            copyTo.put(elementToCopy);
+
+            ++i;
+        }
+
     }
 
     private int calculateNumberOfFrames(MediaDataRequest request) {
@@ -98,7 +119,7 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
 
     private List<ByteBuffer> readResultBetweenIndices(List<ByteBuffer> readFrames, int additionalFramesToReadInBeginning, int numberOfFrames) {
         List<ByteBuffer> result;
-        int arrayEndIndex = additionalFramesToReadInBeginning + numberOfFrames + 1;
+        int arrayEndIndex = additionalFramesToReadInBeginning + numberOfFrames;
         if (arrayEndIndex >= readFrames.size()) {
             arrayEndIndex = readFrames.size() - 1;
         }
@@ -145,7 +166,7 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
         System.out.println("Requesting frames " + numberOfFrames);
         FFMpegFrame[] array = (FFMpegFrame[]) ffmpegRequest.frames.toArray(numberOfFrames);
         for (int i = 0; i < numberOfFrames; ++i) {
-            array[i].data = mediaCache.requestBuffers(ffmpegRequest.width * ffmpegRequest.height * 4, 1).get(0);
+            array[i].data = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(ffmpegRequest.width * ffmpegRequest.height * 4);
             buffers[i] = array[i].data;
         }
 

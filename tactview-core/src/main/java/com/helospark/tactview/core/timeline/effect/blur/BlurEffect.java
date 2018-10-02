@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -29,7 +30,7 @@ public class BlurEffect extends StatelessVideoEffect {
 
     @Override
     public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(request.getCurrentFrame().getBuffer().capacity());
+        ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getCurrentFrame().getBuffer().capacity());
         ClipFrameResult currentFrame = request.getCurrentFrame();
         OpenCVGaussianBlurRequest nativeRequest = new OpenCVGaussianBlurRequest();
         nativeRequest.input = currentFrame.getBuffer();

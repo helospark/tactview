@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline;
 import static java.math.RoundingMode.HALF_DOWN;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class TimelinePosition implements SecondsAware, Comparable<TimelinePosition> {
     private BigDecimal seconds;
@@ -54,6 +55,20 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
 
     public TimelineLength toLength() {
         return new TimelineLength(seconds);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof TimelinePosition)) {
+            return false;
+        }
+        TimelinePosition castOther = (TimelinePosition) other;
+        return Objects.equals(seconds, castOther.seconds);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(seconds);
     }
 
     @Override

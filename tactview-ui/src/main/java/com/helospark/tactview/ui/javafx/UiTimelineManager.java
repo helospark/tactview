@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -89,6 +90,21 @@ public class UiTimelineManager {
 
     public TimelinePosition getCurrentPosition() {
         return currentPosition;
+    }
+
+    public List<TimelinePosition> expectedNextFrames() {
+        if (isPlaying) {
+            List<TimelinePosition> result = new ArrayList<>();
+            TimelinePosition position = currentPosition;
+            for (int i = 0; i < 2; ++i) {
+                position = position.add(increment);
+                result.add(position);
+            }
+            return result;
+        } else {
+            return Collections.emptyList();
+        }
+
     }
 
 }

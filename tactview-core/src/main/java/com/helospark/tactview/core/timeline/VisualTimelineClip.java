@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 
 public abstract class VisualTimelineClip extends TimelineClip {
@@ -41,6 +42,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
                     .build();
 
             ClipFrameResult appliedEffectsResult = effect.createFrame(request);
+
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(request.getCurrentFrame().getBuffer());
 
             frameResult = appliedEffectsResult; // todo: free up bytebuffer
         }
