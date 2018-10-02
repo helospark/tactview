@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.TimelineImagePatternService;
+import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
 import javafx.application.Platform;
@@ -28,9 +29,10 @@ public class ClipAddedListener {
     private ProjectRepository projectRepository;
     private UiProjectRepository uiProjectRepository;
     private PropertyView propertyView;
+    private SelectedNodeRepository selectedNodeRepository;
 
     public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder, ProjectRepository projectRepository,
-            UiProjectRepository uiProjectRepository, PropertyView propertyView) {
+            UiProjectRepository uiProjectRepository, PropertyView propertyView, SelectedNodeRepository selectedNodeRepository) {
         this.timelineImagePatternService = timelineImagePatternService;
         this.messagingService = messagingService;
         this.timelineState = timelineState;
@@ -38,6 +40,7 @@ public class ClipAddedListener {
         this.projectRepository = projectRepository;
         this.uiProjectRepository = uiProjectRepository;
         this.propertyView = propertyView;
+        this.selectedNodeRepository = selectedNodeRepository;
     }
 
     @PostConstruct
@@ -82,8 +85,8 @@ public class ClipAddedListener {
         rectangle.setWidth(width);
         rectangle.setHeight(50);
         parentPane.translateXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
-        //        idToNode.put(addedClipId, () -> timelineRow.getChildren().remove(droppedElement));
         parentPane.setUserData(clipAddedMessage.getClipId());
+        rectangle.getStyleClass().add("clip-rectangle");
         effectDragAdder.addEffectDragOnClip(parentPane, parentPane);
 
         if (clip instanceof VideoClip) {
@@ -97,8 +100,9 @@ public class ClipAddedListener {
                         Platform.runLater(() -> rectangle.setFill(new ImagePattern(fillImage)));
                     });
         }
+        parentPane.getStyleClass().add("timeline-clip");
         rectangle.setOnMouseClicked(event -> {
-            propertyView.showClipProperties(clipAddedMessage.getClipId());
+            selectedNodeRepository.setOnlySelectedClip(parentPane);
         });
         parentPane.getChildren().add(rectangle);
         return parentPane;

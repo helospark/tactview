@@ -180,3 +180,23 @@
     -fx-alignment: CENTER;
     -fx-text-fill: #96b946;
 }
+
+.rectangle {
+	-fx-opacity: 1.0;
+}
+
+.timeline-clip.primary-active .clip-rectangle {
+   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+}
+
+.timeline-effect.primary-active {
+   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+}
+
+.timeline-clip.secondary-active .clip-rectangle {
+   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+}
+
+.timeline-effect.secondary-active {
+   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+}
