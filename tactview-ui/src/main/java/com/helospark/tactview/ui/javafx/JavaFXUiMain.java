@@ -21,9 +21,10 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
+import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
-import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyView;
+import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
 import javafx.application.Application;
@@ -39,6 +40,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
@@ -84,7 +87,7 @@ public class JavaFXUiMain extends Application {
     static UiTimeline uiTimeline;
     static UiProjectRepository uiProjectRepository;
     private static UiProjectRepository uiProjectRepostiory;
-    static EffectPropertyView effectPropertyView;
+    static PropertyView effectPropertyView;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -136,24 +139,37 @@ public class JavaFXUiMain extends Application {
         ColumnConstraints column2 = new ColumnConstraints(300, 300, 500);
         upper.getColumnConstraints().addAll(column1, column2);
 
-        FlowPane leftHBox = new FlowPane(Orientation.HORIZONTAL, 5, 5);
+        TabPane tabPane = new TabPane();
+
+        FlowPane effectTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
         //        leftHBox.setPrefWidth(scene.getWidth() - 300);
-        leftHBox.setId("effect-view");
+        effectTabContent.setId("effect-view");
 
         List<EffectFactory> effects = lightDi.getListOfBeans(EffectFactory.class);
 
         effects.stream()
                 .forEach(factory -> {
-                    leftHBox.getChildren().add(createIcon(factory.getEffectId(),
+                    effectTabContent.getChildren().add(createIcon(factory.getEffectId(),
                             factory.getEffectName(),
                             "file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
                 });
+        Tab effectTab = new Tab();
+        effectTab.setText("effects");
+        effectTab.setContent(effectTabContent);
+        tabPane.getTabs().add(effectTab);
 
-        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-        //        leftHBox.getChildren().add(createIcon("file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
+        FlowPane proceduralClipTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
+        List<ProceduralClipFactoryChainItem> proceduralClips = lightDi.getListOfBeans(ProceduralClipFactoryChainItem.class);
+        proceduralClips.stream()
+                .forEach(chainItem -> {
+                    proceduralClipTabContent.getChildren().add(createIcon("clip:" + chainItem.getProceduralClipId(),
+                            chainItem.getProceduralClipName(),
+                            "file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/icon-cache.png"));
+                });
+        Tab proceduralClipTab = new Tab();
+        proceduralClipTab.setText("clips");
+        proceduralClipTab.setContent(proceduralClipTabContent);
+        tabPane.getTabs().add(proceduralClipTab);
 
         VBox rightVBox = new VBox(5);
         rightVBox.setPrefWidth(300);
@@ -191,7 +207,7 @@ public class JavaFXUiMain extends Application {
         rightVBox.getChildren().add(underVideoBar);
 
         upper.add(effectPropertyView.getPropertyWindow(), 0, 0);
-        upper.add(leftHBox, 1, 0);
+        upper.add(tabPane, 1, 0);
         upper.add(rightVBox, 2, 0);
 
         VBox lower = new VBox(5);
@@ -250,7 +266,7 @@ public class JavaFXUiMain extends Application {
         playbackController = lightDi.getBean(PlaybackController.class);
         uiTimeline = lightDi.getBean(UiTimeline.class);
         uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
-        effectPropertyView = lightDi.getBean(EffectPropertyView.class);
+        effectPropertyView = lightDi.getBean(PropertyView.class);
         uiTimelineManager.registerUiConsumer(position -> uiTimeline.updateLine(position));
         uiTimelineManager.registerUiConsumer(position -> effectPropertyView.updateValues(position));
         uiTimelineManager.registerUiConsumer(position -> updateTime(position));

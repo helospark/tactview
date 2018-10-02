@@ -15,12 +15,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
-import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForEffect;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForProperty;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyPage.Builder;
 
 import javafx.application.Platform;
@@ -33,9 +34,10 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 
 @Component
-public class EffectPropertyView {
+public class PropertyView {
     private FlowPane propertyWindow;
     private Map<String, EffectPropertyPage> effectProperties = new HashMap<>();
+    private Map<String, EffectPropertyPage> clipProperties = new HashMap<>();
 
     private MessagingService messagingService;
     private UiCommandInterpreterService commandInterpreter;
@@ -43,7 +45,7 @@ public class EffectPropertyView {
     private EffectPropertyPage shownEntries;
     private EffectParametersRepository effectParametersRepository;
 
-    public EffectPropertyView(MessagingService messagingService, UiCommandInterpreterService commandInterpreter, UiTimelineManager uiTimelineManager,
+    public PropertyView(MessagingService messagingService, UiCommandInterpreterService commandInterpreter, UiTimelineManager uiTimelineManager,
             EffectParametersRepository effectParametersRepository) {
         this.messagingService = messagingService;
         this.commandInterpreter = commandInterpreter;
@@ -58,17 +60,24 @@ public class EffectPropertyView {
         propertyWindow.setPrefWidth(200);
 
         messagingService.register(EffectDescriptorsAdded.class,
-                message -> Platform.runLater(() -> createBox(message)));
+                message -> Platform.runLater(() -> {
+                    EffectPropertyPage asd = createBox(message.getDescriptors());
+                    effectProperties.put(message.getEffectId(), asd);
+                }));
+        messagingService.register(ClipDescriptorsAdded.class,
+                message -> Platform.runLater(() -> {
+                    EffectPropertyPage asd = createBox(message.getDescriptors());
+                    clipProperties.put(message.getClipId(), asd);
+                }));
     }
 
-    private void createBox(EffectDescriptorsAdded message) {
-        List<ValueProviderDescriptor> descriptors = message.getDescriptors();
+    private EffectPropertyPage createBox(List<ValueProviderDescriptor> descriptors) {
         Builder result = EffectPropertyPage.builder()
                 .withBox(new GridPane());
         for (int i = 0; i < descriptors.size(); ++i) {
             addElement(descriptors.get(i), result, i);
         }
-        effectProperties.put(message.getEffectId(), result.build());
+        return result.build();
     }
 
     private void addElement(ValueProviderDescriptor descriptor, Builder result, int line) {
@@ -84,7 +93,9 @@ public class EffectPropertyView {
                         .withValue(keyframeChange.currentValueProvider.get())
                         .build();
 
-                commandInterpreter.sendWithResult(new AddKeyframeForEffect(effectParametersRepository, keyframeRequest));
+                commandInterpreter.sendWithResult(new AddKeyframeForProperty(effectParametersRepository, keyframeRequest));
+
+                event.consume();
             }
         });
 
@@ -133,11 +144,22 @@ public class EffectPropertyView {
         return propertyWindow;
     }
 
-    public void showProperties(String effectId) {
+    public void showEffectProperties(String effectId) {
+        showProperties(effectProperties.get(effectId));
+    }
+
+    public void showClipProperties(String clipId) {
+        showProperties(clipProperties.get(clipId));
+    }
+
+    private void showProperties(EffectPropertyPage shownEntries2) {
+        shownEntries = shownEntries2;
         propertyWindow.getChildren().clear();
-        shownEntries = effectProperties.get(effectId);
-        if (shownEntries != null) {
+        if (shownEntries2 != null) {
             propertyWindow.getChildren().add(shownEntries.getBox());
+            shownEntries2.getUpdateFunctions()
+                    .stream()
+                    .forEach(a -> a.accept(uiTimelineManager.getCurrentPosition()));
         } else {
             System.out.println("Effect not found, should not happen");
         }
@@ -151,7 +173,7 @@ public class EffectPropertyView {
         if (shownEntries != null) {
             shownEntries.getUpdateFunctions()
                     .stream()
-                    .forEach(a -> a.accept(position));
+                    .forEach(updateFunction -> updateFunction.accept(position));
         }
     }
 

@@ -1,6 +1,9 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.List;
 import java.util.UUID;
+
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 public abstract class TimelineClip implements IntervalAware {
     private String id;
@@ -25,5 +28,7 @@ public abstract class TimelineClip implements IntervalAware {
     public String getId() {
         return id;
     }
+
+    public abstract List<ValueProviderDescriptor> getDescriptors();
 
 }

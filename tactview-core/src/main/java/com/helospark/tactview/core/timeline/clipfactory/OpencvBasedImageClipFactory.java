@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.opencv.OpenCvImageDecorderDecorator;
+import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.MediaSource;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -21,9 +22,10 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
     }
 
     @Override
-    public boolean doesSupport(File file) {
+    public boolean doesSupport(AddClipRequest request) {
         try {
-            return Files.probeContentType(file.toPath()).contains("image/");
+            return request.containsFile() &&
+                    Files.probeContentType(request.getFile().toPath()).contains("image/");
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -31,15 +33,17 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
     }
 
     @Override
-    public TimelineClip createClip(File file, TimelinePosition position) {
+    public TimelineClip createClip(AddClipRequest request) {
+        File file = request.getFile();
+        TimelinePosition position = request.getPosition();
         MediaSource mediaSource = new MediaSource(file, mediaDecoder);
-        ImageMetadata metadata = readMetadata(file);
+        ImageMetadata metadata = readMetadata(request);
         return new ImageClip(mediaSource, metadata, position, metadata.getLength());
     }
 
     @Override
-    public ImageMetadata readMetadata(File file) {
-        return mediaDecoder.readMetadata(file);
+    public ImageMetadata readMetadata(AddClipRequest request) {
+        return mediaDecoder.readMetadata(request.getFile());
     }
 
 }

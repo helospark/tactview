@@ -27,15 +27,17 @@ public class ClipAddedListener {
     private EffectDragAdder effectDragAdder;
     private ProjectRepository projectRepository;
     private UiProjectRepository uiProjectRepository;
+    private PropertyView propertyView;
 
     public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder, ProjectRepository projectRepository,
-            UiProjectRepository uiProjectRepository) {
+            UiProjectRepository uiProjectRepository, PropertyView propertyView) {
         this.timelineImagePatternService = timelineImagePatternService;
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectDragAdder = effectDragAdder;
         this.projectRepository = projectRepository;
         this.uiProjectRepository = uiProjectRepository;
+        this.propertyView = propertyView;
     }
 
     @PostConstruct
@@ -95,6 +97,9 @@ public class ClipAddedListener {
                         Platform.runLater(() -> rectangle.setFill(new ImagePattern(fillImage)));
                     });
         }
+        rectangle.setOnMouseClicked(event -> {
+            propertyView.showClipProperties(clipAddedMessage.getClipId());
+        });
         parentPane.getChildren().add(rectangle);
         return parentPane;
     }

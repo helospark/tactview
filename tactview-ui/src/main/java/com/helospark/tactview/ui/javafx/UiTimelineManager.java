@@ -14,6 +14,7 @@ import javafx.application.Platform;
 
 @Component
 public class UiTimelineManager {
+    private static final int NUMBER_OF_FRAMES_TO_PRECACHE = 2;
     //    private IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
     private List<Consumer<TimelinePosition>> uiConsumers = new ArrayList<>();
     private List<Consumer<TimelinePosition>> consumers = new ArrayList<>();
@@ -96,7 +97,7 @@ public class UiTimelineManager {
         if (isPlaying) {
             List<TimelinePosition> result = new ArrayList<>();
             TimelinePosition position = currentPosition;
-            for (int i = 0; i < 2; ++i) {
+            for (int i = 0; i < NUMBER_OF_FRAMES_TO_PRECACHE; ++i) {
                 position = position.add(increment);
                 result.add(position);
             }

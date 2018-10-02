@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -7,6 +8,8 @@ import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -24,14 +27,20 @@ public class EffectParametersRepository {
     @PostConstruct
     public void init() {
         messagingService.register(EffectDescriptorsAdded.class, message -> {
-            message.getDescriptors()
-                    .stream()
-                    .map(a -> a.getKeyframeableEffect())
-                    .forEach(a -> idToEffectMap.put(a.getId(), a));
+            addDescriptorsToRepository(message.getDescriptors());
+        });
+        messagingService.register(ClipDescriptorsAdded.class, message -> {
+            addDescriptorsToRepository(message.getDescriptors());
         });
         messagingService.register(KeyframeAddedRequest.class, message -> {
             keyframeAdded(message);
         });
+    }
+
+    private void addDescriptorsToRepository(List<ValueProviderDescriptor> list) {
+        list.stream()
+                .map(a -> a.getKeyframeableEffect())
+                .forEach(a -> idToEffectMap.put(a.getId(), a));
     }
 
     public void keyframeAdded(KeyframeAddedRequest message) {

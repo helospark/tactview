@@ -7,6 +7,7 @@ import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.ffmpeg.FFmpegBasedMediaDecoderDecorator;
+import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.MediaSource;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -23,20 +24,22 @@ public class FFmpegClipFactory implements ClipFactory {
     }
 
     @Override
-    public TimelineClip createClip(File file, TimelinePosition position) {
+    public TimelineClip createClip(AddClipRequest request) {
+        File file = request.getFile();
+        TimelinePosition position = request.getPosition();
         VideoMetadata metadata = mediaDecoder.readMetadata(file);
         MediaSource videoSource = new MediaSource(file, mediaDecoder);
         return new VideoClip(metadata, videoSource, position, metadata.getLength());
     }
 
     @Override
-    public boolean doesSupport(File file) {
-        return true; // TODO: based on format
+    public boolean doesSupport(AddClipRequest request) {
+        return request.containsFile();// TODO: based on format
     }
 
     @Override
-    public VisualMediaMetadata readMetadata(File file) {
-        return mediaDecoder.readMetadata(file);
+    public VisualMediaMetadata readMetadata(AddClipRequest request) {
+        return mediaDecoder.readMetadata(request.getFile());
     }
 
 }

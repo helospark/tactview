@@ -1,15 +1,13 @@
 package com.helospark.tactview.core.timeline;
 
-import java.io.File;
-
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 
 public interface ClipFactory {
 
-    boolean doesSupport(File file);
+    boolean doesSupport(AddClipRequest request);
 
-    VisualMediaMetadata readMetadata(File file);
+    VisualMediaMetadata readMetadata(AddClipRequest request);
 
-    TimelineClip createClip(File file, TimelinePosition position);
+    TimelineClip createClip(AddClipRequest request);
 
 }

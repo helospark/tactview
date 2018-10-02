@@ -14,9 +14,9 @@ import javafx.scene.shape.Rectangle;
 public class EffectAddedListener {
     private MessagingService messagingService;
     private TimelineState timelineState;
-    private EffectPropertyView effectPropertyView;
+    private PropertyView effectPropertyView;
 
-    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, EffectPropertyView effectPropertyView) {
+    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, PropertyView effectPropertyView) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectPropertyView = effectPropertyView;
@@ -41,7 +41,7 @@ public class EffectAddedListener {
         rectangle.setUserData(clipAddedMessage.getEffectId());
 
         rectangle.setOnMouseClicked(event -> {
-            effectPropertyView.showProperties(clipAddedMessage.getEffectId());
+            effectPropertyView.showEffectProperties(clipAddedMessage.getEffectId());
         });
 
         return rectangle;

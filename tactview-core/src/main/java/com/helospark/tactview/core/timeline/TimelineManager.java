@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
+import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -46,12 +46,10 @@ public class TimelineManager {
         return channel.canAddResourceAt(position, length);
     }
 
-    public TimelineClip addResource(String channelId, TimelinePosition position, String filePath) {
-        File file = new File(filePath);
-        if (!file.exists()) {
-            throw new IllegalArgumentException(filePath + " does not exists");
-        }
-        TimelineClip clip = clipFactoryChain.createClip(file, position);
+    public TimelineClip addResource(AddClipRequest request) {
+        String channelId = request.getChannelId();
+        TimelinePosition position = request.getPosition();
+        TimelineClip clip = clipFactoryChain.createClip(request);
         TimelineChannel channelToAddResourceTo = findChannelWithId(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
         if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
             channelToAddResourceTo.addResource(clip);
@@ -59,6 +57,8 @@ public class TimelineManager {
             throw new IllegalArgumentException("Cannot add clip");
         }
         messagingService.sendAsyncMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), position, clip));
+        messagingService.sendAsyncMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors()));
+
         return clip;
     }
 
@@ -80,7 +80,14 @@ public class TimelineManager {
                 .filter(clip -> clip instanceof VisualTimelineClip) // audio separate?
                 .map(clip -> (VisualTimelineClip) clip)
                 .map(clip -> {
-                    ClipFrameResult frameResult = clip.getFrame(request.getPosition(), request.getScale());
+                    GetFrameRequest frameRequest = GetFrameRequest.builder()
+                            .withScale(request.getScale())
+                            .withPosition(request.getPosition())
+                            .withExpectedWidth(request.getPreviewWidth())
+                            .withExpectedHeight(request.getPreviewHeight())
+                            .build();
+
+                    ClipFrameResult frameResult = clip.getFrame(frameRequest);
                     ClipFrameResult expandedFrame = expandFrame(frameResult, clip, request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight());
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
                     return expandedFrame;
