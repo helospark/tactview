@@ -57,4 +57,21 @@ public class TimelineChannel {
         return Objects.hash(id);
     }
 
+    public boolean moveClip(String clipId, TimelinePosition newPosition) {
+        TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
+        TimelineInterval originalInterval = clipToMove.getInterval();
+        TimelineInterval newInterval = new TimelineInterval(newPosition, originalInterval.getLength());
+
+        clips.remove(clipToMove);
+
+        if (canAddResourceAt(newInterval)) {
+            clipToMove.setInterval(newInterval);
+            clips.addInterval(clipToMove);
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
 }

@@ -16,7 +16,9 @@ public class UiCommandInterpreterService {
         return CompletableFuture.supplyAsync(() -> {
             redoHistory.clear();
             uiCommand.execute();
-            commandHistory.push(uiCommand);
+            if (uiCommand.isRevertable()) {
+                commandHistory.push(uiCommand);
+            }
             return uiCommand;
         }).exceptionally(e -> {
             e.printStackTrace();

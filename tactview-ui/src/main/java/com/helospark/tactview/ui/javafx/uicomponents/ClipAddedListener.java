@@ -12,11 +12,16 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.TimelineImagePatternService;
+import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.application.Platform;
 import javafx.scene.Group;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 
@@ -28,18 +33,18 @@ public class ClipAddedListener {
     private EffectDragAdder effectDragAdder;
     private ProjectRepository projectRepository;
     private UiProjectRepository uiProjectRepository;
-    private PropertyView propertyView;
+    private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
 
     public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder, ProjectRepository projectRepository,
-            UiProjectRepository uiProjectRepository, PropertyView propertyView, SelectedNodeRepository selectedNodeRepository) {
+            UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository) {
         this.timelineImagePatternService = timelineImagePatternService;
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectDragAdder = effectDragAdder;
         this.projectRepository = projectRepository;
         this.uiProjectRepository = uiProjectRepository;
-        this.propertyView = propertyView;
+        this.dragRepository = dragRepository;
         this.selectedNodeRepository = selectedNodeRepository;
     }
 
@@ -105,6 +110,21 @@ public class ClipAddedListener {
             selectedNodeRepository.setOnlySelectedClip(parentPane);
         });
         parentPane.getChildren().add(rectangle);
+
+        rectangle.setOnDragDetected(e -> {
+            Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
+
+            /* put a string on dragboard */
+            ClipboardContent content = new ClipboardContent();
+
+            ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, (int) parentPane.getTranslateX(), clipAddedMessage.getClipId());
+
+            dragRepository.onClipDragged(clipDragInformation);
+
+            content.putString("moveclip");
+            db.setContent(content);
+        });
+
         return parentPane;
     }
 

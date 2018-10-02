@@ -1,8 +1,8 @@
 package com.helospark.tactview.ui.javafx.repository;
 
-import static com.helospark.tactview.ui.javafx.repository.ChangeType.PRIMARY_SELECTION_ADDED;
-import static com.helospark.tactview.ui.javafx.repository.ChangeType.PRIMARY_SELECTION_REMOVED;
-import static com.helospark.tactview.ui.javafx.repository.ChangeType.SECONDARY_SELECTION_ADDED;
+import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.PRIMARY_SELECTION_ADDED;
+import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.PRIMARY_SELECTION_REMOVED;
+import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.SECONDARY_SELECTION_ADDED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,9 @@ import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.repository.selection.ChangeType;
+import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
+import com.helospark.tactview.ui.javafx.repository.selection.EffectSelectionChangedMessage;
 
 import javafx.scene.Node;
 

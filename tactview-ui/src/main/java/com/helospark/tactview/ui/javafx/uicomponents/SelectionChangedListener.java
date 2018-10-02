@@ -6,9 +6,9 @@ import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.messaging.MessagingService;
-import com.helospark.tactview.ui.javafx.repository.ChangeType;
-import com.helospark.tactview.ui.javafx.repository.ClipSelectionChangedMessage;
-import com.helospark.tactview.ui.javafx.repository.EffectSelectionChangedMessage;
+import com.helospark.tactview.ui.javafx.repository.selection.ChangeType;
+import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
+import com.helospark.tactview.ui.javafx.repository.selection.EffectSelectionChangedMessage;
 
 import javafx.scene.Node;
 

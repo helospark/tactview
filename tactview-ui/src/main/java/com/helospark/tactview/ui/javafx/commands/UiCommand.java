@@ -9,4 +9,8 @@ public interface UiCommand {
     public default void redo() {
         execute();
     }
+
+    public default boolean isRevertable() {
+        return true;
+    }
 }

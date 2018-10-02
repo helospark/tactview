@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx.repository;
+package com.helospark.tactview.ui.javafx.repository.selection;
 
 public enum ChangeType {
     PRIMARY_SELECTION_ADDED,

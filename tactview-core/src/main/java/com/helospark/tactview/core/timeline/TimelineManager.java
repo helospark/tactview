@@ -39,10 +39,10 @@ public class TimelineManager {
     }
 
     public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
-        if (!findChannelForId(channelId).isPresent()) {
+        if (!findChannelForClipId(channelId).isPresent()) {
             return false;
         }
-        TimelineChannel channel = findChannelForId(channelId).get();
+        TimelineChannel channel = findChannelForClipId(channelId).get();
         return channel.canAddResourceAt(position, length);
     }
 
@@ -157,7 +157,7 @@ public class TimelineManager {
     }
 
     public void removeResource(String clipId) {
-        TimelineChannel channel = findChannelForId(clipId)
+        TimelineChannel channel = findChannelForClipId(clipId)
                 .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
         channel.removeClip(clipId);
         messagingService.sendAsyncMessage(new ClipRemovedMessage(clipId));
@@ -172,7 +172,7 @@ public class TimelineManager {
                 .findFirst();
     }
 
-    private Optional<TimelineChannel> findChannelForId(String id) {
+    private Optional<TimelineChannel> findChannelForClipId(String id) {
         return channels
                 .stream()
                 .filter(channel -> channel.findClipById(id).isPresent())
@@ -191,12 +191,18 @@ public class TimelineManager {
     }
 
     public void removeChannel(String channelId) {
-        boolean success = findChannelForId(channelId)
+        boolean success = findChannelForClipId(channelId)
                 .map(channelToRemove -> channels.remove(channelToRemove))
                 .orElse(false);
         if (success) {
             messagingService.sendAsyncMessage(new ChannelRemovedMessage(channelId));
         }
+    }
+
+    public boolean moveClip(String clipId, TimelinePosition newPosition) {
+        TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
+
+        return originalChannel.moveClip(clipId, newPosition);
     }
 
 }

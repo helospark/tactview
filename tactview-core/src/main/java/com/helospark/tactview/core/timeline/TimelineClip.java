@@ -31,4 +31,8 @@ public abstract class TimelineClip implements IntervalAware {
 
     public abstract List<ValueProviderDescriptor> getDescriptors();
 
+    public void setInterval(TimelineInterval newInterval) {
+        this.interval = newInterval;
+    }
+
 }
