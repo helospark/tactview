@@ -178,4 +178,16 @@ public class TimelineState {
         effectList.add(createEffect);
     }
 
+    public void changeChannelFor(Group clip, String newChannelId) {
+        HBox originalChannel = findChannelForClip(clip).orElse(null);
+        if (!originalChannel.getUserData().equals(newChannelId)) {
+            //            removeClip((String) clip.getUserData());
+            //            HBox newChannel = findChannelById(newChannelId).orElseThrow(() -> new IllegalArgumentException("New channel doesn't exist"));
+            //            newChannel.getChildren().add(clip);
+            channelToClips.get(originalChannel.getUserData()).remove(clip);
+            channelToClips.get(newChannelId).add(clip);
+        }
+        //        System.out.println("Channel change: " + channel.getUserData() + " " + newChannelId);
+    }
+
 }

@@ -33,7 +33,7 @@ public class EffectDragAdder {
     public void addEffectDragOnClip(Node droppedElement, Group timelineRow) {
         droppedElement.setOnDragEntered(event -> {
             Dragboard db = event.getDragboard();
-            if (db.hasString() && draggedEffect == null) {
+            if (db.hasString() && !db.getString().startsWith("moveclip") && draggedEffect == null) {
                 System.out.println("Adding dragged effect");
                 draggedEffect = new Rectangle(100, 40);
                 draggedEffect.setTranslateY(40);
@@ -60,6 +60,9 @@ public class EffectDragAdder {
         });
 
         droppedElement.setOnDragDropped(event -> {
+            if (draggedEffect == null) {
+                return;
+            }
             double width = draggedEffect.getWidth();
             removeDraggedEffect(timelineRow);
             if (event.getDragboard().hasString()) {

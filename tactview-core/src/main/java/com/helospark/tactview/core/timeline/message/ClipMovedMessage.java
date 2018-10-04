@@ -5,10 +5,12 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 public class ClipMovedMessage {
     private String clipId;
     private TimelinePosition newPosition;
+    private String channelId;
 
-    public ClipMovedMessage(String clipId, TimelinePosition newPosition) {
+    public ClipMovedMessage(String clipId, TimelinePosition newPosition, String newChannelId) {
         this.clipId = clipId;
         this.newPosition = newPosition;
+        this.channelId = newChannelId;
     }
 
     public String getClipId() {
@@ -25,6 +27,14 @@ public class ClipMovedMessage {
 
     public void setNewPosition(TimelinePosition newPosition) {
         this.newPosition = newPosition;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
 }

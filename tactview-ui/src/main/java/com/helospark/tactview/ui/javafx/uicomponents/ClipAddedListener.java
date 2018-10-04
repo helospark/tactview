@@ -120,7 +120,8 @@ public class ClipAddedListener {
 
             timelineState.findClipById(clipAddedMessage.getClipId()).ifPresent(clip2 -> {
                 TimelinePosition position = timelineState.pixelsToSeconds(clip2.getTranslateX());
-                ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId());
+                String channelId = (String) timelineState.findChannelForClip(clip2).get().getUserData();
+                ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId(), channelId);
                 dragRepository.onClipDragged(clipDragInformation);
                 content.putString("moveclip");
             });

@@ -200,16 +200,26 @@ public class TimelineManager {
         }
     }
 
-    public boolean moveClip(String clipId, TimelinePosition newPosition) {
+    public boolean moveClip(String clipId, TimelinePosition newPosition, String newChannelId) {
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
+        TimelineChannel newChannel = findChannelWithId(newChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find channel"));
 
-        boolean success = originalChannel.moveClip(clipId, newPosition);
+        if (!originalChannel.equals(newChannel)) {
+            TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
+            // todo: some atomity would be nice here
+            if (newChannel.canAddResourceAt(clipToMove.getInterval())) {
+                originalChannel.removeClip(clipId);
+                newChannel.addResource(clipToMove);
+                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId));
+            }
+        } else {
+            boolean success = originalChannel.moveClip(clipId, newPosition);
 
-        if (success) {
-            messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition));
+            if (success) {
+                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId));
+            }
         }
-
-        return success;
+        return true;
     }
 
 }

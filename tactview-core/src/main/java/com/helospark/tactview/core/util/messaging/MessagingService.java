@@ -37,6 +37,12 @@ public class MessagingService {
     }
 
     public <T> void sendAsyncMessage(T message) {
-        executorService.execute(() -> sendMessage(message));
+        executorService.execute(() -> {
+            try {
+                sendMessage(message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

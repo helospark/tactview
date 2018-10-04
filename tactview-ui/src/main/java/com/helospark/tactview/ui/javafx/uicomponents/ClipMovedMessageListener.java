@@ -6,6 +6,9 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
+import javafx.application.Platform;
+import javafx.scene.Group;
+
 @Component
 public class ClipMovedMessageListener {
     private MessagingService messagingService;
@@ -18,10 +21,15 @@ public class ClipMovedMessageListener {
 
     @PostConstruct
     public void init() {
-        messagingService.register(ClipMovedMessage.class, message -> {
+        messagingService.register(ClipMovedMessage.class, message -> Platform.runLater(() -> {
             timelineState.findClipById(message.getClipId())
-                    .ifPresent(group -> group.setTranslateX(timelineState.secondsToPixels(message.getNewPosition())));
-        });
+                    .ifPresent(group -> move(message, group));
+        }));
+    }
+
+    private void move(ClipMovedMessage message, Group group) {
+        group.setTranslateX(timelineState.secondsToPixels(message.getNewPosition()));
+        timelineState.changeChannelFor(group, message.getChannelId());
     }
 
 }

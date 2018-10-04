@@ -44,12 +44,13 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
     }
 
     // TODO: not thread safe
-    public void addInterval(T clip) {
+    public boolean addInterval(T clip) {
         int i = 0;
         while (i < intervalAwares.size() && intervalAwares.get(i).getInterval().getEndPosition().isLessThan(clip.getInterval().getStartPosition())) {
             ++i;
         }
         intervalAwares.add(i, clip);
+        return true;
     }
 
     @Override

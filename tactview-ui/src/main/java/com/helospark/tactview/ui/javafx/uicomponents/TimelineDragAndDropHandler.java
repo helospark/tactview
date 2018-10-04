@@ -71,7 +71,7 @@ public class TimelineDragAndDropHandler {
         timeline.setOnDragOver(event -> {
             if (isClipDragAndDrop(event.getDragboard())) {
                 event.acceptTransferModes(TransferMode.LINK);
-                moveClip(event, false);
+                moveClip(event, channelId, false);
             } else if (draggedItem != null) {
                 draggedItem.setTranslateX(event.getX() - timelineRow.getLayoutX());
 
@@ -88,7 +88,7 @@ public class TimelineDragAndDropHandler {
         timeline.setOnDragDropped(event -> {
             if (isClipDragAndDrop(event.getDragboard())) {
                 draggedItem = null;
-                moveClip(event, true);
+                moveClip(event, channelId, true);
                 dragRepository.clearDrag();
             } else {
                 removeDraggedItem(timelineRow);
@@ -122,12 +122,23 @@ public class TimelineDragAndDropHandler {
         return request;
     }
 
-    private void moveClip(DragEvent event, boolean revertable) {
+    private void moveClip(DragEvent event, String channelId, boolean revertable) {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedEffect();
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
             TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
-            commandInterpreter.sendWithResult(new ClipMovedCommand(revertable, clipId, position, currentlyDraggedEffect.getOriginalPosition(), timelineManager));
+
+            ClipMovedCommand command = ClipMovedCommand.builder()
+                    .withIsRevertable(revertable)
+                    .withClipId(clipId)
+                    .withNewPosition(position)
+                    .withPreviousPosition(currentlyDraggedEffect.getOriginalPosition())
+                    .withOriginalChannelId(currentlyDraggedEffect.getOriginalChannelId())
+                    .withNewChannelId(channelId)
+                    .withTimelineManager(timelineManager)
+                    .build();
+
+            commandInterpreter.sendWithResult(command);
         }
     }
 
