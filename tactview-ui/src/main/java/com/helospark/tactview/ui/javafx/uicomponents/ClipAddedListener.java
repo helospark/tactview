@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -117,11 +118,13 @@ public class ClipAddedListener {
             /* put a string on dragboard */
             ClipboardContent content = new ClipboardContent();
 
-            ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, (int) parentPane.getTranslateX(), clipAddedMessage.getClipId());
+            timelineState.findClipById(clipAddedMessage.getClipId()).ifPresent(clip2 -> {
+                TimelinePosition position = timelineState.pixelsToSeconds(clip2.getTranslateX());
+                ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId());
+                dragRepository.onClipDragged(clipDragInformation);
+                content.putString("moveclip");
+            });
 
-            dragRepository.onClipDragged(clipDragInformation);
-
-            content.putString("moveclip");
             db.setContent(content);
         });
 

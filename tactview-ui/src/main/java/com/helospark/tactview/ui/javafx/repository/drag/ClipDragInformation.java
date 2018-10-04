@@ -1,13 +1,15 @@
 package com.helospark.tactview.ui.javafx.repository.drag;
 
+import com.helospark.tactview.core.timeline.TimelinePosition;
+
 import javafx.scene.Group;
 
 public class ClipDragInformation {
     private Group node;
-    private int originalPosition;
+    private TimelinePosition originalPosition;
     private String clipId;
 
-    public ClipDragInformation(Group node, int originalPosition, String clipId) {
+    public ClipDragInformation(Group node, TimelinePosition originalPosition, String clipId) {
         this.node = node;
         this.originalPosition = originalPosition;
         this.clipId = clipId;
@@ -17,7 +19,7 @@ public class ClipDragInformation {
         return node;
     }
 
-    public int getOriginalPosition() {
+    public TimelinePosition getOriginalPosition() {
         return originalPosition;
     }
 

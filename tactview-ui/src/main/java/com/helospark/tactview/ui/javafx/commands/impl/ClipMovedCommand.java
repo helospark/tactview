@@ -9,13 +9,16 @@ public class ClipMovedCommand implements UiCommand {
     private String clipId;
     private TimelinePosition newPosition;
 
+    private TimelinePosition previousPosition;
+
     private TimelineManager timelineManager;
 
-    public ClipMovedCommand(boolean isRevertable, String clipId, TimelinePosition newPosition, TimelineManager timelineManager) {
+    public ClipMovedCommand(boolean isRevertable, String clipId, TimelinePosition newPosition, TimelinePosition previousPosition, TimelineManager timelineManager) {
         this.isRevertable = isRevertable;
         this.clipId = clipId;
         this.newPosition = newPosition;
         this.timelineManager = timelineManager;
+        this.previousPosition = previousPosition;
     }
 
     @Override
@@ -25,7 +28,7 @@ public class ClipMovedCommand implements UiCommand {
 
     @Override
     public void revert() {
-
+        timelineManager.moveClip(clipId, previousPosition);
     }
 
     @Override

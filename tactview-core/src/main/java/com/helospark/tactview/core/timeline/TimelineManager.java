@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
+import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -202,7 +203,13 @@ public class TimelineManager {
     public boolean moveClip(String clipId, TimelinePosition newPosition) {
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
 
-        return originalChannel.moveClip(clipId, newPosition);
+        boolean success = originalChannel.moveClip(clipId, newPosition);
+
+        if (success) {
+            messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition));
+        }
+
+        return success;
     }
 
 }

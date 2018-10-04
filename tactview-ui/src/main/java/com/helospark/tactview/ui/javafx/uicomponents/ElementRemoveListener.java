@@ -7,6 +7,8 @@ import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
+import javafx.application.Platform;
+
 @Component
 public class ElementRemoveListener {
     private MessagingService messagingService;
@@ -19,8 +21,8 @@ public class ElementRemoveListener {
 
     @PostConstruct
     public void setup() {
-        messagingService.register(ClipRemovedMessage.class, message -> removeClip(message.getElementId()));
-        messagingService.register(EffectRemovedMessage.class, message -> removeEffect(message.getEffectId()));
+        messagingService.register(ClipRemovedMessage.class, message -> Platform.runLater(() -> removeClip(message.getElementId())));
+        messagingService.register(EffectRemovedMessage.class, message -> Platform.runLater(() -> removeEffect(message.getEffectId())));
     }
 
     private void removeClip(String elementId) {
