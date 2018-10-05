@@ -1,6 +1,5 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.helospark.lightdi.annotation.Component;
@@ -14,12 +13,13 @@ import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
+import javafx.application.Platform;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Rectangle;
 
 @Component
 public class TimelineDragAndDropHandler {
@@ -43,83 +43,84 @@ public class TimelineDragAndDropHandler {
     public void addDragAndDrop(Node timeline, Pane timelineRow, String channelId) {
         timeline.setOnDragEntered(event -> {
             Dragboard db = event.getDragboard();
-            if (isClipDragAndDrop(db)) {
-            } else {
-                draggedItem = new Rectangle(300, 50);
-                timelineRow.getChildren().add(draggedItem);
-                AddClipRequest request = createAddClipRequest(db);
+
+            if (dragRepository.currentlyDraggedEffect() == null) {
+                AddClipRequest metadataRequest = createAddClipRequest(db);
                 CompletableFuture.supplyAsync(() -> {
-                    return clipFactoryChain.readMetadata(request);
+                    return clipFactoryChain.readMetadata(metadataRequest);
                 }).exceptionally(e -> {
                     e.printStackTrace();
                     return null;
                 }).thenAccept(metadata -> {
-                    int width = timelineState.secondsToPixels(metadata.getLength());
-                    if (draggedItem != null) {
-                        ((Rectangle) draggedItem).setWidth(width);
-                    }
+                    Platform.runLater(() -> {
+                        System.out.println("K=" + metadata);
+                        AddClipRequest addClipRequest = addClipRequest(channelId, event);
+                        System.out.println(addClipRequest);
+                        commandInterpreter.sendWithResult(new AddClipsCommand(addClipRequest, timelineManager))
+                                .exceptionally(e -> {
+                                    e.printStackTrace();
+                                    return null;
+                                })
+                                .thenAccept(res -> {
+                                    try {
+                                        String addedClipId = res.getAddedClipId();
+                                        System.out.println("Clip added " + addedClipId);
+                                        Thread.sleep(1000);
+                                        Group addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
+                                        ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId);
+                                        dragRepository.onClipDragged(clipDragInformation);
+                                    } catch (Exception e1) {
+                                        e1.printStackTrace();
+                                    }
+                                });
+                    });
                 });
             }
         });
 
         timeline.setOnDragExited(event -> {
-            if (!isClipDragAndDrop(event.getDragboard())) {
-                removeDraggedItem(timelineRow);
-            }
+
         });
 
         timeline.setOnDragOver(event -> {
-            if (isClipDragAndDrop(event.getDragboard())) {
+            System.out.println("before Link");
+            if (dragRepository.currentlyDraggedEffect() != null) {
+                System.out.println("Link");
                 event.acceptTransferModes(TransferMode.LINK);
                 moveClip(event, channelId, false);
-            } else if (draggedItem != null) {
-                draggedItem.setTranslateX(event.getX() - timelineRow.getLayoutX());
-
-                //            if (event.getY() > 180) {
-                //                timeLineScrollPane.setVvalue(timeLineScrollPane.getVvalue() + 0.01);
-                //            }
-                //                if (event.getDragboard().hasFiles()) {
-                event.acceptTransferModes(TransferMode.LINK);
-                event.consume();
-                //                }
             }
         });
 
         timeline.setOnDragDropped(event -> {
-            if (isClipDragAndDrop(event.getDragboard())) {
-                draggedItem = null;
+            if (dragRepository.currentlyDraggedEffect() != null) {
                 moveClip(event, channelId, true);
                 dragRepository.clearDrag();
-            } else {
-                removeDraggedItem(timelineRow);
-
-                draggedItem = null;
-                String filePath = extractFilePathOrNull(event.getDragboard());
-                String proceduralClipId = extractProceduralEffectOrNull(event.getDragboard());
-                TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
-
-                AddClipRequest request = AddClipRequest.builder()
-                        .withChannelId(channelId)
-                        .withPosition(position)
-                        .withFilePath(filePath)
-                        .withProceduralClipId(proceduralClipId)
-                        .build();
-
-                commandInterpreter.sendWithResult(new AddClipsCommand(request, timelineManager));
             }
         });
 
+    }
+
+    private AddClipRequest addClipRequest(String channelId, DragEvent event) {
+        String filePath = extractFilePathOrNull(event.getDragboard());
+        String proceduralClipId = extractProceduralEffectOrNull(event.getDragboard());
+        TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
+
+        return AddClipRequest.builder()
+                .withChannelId(channelId)
+                .withPosition(position)
+                .withFilePath(filePath)
+                .withProceduralClipId(proceduralClipId)
+                .build();
     }
 
     private AddClipRequest createAddClipRequest(Dragboard db) {
         String file = extractFilePathOrNull(db);
         String proceduralClipId = extractProceduralEffectOrNull(db);
         String finalProceduralClipId = proceduralClipId;
-        AddClipRequest request = AddClipRequest.builder()
+        return AddClipRequest.builder()
                 .withFilePath(file) // todo: what about rest of params?
                 .withProceduralClipId(finalProceduralClipId)
                 .build();
-        return request;
     }
 
     private void moveClip(DragEvent event, String channelId, boolean revertable) {
@@ -140,12 +141,6 @@ public class TimelineDragAndDropHandler {
 
             commandInterpreter.sendWithResult(command);
         }
-    }
-
-    private boolean isClipDragAndDrop(Dragboard db) {
-        String asd = Optional.ofNullable(db.getString()).orElse("");
-        boolean wre = asd.startsWith("moveclip");
-        return wre;
     }
 
     private String extractProceduralEffectOrNull(Dragboard db) {

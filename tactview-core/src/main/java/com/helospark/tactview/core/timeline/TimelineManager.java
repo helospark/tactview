@@ -57,8 +57,8 @@ public class TimelineManager {
         } else {
             throw new IllegalArgumentException("Cannot add clip");
         }
-        messagingService.sendAsyncMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), position, clip));
-        messagingService.sendAsyncMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors()));
+        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), position, clip));
+        messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors()));
 
         return clip;
     }
@@ -201,8 +201,8 @@ public class TimelineManager {
     }
 
     public boolean moveClip(String clipId, TimelinePosition newPosition, String newChannelId) {
-        TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
-        TimelineChannel newChannel = findChannelWithId(newChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find channel"));
+        TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip " + clipId));
+        TimelineChannel newChannel = findChannelWithId(newChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find channel " + newChannelId));
 
         if (!originalChannel.equals(newChannel)) {
             TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));

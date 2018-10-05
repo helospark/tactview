@@ -7,7 +7,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 @Component
 public class UiProjectRepository {
     private static final int PREVIEW_WIDTH = 320;
-    private static final int PREVIEW_HEIGHT = 260;
+    private static final int PREVIEW_HEIGHT = 200;
     private double scaleFactor = 1.0;
     private SimpleIntegerProperty previewWidth = new SimpleIntegerProperty(PREVIEW_WIDTH);
     private SimpleIntegerProperty previewHeight = new SimpleIntegerProperty(PREVIEW_HEIGHT);

@@ -9,12 +9,14 @@ public class ClipDragInformation {
     private TimelinePosition originalPosition;
     private String clipId;
     private String originalChannelId;
+    private boolean isFirstAdded;
 
     public ClipDragInformation(Group node, TimelinePosition originalPosition, String clipId, String originalChannelId) {
         this.node = node;
         this.originalPosition = originalPosition;
         this.clipId = clipId;
         this.originalChannelId = originalChannelId;
+
     }
 
     public Group getNode() {
