@@ -24,12 +24,12 @@ import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
@@ -49,7 +49,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -67,7 +66,6 @@ public class JavaFXUiMain extends Application {
 
     static LightDiContext lightDi;
 
-    private static UiCommandInterpreterService commandInterpreter;
     private static PlaybackController playbackController;
 
     static BufferedImage bufferedImage;
@@ -91,23 +89,9 @@ public class JavaFXUiMain extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        //        updateImage(stage);
         NotificationPane pane = new NotificationPane();
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);
-
-        final KeyCombination keyComb1 = new KeyCodeCombination(KeyCode.Z,
-                KeyCombination.CONTROL_DOWN);
-
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if (keyComb1.match(event)) {
-                    commandInterpreter.revertLast();
-                    event.consume(); // <-- stops passing the event to next node
-                }
-            }
-        });
 
         root.getStylesheets().add("stylesheet.css");
         MenuBar menuBar = new MenuBar();
@@ -221,6 +205,10 @@ public class JavaFXUiMain extends Application {
         root.setCenter(vbox);
         pane.setContent(root);
 
+        lightDi.getListOfBeans(ScenePostProcessor.class)
+                .stream()
+                .forEach(processor -> processor.postProcess(scene));
+
         lightDi.getBean(UiInitializer.class).initialize();
 
         stage.show();
@@ -271,7 +259,6 @@ public class JavaFXUiMain extends Application {
         uiTimelineManager.registerUiConsumer(position -> effectPropertyView.updateValues(position));
         uiTimelineManager.registerUiConsumer(position -> updateTime(position));
         uiTimelineManager.registerConsumer(position -> updateDisplay(position));
-        commandInterpreter = lightDi.getBean(UiCommandInterpreterService.class);
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
         uiProjectRepostiory = lightDi.getBean(UiProjectRepository.class);
         lightDi.eagerInitAllBeans();

@@ -7,6 +7,7 @@ import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.S
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -98,4 +99,15 @@ public class SelectedNodeRepository {
         messagingService.sendMessage(new EffectSelectionChangedMessage(clip, type));
     }
 
+    public List<String> getSelectedClipIds() {
+        return this.selectedClips.stream()
+                .map(node -> (String) node.getUserData())
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getSelectedEffectIds() {
+        return this.selectedEffects.stream()
+                .map(node -> (String) node.getUserData())
+                .collect(Collectors.toList());
+    }
 }

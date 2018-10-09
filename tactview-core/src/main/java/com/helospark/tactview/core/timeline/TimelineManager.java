@@ -222,4 +222,8 @@ public class TimelineManager {
         return true;
     }
 
+    public void removeEffect(String effectId) {
+        // TODO later
+    }
+
 }
