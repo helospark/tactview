@@ -17,6 +17,7 @@ import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
+import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
@@ -140,16 +141,16 @@ public class TimelineManager {
         return finalImage; // todo: do implementation
     }
 
-    public StatelessEffect addEffectForClip(String id, String effectId, TimelineInterval timelineInterval) {
+    public StatelessEffect addEffectForClip(String id, String effectId, TimelinePosition position) {
         VisualTimelineClip clipById = (VisualTimelineClip) findClipById(id).get();
-        StatelessVideoEffect effect = (StatelessVideoEffect) createEffect(effectId, timelineInterval); // sound?
+        StatelessVideoEffect effect = (StatelessVideoEffect) createEffect(effectId, position); // sound?
         clipById.addEffect(effect);
-        messagingService.sendAsyncMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), timelineInterval.getStartPosition(), effect));
+        messagingService.sendAsyncMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect));
         return effect;
     }
 
-    private StatelessEffect createEffect(String effectId, TimelineInterval timelineInterval) {
-        CreateEffectRequest request = new CreateEffectRequest(timelineInterval, effectId);
+    private StatelessEffect createEffect(String effectId, TimelinePosition position) {
+        CreateEffectRequest request = new CreateEffectRequest(position, effectId);
         return effectFactoryChain.stream()
                 .filter(effectFactory -> effectFactory.doesSupport(request))
                 .findFirst()
@@ -200,6 +201,14 @@ public class TimelineManager {
         }
     }
 
+    public Optional<TimelineClip> findClipForEffect(String effectId) {
+        return channels.stream()
+                .map(channel -> channel.findClipContainingEffect(effectId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
+    }
+
     public boolean moveClip(String clipId, TimelinePosition newPosition, String newChannelId) {
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip " + clipId));
         TimelineChannel newChannel = findChannelWithId(newChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find channel " + newChannelId));
@@ -210,6 +219,7 @@ public class TimelineManager {
             if (newChannel.canAddResourceAt(clipToMove.getInterval())) {
                 originalChannel.removeClip(clipId);
                 newChannel.addResource(clipToMove);
+
                 messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId));
             }
         } else {
@@ -222,8 +232,44 @@ public class TimelineManager {
         return true;
     }
 
+    public boolean moveEffect(String effectId, TimelinePosition newPosition, String newClipId, int newEffectChannel) {
+        TimelineClip currentClip = findClipForEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
+        StatelessEffect effect = currentClip.getEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Effect not found"));
+        if (currentClip.getId().equals(newClipId)) {
+            TimelineInterval interval = effect.getInterval();
+            boolean success = currentClip.moveEffect(effect, newPosition, newEffectChannel);
+
+            EffectMovedMessage message = EffectMovedMessage.builder()
+                    .withEffectId(effectId)
+                    .withOriginalClipId(currentClip.getId())
+                    .withNewClipId(newClipId)
+                    .withOldPosition(interval.getStartPosition())
+                    .withNewPosition(newPosition)
+                    .withNewChannelIndex(newEffectChannel)
+                    .build();
+
+            messagingService.sendAsyncMessage(message);
+
+            return success;
+        } else {
+            TimelineClip newClip = findClipById(newClipId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
+            TimelineInterval newInterval = new TimelineInterval(newPosition, effect.getInterval().getWidth());
+            if (newClip.canAddEffectAt(newEffectChannel, newInterval)) {
+                //                currentClip.removeEffect(effect);
+                //                effect.setInterval(newInterval);
+                //                newClip.addEffect(effect);
+            }
+        }
+        return true;
+    }
+
     public void removeEffect(String effectId) {
-        // TODO later
+        findClipForEffect(effectId)
+                .ifPresent(clip -> clip.removeEffectById(effectId));
+    }
+
+    public Optional<StatelessEffect> findEffectById(String effectId) {
+        return findClipForEffect(effectId).flatMap(clip -> clip.getEffect(effectId));
     }
 
 }

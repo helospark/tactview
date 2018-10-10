@@ -74,4 +74,14 @@ public class TimelineChannel {
 
     }
 
+    public Optional<TimelineClip> findClipContainingEffect(String effectId) {
+        for (TimelineClip clip : clips) {
+            Optional<StatelessEffect> effect = clip.getEffect(effectId);
+            if (effect.isPresent()) {
+                return Optional.of(clip);
+            }
+        }
+        return Optional.empty();
+    }
+
 }

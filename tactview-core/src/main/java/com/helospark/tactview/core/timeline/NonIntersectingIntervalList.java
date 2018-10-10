@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class NonIntersectingIntervalList<T extends IntervalAware> implements Iterable<T> {
     private List<T> intervalAwares = new ArrayList<>();
@@ -58,11 +60,19 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         return intervalAwares.iterator();
     }
 
-    public void remove(TimelineClip clip) {
+    public void remove(T clip) {
         boolean result = intervalAwares.remove(clip);
         if (result == false) {
             throw new IllegalArgumentException("Remove was unsuccesful, because list no longer contains clip");
         }
+    }
+
+    public Stream<T> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
+
+    public boolean contains(StatelessEffect effect) {
+        return intervalAwares.contains(effect);
     }
 
 }

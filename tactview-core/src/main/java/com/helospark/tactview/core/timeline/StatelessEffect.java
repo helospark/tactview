@@ -24,4 +24,8 @@ public abstract class StatelessEffect implements IntervalAware {
     }
 
     public abstract List<ValueProviderDescriptor> getValueProviders();
+
+    public void setInterval(TimelineInterval timelineInterval) {
+        this.interval = timelineInterval;
+    }
 }

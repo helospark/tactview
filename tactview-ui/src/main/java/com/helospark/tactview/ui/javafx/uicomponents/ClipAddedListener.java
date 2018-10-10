@@ -93,7 +93,7 @@ public class ClipAddedListener {
         parentPane.translateXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
         parentPane.setUserData(clipAddedMessage.getClipId());
         rectangle.getStyleClass().add("clip-rectangle");
-        effectDragAdder.addEffectDragOnClip(parentPane, parentPane);
+        effectDragAdder.addEffectDragOnClip(parentPane, parentPane, clip.getId());
 
         if (clip instanceof VideoClip) {
             VideoClip videoClip = ((VideoClip) clip);

@@ -13,7 +13,7 @@ public class CoreClipFactoryChainItemConfiguration {
     public StandardProceduralClipFactoryChainItem singleColorProceduralClip() {
         return new StandardProceduralClipFactoryChainItem("singlecolor", "Single color",
                 request -> {
-                    TimelineLength defaultLength = TimelineLength.ofMillis(5000);
+                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
                     ImageMetadata metadata = ImageMetadata.builder()
                             .withWidth(1920)
                             .withHeight(1080)

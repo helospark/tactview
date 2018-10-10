@@ -3,8 +3,6 @@ package com.helospark.tactview.core.timeline;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -14,7 +12,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Do
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
 public abstract class VisualTimelineClip extends TimelineClip {
-    protected List<NonIntersectingIntervalList<StatelessVideoEffect>> effectChannels = new ArrayList<>();
     protected VisualMediaMetadata mediaMetadata;
 
     protected DoubleProvider translateXProvider;
@@ -39,7 +36,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     protected ClipFrameResult applyEffects(TimelinePosition relativePosition, ClipFrameResult frameResult) {
-        List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition);
+        List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition, StatelessVideoEffect.class);
 
         for (StatelessVideoEffect effect : actualEffects) {
             StatelessEffectRequest request = StatelessEffectRequest.builder()
@@ -59,22 +56,13 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public abstract ByteBuffer requestFrame(TimelinePosition position, int width, int height);
 
-    private List<StatelessVideoEffect> getEffectsAt(TimelinePosition position) {
-        return effectChannels.stream()
-                .map(effectChannel -> effectChannel.getElementWithIntervalContainingPoint(position))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-
-    }
-
-    public void addEffect(StatelessVideoEffect effect) {
-        NonIntersectingIntervalList<StatelessVideoEffect> newList = new NonIntersectingIntervalList<>();
+    public void addEffect(StatelessEffect effect) {
+        NonIntersectingIntervalList<StatelessEffect> newList = new NonIntersectingIntervalList<>();
         effectChannels.add(newList);
         newList.addInterval(effect);
     }
 
-    public List<NonIntersectingIntervalList<StatelessVideoEffect>> getEffectChannels() {
+    public List<NonIntersectingIntervalList<StatelessEffect>> getEffectChannels() {
         return effectChannels;
     }
 
@@ -109,4 +97,5 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
         return result;
     }
+
 }

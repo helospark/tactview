@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
 import javafx.application.Platform;
@@ -17,13 +18,14 @@ public class EffectAddedListener {
     private TimelineState timelineState;
     private PropertyView effectPropertyView;
     private SelectedNodeRepository selectedNodeRepository;
+    private DragRepository dragRepository;
 
-    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, PropertyView effectPropertyView,
-            SelectedNodeRepository selectedNodeRepository) {
+    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, PropertyView effectPropertyView, SelectedNodeRepository selectedNodeRepository, DragRepository dragRepository) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectPropertyView = effectPropertyView;
         this.selectedNodeRepository = selectedNodeRepository;
+        this.dragRepository = dragRepository;
     }
 
     @PostConstruct
@@ -47,6 +49,11 @@ public class EffectAddedListener {
 
         rectangle.setOnMouseClicked(event -> {
             selectedNodeRepository.setOnlySelectedEffect(rectangle);
+        });
+
+        rectangle.setOnDragDetected(event -> {
+            System.out.println("Started dragging effect");
+            dragRepository.onEffectDragged(new EffectDragInformation(rectangle, clipAddedMessage.getClipId(), clipAddedMessage.getEffectId(), clipAddedMessage.getPosition()));
         });
 
         return rectangle;

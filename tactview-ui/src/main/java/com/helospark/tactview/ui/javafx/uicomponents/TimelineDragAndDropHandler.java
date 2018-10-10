@@ -29,8 +29,6 @@ public class TimelineDragAndDropHandler {
     private TimelineState timelineState;
     private DragRepository dragRepository;
 
-    private Node draggedItem = null;
-
     public TimelineDragAndDropHandler(ClipFactoryChain clipFactoryChain, TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
             DragRepository dragRepository) {
         this.clipFactoryChain = clipFactoryChain;
@@ -44,7 +42,7 @@ public class TimelineDragAndDropHandler {
         timeline.setOnDragEntered(event -> {
             Dragboard db = event.getDragboard();
 
-            if (dragRepository.currentlyDraggedEffect() == null) {
+            if (dragRepository.currentlyDraggedClip() == null && (db.hasFiles() || isStringClip(db))) {
                 AddClipRequest metadataRequest = createAddClipRequest(db);
                 CompletableFuture.supplyAsync(() -> {
                     return clipFactoryChain.readMetadata(metadataRequest);
@@ -65,7 +63,6 @@ public class TimelineDragAndDropHandler {
                                     try {
                                         String addedClipId = res.getAddedClipId();
                                         System.out.println("Clip added " + addedClipId);
-                                        Thread.sleep(1000);
                                         Group addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
                                         ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId);
                                         dragRepository.onClipDragged(clipDragInformation);
@@ -84,7 +81,7 @@ public class TimelineDragAndDropHandler {
 
         timeline.setOnDragOver(event -> {
             System.out.println("before Link");
-            if (dragRepository.currentlyDraggedEffect() != null) {
+            if (dragRepository.currentlyDraggedClip() != null) {
                 System.out.println("Link");
                 event.acceptTransferModes(TransferMode.LINK);
                 moveClip(event, channelId, false);
@@ -92,9 +89,9 @@ public class TimelineDragAndDropHandler {
         });
 
         timeline.setOnDragDropped(event -> {
-            if (dragRepository.currentlyDraggedEffect() != null) {
+            if (dragRepository.currentlyDraggedClip() != null) {
                 moveClip(event, channelId, true);
-                dragRepository.clearDrag();
+                dragRepository.clearClipDrag();
             }
         });
 
@@ -124,7 +121,7 @@ public class TimelineDragAndDropHandler {
     }
 
     private void moveClip(DragEvent event, String channelId, boolean revertable) {
-        ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedEffect();
+        ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
             TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
@@ -143,6 +140,14 @@ public class TimelineDragAndDropHandler {
         }
     }
 
+    private boolean isStringClip(Dragboard db) {
+        String id = db.getString();
+        if (id != null) {
+            return id.startsWith("clip:");
+        }
+        return false;
+    }
+
     private String extractProceduralEffectOrNull(Dragboard db) {
         String proceduralClipId = db.getString();
         if (proceduralClipId.startsWith("clip:")) {
@@ -155,13 +160,6 @@ public class TimelineDragAndDropHandler {
 
     private String extractFilePathOrNull(Dragboard db) {
         return db.getFiles().stream().findFirst().map(f -> f.getAbsolutePath()).orElse(null);
-    }
-
-    private void removeDraggedItem(Pane timelineRow) {
-        if (draggedItem != null) {
-            timelineRow.getChildren().remove(draggedItem);
-            draggedItem = null;
-        }
     }
 
 }

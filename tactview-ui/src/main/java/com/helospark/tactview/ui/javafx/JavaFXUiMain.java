@@ -133,7 +133,7 @@ public class JavaFXUiMain extends Application {
 
         effects.stream()
                 .forEach(factory -> {
-                    effectTabContent.getChildren().add(createIcon(factory.getEffectId(),
+                    effectTabContent.getChildren().add(createIcon("effect:" + factory.getEffectId(),
                             factory.getEffectName(),
                             "file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
                 });

@@ -15,6 +15,7 @@ public class RemoveEffectCommand implements UiCommand {
 
     @Override
     public void execute() {
+        //        timelineManager.findEffectById(effectId); todo revert
         timelineManager.removeEffect(effectId);
     }
 

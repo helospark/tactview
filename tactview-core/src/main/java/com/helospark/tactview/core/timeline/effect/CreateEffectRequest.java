@@ -1,18 +1,18 @@
 package com.helospark.tactview.core.timeline.effect;
 
-import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class CreateEffectRequest {
-    private TimelineInterval interval;
+    private TimelinePosition position;
     private String effectId;
 
-    public CreateEffectRequest(TimelineInterval interval, String effectId) {
-        this.interval = interval;
+    public CreateEffectRequest(TimelinePosition position, String effectId) {
+        this.position = position;
         this.effectId = effectId;
     }
 
-    public TimelineInterval getInterval() {
-        return interval;
+    public TimelinePosition getPosition() {
+        return position;
     }
 
     public String getEffectId() {

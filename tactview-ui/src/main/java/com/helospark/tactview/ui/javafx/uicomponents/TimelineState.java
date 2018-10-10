@@ -136,7 +136,7 @@ public class TimelineState {
         }
     }
 
-    private Optional<Node> findEffectById(String effectId) {
+    public Optional<Node> findEffectById(String effectId) {
         return clipsToEffects.values()
                 .stream()
                 .flatMap(a -> a.stream())
