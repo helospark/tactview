@@ -41,4 +41,9 @@ public class ImageClip extends VisualTimelineClip {
         return mediaMetadata;
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
 }

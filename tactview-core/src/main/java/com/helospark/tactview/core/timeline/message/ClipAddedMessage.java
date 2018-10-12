@@ -8,12 +8,14 @@ public class ClipAddedMessage {
     private String channelId;
     private TimelinePosition position;
     private TimelineClip clip;
+    private boolean isResizable;
 
-    public ClipAddedMessage(String clipId, String channelId, TimelinePosition position, TimelineClip clip) {
+    public ClipAddedMessage(String clipId, String channelId, TimelinePosition position, TimelineClip clip, boolean isResizable) {
         this.clipId = clipId;
         this.channelId = channelId;
         this.position = position;
         this.clip = clip;
+        this.isResizable = isResizable;
     }
 
     public String getClipId() {
@@ -30,6 +32,10 @@ public class ClipAddedMessage {
 
     public TimelineClip getClip() {
         return clip;
+    }
+
+    public boolean isResizable() {
+        return isResizable;
     }
 
 }

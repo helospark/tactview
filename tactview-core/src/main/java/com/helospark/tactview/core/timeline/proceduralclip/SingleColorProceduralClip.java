@@ -94,4 +94,9 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
         return mediaMetadata;
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
 }

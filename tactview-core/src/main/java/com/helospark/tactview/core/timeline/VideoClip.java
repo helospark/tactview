@@ -46,4 +46,8 @@ public class VideoClip extends VisualTimelineClip {
         return startPosition;
     }
 
+    @Override
+    public boolean isResizable() {
+        return false;
+    }
 }

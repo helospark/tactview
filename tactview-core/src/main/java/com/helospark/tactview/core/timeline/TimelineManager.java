@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
+import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -58,7 +59,7 @@ public class TimelineManager {
         } else {
             throw new IllegalArgumentException("Cannot add clip");
         }
-        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), position, clip));
+        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), position, clip, clip.isResizable()));
         messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors()));
 
         return clip;
@@ -270,6 +271,19 @@ public class TimelineManager {
 
     public Optional<StatelessEffect> findEffectById(String effectId) {
         return findClipForEffect(effectId).flatMap(clip -> clip.getEffect(effectId));
+    }
+
+    public void resizeClip(TimelineClip clip, boolean left, TimelinePosition position) {
+        TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such channel"));
+        boolean success = channel.resizeClip(clip, left, position);
+        if (success) {
+            TimelineClip renewedClip = findClipById(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
+            ClipResizedMessage clipResizedMessage = ClipResizedMessage.builder()
+                    .withClipId(clip.getId())
+                    .withNewInterval(renewedClip.getInterval())
+                    .build();
+            messagingService.sendAsyncMessage(clipResizedMessage);
+        }
     }
 
 }

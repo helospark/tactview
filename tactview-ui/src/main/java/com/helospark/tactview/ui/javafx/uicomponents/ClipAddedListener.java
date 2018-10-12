@@ -19,6 +19,7 @@ import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.application.Platform;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -114,6 +115,7 @@ public class ClipAddedListener {
 
         rectangle.setOnDragDetected(e -> {
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
+            double currentX = e.getX();
 
             /* put a string on dragboard */
             ClipboardContent content = new ClipboardContent();
@@ -122,14 +124,42 @@ public class ClipAddedListener {
                 TimelinePosition position = timelineState.pixelsToSeconds(clip2.getTranslateX());
                 String channelId = (String) timelineState.findChannelForClip(clip2).get().getUserData();
                 ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId(), channelId);
-                dragRepository.onClipDragged(clipDragInformation);
+                if (isResizing(clipAddedMessage, rectangle, currentX)) {
+                    DragRepository.DragDirection direction = isDraggingLeft(rectangle, currentX) ? DragRepository.DragDirection.LEFT : DragRepository.DragDirection.RIGHT;
+                    dragRepository.onClipResizing(clipDragInformation, direction);
+                } else {
+                    dragRepository.onClipDragged(clipDragInformation);
+                }
                 content.putString("moveclip");
             });
 
             db.setContent(content);
         });
 
+        rectangle.setOnMouseMoved(event -> {
+            double currentX = event.getX();
+            if (isResizing(clipAddedMessage, rectangle, currentX)) {
+                rectangle.setCursor(Cursor.H_RESIZE);
+            } else {
+                rectangle.setCursor(Cursor.HAND);
+            }
+        });
+
         return parentPane;
+    }
+
+    private boolean isResizing(ClipAddedMessage clipAddedMessage, Rectangle rectangle, double currentX) {
+        return (isDraggingLeft(rectangle, currentX) ||
+                isDraggingRight(rectangle, currentX)) &&
+                clipAddedMessage.isResizable();
+    }
+
+    private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
+        return currentX - rectangle.getTranslateX() < 15;
+    }
+
+    private boolean isDraggingRight(Rectangle rectangle, double currentX) {
+        return rectangle.getTranslateX() + rectangle.getWidth() - currentX < 15;
     }
 
 }

@@ -43,4 +43,12 @@ public class TimelineInterval {
         return new TimelineLength(endPosition.from(startPosition).getSeconds());
     }
 
+    public TimelineInterval butWithStartPosition(TimelinePosition newStartPosition) {
+        return new TimelineInterval(newStartPosition, this.endPosition);
+    }
+
+    public TimelineInterval butWithEndPosition(TimelinePosition newEndPosition) {
+        return new TimelineInterval(this.startPosition, newEndPosition);
+    }
+
 }

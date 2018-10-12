@@ -10,6 +10,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
@@ -80,17 +81,23 @@ public class TimelineDragAndDropHandler {
         });
 
         timeline.setOnDragOver(event -> {
-            System.out.println("before Link");
             if (dragRepository.currentlyDraggedClip() != null) {
-                System.out.println("Link");
-                event.acceptTransferModes(TransferMode.LINK);
-                moveClip(event, channelId, false);
+                event.acceptTransferModes(TransferMode.MOVE);
+                if (dragRepository.isResizing()) {
+                    resizeClip(event, false);
+                } else {
+                    moveClip(event, channelId, false);
+                }
             }
         });
 
         timeline.setOnDragDropped(event -> {
             if (dragRepository.currentlyDraggedClip() != null) {
-                moveClip(event, channelId, true);
+                if (dragRepository.isResizing()) {
+                    resizeClip(event, true);
+                } else {
+                    moveClip(event, channelId, true);
+                }
                 dragRepository.clearClipDrag();
             }
         });
@@ -136,6 +143,23 @@ public class TimelineDragAndDropHandler {
                     .withTimelineManager(timelineManager)
                     .build();
 
+            commandInterpreter.sendWithResult(command);
+        }
+    }
+
+    private void resizeClip(DragEvent event, boolean b) {
+        ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
+        if (currentlyDraggedEffect != null) {
+            String clipId = currentlyDraggedEffect.getClipId();
+            TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
+
+            ClipResizedCommand command = ClipResizedCommand.builder()
+                    .withClipId(clipId)
+                    .withLeft(dragRepository.getDragDirection().equals(DragRepository.DragDirection.LEFT))
+                    .withPosition(position)
+                    .withRevertable(b)
+                    .withTimelineManager(timelineManager)
+                    .build();
             commandInterpreter.sendWithResult(command);
         }
     }

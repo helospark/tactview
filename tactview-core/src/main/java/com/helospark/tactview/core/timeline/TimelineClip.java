@@ -92,4 +92,6 @@ public abstract class TimelineClip implements IntervalAware {
         NonIntersectingIntervalList<StatelessEffect> list = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("Cannot find channel"));
         list.remove(effect);
     }
+
+    public abstract boolean isResizable();
 }
