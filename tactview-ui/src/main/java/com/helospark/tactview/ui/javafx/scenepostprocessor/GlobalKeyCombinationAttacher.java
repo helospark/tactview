@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.scenepostprocessor;
 
 import static javafx.scene.input.KeyCode.DELETE;
+import static javafx.scene.input.KeyCode.K;
 import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
 import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
@@ -15,6 +16,7 @@ import com.helospark.tactview.ui.javafx.key.GlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.key.KeyCombinationRepository;
 import com.helospark.tactview.ui.javafx.key.StandardGlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
 
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -29,14 +31,16 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
     private SelectedNodeRepository selectedNodeRepository;
     private RemoveClipService removeClipService;
     private RemoveEffectService removeEffectService;
+    private ClipCutService clipCutService;
 
     public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository, RemoveClipService removeClipService,
-            RemoveEffectService removeEffectService) {
+            RemoveEffectService removeEffectService, ClipCutService clipCutService) {
         this.commandInterpreter = commandInterpreter;
         this.keyCombinationRepository = keyCombinationRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.removeClipService = removeClipService;
         this.removeEffectService = removeEffectService;
+        this.clipCutService = clipCutService;
     }
 
     @Override
@@ -64,6 +68,10 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
                 useHandler("Delete selected", event -> {
                     removeClipService.removeClips(selectedNodeRepository.getSelectedClipIds());
                     removeEffectService.removeEffects(selectedNodeRepository.getSelectedEffectIds());
+                }));
+        keyCombinationRepository.registerKeyCombination(on(K),
+                useHandler("Cut clip at current position", event -> {
+                    clipCutService.cutSelectedClipAtCurrentTimestamp();
                 }));
     }
 

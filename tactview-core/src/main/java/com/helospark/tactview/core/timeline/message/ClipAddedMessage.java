@@ -38,4 +38,9 @@ public class ClipAddedMessage {
         return isResizable;
     }
 
+    @Override
+    public String toString() {
+        return "ClipAddedMessage [clipId=" + clipId + ", channelId=" + channelId + ", position=" + position + ", clip=" + clip + ", isResizable=" + isResizable + "]";
+    }
+
 }

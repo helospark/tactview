@@ -2,9 +2,12 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
+import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 import javafx.application.Platform;
@@ -13,6 +16,9 @@ import javafx.application.Platform;
 public class ElementRemoveListener {
     private MessagingService messagingService;
     private TimelineState timelineState;
+
+    @Slf4j
+    private Logger logger;
 
     public ElementRemoveListener(MessagingService messagingService, TimelineState timelineState) {
         this.messagingService = messagingService;
@@ -27,6 +33,7 @@ public class ElementRemoveListener {
 
     private void removeClip(String elementId) {
         timelineState.removeClip(elementId);
+        logger.debug("Clip {} successfuly removed", elementId);
     }
 
     private void removeEffect(String effectId) {

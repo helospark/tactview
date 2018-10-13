@@ -98,6 +98,7 @@ public class TimelineDragAndDropHandler {
                 } else {
                     moveClip(event, channelId, true);
                 }
+                event.getDragboard().clear();
                 dragRepository.clearClipDrag();
             }
         });

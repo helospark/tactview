@@ -20,19 +20,19 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         while (index < intervalAwares.size() && intervalEndIsLessThanOtherIntervalStartPosition(intervalAwares.get(index), interval)) {
             ++index;
         }
-        while (index < intervalAwares.size() && intervalStartIsGreaterThanOtherIntervalEndPosition(intervalAwares.get(index), interval)) {
-            result.add(result.get(index));
+        while (index < intervalAwares.size() && intervalStartPositionIsLessThanOtherIntervalEndPosition(intervalAwares.get(index), interval)) {
+            result.add(intervalAwares.get(index));
             ++index;
         }
         return result;
     }
 
     private boolean intervalEndIsLessThanOtherIntervalStartPosition(T intervalAware, TimelineInterval other) {
-        return intervalAware.getInterval().getEndPosition().isLessThan(other.getStartPosition());
+        return intervalAware.getInterval().getEndPosition().isLessOrEqualToThan(other.getStartPosition());
     }
 
-    private boolean intervalStartIsGreaterThanOtherIntervalEndPosition(T intervalAware, TimelineInterval other) {
-        return other.getEndPosition().isLessThan(intervalAware.getInterval().getStartPosition());
+    private boolean intervalStartPositionIsLessThanOtherIntervalEndPosition(T intervalAware, TimelineInterval other) {
+        return intervalAware.getInterval().getStartPosition().isLessThan(other.getEndPosition());
     }
 
     public Optional<T> getElementWithIntervalContainingPoint(TimelinePosition position) {
@@ -48,7 +48,7 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
     // TODO: not thread safe
     public boolean addInterval(T clip) {
         int i = 0;
-        while (i < intervalAwares.size() && intervalAwares.get(i).getInterval().getEndPosition().isLessThan(clip.getInterval().getStartPosition())) {
+        while (i < intervalAwares.size() && intervalAwares.get(i).getInterval().getEndPosition().isLessOrEqualToThan(clip.getInterval().getStartPosition())) {
             ++i;
         }
         intervalAwares.add(i, clip);

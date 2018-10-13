@@ -24,7 +24,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public ClipFrameResult getFrame(GetFrameRequest request) {
         double scale = request.getScale();
-        TimelinePosition position = request.getPosition();
+        TimelinePosition position = request.getPosition().add(renderOffset);
         int width = (int) (mediaMetadata.getWidth() * scale);
         int height = (int) (mediaMetadata.getHeight() * scale);
         TimelinePosition relativePosition = position.from(getInterval().getStartPosition());

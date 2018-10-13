@@ -11,4 +11,9 @@ public class ClipRemovedMessage {
         return elementId;
     }
 
+    @Override
+    public String toString() {
+        return "ClipRemovedMessage [elementId=" + elementId + "]";
+    }
+
 }

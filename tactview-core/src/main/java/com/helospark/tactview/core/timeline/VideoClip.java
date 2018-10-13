@@ -50,4 +50,9 @@ public class VideoClip extends VisualTimelineClip {
     public boolean isResizable() {
         return false;
     }
+
+    @Override
+    protected TimelineClip cloneClip() {
+        return new VideoClip(mediaMetadata, backingSource, this.interval.getStartPosition(), this.interval.getLength());
+    }
 }

@@ -7,10 +7,16 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.util.logger.Slf4j;
 
 @Component
 public class MessagingService {
+    @Slf4j
+    private Logger logger;
+
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
     private Map<Class<?>, Queue<MessageListener<?>>> messageListeners = new ConcurrentHashMap<>();
 
@@ -28,6 +34,7 @@ public class MessagingService {
     }
 
     public <T> void sendMessage(T message) {
+        logger.debug("Sending message {}", message);
         messageListeners.entrySet()
                 .stream()
                 .filter(clazz -> clazz.getKey().isAssignableFrom(message.getClass()))

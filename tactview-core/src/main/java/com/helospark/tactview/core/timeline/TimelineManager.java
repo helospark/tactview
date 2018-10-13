@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
@@ -19,6 +21,7 @@ import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
+import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
@@ -26,6 +29,9 @@ public class TimelineManager {
     // state
     private List<StatelessVideoEffect> globalEffects;
     private CopyOnWriteArrayList<TimelineChannel> channels = new CopyOnWriteArrayList<>();
+
+    @Slf4j
+    private Logger logger;
 
     // stateless
     private List<EffectFactory> effectFactoryChain;
@@ -54,15 +60,19 @@ public class TimelineManager {
         TimelinePosition position = request.getPosition();
         TimelineClip clip = clipFactoryChain.createClip(request);
         TimelineChannel channelToAddResourceTo = findChannelWithId(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
+        addClip(channelToAddResourceTo, clip);
+
+        return clip;
+    }
+
+    private void addClip(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
         if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
             channelToAddResourceTo.addResource(clip);
         } else {
             throw new IllegalArgumentException("Cannot add clip");
         }
-        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), position, clip, clip.isResizable()));
+        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable()));
         messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors()));
-
-        return clip;
     }
 
     private Optional<TimelineChannel> findChannelWithId(String channelId) {
@@ -163,7 +173,7 @@ public class TimelineManager {
         TimelineChannel channel = findChannelForClipId(clipId)
                 .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
         channel.removeClip(clipId);
-        messagingService.sendAsyncMessage(new ClipRemovedMessage(clipId));
+        messagingService.sendMessage(new ClipRemovedMessage(clipId));
     }
 
     public Optional<TimelineClip> findClipById(String id) {
@@ -284,6 +294,18 @@ public class TimelineManager {
                     .build();
             messagingService.sendAsyncMessage(clipResizedMessage);
         }
+    }
+
+    public void cutClip(String clipId, TimelinePosition globalTimelinePosition) {
+        TimelineChannel channel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("No such channel"));
+        TimelineClip clip = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
+
+        TimelinePosition localPosition = globalTimelinePosition.from(clip.getInterval().getStartPosition());
+        List<TimelineClip> cuttedParts = clip.createCutClipParts(localPosition);
+
+        removeResource(clipId);
+        addClip(channel, cuttedParts.get(0));
+        addClip(channel, cuttedParts.get(1));
     }
 
 }

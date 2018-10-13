@@ -9,9 +9,10 @@ import java.util.stream.Collectors;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 public abstract class TimelineClip implements IntervalAware {
-    private String id;
-    private TimelineInterval interval;
-    private TimelineClipType type;
+    protected String id;
+    protected TimelineInterval interval;
+    protected TimelineClipType type;
+    protected TimelineLength renderOffset = TimelineLength.ofZero();
 
     protected List<NonIntersectingIntervalList<StatelessEffect>> effectChannels = new ArrayList<>();
 
@@ -94,4 +95,27 @@ public abstract class TimelineClip implements IntervalAware {
     }
 
     public abstract boolean isResizable();
+
+    protected abstract TimelineClip cloneClip();
+
+    protected void changeRenderStartPosition(TimelinePosition position) {
+        this.renderOffset = position.toLength();
+        this.interval = this.interval.butWithStartPosition(position);
+    }
+
+    protected void changeRenderEndPosition(TimelinePosition localPosition) {
+        this.interval = this.interval.butWithEndPosition(localPosition);
+    }
+
+    public List<TimelineClip> createCutClipParts(TimelinePosition localPosition) {
+        TimelineClip clipOne = this.cloneClip();
+        TimelineClip clipTwo = this.cloneClip();
+
+        clipOne.changeRenderEndPosition(localPosition);
+        clipTwo.changeRenderStartPosition(localPosition);
+        // TODO: same for effects
+
+        return List.of(clipOne, clipTwo);
+    }
+
 }

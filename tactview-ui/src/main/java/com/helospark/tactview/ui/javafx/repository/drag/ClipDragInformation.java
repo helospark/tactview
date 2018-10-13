@@ -9,7 +9,6 @@ public class ClipDragInformation {
     private TimelinePosition originalPosition;
     private String clipId;
     private String originalChannelId;
-    private boolean isFirstAdded;
 
     public ClipDragInformation(Group node, TimelinePosition originalPosition, String clipId, String originalChannelId) {
         this.node = node;

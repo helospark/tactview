@@ -64,14 +64,16 @@ public class TimelineChannel {
 
         clips.remove(clipToMove);
 
+        boolean success = false;
+
         if (canAddResourceAt(newInterval)) {
             clipToMove.setInterval(newInterval);
-            clips.addInterval(clipToMove);
-            return true;
+            success = true;
         } else {
-            return false;
+            success = false;
         }
-
+        clips.addInterval(clipToMove);
+        return success;
     }
 
     public Optional<TimelineClip> findClipContainingEffect(String effectId) {
@@ -100,5 +102,4 @@ public class TimelineChannel {
             return false;
         }
     }
-
 }

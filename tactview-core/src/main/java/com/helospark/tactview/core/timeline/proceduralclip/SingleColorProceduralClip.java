@@ -7,6 +7,7 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -97,6 +98,11 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
     @Override
     public boolean isResizable() {
         return true;
+    }
+
+    @Override
+    protected TimelineClip cloneClip() {
+        return new SingleColorProceduralClip(mediaMetadata, interval);
     }
 
 }

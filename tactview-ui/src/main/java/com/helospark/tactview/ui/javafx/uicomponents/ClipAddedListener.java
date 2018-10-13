@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -11,6 +13,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
+import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.TimelineImagePatternService;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
@@ -38,6 +41,9 @@ public class ClipAddedListener {
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
 
+    @Slf4j
+    private Logger logger;
+
     public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder, ProjectRepository projectRepository,
             UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository) {
         this.timelineImagePatternService = timelineImagePatternService;
@@ -60,6 +66,7 @@ public class ClipAddedListener {
         initializeProjectOnFirstVideoClipAdded(clip);
 
         timelineState.addClipForChannel(message.getChannelId(), message.getClipId(), createClip(message));
+        logger.debug("Clip {} added successfuly", message.getClipId());
     }
 
     private void initializeProjectOnFirstVideoClipAdded(TimelineClip clip) {

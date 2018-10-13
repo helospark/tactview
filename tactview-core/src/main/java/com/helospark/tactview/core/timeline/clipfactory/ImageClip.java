@@ -8,6 +8,7 @@ import com.helospark.tactview.core.decoder.MediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.MediaSource;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
@@ -44,6 +45,11 @@ public class ImageClip extends VisualTimelineClip {
     @Override
     public boolean isResizable() {
         return true;
+    }
+
+    @Override
+    protected TimelineClip cloneClip() {
+        return new ImageClip(mediaSource, mediaMetadata, this.interval.getStartPosition(), this.interval.getLength());
     }
 
 }

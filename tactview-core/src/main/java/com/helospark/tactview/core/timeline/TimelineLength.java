@@ -21,7 +21,7 @@ public class TimelineLength implements SecondsAware {
     }
 
     public static TimelineLength getLength(TimelinePosition startPosition, TimelinePosition endPosition) {
-        return new TimelineLength(endPosition.getSeconds().subtract(endPosition.getSeconds()));
+        return new TimelineLength(endPosition.getSeconds().subtract(startPosition.getSeconds()));
     }
 
     public static TimelineLength ofMicroseconds(long lengthInMicroseconds) {
