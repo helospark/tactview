@@ -15,7 +15,6 @@ import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.application.Platform;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -64,7 +63,7 @@ public class TimelineDragAndDropHandler {
                                     try {
                                         String addedClipId = res.getAddedClipId();
                                         System.out.println("Clip added " + addedClipId);
-                                        Group addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
+                                        Pane addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
                                         ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId);
                                         dragRepository.onClipDragged(clipDragInformation);
                                     } catch (Exception e1) {

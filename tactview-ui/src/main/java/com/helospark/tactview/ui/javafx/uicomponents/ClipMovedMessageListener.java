@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 import javafx.application.Platform;
-import javafx.scene.Group;
+import javafx.scene.layout.Pane;
 
 @Component
 public class ClipMovedMessageListener {
@@ -27,7 +27,7 @@ public class ClipMovedMessageListener {
         }));
     }
 
-    private void move(ClipMovedMessage message, Group group) {
+    private void move(ClipMovedMessage message, Pane group) {
         group.setTranslateX(timelineState.secondsToPixels(message.getNewPosition()));
         timelineState.changeChannelFor(group, message.getChannelId());
     }

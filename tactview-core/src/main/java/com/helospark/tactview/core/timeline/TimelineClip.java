@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
-public abstract class TimelineClip implements IntervalAware {
+public abstract class TimelineClip implements IntervalAware, IntervalSettable {
     protected String id;
     protected TimelineInterval interval;
     protected TimelineClipType type;
@@ -37,6 +37,7 @@ public abstract class TimelineClip implements IntervalAware {
 
     public abstract List<ValueProviderDescriptor> getDescriptors();
 
+    @Override
     public void setInterval(TimelineInterval newInterval) {
         this.interval = newInterval;
     }
@@ -70,12 +71,22 @@ public abstract class TimelineClip implements IntervalAware {
         return Optional.empty();
     }
 
-    public boolean moveEffect(StatelessEffect effect, TimelinePosition newPosition, int newEffectChannelId) {
-        NonIntersectingIntervalList<StatelessEffect> originalEffectChannel = getChannelByIndex(newEffectChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find effect channel"));
-        NonIntersectingIntervalList<StatelessEffect> newEffectChannel = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("Cannot find effect channel"));
+    public boolean moveEffect(StatelessEffect effect, TimelinePosition globalNewPosition, int newEffectChannelId) {
+        NonIntersectingIntervalList<StatelessEffect> newEffectChannel = getChannelByIndex(newEffectChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find effect channel"));
+        NonIntersectingIntervalList<StatelessEffect> originalEffectChannel = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("Cannot find effect channel"));
         originalEffectChannel.remove(effect);
-        effect.setInterval(new TimelineInterval(newPosition, effect.getInterval().getWidth()));
-        return newEffectChannel.addInterval(effect);
+        TimelinePosition localPosition = globalNewPosition.from(this.interval.getStartPosition());
+        TimelineInterval newInterval = new TimelineInterval(localPosition, effect.getInterval().getWidth());
+        if (newEffectChannel.canAddInterval(newInterval) &&
+                newInterval.getStartPosition().isGreaterThan(TimelinePosition.ofZero()) &&
+                newInterval.getEndPosition().isLessThan(this.interval.getEndPosition())) {
+            effect.setInterval(newInterval);
+            newEffectChannel.addInterval(effect);
+            return true;
+        } else {
+            originalEffectChannel.addInterval(effect);
+            return false;
+        }
     }
 
     public <T extends StatelessEffect> List<T> getEffectsAt(TimelinePosition position, Class<T> type) {
@@ -116,6 +127,16 @@ public abstract class TimelineClip implements IntervalAware {
         // TODO: same for effects
 
         return List.of(clipOne, clipTwo);
+    }
+
+    public boolean resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {
+        //        TimelinePosition localPositon = globalPosition.from(this.interval.getStartPosition());
+        NonIntersectingIntervalList<StatelessEffect> channel = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("No such channel"));
+
+        TimelineInterval originalInterval = effect.getInterval();
+        TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(globalPosition) : originalInterval.butWithEndPosition(globalPosition);
+
+        return channel.resize(effect, newInterval);
     }
 
 }

@@ -185,6 +185,13 @@
 	-fx-opacity: 1.0;
 }
 
+.timeline-clip {
+    -fx-border-color: blue;
+    -fx-border-insets: 5;
+    -fx-border-width: 3;
+    -fx-border-style: dashed;
+}
+
 .timeline-clip.primary-active .clip-rectangle {
    -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
 }

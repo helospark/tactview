@@ -5,9 +5,10 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddEffectCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
+import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -27,40 +28,67 @@ public class EffectDragAdder {
         this.dragRepository = dragRepository;
     }
 
-    public void addEffectDragOnClip(Node effectNode, Group timelineRow, String clipId) {
-        effectNode.setOnDragEntered(event -> {
+    public void addEffectDragOnClip(Node clipPane, String clipId) {
+        clipPane.setOnDragEntered(event -> {
+            System.out.println("Effect drag entered");
             Dragboard db = event.getDragboard();
-            if (db.getString().startsWith("effect") && !draggingEffect()) {
+            if (db.getString().startsWith("effect:") && !draggingEffect()) {
                 System.out.println("Adding dragged effect");
                 TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
                 AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
                 commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
-                    dragRepository.onEffectDragged(new EffectDragInformation(effectNode, clipId, result.getAddedEffectId(), position));
+                    dragRepository.onEffectDragged(new EffectDragInformation(clipPane, clipId, result.getAddedEffectId(), position));
                 });
             }
         });
 
-        effectNode.setOnDragExited(event -> {
+        clipPane.setOnDragExited(event -> {
         });
 
-        effectNode.setOnDragOver(event -> {
+        clipPane.setOnDragOver(event -> {
             System.out.println("Effect drag over");
             if (draggingEffect()) {
                 System.out.println("Dragging effect");
-                moveEffect(effectNode, event, false);
+                if (dragRepository.isResizing()) {
+                    resizeEffect(clipPane, event, false);
+                } else {
+                    moveEffect(clipPane, event, false);
+                }
 
                 event.acceptTransferModes(TransferMode.LINK);
                 event.consume();
             }
         });
 
-        effectNode.setOnDragDropped(event -> {
+        clipPane.setOnDragDropped(event -> {
             if (draggingEffect()) {
-                moveEffect(effectNode, event, true);
+                if (dragRepository.isResizing()) {
+                    resizeEffect(clipPane, event, true);
+                } else {
+                    moveEffect(clipPane, event, true);
+                }
                 dragRepository.clearEffectDrag();
             }
         });
 
+    }
+
+    private void resizeEffect(Node clipPane, DragEvent event, boolean revertable) {
+        EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
+
+        double x = event.getX();
+
+        System.out.println("Move to " + x);
+
+        EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
+                .withEffectId(draggedEffect.getEffectId())
+                .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
+                .withGlobalPosition(timelineState.pixelsToSeconds(x))
+                .withRevertable(revertable)
+                .withTimelineManager(timelineManager)
+                .build();
+
+        commandInterpreter.sendWithResult(resizedCommand);
     }
 
     private void moveEffect(Node effectNode, DragEvent event, boolean revertable) {
@@ -71,7 +99,7 @@ public class EffectDragAdder {
                 .withEffectId(draggedEffect.getEffectId())
                 .withOriginalClipId(draggedEffect.getClipId())
                 .withNewClipId((String) effectNode.getUserData())
-                .withNewPosition(position)
+                .withLocalNewPosition(position)
                 .withRevertable(revertable)
                 .withOriginalPosition(draggedEffect.getOriginalPosition())
                 .withTimelineManager(timelineManager)

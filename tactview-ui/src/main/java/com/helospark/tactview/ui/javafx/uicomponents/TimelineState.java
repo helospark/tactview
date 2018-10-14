@@ -18,7 +18,6 @@ import javafx.beans.value.ObservableDoubleValue;
 import javafx.beans.value.ObservableIntegerValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -39,7 +38,7 @@ public class TimelineState {
     private MessagingService messagingService;
 
     private ObservableList<HBox> channels = FXCollections.observableArrayList();
-    private Map<String, ObservableList<Group>> channelToClips = new HashMap<>();
+    private Map<String, ObservableList<Pane>> channelToClips = new HashMap<>();
     private Map<String, ObservableList<Node>> clipsToEffects = new HashMap<>();
 
     public TimelineState(
@@ -99,8 +98,8 @@ public class TimelineState {
                 .findFirst();
     }
 
-    public void addClipForChannel(String channelId, String clipId, Group createClip) {
-        ObservableList<Group> channel = channelToClips.get(channelId);
+    public void addClipForChannel(String channelId, String clipId, Pane createClip) {
+        ObservableList<Pane> channel = channelToClips.get(channelId);
         if (channel == null) {
             throw new IllegalArgumentException("Channel doesn't exist");
         }
@@ -110,7 +109,7 @@ public class TimelineState {
         clipsToEffects.put(clipId, effects);
     }
 
-    public Optional<Group> findClipById(String clipId) {
+    public Optional<Pane> findClipById(String clipId) {
         return channelToClips.values()
                 .stream()
                 .flatMap(list -> list.stream())
@@ -119,9 +118,9 @@ public class TimelineState {
     }
 
     public void removeClip(String elementId) {
-        Optional<Group> clipToRemove = findClipById(elementId);
+        Optional<Pane> clipToRemove = findClipById(elementId);
         if (clipToRemove.isPresent()) {
-            Group actualClip = clipToRemove.get();
+            Pane actualClip = clipToRemove.get();
             Pane parent = (Pane) actualClip.getParent();
             parent.getChildren().remove(actualClip);
         }
@@ -152,7 +151,7 @@ public class TimelineState {
     public void addChannel(Integer index, String channelId, HBox timeline) {
         timeline.setUserData(channelId);
         channels.add(index, timeline);
-        ObservableList<Group> newList = FXCollections.observableArrayList();
+        ObservableList<Pane> newList = FXCollections.observableArrayList();
         Bindings.bindContentBidirectional((ObservableList<Node>) (Object) newList, ((Pane) timeline.getChildren().get(0)).getChildren());
         channelToClips.put(channelId, newList);
     }
@@ -165,7 +164,7 @@ public class TimelineState {
         channelToClips.remove(channelId);
     }
 
-    public Optional<HBox> findChannelForClip(Group group) {
+    public Optional<HBox> findChannelForClip(Pane group) {
         return channelToClips.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().contains(group))
@@ -178,7 +177,7 @@ public class TimelineState {
         effectList.add(createEffect);
     }
 
-    public void changeChannelFor(Group clip, String newChannelId) {
+    public void changeChannelFor(Pane clip, String newChannelId) {
         HBox originalChannel = findChannelForClip(clip).orElse(null);
         if (!originalChannel.getUserData().equals(newChannelId)) {
             //            removeClip((String) clip.getUserData());

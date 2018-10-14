@@ -13,7 +13,7 @@ public class EffectMovedCommand implements UiCommand {
     private String newClipId;
 
     private TimelinePosition originalPosition;
-    private TimelinePosition newPosition;
+    private TimelinePosition localNewPosition;
 
     private boolean revertable;
 
@@ -25,14 +25,14 @@ public class EffectMovedCommand implements UiCommand {
         this.originalClipId = builder.originalClipId;
         this.newClipId = builder.newClipId;
         this.originalPosition = builder.originalPosition;
-        this.newPosition = builder.newPosition;
+        this.localNewPosition = builder.localNewPosition;
         this.revertable = builder.revertable;
         this.timelineManager = builder.timelineManager;
     }
 
     @Override
     public void execute() {
-        timelineManager.moveEffect(effectId, newPosition, newClipId, 0); // todo: channels
+        timelineManager.moveEffect(effectId, localNewPosition, newClipId, 0); // todo: channels
     }
 
     @Override
@@ -43,6 +43,12 @@ public class EffectMovedCommand implements UiCommand {
     @Override
     public boolean isRevertable() {
         return revertable;
+    }
+
+    @Override
+    public String toString() {
+        return "EffectMovedCommand [effectId=" + effectId + ", originalClipId=" + originalClipId + ", newClipId=" + newClipId + ", originalPosition=" + originalPosition + ", globalNewPosition=" + localNewPosition + ", revertable=" + revertable
+                + ", timelineManager=" + timelineManager + "]";
     }
 
     @Generated("SparkTools")
@@ -56,7 +62,7 @@ public class EffectMovedCommand implements UiCommand {
         private String originalClipId;
         private String newClipId;
         private TimelinePosition originalPosition;
-        private TimelinePosition newPosition;
+        private TimelinePosition localNewPosition;
         private boolean revertable;
         private TimelineManager timelineManager;
 
@@ -83,8 +89,8 @@ public class EffectMovedCommand implements UiCommand {
             return this;
         }
 
-        public Builder withNewPosition(TimelinePosition newPosition) {
-            this.newPosition = newPosition;
+        public Builder withLocalNewPosition(TimelinePosition localNewPosition) {
+            this.localNewPosition = localNewPosition;
             return this;
         }
 

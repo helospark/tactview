@@ -56,6 +56,12 @@ public class DragRepository {
         return dragDirection;
     }
 
+    public void onEffectResized(EffectDragInformation dragInformation, DragDirection dragDirection) {
+        this.effectDragInformation = dragInformation;
+        this.isResizing = true;
+        this.dragDirection = dragDirection;
+    }
+
     public static enum DragDirection {
         LEFT,
         RIGHT

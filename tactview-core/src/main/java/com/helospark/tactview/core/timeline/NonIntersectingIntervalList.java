@@ -75,4 +75,19 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         return intervalAwares.contains(effect);
     }
 
+    public <H extends IntervalSettable> boolean resize(H clip, TimelineInterval newInterval) {
+        if (newInterval.getWidth().getSeconds().doubleValue() < 0.0) {
+            return false;
+        }
+        this.remove((T) clip);
+        if (canAddInterval(newInterval)) {
+            clip.setInterval(newInterval);
+            this.addInterval((T) clip);
+            return true;
+        } else {
+            this.addInterval((T) clip);
+            return false;
+        }
+    }
+
 }

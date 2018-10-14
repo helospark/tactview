@@ -23,7 +23,7 @@ public class EffectMovedListener {
         this.messagingService.register(EffectMovedMessage.class, message -> Platform.runLater(() -> {
             int position = timelineState.secondsToPixels(message.getNewPosition());
             timelineState.findEffectById(message.getEffectId())
-                    .ifPresent(effect -> effect.setTranslateX(position));
+                    .ifPresent(effect -> effect.setLayoutX(position));
 
             // TODO: rest
             if (!message.getNewClipId().equals(message.getOriginalClipId())) {

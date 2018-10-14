@@ -21,6 +21,7 @@ import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
+import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -156,7 +157,7 @@ public class TimelineManager {
         VisualTimelineClip clipById = (VisualTimelineClip) findClipById(id).get();
         StatelessVideoEffect effect = (StatelessVideoEffect) createEffect(effectId, position); // sound?
         clipById.addEffect(effect);
-        messagingService.sendAsyncMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect));
+        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect));
         return effect;
     }
 
@@ -243,28 +244,28 @@ public class TimelineManager {
         return true;
     }
 
-    public boolean moveEffect(String effectId, TimelinePosition newPosition, String newClipId, int newEffectChannel) {
+    public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, String newClipId, int newEffectChannel) {
         TimelineClip currentClip = findClipForEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
         StatelessEffect effect = currentClip.getEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Effect not found"));
         if (currentClip.getId().equals(newClipId)) {
             TimelineInterval interval = effect.getInterval();
-            boolean success = currentClip.moveEffect(effect, newPosition, newEffectChannel);
+            boolean success = currentClip.moveEffect(effect, globalNewPosition, newEffectChannel);
 
             EffectMovedMessage message = EffectMovedMessage.builder()
                     .withEffectId(effectId)
                     .withOriginalClipId(currentClip.getId())
                     .withNewClipId(newClipId)
                     .withOldPosition(interval.getStartPosition())
-                    .withNewPosition(newPosition)
+                    .withNewPosition(effect.getInterval().getStartPosition())
                     .withNewChannelIndex(newEffectChannel)
                     .build();
 
-            messagingService.sendAsyncMessage(message);
+            messagingService.sendMessage(message);
 
             return success;
         } else {
             TimelineClip newClip = findClipById(newClipId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
-            TimelineInterval newInterval = new TimelineInterval(newPosition, effect.getInterval().getWidth());
+            TimelineInterval newInterval = new TimelineInterval(globalNewPosition, effect.getInterval().getWidth());
             if (newClip.canAddEffectAt(newEffectChannel, newInterval)) {
                 //                currentClip.removeEffect(effect);
                 //                effect.setInterval(newInterval);
@@ -292,7 +293,22 @@ public class TimelineManager {
                     .withClipId(clip.getId())
                     .withNewInterval(renewedClip.getInterval())
                     .build();
-            messagingService.sendAsyncMessage(clipResizedMessage);
+            messagingService.sendMessage(clipResizedMessage);
+        }
+    }
+
+    public void resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {
+        TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
+        boolean success = clip.resizeEffect(effect, left, globalPosition);
+
+        if (success) {
+            StatelessEffect renewedClip = findEffectById(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such effect"));
+            EffectResizedMessage clipResizedMessage = EffectResizedMessage.builder()
+                    .withClipId(clip.getId())
+                    .withEffectId(renewedClip.getId())
+                    .withNewInterval(renewedClip.getInterval())
+                    .build();
+            messagingService.sendMessage(clipResizedMessage);
         }
     }
 

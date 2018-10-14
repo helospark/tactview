@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
-public abstract class StatelessEffect implements IntervalAware {
+public abstract class StatelessEffect implements IntervalAware, IntervalSettable {
     String id;
     TimelineInterval interval;
 
@@ -25,6 +25,7 @@ public abstract class StatelessEffect implements IntervalAware {
 
     public abstract List<ValueProviderDescriptor> getValueProviders();
 
+    @Override
     public void setInterval(TimelineInterval timelineInterval) {
         this.interval = timelineInterval;
     }

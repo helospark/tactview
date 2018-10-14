@@ -51,4 +51,9 @@ public class TimelineInterval {
         return new TimelineInterval(this.startPosition, newEndPosition);
     }
 
+    @Override
+    public String toString() {
+        return "TimelineInterval [startPosition=" + startPosition + ", length=" + length + ", endPosition=" + endPosition + "]";
+    }
+
 }

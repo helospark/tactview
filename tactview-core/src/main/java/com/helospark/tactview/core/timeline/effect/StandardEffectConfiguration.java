@@ -19,7 +19,7 @@ public class StandardEffectConfiguration {
     @Bean
     public StandardEffectFactory blurEffect(OpenCVBasedGaussianBlur gaussianBlur, MessagingService messagingService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new BlurEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), gaussianBlur))
+                .withFactory(request -> new BlurEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), gaussianBlur))
                 .withMessagingService(messagingService)
                 .withName("Gaussian blur")
                 .withSupportedEffectId("gaussianblur")

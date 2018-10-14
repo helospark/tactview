@@ -32,4 +32,9 @@ public class EffectAddedMessage {
         return effect;
     }
 
+    @Override
+    public String toString() {
+        return "EffectAddedMessage [effectId=" + effectId + ", clipId=" + clipId + ", position=" + position + ", effect=" + effect + "]";
+    }
+
 }

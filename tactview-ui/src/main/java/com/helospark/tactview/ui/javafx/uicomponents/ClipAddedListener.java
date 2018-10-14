@@ -23,10 +23,10 @@ import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.application.Platform;
 import javafx.scene.Cursor;
-import javafx.scene.Group;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 
@@ -91,9 +91,9 @@ public class ClipAddedListener {
         }
     }
 
-    public Group createClip(ClipAddedMessage clipAddedMessage) {
+    public Pane createClip(ClipAddedMessage clipAddedMessage) {
         TimelineClip clip = clipAddedMessage.getClip();
-        Group parentPane = new Group();
+        Pane parentPane = new Pane();
         Rectangle rectangle = new Rectangle();
         int width = timelineState.secondsToPixels(clip.getInterval().getWidth());
         rectangle.setWidth(width);
@@ -101,7 +101,7 @@ public class ClipAddedListener {
         parentPane.translateXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
         parentPane.setUserData(clipAddedMessage.getClipId());
         rectangle.getStyleClass().add("clip-rectangle");
-        effectDragAdder.addEffectDragOnClip(parentPane, parentPane, clip.getId());
+        effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
 
         if (clip instanceof VideoClip) {
             VideoClip videoClip = ((VideoClip) clip);
@@ -121,6 +121,7 @@ public class ClipAddedListener {
         parentPane.getChildren().add(rectangle);
 
         rectangle.setOnDragDetected(e -> {
+            System.out.println("Clip ondrag");
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
             double currentX = e.getX();
 
