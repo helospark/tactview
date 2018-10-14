@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.Saveable;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
@@ -26,7 +28,7 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
-public class TimelineManager {
+public class TimelineManager implements Saveable {
     // state
     private List<StatelessVideoEffect> globalEffects;
     private CopyOnWriteArrayList<TimelineChannel> channels = new CopyOnWriteArrayList<>();
@@ -39,13 +41,16 @@ public class TimelineManager {
     private MessagingService messagingService;
     private ClipFactoryChain clipFactoryChain;
     private FrameBufferMerger frameBufferMerger;
+    private ObjectMapper objectMapper;
 
     public TimelineManager(FrameBufferMerger frameBufferMerger,
-            List<EffectFactory> effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain) {
+            List<EffectFactory> effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
+            ObjectMapper objectMapper) {
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
         this.frameBufferMerger = frameBufferMerger;
+        this.objectMapper = objectMapper;
     }
 
     public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
@@ -322,6 +327,19 @@ public class TimelineManager {
         removeResource(clipId);
         addClip(channel, cuttedParts.get(0));
         addClip(channel, cuttedParts.get(1));
+    }
+
+    @Override
+    public String generateSavedContent() {
+        for (TimelineChannel channel : channels) {
+            channel.generateSavedContent();
+        }
+        return null;
+    }
+
+    @Override
+    public void loadContent(String data, String id, String version) {
+
     }
 
 }

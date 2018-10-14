@@ -47,7 +47,7 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
             }
         }
 
-        return applyEffects(relativePosition, frameResult);
+        return applyEffects(relativePosition, frameResult, request);
     }
 
     @Override

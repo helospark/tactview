@@ -1,17 +1,27 @@
 package com.helospark.tactview.core.repository;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 import javax.annotation.Generated;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.Saveable;
 
 @Component
-public class ProjectRepository {
+public class ProjectRepository implements Saveable {
+    private ObjectMapper objectMapper;
+
     private boolean isInitialized = false;
     private int width = 0;
     private int height = 0;
     private BigDecimal fps = BigDecimal.ONE;
+
+    public ProjectRepository(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     private ProjectRepository initialize(Builder builder) {
         this.isInitialized = builder.isInitialized;
@@ -74,6 +84,24 @@ public class ProjectRepository {
 
         public ProjectRepository init() {
             return initialize(this);
+        }
+    }
+
+    @Override
+    public String generateSavedContent() {
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Unable to load", e);
+        }
+    }
+
+    @Override
+    public void loadContent(String data, String id, String version) {
+        try {
+            objectMapper.readerForUpdating(this).readValue(data);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to load", e);
         }
     }
 

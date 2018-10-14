@@ -32,24 +32,26 @@ public abstract class VisualTimelineClip extends TimelineClip {
         ByteBuffer frame = requestFrame(relativePosition, width, height);
         ClipFrameResult frameResult = new ClipFrameResult(frame, width, height);
 
-        return applyEffects(relativePosition, frameResult);
+        return applyEffects(relativePosition, frameResult, request);
     }
 
-    protected ClipFrameResult applyEffects(TimelinePosition relativePosition, ClipFrameResult frameResult) {
-        List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition, StatelessVideoEffect.class);
+    protected ClipFrameResult applyEffects(TimelinePosition relativePosition, ClipFrameResult frameResult, GetFrameRequest frameRequest) {
+        if (frameRequest.isApplyEffects()) {
+            List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition, StatelessVideoEffect.class);
 
-        for (StatelessVideoEffect effect : actualEffects) {
-            StatelessEffectRequest request = StatelessEffectRequest.builder()
-                    .withClipPosition(relativePosition)
-                    .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
-                    .withCurrentFrame(frameResult)
-                    .build();
+            for (StatelessVideoEffect effect : actualEffects) {
+                StatelessEffectRequest request = StatelessEffectRequest.builder()
+                        .withClipPosition(relativePosition)
+                        .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
+                        .withCurrentFrame(frameResult)
+                        .build();
 
-            ClipFrameResult appliedEffectsResult = effect.createFrame(request);
+                ClipFrameResult appliedEffectsResult = effect.createFrame(request);
 
-            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(request.getCurrentFrame().getBuffer());
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(request.getCurrentFrame().getBuffer());
 
-            frameResult = appliedEffectsResult; // todo: free up bytebuffer
+                frameResult = appliedEffectsResult; // todo: free up bytebuffer
+            }
         }
         return frameResult;
     }

@@ -91,4 +91,10 @@ public class TimelineChannel {
         TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(position) : originalInterval.butWithEndPosition(position);
         return clips.resize(clip, newInterval);
     }
+
+    public void generateSavedContent() {
+        for (TimelineClip clip : clips) {
+            clip.generateSavedContent();
+        }
+    }
 }

@@ -16,6 +16,8 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     protected List<NonIntersectingIntervalList<StatelessEffect>> effectChannels = new ArrayList<>();
 
+    protected List<ValueProviderDescriptor> valueDescriptors; // TODO: fill
+
     public TimelineClip(TimelineInterval interval, TimelineClipType type) {
         this.id = UUID.randomUUID().toString();
         this.interval = interval;
@@ -35,7 +37,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         return id;
     }
 
-    public abstract List<ValueProviderDescriptor> getDescriptors();
+    protected abstract List<ValueProviderDescriptor> getDescriptors();
 
     @Override
     public void setInterval(TimelineInterval newInterval) {
@@ -137,6 +139,10 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(globalPosition) : originalInterval.butWithEndPosition(globalPosition);
 
         return channel.resize(effect, newInterval);
+    }
+
+    public void generateSavedContent() {
+
     }
 
 }

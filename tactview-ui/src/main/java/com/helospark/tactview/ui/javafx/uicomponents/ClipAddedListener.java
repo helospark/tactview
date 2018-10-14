@@ -103,9 +103,9 @@ public class ClipAddedListener {
         rectangle.getStyleClass().add("clip-rectangle");
         effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
 
-        if (clip instanceof VideoClip) {
-            VideoClip videoClip = ((VideoClip) clip);
-            timelineImagePatternService.createTimelinePattern(videoClip.getBackingSource().backingFile, videoClip.getMediaMetadata(), width)
+        if (clip instanceof VisualTimelineClip) {
+            VisualTimelineClip videoClip = ((VisualTimelineClip) clip);
+            timelineImagePatternService.createTimelinePattern(videoClip, width)
                     .exceptionally(e -> {
                         e.printStackTrace();
                         return null;
