@@ -1,12 +1,15 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
-import java.util.concurrent.CompletableFuture;
+import java.io.File;
+import java.util.List;
+
+import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AddClipRequest;
-import com.helospark.tactview.core.timeline.ClipFactoryChain;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
@@ -23,15 +26,18 @@ import javafx.scene.layout.Pane;
 
 @Component
 public class TimelineDragAndDropHandler {
-    private ClipFactoryChain clipFactoryChain;
     private TimelineManager timelineManager;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineState timelineState;
     private DragRepository dragRepository;
 
-    public TimelineDragAndDropHandler(ClipFactoryChain clipFactoryChain, TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
+    @Slf4j
+    private Logger logger;
+
+    private boolean isLoadingInprogress = false;
+
+    public TimelineDragAndDropHandler(TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
             DragRepository dragRepository) {
-        this.clipFactoryChain = clipFactoryChain;
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
         this.timelineState = timelineState;
@@ -42,41 +48,35 @@ public class TimelineDragAndDropHandler {
         timeline.setOnDragEntered(event -> {
             Dragboard db = event.getDragboard();
 
-            if (dragRepository.currentlyDraggedClip() == null && (db.hasFiles() || isStringClip(db))) {
-                AddClipRequest metadataRequest = createAddClipRequest(db);
-                CompletableFuture.supplyAsync(() -> {
-                    return clipFactoryChain.readMetadata(metadataRequest);
-                }).exceptionally(e -> {
-                    e.printStackTrace();
-                    return null;
-                }).thenAccept(metadata -> {
-                    Platform.runLater(() -> {
-                        System.out.println("K=" + metadata);
-                        AddClipRequest addClipRequest = addClipRequest(channelId, event);
-                        System.out.println(addClipRequest);
-                        commandInterpreter.sendWithResult(new AddClipsCommand(addClipRequest, timelineManager))
-                                .exceptionally(e -> {
-                                    e.printStackTrace();
-                                    return null;
-                                })
-                                .thenAccept(res -> {
-                                    try {
-                                        String addedClipId = res.getAddedClipId();
-                                        System.out.println("Clip added " + addedClipId);
-                                        Pane addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
-                                        ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId);
-                                        dragRepository.onClipDragged(clipDragInformation);
-                                    } catch (Exception e1) {
-                                        e1.printStackTrace();
-                                    }
-                                });
-                    });
-                });
+            List<File> dbFiles = db.getFiles();
+            String dbString = db.getString();
+            double currentX = event.getX();
+            AddClipRequest addClipRequest = addClipRequest(channelId, dbFiles, dbString, currentX);
+
+            if (!isLoadingInprogress && dragRepository.currentlyDraggedClip() == null && ((dbFiles != null && !dbFiles.isEmpty()) || isStringClip(db))) {
+                isLoadingInprogress = true;
+                commandInterpreter.sendWithResult(new AddClipsCommand(addClipRequest, timelineManager))
+                        .exceptionally(e -> {
+                            logger.warn("Error while adding clip", e);
+                            isLoadingInprogress = false;
+                            return null;
+                        })
+                        .thenAccept(res -> {
+                            Platform.runLater(() -> {
+                                try {
+                                    String addedClipId = res.getAddedClipId();
+                                    logger.debug("Clip added " + addedClipId);
+                                    Pane addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
+                                    ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId);
+                                    dragRepository.onClipDragged(clipDragInformation);
+                                } catch (Exception e1) {
+                                    logger.warn("Error while adding clip", e1);
+                                } finally {
+                                    isLoadingInprogress = false;
+                                }
+                            });
+                        });
             }
-        });
-
-        timeline.setOnDragExited(event -> {
-
         });
 
         timeline.setOnDragOver(event -> {
@@ -104,26 +104,16 @@ public class TimelineDragAndDropHandler {
 
     }
 
-    private AddClipRequest addClipRequest(String channelId, DragEvent event) {
-        String filePath = extractFilePathOrNull(event.getDragboard());
-        String proceduralClipId = extractProceduralEffectOrNull(event.getDragboard());
-        TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
+    private AddClipRequest addClipRequest(String channelId, List<File> dbFiles, String dbString, double currentX) {
+        String filePath = extractFilePathOrNull(dbFiles);
+        String proceduralClipId = extractProceduralEffectOrNull(dbString);
+        TimelinePosition position = timelineState.pixelsToSeconds(currentX);
 
         return AddClipRequest.builder()
                 .withChannelId(channelId)
                 .withPosition(position)
                 .withFilePath(filePath)
                 .withProceduralClipId(proceduralClipId)
-                .build();
-    }
-
-    private AddClipRequest createAddClipRequest(Dragboard db) {
-        String file = extractFilePathOrNull(db);
-        String proceduralClipId = extractProceduralEffectOrNull(db);
-        String finalProceduralClipId = proceduralClipId;
-        return AddClipRequest.builder()
-                .withFilePath(file) // todo: what about rest of params?
-                .withProceduralClipId(finalProceduralClipId)
                 .build();
     }
 
@@ -172,9 +162,9 @@ public class TimelineDragAndDropHandler {
         return false;
     }
 
-    private String extractProceduralEffectOrNull(Dragboard db) {
-        String proceduralClipId = db.getString();
-        if (proceduralClipId.startsWith("clip:")) {
+    private String extractProceduralEffectOrNull(String dbString) {
+        String proceduralClipId = dbString;
+        if (proceduralClipId != null && proceduralClipId.startsWith("clip:")) {
             proceduralClipId = proceduralClipId.replaceFirst("clip:", "");
         } else {
             proceduralClipId = null;
@@ -182,8 +172,8 @@ public class TimelineDragAndDropHandler {
         return proceduralClipId;
     }
 
-    private String extractFilePathOrNull(Dragboard db) {
-        return db.getFiles().stream().findFirst().map(f -> f.getAbsolutePath()).orElse(null);
+    private String extractFilePathOrNull(List<File> dbFiles) {
+        return dbFiles.stream().findFirst().map(f -> f.getAbsolutePath()).orElse(null);
     }
 
 }

@@ -63,7 +63,6 @@ public class TimelineManager implements Saveable {
 
     public TimelineClip addResource(AddClipRequest request) {
         String channelId = request.getChannelId();
-        TimelinePosition position = request.getPosition();
         TimelineClip clip = clipFactoryChain.createClip(request);
         TimelineChannel channelToAddResourceTo = findChannelWithId(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
         addClip(channelToAddResourceTo, clip);
