@@ -86,6 +86,7 @@ public class JavaFXUiMain extends Application {
     static UiProjectRepository uiProjectRepository;
     private static UiProjectRepository uiProjectRepostiory;
     static PropertyView effectPropertyView;
+    static UiRenderService renderService;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -96,12 +97,21 @@ public class JavaFXUiMain extends Application {
         root.getStylesheets().add("stylesheet.css");
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("_File");
+        Menu project = new Menu("_Project");
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setAccelerator(new KeyCodeCombination(KeyCode.X, KeyCombination.SHORTCUT_DOWN));
         exitItem.setOnAction(ae -> Platform.exit());
 
+        MenuItem render = new MenuItem("Render");
+        render.setOnAction(e -> {
+            renderService.renderProject();
+        });
+
+        project.getItems().add(render);
+
         fileMenu.getItems().add(exitItem);
         menuBar.getMenus().add(fileMenu);
+        menuBar.getMenus().add(project);
 
         root.setTop(menuBar);
         stage.setScene(scene);
@@ -261,6 +271,7 @@ public class JavaFXUiMain extends Application {
         uiTimelineManager.registerConsumer(position -> updateDisplay(position));
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
         uiProjectRepostiory = lightDi.getBean(UiProjectRepository.class);
+        renderService = lightDi.getBean(UiRenderService.class);
         lightDi.eagerInitAllBeans();
 
         launch(args);

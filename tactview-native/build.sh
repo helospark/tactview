@@ -12,3 +12,6 @@ cp libopencvscale.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvrotate.so -o libopencvrotate.so opencvrotate.cpp `pkg-config --libs opencv` 
 cp libopencvrotate.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+g++ -w -shared -fPIC -Wl,-soname,libffmpegmediaencoder.so -o libffmpegmediaencoder.so ffmpegmediaencoder.cpp -lavcodec -lavformat -lavutil -lswscale
+cp libffmpegmediaencoder.so ../tactview-core/src/main/resources/linux-x86-64/.
