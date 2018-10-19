@@ -95,7 +95,7 @@ public class ClipAddedListener {
         TimelineClip clip = clipAddedMessage.getClip();
         Pane parentPane = new Pane();
         Rectangle rectangle = new Rectangle();
-        int width = timelineState.secondsToPixels(clip.getInterval().getWidth());
+        int width = timelineState.secondsToPixels(clip.getInterval().getLength());
         rectangle.setWidth(width);
         rectangle.setHeight(50);
         parentPane.translateXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));

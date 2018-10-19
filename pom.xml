@@ -8,6 +8,5 @@
   <modules>
     <module>tactview-ui</module>
     <module>tactview-core</module>
-    <module>tactview-ui-api</module>
   </modules>
 </project>

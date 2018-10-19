@@ -62,4 +62,12 @@ public class TimelineLength implements SecondsAware {
         return new TimelineLength(BigDecimal.valueOf(i).divide(BigDecimal.valueOf(1000)));
     }
 
+    public boolean lessThan(TimelineLength length) {
+        return this.getSeconds().compareTo(length.getSeconds()) < 0;
+    }
+
+    public boolean greaterThan(TimelineLength length) {
+        return this.getSeconds().compareTo(length.getSeconds()) > 0;
+    }
+
 }

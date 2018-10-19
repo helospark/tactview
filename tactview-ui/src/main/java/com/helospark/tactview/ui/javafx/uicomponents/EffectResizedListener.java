@@ -26,7 +26,7 @@ public class EffectResizedListener {
                     .ifPresent(effectNode -> {
                         TimelineInterval interval = message.getNewInterval();
                         double startPosition = timelineState.secondsToPixels(interval.getStartPosition());
-                        double width = timelineState.secondsToPixels(interval.getWidth());
+                        double width = timelineState.secondsToPixels(interval.getLength());
 
                         effectNode.setLayoutX(startPosition);
                         ((Rectangle) effectNode).setWidth(width);

@@ -73,22 +73,52 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         return Optional.empty();
     }
 
-    public boolean moveEffect(StatelessEffect effect, TimelinePosition globalNewPosition, int newEffectChannelId) {
-        NonIntersectingIntervalList<StatelessEffect> newEffectChannel = getChannelByIndex(newEffectChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find effect channel"));
+    public int addEffectAtAnyChannel(StatelessEffect effect) {
+        int i = findOrCreateFirstChannelWhichEffectCanBeAdded(effect);
+        effectChannels.get(i).addInterval(effect);
+        return i;
+    }
+
+    private int findOrCreateFirstChannelWhichEffectCanBeAdded(StatelessEffect effect) {
+        for (int i = 0; i < effectChannels.size(); ++i) {
+            NonIntersectingIntervalList<StatelessEffect> currentChannel = effectChannels.get(i);
+            if (currentChannel.canAddInterval(effect.getInterval())) {
+                return i;
+            }
+        }
+        NonIntersectingIntervalList<StatelessEffect> newList = new NonIntersectingIntervalList<>();
+        effectChannels.add(newList);
+        return effectChannels.size() - 1;
+    }
+
+    public int moveEffect(StatelessEffect effect, TimelinePosition globalNewPosition) {
         NonIntersectingIntervalList<StatelessEffect> originalEffectChannel = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("Cannot find effect channel"));
         originalEffectChannel.remove(effect);
-        TimelinePosition localPosition = globalNewPosition.from(this.interval.getStartPosition());
-        TimelineInterval newInterval = new TimelineInterval(localPosition, effect.getInterval().getWidth());
-        if (newEffectChannel.canAddInterval(newInterval) &&
-                newInterval.getStartPosition().isGreaterThan(TimelinePosition.ofZero()) &&
-                newInterval.getEndPosition().isLessThan(this.interval.getEndPosition())) {
-            effect.setInterval(newInterval);
-            newEffectChannel.addInterval(effect);
-            return true;
-        } else {
-            originalEffectChannel.addInterval(effect);
-            return false;
+
+        TimelineInterval newInterval = newIntervalToBounds(effect, globalNewPosition);
+        effect.setInterval(newInterval);
+
+        int newChannelIndex = findOrCreateFirstChannelWhichEffectCanBeAdded(effect);
+        effectChannels.get(newChannelIndex).addInterval(effect);
+
+        return newChannelIndex;
+    }
+
+    private TimelineInterval newIntervalToBounds(StatelessEffect effect, TimelinePosition globalNewPosition) {
+        TimelinePosition localPosition = globalNewPosition;
+        TimelineInterval newInterval = new TimelineInterval(localPosition, effect.getInterval().getLength());
+        TimelineInterval localClipInterval = this.interval.butMoveStartPostionTo(TimelinePosition.ofZero());
+        if (newInterval.getLength().greaterThan(interval.getLength())) {
+            newInterval = newInterval.butWithEndPosition(newInterval.getStartPosition().add(interval.getLength()));
         }
+        if (newInterval.getStartPosition().isLessThan(localClipInterval.getStartPosition())) {
+            newInterval = newInterval.butMoveStartPostionTo(TimelinePosition.ofZero());
+        }
+        if (newInterval.getEndPosition().isGreaterThan(localClipInterval.getEndPosition())) {
+            TimelinePosition difference = newInterval.getEndPosition().subtract(localClipInterval.getEndPosition());
+            newInterval = newInterval.butMoveStartPostionTo(newInterval.getStartPosition().subtract(difference));
+        }
+        return newInterval;
     }
 
     public <T extends StatelessEffect> List<T> getEffectsAt(TimelinePosition position, Class<T> type) {

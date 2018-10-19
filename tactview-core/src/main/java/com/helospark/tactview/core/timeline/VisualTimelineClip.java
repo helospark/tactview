@@ -58,16 +58,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public abstract ByteBuffer requestFrame(TimelinePosition position, int width, int height);
 
-    public void addEffect(StatelessEffect effect) {
-        if (effectChannels.isEmpty()) {
-            NonIntersectingIntervalList<StatelessEffect> newList = new NonIntersectingIntervalList<>();
-            effectChannels.add(newList);
-            newList.addInterval(effect);
-        } else {
-            effectChannels.get(0).addInterval(effect);
-        }
-    }
-
     public List<NonIntersectingIntervalList<StatelessEffect>> getEffectChannels() {
         return effectChannels;
     }

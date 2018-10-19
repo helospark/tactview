@@ -89,4 +89,8 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
         return this.getSeconds().compareTo(other.getSeconds()) <= 0;
     }
 
+    public TimelinePosition subtract(TimelinePosition endPosition) {
+        return new TimelinePosition(this.getSeconds().subtract(endPosition.getSeconds()));
+    }
+
 }

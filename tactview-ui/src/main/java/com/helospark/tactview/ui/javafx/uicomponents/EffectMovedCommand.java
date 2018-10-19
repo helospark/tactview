@@ -32,12 +32,12 @@ public class EffectMovedCommand implements UiCommand {
 
     @Override
     public void execute() {
-        timelineManager.moveEffect(effectId, localNewPosition, newClipId, 0); // todo: channels
+        timelineManager.moveEffect(effectId, localNewPosition, newClipId);
     }
 
     @Override
     public void revert() {
-        timelineManager.moveEffect(effectId, originalPosition, originalClipId, 0);
+        timelineManager.moveEffect(effectId, originalPosition, originalClipId);
     }
 
     @Override

@@ -19,6 +19,8 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectAddedListener {
+    public static final int EFFECTS_OFFSET = 50;
+    public static final int EFFECT_HEIGHT = 30;
     private MessagingService messagingService;
     private TimelineState timelineState;
     private PropertyView effectPropertyView;
@@ -47,11 +49,11 @@ public class EffectAddedListener {
 
     public Node createEffect(EffectAddedMessage effectAddedMessage) {
         Rectangle rectangle = new Rectangle();
-        int width = timelineState.secondsToPixels(effectAddedMessage.getEffect().getInterval().getWidth());
+        int width = timelineState.secondsToPixels(effectAddedMessage.getEffect().getInterval().getLength());
         rectangle.setWidth(width);
-        rectangle.setHeight(30);
+        rectangle.setHeight(EFFECT_HEIGHT);
         rectangle.layoutXProperty().set(timelineState.secondsToPixels(effectAddedMessage.getPosition()));
-        rectangle.layoutYProperty().set(60);
+        rectangle.layoutYProperty().set(EFFECTS_OFFSET + EFFECT_HEIGHT * effectAddedMessage.getNewEffectChannelId());
         rectangle.setUserData(effectAddedMessage.getEffectId());
         rectangle.getStyleClass().add("timeline-effect");
 

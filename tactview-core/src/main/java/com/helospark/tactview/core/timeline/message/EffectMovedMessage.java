@@ -47,6 +47,20 @@ public class EffectMovedMessage {
         return newPosition;
     }
 
+    public int getOldChannelIndex() {
+        return oldChannelIndex;
+    }
+
+    public int getNewChannelIndex() {
+        return newChannelIndex;
+    }
+
+    @Override
+    public String toString() {
+        return "EffectMovedMessage [effectId=" + effectId + ", originalClipId=" + originalClipId + ", newClipId=" + newClipId + ", oldPosition=" + oldPosition + ", newPosition=" + newPosition + ", oldChannelIndex=" + oldChannelIndex
+                + ", newChannelIndex=" + newChannelIndex + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();

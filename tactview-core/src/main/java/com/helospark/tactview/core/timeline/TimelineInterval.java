@@ -39,10 +39,6 @@ public class TimelineInterval {
         return isLargerThanStart && isSmallerThanEnd;
     }
 
-    public TimelineLength getWidth() {
-        return new TimelineLength(endPosition.from(startPosition).getSeconds());
-    }
-
     public TimelineInterval butWithStartPosition(TimelinePosition newStartPosition) {
         return new TimelineInterval(newStartPosition, this.endPosition);
     }
@@ -54,6 +50,10 @@ public class TimelineInterval {
     @Override
     public String toString() {
         return "TimelineInterval [startPosition=" + startPosition + ", length=" + length + ", endPosition=" + endPosition + "]";
+    }
+
+    public TimelineInterval butMoveStartPostionTo(TimelinePosition offsetStartPosition) {
+        return new TimelineInterval(offsetStartPosition, offsetStartPosition.add(length));
     }
 
 }

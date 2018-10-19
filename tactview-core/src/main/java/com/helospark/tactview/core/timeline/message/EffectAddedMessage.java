@@ -8,12 +8,14 @@ public class EffectAddedMessage {
     private String clipId;
     private TimelinePosition position;
     private StatelessEffect effect;
+    private int newEffectChannelId;
 
-    public EffectAddedMessage(String effectId, String clipId, TimelinePosition position, StatelessEffect effect) {
+    public EffectAddedMessage(String effectId, String clipId, TimelinePosition position, StatelessEffect effect, int newEffectChannelId) {
         this.effectId = effectId;
         this.clipId = clipId;
         this.position = position;
         this.effect = effect;
+        this.newEffectChannelId = newEffectChannelId;
     }
 
     public String getEffectId() {
@@ -32,9 +34,13 @@ public class EffectAddedMessage {
         return effect;
     }
 
+    public int getNewEffectChannelId() {
+        return newEffectChannelId;
+    }
+
     @Override
     public String toString() {
-        return "EffectAddedMessage [effectId=" + effectId + ", clipId=" + clipId + ", position=" + position + ", effect=" + effect + "]";
+        return "EffectAddedMessage [effectId=" + effectId + ", clipId=" + clipId + ", position=" + position + ", effect=" + effect + ", newEffectChannelId=" + newEffectChannelId + "]";
     }
 
 }

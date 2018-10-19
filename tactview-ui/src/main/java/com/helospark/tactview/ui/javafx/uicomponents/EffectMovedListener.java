@@ -1,5 +1,8 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import static com.helospark.tactview.ui.javafx.uicomponents.EffectAddedListener.EFFECTS_OFFSET;
+import static com.helospark.tactview.ui.javafx.uicomponents.EffectAddedListener.EFFECT_HEIGHT;
+
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
@@ -23,7 +26,10 @@ public class EffectMovedListener {
         this.messagingService.register(EffectMovedMessage.class, message -> Platform.runLater(() -> {
             int position = timelineState.secondsToPixels(message.getNewPosition());
             timelineState.findEffectById(message.getEffectId())
-                    .ifPresent(effect -> effect.setLayoutX(position));
+                    .ifPresent(effect -> {
+                        effect.setLayoutX(position);
+                        effect.setLayoutY(EFFECTS_OFFSET + EFFECT_HEIGHT * message.getNewChannelIndex());
+                    });
 
             // TODO: rest
             if (!message.getNewClipId().equals(message.getOriginalClipId())) {

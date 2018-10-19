@@ -67,6 +67,7 @@ public class EffectDragAdder {
                 } else {
                     moveEffect(clipPane, event, true);
                 }
+                event.getDragboard().clear();
                 dragRepository.clearEffectDrag();
             }
         });

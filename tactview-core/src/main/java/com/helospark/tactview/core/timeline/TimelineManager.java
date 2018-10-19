@@ -159,9 +159,9 @@ public class TimelineManager implements Saveable {
 
     public StatelessEffect addEffectForClip(String id, String effectId, TimelinePosition position) {
         VisualTimelineClip clipById = (VisualTimelineClip) findClipById(id).get();
-        StatelessVideoEffect effect = (StatelessVideoEffect) createEffect(effectId, position); // sound?
-        clipById.addEffect(effect);
-        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect));
+        StatelessEffect effect = createEffect(effectId, position);
+        int newEffectChannelId = clipById.addEffectAtAnyChannel(effect);
+        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect, newEffectChannelId));
         return effect;
     }
 
@@ -248,12 +248,12 @@ public class TimelineManager implements Saveable {
         return true;
     }
 
-    public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, String newClipId, int newEffectChannel) {
+    public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, String newClipId) {
         TimelineClip currentClip = findClipForEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
         StatelessEffect effect = currentClip.getEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Effect not found"));
         if (currentClip.getId().equals(newClipId)) {
             TimelineInterval interval = effect.getInterval();
-            boolean success = currentClip.moveEffect(effect, globalNewPosition, newEffectChannel);
+            int newChannel = currentClip.moveEffect(effect, globalNewPosition);
 
             EffectMovedMessage message = EffectMovedMessage.builder()
                     .withEffectId(effectId)
@@ -261,20 +261,20 @@ public class TimelineManager implements Saveable {
                     .withNewClipId(newClipId)
                     .withOldPosition(interval.getStartPosition())
                     .withNewPosition(effect.getInterval().getStartPosition())
-                    .withNewChannelIndex(newEffectChannel)
+                    .withNewChannelIndex(newChannel)
                     .build();
 
             messagingService.sendMessage(message);
 
-            return success;
+            return true;
         } else {
             TimelineClip newClip = findClipById(newClipId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
-            TimelineInterval newInterval = new TimelineInterval(globalNewPosition, effect.getInterval().getWidth());
-            if (newClip.canAddEffectAt(newEffectChannel, newInterval)) {
-                //                currentClip.removeEffect(effect);
-                //                effect.setInterval(newInterval);
-                //                newClip.addEffect(effect);
-            }
+            TimelineInterval newInterval = new TimelineInterval(globalNewPosition, effect.getInterval().getLength());
+            //            if (newClip.canAddEffectAt(newEffectChannel, newInterval)) {
+            //                currentClip.removeEffect(effect);
+            //                effect.setInterval(newInterval);
+            //                newClip.addEffect(effect);
+            //            }
         }
         return true;
     }

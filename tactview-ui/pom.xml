@@ -17,11 +17,6 @@
       <version>0.0.3</version>
     </dependency>
     <dependency>
-      <groupId>com.helospark.tactview</groupId>
-      <artifactId>tactview-ui-api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.2</version>
@@ -35,11 +30,6 @@
     <dependency> <!-- Only here temporarily, as testing -->
       <groupId>com.helospark.tactview</groupId>
       <artifactId>tactview-core</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency> <!-- Only here temporarily, as testing -->
-      <groupId>com.helospark.tactview</groupId>
-      <artifactId>tactview-ui-api</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
