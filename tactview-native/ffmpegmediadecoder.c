@@ -254,22 +254,22 @@ void readFrames(FFmpegImageRequest* request) {
 
 
     int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rething
-        fprintf(stderr, "target %llu %llu\n", seek_target, request->startMicroseconds);
+        //fprintf(stderr, "target %llu %llu\n", seek_target, request->startMicroseconds);
 	seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
-        fprintf(stderr, "Seeking to %llu\n", seek_target);
+        //fprintf(stderr, "Seeking to %llu\n", seek_target);
     av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
 
   while(av_read_frame(pFormatCtx, &packet)>=0 && i < request->numberOfFrames) {
     if(packet.stream_index==videoStream) {
       avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
-        fprintf(stderr, "Seeking %llu -> %llu %d\n", packet.pts, seek_target, i);
+        //fprintf(stderr, "Seeking %llu -> %llu %d\n", packet.pts, seek_target, i);
       if(frameFinished && packet.pts >= seek_target ) {
 	    sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
 		      pFrame->linesize, 0, pCodecCtx->height,
 		      pFrameRGB->data, pFrameRGB->linesize);
         //int bytes = pCodecCtx->width * pCodecCtx->height * 4;
         //memcpy(frames, pFrameRGB->data, bytes);
-        fprintf(stderr, "Saving image\n");
+        //fprintf(stderr, "Saving image\n");
 	    copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
         ++i;
 	    }

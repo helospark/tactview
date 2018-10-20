@@ -4,6 +4,7 @@ import javax.annotation.Generated;
 
 public class GetFrameRequest {
     private TimelinePosition position;
+    private TimelinePosition relativePosition;
     private double scale;
     private int expectedWidth;
     private int expectedHeight;
@@ -12,6 +13,7 @@ public class GetFrameRequest {
     @Generated("SparkTools")
     private GetFrameRequest(Builder builder) {
         this.position = builder.position;
+        this.relativePosition = builder.relativePosition;
         this.scale = builder.scale;
         this.expectedWidth = builder.expectedWidth;
         this.expectedHeight = builder.expectedHeight;
@@ -20,6 +22,10 @@ public class GetFrameRequest {
 
     public TimelinePosition getPosition() {
         return position;
+    }
+
+    public TimelinePosition getRelativePosition() {
+        return relativePosition;
     }
 
     public double getScale() {
@@ -46,6 +52,7 @@ public class GetFrameRequest {
     @Generated("SparkTools")
     public static final class Builder {
         private TimelinePosition position;
+        private TimelinePosition relativePosition;
         private double scale;
         private int expectedWidth;
         private int expectedHeight;
@@ -56,6 +63,11 @@ public class GetFrameRequest {
 
         public Builder withPosition(TimelinePosition position) {
             this.position = position;
+            return this;
+        }
+
+        public Builder withRelativePosition(TimelinePosition relativePosition) {
+            this.relativePosition = relativePosition;
             return this;
         }
 

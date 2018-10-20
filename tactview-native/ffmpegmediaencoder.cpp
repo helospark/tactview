@@ -134,7 +134,7 @@ extern "C" {
             /* Y */
 
             SwsContext * ctx = sws_getContext(c->width, c->height,
-                                      AV_PIX_FMT_RGB32, c->width, c->height,
+                                      AV_PIX_FMT_BGR32, c->width, c->height,
                                       AV_PIX_FMT_YUV420P, 0, 0, 0, 0);
             uint8_t * inData[1] = { request->frames[0].data }; // RGB24 have one plane
             int inLinesize[1] = { 4*c->width }; // RGB stride

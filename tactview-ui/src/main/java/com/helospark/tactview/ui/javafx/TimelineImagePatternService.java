@@ -24,7 +24,7 @@ import javafx.scene.image.Image;
 public class TimelineImagePatternService {
     private static final int RECTANGLE_HEIGHT = 50;
     private static final int FILM_TAPE_SIZE = 5;
-    private static final int PREVIEW_HEIGHT = 50 - 2 * FILM_TAPE_SIZE;
+    private static final int PREVIEW_HEIGHT = RECTANGLE_HEIGHT - 2 * FILM_TAPE_SIZE;
     private static final int FILM_TAPE_HOLE_DISTANCE = 10;
     private static final int BLACK_FILM_TAPE_LINE_WIDTH = 1;
 
@@ -62,7 +62,7 @@ public class TimelineImagePatternService {
                     .withApplyEffects(false)
                     .withExpectedWidth(scaledFrameWidth)
                     .withExpectedHeight(scaledFrameHeight)
-                    .withPosition(new TimelinePosition(interval.getStartPosition().getSeconds().add(timejump.multiply(BigDecimal.valueOf(i)))))
+                    .withRelativePosition(new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i))))
                     .withScale(uiProjectRepository.getScaleFactor())
                     .build();
             ClipFrameResult frame = videoClip.getFrame(frameRequest);

@@ -61,11 +61,11 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
         Map<Integer, ByteBuffer> framesFromCache = findInCache(request, numberOfFrames, startFrame, filePath);
 
         List<ByteBuffer> result = new ArrayList<>(request.getNumberOfFrames());
-        for (int i = 0; i < request.getNumberOfFrames(); ++i) {
-            result.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4));
-        }
 
         if (!framesFromCache.isEmpty()) { // todo handle frames partially in cache
+            for (int i = 0; i < request.getNumberOfFrames(); ++i) {
+                result.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4));
+            }
             copyToResult(result, framesFromCache.values());
         } else {
             System.out.println("Reading " + startFrame + " " + numberOfFrames);
@@ -87,24 +87,9 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
 
             storeInCache(request, newStartFrame, filePath, readFrames);
 
-            List<ByteBuffer> resultWithSharedPointers = readResultBetweenIndices(readFrames, additionalFramesToReadInBeginning, numberOfFrames);
-            copyToResult(result, resultWithSharedPointers);
+            result = readResultBetweenIndices(readFrames, additionalFramesToReadInBeginning, numberOfFrames);
         }
         return new MediaDataResponse(result);
-    }
-
-    private void copyToResult(List<ByteBuffer> result, Collection<ByteBuffer> collection) {
-        int i = 0;
-        for (ByteBuffer elementToCopy : collection) {
-            ByteBuffer copyTo = result.get(i);
-
-            copyTo.position(0);
-            elementToCopy.position(0);
-            copyTo.put(elementToCopy);
-
-            ++i;
-        }
-
     }
 
     private int calculateNumberOfFrames(MediaDataRequest request) {
@@ -120,10 +105,17 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
     private List<ByteBuffer> readResultBetweenIndices(List<ByteBuffer> readFrames, int additionalFramesToReadInBeginning, int numberOfFrames) {
         List<ByteBuffer> result;
         int arrayEndIndex = additionalFramesToReadInBeginning + numberOfFrames;
-        if (arrayEndIndex >= readFrames.size()) {
-            arrayEndIndex = readFrames.size() - 1;
+        if (arrayEndIndex > readFrames.size()) {
+            arrayEndIndex = readFrames.size();
         }
         result = readFrames.subList(additionalFramesToReadInBeginning, arrayEndIndex);
+        // TODO: clear this mess up
+        for (int i = 0; i < additionalFramesToReadInBeginning; ++i) {
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(readFrames.get(i));
+        }
+        for (int i = arrayEndIndex; i < readFrames.size(); ++i) {
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(readFrames.get(i));
+        }
         return result;
     }
 
@@ -180,6 +172,20 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
 
     private TimelineLength frameToTimestamp(int startFrame, double fps) {
         return new TimelineLength(BigDecimal.valueOf(startFrame).divide(new BigDecimal(fps), 10, RoundingMode.HALF_DOWN));
+    }
+
+    private void copyToResult(List<ByteBuffer> result, Collection<ByteBuffer> collection) {
+        int i = 0;
+        for (ByteBuffer elementToCopy : collection) {
+            ByteBuffer copyTo = result.get(i);
+
+            copyTo.position(0);
+            elementToCopy.position(0);
+            copyTo.put(elementToCopy);
+
+            ++i;
+        }
+
     }
 
 }

@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.ffmpeg.FFMpegFrame;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegBasedMediaEncoder;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegClearEncoderRequest;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegEncodeFrameRequest;
@@ -54,6 +55,7 @@ public class RenderService {
 
             ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
 
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame);
             currentPosition = currentPosition.add(renderRequest.getStep());
             ++frameIndex;
         }
