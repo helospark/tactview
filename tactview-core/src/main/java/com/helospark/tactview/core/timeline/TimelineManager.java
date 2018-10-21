@@ -77,7 +77,7 @@ public class TimelineManager implements Saveable {
             throw new IllegalArgumentException("Cannot add clip");
         }
         messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable()));
-        messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors()));
+        messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors(), clip));
     }
 
     private Optional<TimelineChannel> findChannelWithId(String channelId) {
@@ -106,7 +106,7 @@ public class TimelineManager implements Saveable {
                             .build();
 
                     ClipFrameResult frameResult = clip.getFrame(frameRequest);
-                    ClipFrameResult expandedFrame = expandFrame(frameResult, clip, request.getPosition(), request.getPreviewWidth(), request.getPreviewHeight());
+                    ClipFrameResult expandedFrame = expandFrame(frameResult, clip, request);
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
                     return expandedFrame;
                 })
@@ -120,12 +120,15 @@ public class TimelineManager implements Saveable {
         return finalResult.getBuffer();
     }
 
-    private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelinePosition timelinePosition, Integer previewWidth, Integer previewHeight) {
+    private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
+        int previewHeight = request.getPreviewHeight();
+        int previewWidth = request.getPreviewWidth();
+        TimelinePosition timelinePosition = request.getPosition();
         ByteBuffer outputBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(previewHeight * previewWidth * 4);
         ByteBuffer inputBuffer = frameResult.getBuffer();
 
-        int requestedXPosition = clip.getXPosition(timelinePosition);
-        int requestedYPosition = clip.getYPosition(timelinePosition);
+        int requestedXPosition = clip.getXPosition(timelinePosition, request.getScale());
+        int requestedYPosition = clip.getYPosition(timelinePosition, request.getScale());
 
         int destinationStartX = Math.max(requestedXPosition, 0);
         int destinationStartY = Math.max(requestedYPosition, 0);
@@ -270,11 +273,11 @@ public class TimelineManager implements Saveable {
         } else {
             TimelineClip newClip = findClipById(newClipId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
             TimelineInterval newInterval = new TimelineInterval(globalNewPosition, effect.getInterval().getLength());
-            //            if (newClip.canAddEffectAt(newEffectChannel, newInterval)) {
-            //                currentClip.removeEffect(effect);
-            //                effect.setInterval(newInterval);
-            //                newClip.addEffect(effect);
-            //            }
+            // if (newClip.canAddEffectAt(newEffectChannel, newInterval)) {
+            // currentClip.removeEffect(effect);
+            // effect.setInterval(newInterval);
+            // newClip.addEffect(effect);
+            // }
         }
         return true;
     }

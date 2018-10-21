@@ -47,4 +47,8 @@ public class DoubleProvider extends KeyframeableEffect {
         interpolator.valueRemoved(globalTimelinePosition);
     }
 
+    public void setScaleDependent() {
+        scaleDependent = true;
+    }
+
 }

@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ef
 
 public abstract class KeyframeableEffect {
     private String id = UUID.randomUUID().toString();
-
+    protected boolean scaleDependent;
     public abstract Object getValueAt(TimelinePosition position);
 
     public String getId() {
@@ -24,6 +24,10 @@ public abstract class KeyframeableEffect {
 
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
 
+    }
+
+    public boolean isScaleDependent() {
+        return scaleDependent;
     }
 
 }

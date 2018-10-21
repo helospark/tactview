@@ -15,4 +15,12 @@ public class PointProvider extends KeyframeableEffect {
         return new Point(x, y);
     }
 
+    public DoubleProvider getxProvider() {
+        return xProvider;
+    }
+
+    public DoubleProvider getyProvider() {
+        return yProvider;
+    }
+
 }

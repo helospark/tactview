@@ -36,10 +36,10 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
         ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4);
         ClipFrameResult frameResult = new ClipFrameResult(buffer, width, height);
 
-        int[] color = new int[] { redProvider.getValueAt(relativePosition),
+        int[] color = new int[]{redProvider.getValueAt(relativePosition),
                 greenProvider.getValueAt(relativePosition),
                 blueProvider.getValueAt(relativePosition),
-                alphaProvider.getValueAt(relativePosition) };
+                alphaProvider.getValueAt(relativePosition)};
 
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {

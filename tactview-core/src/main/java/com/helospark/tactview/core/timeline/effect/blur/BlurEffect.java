@@ -37,8 +37,8 @@ public class BlurEffect extends StatelessVideoEffect {
         nativeRequest.output = buffer;
         nativeRequest.width = currentFrame.getWidth();
         nativeRequest.height = currentFrame.getHeight();
-        nativeRequest.kernelWidth = kernelWidthProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
-        nativeRequest.kernelHeight = kernelHeightProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
+        nativeRequest.kernelWidth = (int) (kernelWidthProvider.getValueAt(request.getEffectPosition()) * request.getScale()) * 2 + 1;
+        nativeRequest.kernelHeight = (int) (kernelHeightProvider.getValueAt(request.getEffectPosition()) * request.getScale()) * 2 + 1;
         openCVBasedBlur.applyGaussianBlur(nativeRequest);
 
         return new ClipFrameResult(buffer, currentFrame.getWidth(), currentFrame.getHeight());
@@ -46,9 +46,7 @@ public class BlurEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        kernelWidthProvider = new IntegerProvider(0, 30, new DoubleInterpolator(new TreeMap<>(
-                Map.of(TimelinePosition.ofZero(), 3.0,
-                        new TimelinePosition(5), 15.0))));
+        kernelWidthProvider = new IntegerProvider(0, 30, new DoubleInterpolator(new TreeMap<>(Map.of(TimelinePosition.ofZero(), 3.0, new TimelinePosition(5), 15.0))));
         kernelHeightProvider = new IntegerProvider(0, 20, new DoubleInterpolator(TimelinePosition.ofZero(), 3.0));
 
         ValueProviderDescriptor widthDescriptor = ValueProviderDescriptor.builder()

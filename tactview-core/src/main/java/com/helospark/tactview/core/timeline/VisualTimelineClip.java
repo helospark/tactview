@@ -44,6 +44,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                         .withClipPosition(relativePosition)
                         .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
                         .withCurrentFrame(frameResult)
+                        .withScale(frameRequest.getScale())
                         .build();
 
                 ClipFrameResult appliedEffectsResult = effect.createFrame(request);
@@ -64,19 +65,21 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public abstract VisualMediaMetadata getMediaMetadata();
 
-    public int getXPosition(TimelinePosition timelinePosition) {
-        return (int) (translateXProvider.getValueAt(timelinePosition) * mediaMetadata.getWidth());
+    public int getXPosition(TimelinePosition timelinePosition, double scale) {
+        return (int) (translateXProvider.getValueAt(timelinePosition) * scale);
     }
 
-    public int getYPosition(TimelinePosition timelinePosition) {
-        return (int) (translateYProvider.getValueAt(timelinePosition) * mediaMetadata.getHeight());
+    public int getYPosition(TimelinePosition timelinePosition, double scale) {
+        return (int) (translateYProvider.getValueAt(timelinePosition) * scale);
     }
 
     @Override
     public List<ValueProviderDescriptor> getDescriptors() {
         List<ValueProviderDescriptor> result = new ArrayList<>();
-        translateXProvider = new DoubleProvider(-10, 10, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
-        translateYProvider = new DoubleProvider(-10, 10, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
+        translateXProvider = new DoubleProvider(-5000, 5000, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
+        translateYProvider = new DoubleProvider(-5000, 5000, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
+        translateXProvider.setScaleDependent();
+        translateYProvider.setScaleDependent();
 
         ValueProviderDescriptor translateXDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translateXProvider)

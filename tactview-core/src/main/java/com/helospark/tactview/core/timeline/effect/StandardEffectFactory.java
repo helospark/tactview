@@ -32,7 +32,7 @@ public class StandardEffectFactory implements EffectFactory {
     public StatelessEffect createEffect(CreateEffectRequest request) {
         StatelessEffect result = factory.apply(request);
 
-        messagingService.sendAsyncMessage(new EffectDescriptorsAdded(result.getId(), result.getValueProviders()));
+        messagingService.sendAsyncMessage(new EffectDescriptorsAdded(result.getId(), result.getValueProviders(), result));
 
         return result;
     }
