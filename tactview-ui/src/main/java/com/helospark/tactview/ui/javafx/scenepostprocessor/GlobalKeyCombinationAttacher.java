@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.scenepostprocessor;
 
 import static javafx.scene.input.KeyCode.DELETE;
+import static javafx.scene.input.KeyCode.ESCAPE;
 import static javafx.scene.input.KeyCode.K;
 import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
@@ -12,6 +13,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.key.GlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.key.KeyCombinationRepository;
 import com.helospark.tactview.ui.javafx.key.StandardGlobalShortcutHandler;
@@ -32,15 +34,19 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
     private RemoveClipService removeClipService;
     private RemoveEffectService removeEffectService;
     private ClipCutService clipCutService;
+    private InputModeRepository inputModeRepository;
 
-    public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository, RemoveClipService removeClipService,
-            RemoveEffectService removeEffectService, ClipCutService clipCutService) {
+    public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository,
+            RemoveClipService removeClipService,
+            RemoveEffectService removeEffectService, ClipCutService clipCutService,
+            InputModeRepository inputModeRepository) {
         this.commandInterpreter = commandInterpreter;
         this.keyCombinationRepository = keyCombinationRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.removeClipService = removeClipService;
         this.removeEffectService = removeEffectService;
         this.clipCutService = clipCutService;
+        this.inputModeRepository = inputModeRepository;
     }
 
     @Override
@@ -72,6 +78,10 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
         keyCombinationRepository.registerKeyCombination(on(K),
                 useHandler("Cut clip at current position", event -> {
                     clipCutService.cutSelectedClipAtCurrentTimestamp();
+                }));
+        keyCombinationRepository.registerKeyCombination(on(ESCAPE),
+                useHandler("Exit everything ongoing", event -> {
+                    inputModeRepository.reset();
                 }));
     }
 

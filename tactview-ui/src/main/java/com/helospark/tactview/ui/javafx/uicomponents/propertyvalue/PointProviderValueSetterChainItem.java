@@ -1,5 +1,8 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
@@ -32,7 +35,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     protected EffectLine handle(PointProvider pointProvider) {
         EffectLine xProvider = doublePropertyValueSetterChainItem.create(pointProvider.getxProvider());
         EffectLine yProvider = doublePropertyValueSetterChainItem.create(pointProvider.getyProvider());
-        Button button = new Button("draw");
+        Button button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.CROSSHAIRS));
 
         HBox box = new HBox();
         box.getChildren().add(xProvider.getVisibleNode());

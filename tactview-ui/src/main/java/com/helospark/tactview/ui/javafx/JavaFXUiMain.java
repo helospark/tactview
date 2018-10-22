@@ -6,11 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -33,9 +29,9 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -43,7 +39,6 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -85,9 +80,9 @@ public class JavaFXUiMain extends Application {
     private static Label videoTimestampLabel;
     static UiTimeline uiTimeline;
     static UiProjectRepository uiProjectRepository;
-    private static UiProjectRepository uiProjectRepostiory;
     static PropertyView effectPropertyView;
     static UiRenderService renderService;
+    static DisplayUpdaterService displayUpdateService;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -182,7 +177,9 @@ public class JavaFXUiMain extends Application {
         canvas.heightProperty().bind(uiProjectRepository.getPreviewHeightProperty());
         canvas.getGraphicsContext2D().setFill(new Color(0.0, 0.0, 0.0, 1.0));
         canvas.getGraphicsContext2D().fillRect(0, 0, W, H);
-        lightDi.getBean(InputModeRepository.class).setCanvas(canvas);
+        InputModeRepository inputModeRepository = lightDi.getBean(InputModeRepository.class);
+        inputModeRepository.setCanvas(canvas);
+        displayUpdateService.setCanvas(canvas);
         rightVBox.getChildren().add(canvas);
 
         videoTimestampLabel = new Label("00:00:00.000");
@@ -224,6 +221,10 @@ public class JavaFXUiMain extends Application {
         root.setCenter(vbox);
         pane.setContent(root);
 
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(lower));
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(tabPane));
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(effectPropertyView.getPropertyWindow()));
+
         lightDi.getListOfBeans(ScenePostProcessor.class)
                 .stream()
                 .forEach(processor -> processor.postProcess(scene));
@@ -231,6 +232,16 @@ public class JavaFXUiMain extends Application {
         lightDi.getBean(UiInitializer.class).initialize();
 
         stage.show();
+    }
+
+    private static Consumer<Boolean> onClassChange(Node element) {
+        return enabled -> {
+            if (enabled) {
+                element.getStyleClass().add("input-mode-enabled");
+            } else {
+                element.getStyleClass().remove("input-mode-enabled");
+            }
+        };
     }
 
     private VBox createIcon(String effectId, String name, String file) {
@@ -277,9 +288,9 @@ public class JavaFXUiMain extends Application {
         uiTimelineManager.registerUiConsumer(position -> uiTimeline.updateLine(position));
         uiTimelineManager.registerUiConsumer(position -> effectPropertyView.updateValues(position));
         uiTimelineManager.registerUiConsumer(position -> updateTime(position));
-        uiTimelineManager.registerConsumer(position -> updateDisplay(position));
+        displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
+        uiTimelineManager.registerConsumer(position -> displayUpdateService.updateDisplay(position));
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
-        uiProjectRepostiory = lightDi.getBean(UiProjectRepository.class);
         renderService = lightDi.getBean(UiRenderService.class);
         lightDi.eagerInitAllBeans();
 
@@ -296,45 +307,6 @@ public class JavaFXUiMain extends Application {
         String newLabel = String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
 
         videoTimestampLabel.setText(newLabel);
-    }
-
-    static ExecutorService executorService = Executors.newFixedThreadPool(4);
-    static Map<TimelinePosition, Future<Image>> framecache = new ConcurrentHashMap<>();
-
-    private static void updateDisplay(TimelinePosition currentPosition) {
-        Future<Image> cachedKey = framecache.remove(currentPosition);
-        Image actualImage;
-        if (cachedKey == null) {
-            actualImage = playbackController.getFrameAt(currentPosition);
-        } else {
-            try {
-                System.out.println("Served from cache " + currentPosition);
-                actualImage = cachedKey.get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        Platform.runLater(() -> {
-            int width = uiProjectRepostiory.getPreviewWidth();
-            int height = uiProjectRepostiory.getPreviewHeight();
-            GraphicsContext gc = canvas.getGraphicsContext2D();
-            gc.drawImage(actualImage, 0, 0, width, height);
-        });
-
-        startCacheJobs(currentPosition);
-    }
-
-    private static void startCacheJobs(TimelinePosition currentPosition) {
-        List<TimelinePosition> expectedNextFrames = uiTimelineManager.expectedNextFrames();
-        for (TimelinePosition nextFrameTime : expectedNextFrames) {
-            if (!framecache.containsKey(nextFrameTime)) {
-                Future<Image> task = executorService.submit(() -> {
-                    return playbackController.getFrameAt(currentPosition);
-                });
-                framecache.put(nextFrameTime, task);
-                System.out.println("started " + nextFrameTime);
-            }
-        }
     }
 
     public void launchUi() {

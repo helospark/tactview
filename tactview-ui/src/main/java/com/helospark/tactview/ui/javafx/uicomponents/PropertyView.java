@@ -39,6 +39,7 @@ public class PropertyView {
     private UiTimelineManager uiTimelineManager;
     private EffectPropertyPage shownEntries;
     private PropertyValueSetterChain propertyValueSetterChain;
+
     @Slf4j
     private Logger logger;
 

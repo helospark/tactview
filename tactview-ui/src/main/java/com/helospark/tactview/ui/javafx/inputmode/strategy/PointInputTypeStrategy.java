@@ -7,15 +7,28 @@ import javafx.scene.input.MouseEvent;
 
 public class PointInputTypeStrategy implements InputTypeStrategy<Point> {
     private Point result;
+    private boolean done = false;
 
     @Override
-    public void onMouseUpEvent(int x, int y, MouseEvent mouseEvent) {
+    public void onMouseDraggedEvent(int x, int y, MouseEvent e) {
         result = new Point(x, y);
     }
 
     @Override
+    public void onMouseUpEvent(int x, int y, MouseEvent mouseEvent) {
+        result = new Point(x, y);
+        done = true;
+    }
+
+    @Override
     public ResultType getResultType() {
-        return result == null ? ResultType.NONE : ResultType.DONE;
+        if (done) {
+            return ResultType.DONE;
+        } else if (result != null) {
+            return ResultType.PARTIAL;
+        } else {
+            return ResultType.NONE;
+        }
     }
 
     @Override

@@ -1,26 +1,35 @@
 package com.helospark.tactview.ui.javafx.inputmode;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.InputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 
 @Component
 public class InputModeRepository {
     private Canvas canvas;
     private UiProjectRepository projectRepository;
+    private DisplayUpdaterService displayUpdaterService;
     private InputModeInput<?> inputModeInput;
+    private List<Consumer<Boolean>> inputModeConsumer = new ArrayList();
 
-    public InputModeRepository(UiProjectRepository projectRepository) {
+    public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService) {
         this.projectRepository = projectRepository;
+        this.displayUpdaterService = displayUpdaterService;
     }
 
     // TODO: should this be in DI framework?
@@ -29,9 +38,14 @@ public class InputModeRepository {
         processStrategy();
     }
 
+    public void registerInputModeChangeConsumerr(Consumer<Boolean> inputModeConsumer) {
+        this.inputModeConsumer.add(inputModeConsumer);
+    }
+
     public void requestPoint(Consumer<Point> consumer) {
         InputTypeStrategy<Point> currentStrategy = new PointInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy);
+        inputModeChanged(true);
     }
 
     private void processStrategy() {
@@ -41,10 +55,12 @@ public class InputModeRepository {
         EventHandler<? super MouseEvent> mouseMoveHandler = createHandler((x, y, e) -> inputModeInput.currentStrategy.onMouseMovedEvent(x, y, e));
         canvas.setOnMouseMoved(e -> {
             mouseMoveHandler.handle(e);
+            GraphicsContext graphics = canvas.getGraphicsContext2D();
             if (inputModeInput != null) {
-                inputModeInput.currentStrategy.draw(canvas.getGraphicsContext2D());
+                Platform.runLater(() -> inputModeInput.currentStrategy.draw(graphics));
             }
         });
+        canvas.setOnMouseExited(e -> displayUpdaterService.updateCurrentPosition());
     }
 
     private EventHandler<? super MouseEvent> createHandler(TriFunction<Integer, Integer, MouseEvent> function) {
@@ -53,21 +69,42 @@ public class InputModeRepository {
                 int x = (int) (e.getX() * 1.0 / projectRepository.getScaleFactor());
                 int y = (int) (e.getY() * 1.0 / projectRepository.getScaleFactor());
                 function.apply(x, y, e);
+                if (inputModeInput.currentStrategy.getResultType() == ResultType.PARTIAL) {
+                    handleStrategyHasResult();
+                }
                 if (inputModeInput.currentStrategy.getResultType() == ResultType.DONE) {
-                    handleStrategyFinished();
+                    handleStrategyHasResult();
+                    reset();
                 }
             }
+            // TODO: should not be here
+            displayUpdaterService.updateCurrentPosition();
+            Platform.runLater(() -> {
+                GraphicsContext graphics = canvas.getGraphicsContext2D();
+                graphics.setStroke(Color.RED);
+                graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
+                graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
+            });
         };
     }
 
-    private <T> void handleStrategyFinished() {
+    private <T> void handleStrategyHasResult() {
         InputModeInput<T> commonType = (InputModeInput<T>) inputModeInput;
         commonType.consumer.accept(commonType.currentStrategy.getResult());
-        inputModeInput = null;
+    }
+
+    private void inputModeChanged(boolean b) {
+        inputModeConsumer.stream()
+                .forEach(consumer -> consumer.accept(b));
     }
 
     @FunctionalInterface
     private interface TriFunction<A, B, C> {
         void apply(A a, B b, C c);
+    }
+
+    public void reset() {
+        inputModeInput = null;
+        inputModeChanged(false);
     }
 }

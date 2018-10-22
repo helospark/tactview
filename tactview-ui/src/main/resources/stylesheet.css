@@ -120,6 +120,10 @@
 	-fx-stroke-width: 2px;
 }
 
+.input-mode-enabled {
+    -fx-opacity: 0.4;
+}
+
 /** tmp **/
 
 .button {
