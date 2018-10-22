@@ -1,46 +1,37 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
-import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 
 import javafx.scene.Node;
 
-public class PrimitiveEffectLine extends EffectLine {
-    public Consumer<TimelinePosition> updateFunction;
-    public Supplier<String> currentValueProvider;
+public class PointEffectLine extends EffectLine {
+    private EffectLine xCoordinate;
+    private EffectLine yCoordinate;
 
     @Generated("SparkTools")
-    private PrimitiveEffectLine(Builder builder) {
+    private PointEffectLine(Builder builder) {
         this.commandInterpreter = builder.commandInterpreter;
         this.effectParametersRepository = builder.effectParametersRepository;
         this.visibleNode = builder.visibleNode;
         this.descriptorId = builder.descriptorId;
-        this.updateFromValue = builder.updateFromValue;
-        this.updateFunction = builder.updateFunction;
-        this.currentValueProvider = builder.currentValueProvider;
+        this.xCoordinate = builder.xCoordinate;
+        this.yCoordinate = builder.yCoordinate;
     }
 
     @Override
     public void sendKeyframe(TimelinePosition position) {
-        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
-                .withDescriptorId(descriptorId)
-                .withGlobalTimelinePosition(position)
-                .withValue(currentValueProvider.get()).build();
-
-        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+        xCoordinate.sendKeyframe(position);
+        yCoordinate.sendKeyframe(position);
     }
 
     @Override
     public void updateUi(TimelinePosition position) {
-        updateFunction.accept(position);
+        xCoordinate.updateUi(position);
+        yCoordinate.updateUi(position);
     }
 
     @Generated("SparkTools")
@@ -54,9 +45,8 @@ public class PrimitiveEffectLine extends EffectLine {
         private EffectParametersRepository effectParametersRepository;
         private Node visibleNode;
         private String descriptorId;
-        private Consumer<Object> updateFromValue;
-        private Consumer<TimelinePosition> updateFunction;
-        private Supplier<String> currentValueProvider;
+        private EffectLine xCoordinate;
+        private EffectLine yCoordinate;
 
         private Builder() {
         }
@@ -81,23 +71,18 @@ public class PrimitiveEffectLine extends EffectLine {
             return this;
         }
 
-        public Builder withUpdateFromValue(Consumer<Object> updateFromValue) {
-            this.updateFromValue = updateFromValue;
+        public Builder withXCoordinate(EffectLine xCoordinate) {
+            this.xCoordinate = xCoordinate;
             return this;
         }
 
-        public Builder withUpdateFunction(Consumer<TimelinePosition> updateFunction) {
-            this.updateFunction = updateFunction;
+        public Builder withYCoordinate(EffectLine yCoordinate) {
+            this.yCoordinate = yCoordinate;
             return this;
         }
 
-        public Builder withCurrentValueProvider(Supplier<String> currentValueProvider) {
-            this.currentValueProvider = currentValueProvider;
-            return this;
-        }
-
-        public PrimitiveEffectLine build() {
-            return new PrimitiveEffectLine(this);
+        public PointEffectLine build() {
+            return new PointEffectLine(this);
         }
     }
 

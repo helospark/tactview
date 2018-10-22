@@ -2,8 +2,10 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
@@ -11,9 +13,14 @@ import javafx.scene.control.TextField;
 @Component
 public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<IntegerProvider> {
     private static final int SMALL_RANGE = 1000;
+    private UiCommandInterpreterService commandInterpreter;
+    private EffectParametersRepository effectParametersRepository;
 
-    public IntegerPropertyValueSetterChainItem() {
+    public IntegerPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter) {
         super(IntegerProvider.class);
+        this.commandInterpreter = commandInterpreter;
+        this.effectParametersRepository = effectParametersRepository;
     }
 
     @Override
@@ -37,6 +44,8 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withDescriptorId(integerProvider.getId())
                 .withUpdateFunction(position -> slider.setValue(integerProvider.getValueAt(position)))
                 .withVisibleNode(slider)
+                .withCommandInterpreter(commandInterpreter)
+                .withEffectParametersRepository(effectParametersRepository)
                 .build();
 
     }
@@ -48,6 +57,8 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withDescriptorId(integerProvider.getId())
                 .withUpdateFunction(position -> textField.setText(integerProviderValueToString(integerProvider, position)))
                 .withVisibleNode(textField)
+                .withEffectParametersRepository(effectParametersRepository)
+                .withCommandInterpreter(commandInterpreter)
                 .build();
     }
 

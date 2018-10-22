@@ -23,4 +23,13 @@ public class RectangleProvider extends KeyframeableEffect {
         return new Rectangle(points);
     }
 
+    @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    @Override
+    public List<KeyframeableEffect> getChildren() {
+        return (List<KeyframeableEffect>) (Object) pointProviders;
+    }
 }

@@ -23,6 +23,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
+import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
@@ -99,8 +100,15 @@ public class JavaFXUiMain extends Application {
         Menu fileMenu = new Menu("_File");
         Menu project = new Menu("_Project");
         MenuItem exitItem = new MenuItem("Exit");
-        exitItem.setAccelerator(new KeyCodeCombination(KeyCode.X, KeyCombination.SHORTCUT_DOWN));
-        exitItem.setOnAction(ae -> Platform.exit());
+        exitItem.setAccelerator(new KeyCodeCombination(KeyCode.F4, KeyCombination.ALT_DOWN));
+        exitItem.setOnAction(ae -> {
+            Platform.exit();
+            System.exit(0);
+        });
+        stage.setOnCloseRequest(e -> {
+            Platform.exit();
+            System.exit(0);
+        });
 
         MenuItem render = new MenuItem("Render");
         render.setOnAction(e -> {
@@ -136,7 +144,7 @@ public class JavaFXUiMain extends Application {
         TabPane tabPane = new TabPane();
 
         FlowPane effectTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
-        //        leftHBox.setPrefWidth(scene.getWidth() - 300);
+        // leftHBox.setPrefWidth(scene.getWidth() - 300);
         effectTabContent.setId("effect-view");
 
         List<EffectFactory> effects = lightDi.getListOfBeans(EffectFactory.class);
@@ -174,6 +182,7 @@ public class JavaFXUiMain extends Application {
         canvas.heightProperty().bind(uiProjectRepository.getPreviewHeightProperty());
         canvas.getGraphicsContext2D().setFill(new Color(0.0, 0.0, 0.0, 1.0));
         canvas.getGraphicsContext2D().fillRect(0, 0, W, H);
+        lightDi.getBean(InputModeRepository.class).setCanvas(canvas);
         rightVBox.getChildren().add(canvas);
 
         videoTimestampLabel = new Label("00:00:00.000");

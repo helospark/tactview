@@ -20,7 +20,7 @@ public class GetFrameRequest {
         this.applyEffects = builder.applyEffects;
     }
 
-    public TimelinePosition getPosition() {
+    public TimelinePosition getGlobalPosition() {
         return position;
     }
 
@@ -42,6 +42,14 @@ public class GetFrameRequest {
 
     public boolean isApplyEffects() {
         return applyEffects;
+    }
+
+    public TimelinePosition calculateRelativePositionFrom(IntervalAware intervalAware) {
+        if (relativePosition != null) {
+            return relativePosition;
+        } else {
+            return position.from(intervalAware.getInterval().getStartPosition());
+        }
     }
 
     @Generated("SparkTools")
@@ -95,4 +103,5 @@ public class GetFrameRequest {
             return new GetFrameRequest(this);
         }
     }
+
 }

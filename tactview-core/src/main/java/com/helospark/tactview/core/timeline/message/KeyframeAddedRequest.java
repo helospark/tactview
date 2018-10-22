@@ -28,6 +28,11 @@ public class KeyframeAddedRequest {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return "KeyframeAddedRequest [descriptorId=" + descriptorId + ", globalTimelinePosition=" + globalTimelinePosition + ", value=" + value + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();

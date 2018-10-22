@@ -6,12 +6,15 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
+import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyPage.Builder;
@@ -22,6 +25,7 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 
@@ -35,6 +39,8 @@ public class PropertyView {
     private UiTimelineManager uiTimelineManager;
     private EffectPropertyPage shownEntries;
     private PropertyValueSetterChain propertyValueSetterChain;
+    @Slf4j
+    private Logger logger;
 
     public PropertyView(MessagingService messagingService, UiTimelineManager uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain) {
         this.messagingService = messagingService;
@@ -71,9 +77,10 @@ public class PropertyView {
         EffectLine keyframeChange = createKeyframeUi(descriptor.getKeyframeableEffect());
 
         Node key = keyframeChange.getVisibleNode();
-        key.setOnKeyPressed(event -> {
-            if (event.getCode().equals(KeyCode.I)) {
+        key.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode().equals(KeyCode.INSERT)) {
                 keyframeChange.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                logger.info("Keyframe added");
                 event.consume();
             }
         });

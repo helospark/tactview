@@ -51,4 +51,9 @@ public class DoubleProvider extends KeyframeableEffect {
         scaleDependent = true;
     }
 
+    @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
 }

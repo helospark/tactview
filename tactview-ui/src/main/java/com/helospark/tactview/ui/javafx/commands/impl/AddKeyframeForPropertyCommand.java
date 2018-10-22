@@ -20,7 +20,12 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
 
     @Override
     public void revert() {
-        effectParametersRepository.removeKeyframe(request);
+        effectParametersRepository.removeKeyframe(request); // TODO: should restore last, not delete
+    }
+
+    @Override
+    public String toString() {
+        return "AddKeyframeForPropertyCommand [request=" + request + "]";
     }
 
 }

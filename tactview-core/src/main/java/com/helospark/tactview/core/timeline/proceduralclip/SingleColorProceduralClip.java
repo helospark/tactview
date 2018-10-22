@@ -28,7 +28,7 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
 
     @Override
     public ClipFrameResult getFrame(GetFrameRequest request) {
-        TimelinePosition relativePosition = request.getPosition().from(getInterval().getStartPosition());
+        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
 
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();

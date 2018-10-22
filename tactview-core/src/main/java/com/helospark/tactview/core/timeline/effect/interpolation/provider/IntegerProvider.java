@@ -52,4 +52,9 @@ public class IntegerProvider extends KeyframeableEffect {
         return max;
     }
 
+    @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
 }

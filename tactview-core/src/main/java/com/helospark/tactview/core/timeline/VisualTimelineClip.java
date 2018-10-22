@@ -10,12 +10,12 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 
 public abstract class VisualTimelineClip extends TimelineClip {
     protected VisualMediaMetadata mediaMetadata;
 
-    protected DoubleProvider translateXProvider;
-    protected DoubleProvider translateYProvider;
+    protected PointProvider translatePointProvider;
 
     public VisualTimelineClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
@@ -26,7 +26,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         double scale = request.getScale();
         int width = (int) (mediaMetadata.getWidth() * scale);
         int height = (int) (mediaMetadata.getHeight() * scale);
-        TimelinePosition relativePosition = request.getRelativePosition() != null ? request.getRelativePosition() : request.getPosition().from(getInterval().getStartPosition());
+        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
         relativePosition = relativePosition.add(renderOffset);
 
         ByteBuffer frame = requestFrame(relativePosition, width, height);
@@ -66,33 +66,29 @@ public abstract class VisualTimelineClip extends TimelineClip {
     public abstract VisualMediaMetadata getMediaMetadata();
 
     public int getXPosition(TimelinePosition timelinePosition, double scale) {
-        return (int) (translateXProvider.getValueAt(timelinePosition) * scale);
+        return (int) (translatePointProvider.getValueAt(timelinePosition).x * scale);
     }
 
     public int getYPosition(TimelinePosition timelinePosition, double scale) {
-        return (int) (translateYProvider.getValueAt(timelinePosition) * scale);
+        return (int) (translatePointProvider.getValueAt(timelinePosition).y * scale);
     }
 
     @Override
     public List<ValueProviderDescriptor> getDescriptors() {
         List<ValueProviderDescriptor> result = new ArrayList<>();
-        translateXProvider = new DoubleProvider(-5000, 5000, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
-        translateYProvider = new DoubleProvider(-5000, 5000, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
+        DoubleProvider translateXProvider = new DoubleProvider(-5000, 5000, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
+        DoubleProvider translateYProvider = new DoubleProvider(-5000, 5000, new DoubleInterpolator(TimelinePosition.ofZero(), 0.0));
         translateXProvider.setScaleDependent();
         translateYProvider.setScaleDependent();
 
-        ValueProviderDescriptor translateXDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(translateXProvider)
-                .withName("translateX")
+        translatePointProvider = new PointProvider(translateXProvider, translateYProvider);
+
+        ValueProviderDescriptor translateDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(translatePointProvider)
+                .withName("translate")
                 .build();
 
-        ValueProviderDescriptor translateYDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(translateYProvider)
-                .withName("translateY")
-                .build();
-
-        result.add(translateXDescriptor);
-        result.add(translateYDescriptor);
+        result.add(translateDescriptor);
 
         return result;
     }

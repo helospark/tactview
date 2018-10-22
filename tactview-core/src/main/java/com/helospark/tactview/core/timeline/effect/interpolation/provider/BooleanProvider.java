@@ -28,4 +28,9 @@ public class BooleanProvider extends KeyframeableEffect {
     public void interpolatorChanged(EffectInterpolator newInterpolator) {
         this.doubleProvider = (DoubleProvider) newInterpolator;
     }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
+    }
 }

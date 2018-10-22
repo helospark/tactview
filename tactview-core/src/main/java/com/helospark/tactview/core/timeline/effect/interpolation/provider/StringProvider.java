@@ -22,4 +22,9 @@ public class StringProvider extends KeyframeableEffect {
         stringInterpolator.removeKeyframeAt(globalTimelinePosition);
     }
 
+    @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
 }

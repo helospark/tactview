@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.interpolation;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -8,6 +10,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ef
 public abstract class KeyframeableEffect {
     private String id = UUID.randomUUID().toString();
     protected boolean scaleDependent;
+
     public abstract Object getValueAt(TimelinePosition position);
 
     public String getId() {
@@ -24,6 +27,12 @@ public abstract class KeyframeableEffect {
 
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
 
+    }
+
+    public abstract boolean isPrimitive();
+
+    public List<KeyframeableEffect> getChildren() {
+        return Collections.emptyList();
     }
 
     public boolean isScaleDependent() {

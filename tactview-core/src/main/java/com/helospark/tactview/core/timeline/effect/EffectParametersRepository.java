@@ -1,10 +1,14 @@
 package com.helospark.tactview.core.timeline.effect;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.IntervalAware;
@@ -14,11 +18,14 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class EffectParametersRepository {
     private MessagingService messagingService;
+    @Slf4j
+    private Logger logger;
 
     private Map<String, EffectStore> idToEffectMap = new ConcurrentHashMap<>();
 
@@ -42,7 +49,38 @@ public class EffectParametersRepository {
     private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, IntervalAware intervalAware) {
         list.stream()
                 .map(a -> a.getKeyframeableEffect())
+                .flatMap(a -> getPrimitiveKeyframeableEffects(a))
                 .forEach(a -> idToEffectMap.put(a.getId(), new EffectStore(a, intervalAware)));
+    }
+
+    private Stream<KeyframeableEffect> getPrimitiveKeyframeableEffects(KeyframeableEffect a) {
+        List<KeyframeableEffect> effects = new ArrayList<>();
+        List<KeyframeableEffect> effects2 = new ArrayList<>();
+
+        effects.add(a);
+        boolean foundNonPrimitive = true;
+        int counterToAvoidInfiniteLoops = 0;
+        while (foundNonPrimitive && counterToAvoidInfiniteLoops < 1000) {
+            foundNonPrimitive = true;
+            for (KeyframeableEffect effect : effects) {
+                if (effect.isPrimitive()) {
+                    effects2.add(effect);
+                } else {
+                    foundNonPrimitive = true;
+                    effects2.addAll(effect.getChildren());
+                }
+            }
+            ++counterToAvoidInfiniteLoops;
+            effects.clear();
+            effects.addAll(effects2);
+            effects2.clear();
+        }
+
+        if (counterToAvoidInfiniteLoops >= 1000) {
+            logger.error("Infinite loop why extracting effects");
+        }
+
+        return effects.stream();
     }
 
     public void keyframeAdded(KeyframeAddedRequest message) {
