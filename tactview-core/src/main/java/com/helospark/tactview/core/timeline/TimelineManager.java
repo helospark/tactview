@@ -103,6 +103,7 @@ public class TimelineManager implements Saveable {
                             .withPosition(request.getPosition())
                             .withExpectedWidth(request.getPreviewWidth())
                             .withExpectedHeight(request.getPreviewHeight())
+                            .withApplyEffects(true)
                             .build();
 
                     ClipFrameResult frameResult = clip.getFrame(frameRequest);

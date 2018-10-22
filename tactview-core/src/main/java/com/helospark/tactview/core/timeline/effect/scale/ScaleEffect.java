@@ -48,8 +48,6 @@ public class ScaleEffect extends StatelessVideoEffect {
     public List<ValueProviderDescriptor> getValueProviders() {
         widthScale = new DoubleProvider(0, 20, new DoubleInterpolator(TimelinePosition.ofZero(), 1.0));
         heightScale = new DoubleProvider(0, 20, new DoubleInterpolator(TimelinePosition.ofZero(), 1.0));
-        widthScale.setScaleDependent();
-        heightScale.setScaleDependent();
 
         ValueProviderDescriptor widthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(widthScale)

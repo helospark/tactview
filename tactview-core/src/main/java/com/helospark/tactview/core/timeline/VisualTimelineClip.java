@@ -49,7 +49,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
                 ClipFrameResult appliedEffectsResult = effect.createFrame(request);
 
-                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(request.getCurrentFrame().getBuffer());
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 
                 frameResult = appliedEffectsResult; // todo: free up bytebuffer
             }
