@@ -40,4 +40,9 @@ public class PointProvider extends KeyframeableEffect {
     public List<KeyframeableEffect> getChildren() {
         return Arrays.asList(xProvider, yProvider);
     }
+
+    @Override
+    public SizeFunction getSizeFunction() {
+        return xProvider.getSizeFunction();
+    }
 }

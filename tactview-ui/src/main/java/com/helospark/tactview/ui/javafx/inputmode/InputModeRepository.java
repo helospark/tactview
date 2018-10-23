@@ -5,9 +5,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Line;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
+import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.InputTypeStrategy;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
@@ -21,15 +25,18 @@ import javafx.scene.paint.Color;
 
 @Component
 public class InputModeRepository {
+    private SizeFunctionImplementation sizeFunctionImplementation;
     private Canvas canvas;
     private UiProjectRepository projectRepository;
     private DisplayUpdaterService displayUpdaterService;
     private InputModeInput<?> inputModeInput;
-    private List<Consumer<Boolean>> inputModeConsumer = new ArrayList();
+    private List<Consumer<Boolean>> inputModeConsumer = new ArrayList<>();
 
-    public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService) {
+    public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService,
+            SizeFunctionImplementation sizeFunctionImplementation) {
         this.projectRepository = projectRepository;
         this.displayUpdaterService = displayUpdaterService;
+        this.sizeFunctionImplementation = sizeFunctionImplementation;
     }
 
     // TODO: should this be in DI framework?
@@ -42,9 +49,15 @@ public class InputModeRepository {
         this.inputModeConsumer.add(inputModeConsumer);
     }
 
-    public void requestPoint(Consumer<Point> consumer) {
+    public void requestPoint(Consumer<Point> consumer, SizeFunction sizeFunction) {
         InputTypeStrategy<Point> currentStrategy = new PointInputTypeStrategy();
-        this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy);
+        this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy, sizeFunction);
+        inputModeChanged(true);
+    }
+
+    public void requestLine(Consumer<Line> consumer, SizeFunction sizeFunction) {
+        InputTypeStrategy<Line> currentStrategy = new LineInputTypeStrategy();
+        this.inputModeInput = new InputModeInput<>(Line.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
     }
 
@@ -63,11 +76,11 @@ public class InputModeRepository {
         canvas.setOnMouseExited(e -> displayUpdaterService.updateCurrentPosition());
     }
 
-    private EventHandler<? super MouseEvent> createHandler(TriFunction<Integer, Integer, MouseEvent> function) {
+    private EventHandler<? super MouseEvent> createHandler(TriFunction<Double, Double, MouseEvent> function) {
         return e -> {
             if (inputModeInput != null) {
-                int x = (int) (e.getX() * 1.0 / projectRepository.getScaleFactor());
-                int y = (int) (e.getY() * 1.0 / projectRepository.getScaleFactor());
+                double x = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getX(), inputModeInput.sizeFunction, projectRepository.getPreviewWidth()));
+                double y = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getY(), inputModeInput.sizeFunction, projectRepository.getPreviewHeight()));
                 function.apply(x, y, e);
                 if (inputModeInput.currentStrategy.getResultType() == ResultType.PARTIAL) {
                     handleStrategyHasResult();
@@ -107,4 +120,5 @@ public class InputModeRepository {
         inputModeInput = null;
         inputModeChanged(false);
     }
+
 }

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 
 public abstract class KeyframeableEffect {
     private String id = UUID.randomUUID().toString();
@@ -37,6 +38,10 @@ public abstract class KeyframeableEffect {
 
     public boolean isScaleDependent() {
         return scaleDependent;
+    }
+
+    public SizeFunction getSizeFunction() {
+        return SizeFunction.NO_TRANSFORMATION;
     }
 
 }

@@ -12,6 +12,11 @@ public class LineProvider extends KeyframeableEffect {
     private PointProvider startPointProvider;
     private PointProvider endPointProvider;
 
+    public LineProvider(PointProvider startPointProvider, PointProvider endPointProvider) {
+        this.startPointProvider = startPointProvider;
+        this.endPointProvider = endPointProvider;
+    }
+
     @Override
     public Line getValueAt(TimelinePosition position) {
         Point x = startPointProvider.getValueAt(position);
@@ -27,6 +32,11 @@ public class LineProvider extends KeyframeableEffect {
     @Override
     public List<KeyframeableEffect> getChildren() {
         return Arrays.asList(startPointProvider, endPointProvider);
+    }
+
+    @Override
+    public SizeFunction getSizeFunction() {
+        return startPointProvider.getSizeFunction();
     }
 
 }

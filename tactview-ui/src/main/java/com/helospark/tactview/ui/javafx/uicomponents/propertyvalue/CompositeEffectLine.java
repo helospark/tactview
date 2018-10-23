@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.function.Consumer;
+
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -8,16 +10,17 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 import javafx.scene.Node;
 
-public class PointEffectLine extends EffectLine {
+public class CompositeEffectLine extends EffectLine {
     private EffectLine xCoordinate;
     private EffectLine yCoordinate;
 
     @Generated("SparkTools")
-    private PointEffectLine(Builder builder) {
+    private CompositeEffectLine(Builder builder) {
         this.commandInterpreter = builder.commandInterpreter;
         this.effectParametersRepository = builder.effectParametersRepository;
         this.visibleNode = builder.visibleNode;
         this.descriptorId = builder.descriptorId;
+        this.updateFromValue = builder.updateFromValue;
         this.xCoordinate = builder.xCoordinate;
         this.yCoordinate = builder.yCoordinate;
     }
@@ -45,6 +48,7 @@ public class PointEffectLine extends EffectLine {
         private EffectParametersRepository effectParametersRepository;
         private Node visibleNode;
         private String descriptorId;
+        private Consumer<Object> updateFromValue;
         private EffectLine xCoordinate;
         private EffectLine yCoordinate;
 
@@ -71,6 +75,11 @@ public class PointEffectLine extends EffectLine {
             return this;
         }
 
+        public Builder withUpdateFromValue(Consumer<Object> updateFromValue) {
+            this.updateFromValue = updateFromValue;
+            return this;
+        }
+
         public Builder withXCoordinate(EffectLine xCoordinate) {
             this.xCoordinate = xCoordinate;
             return this;
@@ -81,8 +90,8 @@ public class PointEffectLine extends EffectLine {
             return this;
         }
 
-        public PointEffectLine build() {
-            return new PointEffectLine(this);
+        public CompositeEffectLine build() {
+            return new CompositeEffectLine(this);
         }
     }
 

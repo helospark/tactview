@@ -10,12 +10,12 @@ public class PointInputTypeStrategy implements InputTypeStrategy<Point> {
     private boolean done = false;
 
     @Override
-    public void onMouseDraggedEvent(int x, int y, MouseEvent e) {
+    public void onMouseDraggedEvent(double x, double y, MouseEvent e) {
         result = new Point(x, y);
     }
 
     @Override
-    public void onMouseUpEvent(int x, int y, MouseEvent mouseEvent) {
+    public void onMouseUpEvent(double x, double y, MouseEvent mouseEvent) {
         result = new Point(x, y);
         done = true;
     }
@@ -34,8 +34,8 @@ public class PointInputTypeStrategy implements InputTypeStrategy<Point> {
     @Override
     public void draw(GraphicsContext canvas) {
         if (result != null) {
-            canvas.strokeLine((int) result.x - 10, (int) result.y, (int) result.x + 10, (int) result.y);
-            canvas.strokeLine((int) result.x, (int) result.y - 10, (int) result.x, (int) result.y + 10);
+            canvas.strokeLine(result.x - 10, result.y, result.x + 10, result.y);
+            canvas.strokeLine(result.x, result.y - 10, result.x, result.y + 10);
         }
     }
 

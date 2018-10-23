@@ -5,6 +5,7 @@ import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -42,7 +43,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         box.getChildren().add(yProvider.getVisibleNode());
         box.getChildren().add(button);
 
-        PointEffectLine result = PointEffectLine
+        CompositeEffectLine result = CompositeEffectLine
                 .builder()
                 .withVisibleNode(box)
                 .withXCoordinate(xProvider)
@@ -50,13 +51,18 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 .withDescriptorId(pointProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
+                .withUpdateFromValue(value -> {
+                    Point point = (Point) value;
+                    xProvider.getUpdateFromValue().accept(point.x);
+                    yProvider.getUpdateFromValue().accept(point.y);
+                })
                 .build();
 
         button.setOnMouseClicked(event -> inputModeRepository.requestPoint(point -> {
             xProvider.getUpdateFromValue().accept(point.x);
             yProvider.getUpdateFromValue().accept(point.y);
             result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-        }));
+        }, pointProvider.getSizeFunction()));
 
         return result;
     }

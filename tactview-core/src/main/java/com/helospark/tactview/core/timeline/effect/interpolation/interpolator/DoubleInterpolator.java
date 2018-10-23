@@ -11,6 +11,12 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 public class DoubleInterpolator implements EffectInterpolator {
     private TreeMap<TimelinePosition, Double> values;
     private UnivariateInterpolator interpolatorImplementation = new LinearInterpolator();
+    private double defaultValue;
+
+    public DoubleInterpolator(Double singleDefaultValue) {
+        this.values = new TreeMap<>();
+        this.defaultValue = singleDefaultValue;
+    }
 
     public DoubleInterpolator(TimelinePosition singleDefaultKey, Double singleDefaultValue) {
         this.values = new TreeMap<>();
@@ -25,7 +31,9 @@ public class DoubleInterpolator implements EffectInterpolator {
     public Double valueAt(TimelinePosition position) {
         Entry<TimelinePosition, Double> lastEntry = values.lastEntry();
         Entry<TimelinePosition, Double> firstEntry = values.firstEntry();
-        if (values.size() == 1) {
+        if (values.isEmpty()) {
+            return defaultValue;
+        } else if (values.size() == 1) {
             return values.firstEntry().getValue();
         } else if (position.isGreaterThan(lastEntry.getKey())) {
             return lastEntry.getValue();

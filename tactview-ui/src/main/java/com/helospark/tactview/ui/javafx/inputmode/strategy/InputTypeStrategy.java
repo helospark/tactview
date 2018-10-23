@@ -5,13 +5,16 @@ import javafx.scene.input.MouseEvent;
 
 public interface InputTypeStrategy<T> {
 
-    public default void onMouseDownEvent(int x, int y, MouseEvent mouseEvent) {
+    public default void onMouseDownEvent(double x, double y, MouseEvent mouseEvent) {
     }
 
-    public default void onMouseMovedEvent(int x, int y, MouseEvent mouseEvent) {
+    public default void onMouseMovedEvent(double x, double y, MouseEvent mouseEvent) {
     }
 
-    public default void onMouseUpEvent(int x, int y, MouseEvent mouseEvent) {
+    public default void onMouseUpEvent(double x, double y, MouseEvent mouseEvent) {
+    }
+
+    public default void onMouseDraggedEvent(double x, double y, MouseEvent e) {
     }
 
     public ResultType getResultType();
@@ -19,8 +22,5 @@ public interface InputTypeStrategy<T> {
     public void draw(GraphicsContext canvas);
 
     public T getResult();
-
-    public default void onMouseDraggedEvent(int x, int y, MouseEvent e) {
-    }
 
 }

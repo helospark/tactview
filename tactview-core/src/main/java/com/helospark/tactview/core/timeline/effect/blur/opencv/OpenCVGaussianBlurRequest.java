@@ -14,9 +14,11 @@ public class OpenCVGaussianBlurRequest extends Structure implements Structure.By
     public int kernelWidth;
     public int kernelHeight;
 
+    public OpenCVRegion blurRegion;
+
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("output", "input", "width", "height", "kernelWidth", "kernelHeight");
+        return Arrays.asList("output", "input", "width", "height", "kernelWidth", "kernelHeight", "blurRegion");
     }
 
 }

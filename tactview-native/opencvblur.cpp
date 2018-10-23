@@ -8,21 +8,33 @@ using namespace std;
 
 extern "C"
 {
+    struct OpenCVRegion {
+        int x;
+        int y;
+        int width;
+        int height;
+    };
 
-    typedef struct {
+    struct OpenCVGaussianBlurRequest {
         char* output;
         char* input;
         int width;
         int height;
         int kernelWidth;
         int kernelHeight;
-    } OpenCVGaussianBlurRequest;
+        OpenCVRegion* blurRegion;
+    };
+
 
     void applyGaussianBlur(OpenCVGaussianBlurRequest* request)  {
         Mat inputMat(request->height, request->width, CV_8UC4, (void*)request->input);
         Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
+        inputMat.copyTo(outputMat);
 
-        cv::GaussianBlur(inputMat, outputMat, cv::Size(request->kernelWidth, request->kernelHeight), 0);
+        OpenCVRegion* blurRegion = request->blurRegion;
+
+        cv::Rect region(blurRegion->x, blurRegion->y, blurRegion->width, blurRegion->height);
+        cv::GaussianBlur(inputMat(region), outputMat(region), cv::Size(request->kernelWidth, request->kernelHeight), 0);
     }
 
 }
