@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -68,6 +69,7 @@ public class TimelineImagePatternService {
             ClipFrameResult frame = videoClip.getFrame(frameRequest);
             BufferedImage bf = ByteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
             java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, PREVIEW_HEIGHT, BufferedImage.SCALE_SMOOTH);
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
             graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
         }
 

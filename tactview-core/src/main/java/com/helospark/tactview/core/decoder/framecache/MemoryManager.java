@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.decoder.framecache;
 
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,8 @@ import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 
+import sun.misc.Unsafe;
+
 @Component
 public class MemoryManager {
     private static final boolean DEBUG = false;
@@ -32,11 +35,14 @@ public class MemoryManager {
     @Slf4j
     private Logger logger;
 
+    private Unsafe unsafe;
+
     private AtomicLong currentSize = new AtomicLong(0);
     private boolean running = true;
 
     public MemoryManager(@Value("${memory.manager.size}") Long maximumSizeHint) {
         this.maximumSizeHint = maximumSizeHint;
+        this.unsafe = getUnsafe();
     }
 
     @PostConstruct
@@ -46,7 +52,7 @@ public class MemoryManager {
                 try {
                     ThreadSleep.sleep(1000);
 
-                    cleanupOfOldBuffers(10000L);
+                    cleanupOfOldBuffers(120000L);
 
                     if (currentSize.get() >= maximumSizeHint * 0.8) {
                         doForcefulCleanup();
@@ -63,7 +69,7 @@ public class MemoryManager {
 
         // step1 clean buffers not accessed in the last 2 secs
         if (currentSize.get() > target) {
-            cleanupOfOldBuffers(2000);
+            cleanupOfOldBuffers(10000);
         }
         // step2 clean 50% of buffers that have not needed an increase in size in 10 secs
         if (currentSize.get() > target) {
@@ -111,7 +117,23 @@ public class MemoryManager {
         int capacity = buffer.capacity();
         currentSize.addAndGet(-capacity);
         logger.debug("Buffer removed with size {} current size {}", capacity, currentSize.get());
-        // TODO: maybe we can force deallocation here
+        try {
+            unsafe.invokeCleaner(buffer);
+        } catch (Throwable t) {
+            logger.debug("Unable to clean bytebuffer", t);
+            // It's OK, GC will take care of it, when it runs
+        }
+    }
+
+    private Unsafe getUnsafe() {
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            return (Unsafe) f.get(null);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @PreDestroy

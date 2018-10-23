@@ -195,7 +195,7 @@ void readFrames(FFmpegImageRequest* request) {
   if(avformat_find_stream_info(pFormatCtx, NULL)<0)
     return;
   
-  av_dump_format(pFormatCtx, 0, request->path, 0);
+ // av_dump_format(pFormatCtx, 0, request->path, 0);
   
   videoStream=-1;
   for(i=0; i<pFormatCtx->nb_streams; i++)
