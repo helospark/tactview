@@ -32,4 +32,9 @@ public class RectangleProvider extends KeyframeableEffect {
     public List<KeyframeableEffect> getChildren() {
         return (List<KeyframeableEffect>) (Object) pointProviders;
     }
+
+    @Override
+    public boolean hasKeyframes() {
+        return false;
+    }
 }

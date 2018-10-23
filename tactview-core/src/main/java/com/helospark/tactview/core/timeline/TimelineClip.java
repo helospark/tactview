@@ -76,6 +76,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
     public int addEffectAtAnyChannel(StatelessEffect effect) {
         int i = findOrCreateFirstChannelWhichEffectCanBeAdded(effect);
         effectChannels.get(i).addInterval(effect);
+        effect.setParentIntervalAware(this);
         return i;
     }
 
@@ -162,7 +163,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
     }
 
     public boolean resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {
-        //        TimelinePosition localPositon = globalPosition.from(this.interval.getStartPosition());
+        // TimelinePosition localPositon = globalPosition.from(this.interval.getStartPosition());
         NonIntersectingIntervalList<StatelessEffect> channel = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("No such channel"));
 
         TimelineInterval originalInterval = effect.getInterval();

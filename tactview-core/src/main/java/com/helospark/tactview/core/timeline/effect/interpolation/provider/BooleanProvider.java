@@ -33,4 +33,9 @@ public class BooleanProvider extends KeyframeableEffect {
     public boolean isPrimitive() {
         return true;
     }
+
+    @Override
+    public boolean hasKeyframes() {
+        return doubleProvider.hasKeyframes();
+    }
 }

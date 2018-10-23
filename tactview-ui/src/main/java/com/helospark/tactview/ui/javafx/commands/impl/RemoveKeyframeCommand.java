@@ -4,14 +4,15 @@ import java.util.Optional;
 
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
-public class AddKeyframeForPropertyCommand implements UiCommand {
+public class RemoveKeyframeCommand implements UiCommand {
     private EffectParametersRepository effectParametersRepository;
-    private KeyframeAddedRequest request;
+    private KeyframeRemovedRequest request;
     private Optional<Object> previousValue;
 
-    public AddKeyframeForPropertyCommand(EffectParametersRepository effectParametersRepository, KeyframeAddedRequest request) {
+    public RemoveKeyframeCommand(EffectParametersRepository effectParametersRepository, KeyframeRemovedRequest request) {
         this.effectParametersRepository = effectParametersRepository;
         this.request = request;
     }
@@ -19,7 +20,7 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
     @Override
     public void execute() {
         previousValue = effectParametersRepository.getKeyframeableEffectValue(request.getDescriptorId(), request.getGlobalTimelinePosition());
-        effectParametersRepository.keyframeAdded(request);
+        effectParametersRepository.removeKeyframe(request);
     }
 
     @Override
@@ -36,7 +37,7 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
 
     @Override
     public String toString() {
-        return "AddKeyframeForPropertyCommand [request=" + request + "]";
+        return "RemoveKeyframeCommand [effectParametersRepository=" + effectParametersRepository + ", request=" + request + ", previousValue=" + previousValue + "]";
     }
 
 }

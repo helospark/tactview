@@ -15,7 +15,7 @@ import javafx.application.Platform;
 @Component
 public class UiTimelineManager {
     private static final int NUMBER_OF_FRAMES_TO_PRECACHE = 2;
-    //    private IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
+    // private IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
     private List<Consumer<TimelinePosition>> uiConsumers = new ArrayList<>();
     private List<Consumer<TimelinePosition>> consumers = new ArrayList<>();
     private double fps = 30;
@@ -106,6 +106,14 @@ public class UiTimelineManager {
             return Collections.emptyList();
         }
 
+    }
+
+    public void moveBackOneFrame() {
+        jumpRelative(increment.negate());
+    }
+
+    public void moveForwardOneFrame() {
+        jumpRelative(increment);
     }
 
 }

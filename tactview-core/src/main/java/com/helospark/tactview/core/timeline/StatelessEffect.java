@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 public abstract class StatelessEffect implements IntervalAware, IntervalSettable {
     String id;
     TimelineInterval interval;
+    IntervalAware parentIntervalAware;
 
     public StatelessEffect(TimelineInterval interval) {
         id = UUID.randomUUID().toString();
@@ -29,4 +30,14 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
     public void setInterval(TimelineInterval timelineInterval) {
         this.interval = timelineInterval;
     }
+
+    public void setParentIntervalAware(IntervalAware parentIntervalAware) {
+        this.parentIntervalAware = parentIntervalAware;
+    }
+
+    @Override
+    public TimelineInterval getGlobalInterval() {
+        return this.interval.butAddOffset(parentIntervalAware.getInterval().getStartPosition());
+    }
+
 }

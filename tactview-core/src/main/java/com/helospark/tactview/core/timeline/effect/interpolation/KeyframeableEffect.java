@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -42,6 +43,16 @@ public abstract class KeyframeableEffect {
 
     public SizeFunction getSizeFunction() {
         return SizeFunction.NO_TRANSFORMATION;
+    }
+
+    public abstract boolean hasKeyframes();
+
+    public Map<TimelinePosition, Object> getValues() {
+        return Collections.emptyMap();
+    }
+
+    public boolean isKeyframe(TimelinePosition position) {
+        return getValues().containsKey(position);
     }
 
 }

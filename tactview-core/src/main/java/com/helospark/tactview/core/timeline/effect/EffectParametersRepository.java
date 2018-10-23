@@ -3,7 +3,9 @@ package com.helospark.tactview.core.timeline.effect;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -18,6 +20,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -86,16 +89,23 @@ public class EffectParametersRepository {
     public void keyframeAdded(KeyframeAddedRequest message) {
         EffectStore valueToChange = idToEffectMap.get(message.getDescriptorId());
         if (valueToChange != null) {
-            TimelinePosition relativePosition = message.getGlobalTimelinePosition().from(valueToChange.intervalAware.getInterval().getStartPosition());
+            TimelinePosition relativePosition = positionToLocal(message.getGlobalTimelinePosition(), valueToChange);
             valueToChange.effect.keyframeAdded(relativePosition, message.getValue());
         } else {
             System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
         }
     }
 
-    public void removeKeyframe(KeyframeAddedRequest request) {
+    public void removeKeyframe(KeyframeRemovedRequest request) {
         EffectStore valueToChange = idToEffectMap.get(request.getDescriptorId());
-        valueToChange.effect.removeKeyframeAt(request.getGlobalTimelinePosition().from(valueToChange.intervalAware.getInterval().getStartPosition()));
+        valueToChange.effect.removeKeyframeAt(positionToLocal(request.getGlobalTimelinePosition(), valueToChange));
+    }
+
+    public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
+        return Optional.ofNullable(idToEffectMap.get(id))
+                .map(a -> a.effect)
+                .filter(a -> a.hasKeyframes())
+                .map(a -> a.getValueAt(position));
     }
 
     static class EffectStore {
@@ -107,5 +117,27 @@ public class EffectParametersRepository {
             this.intervalAware = intervalAware;
         }
 
+    }
+
+    public Map<TimelinePosition, Object> getAllKeyframes(String id) {
+        EffectStore valueToChange = idToEffectMap.get(id);
+        return valueToChange.effect.getValues()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(a -> a.getKey().add(valueToChange.intervalAware.getGlobalInterval().getStartPosition()), b -> b.getValue()));
+    }
+
+    public String getValueAt(String id, TimelinePosition position) {
+        EffectStore valueToChange = idToEffectMap.get(id);
+        return String.valueOf(valueToChange.effect.getValueAt(positionToLocal(position, valueToChange)));
+    }
+
+    private TimelinePosition positionToLocal(TimelinePosition position, EffectStore valueToChange) {
+        return position.from(valueToChange.intervalAware.getGlobalInterval().getStartPosition());
+    }
+
+    public boolean isKeyframeAt(String id, TimelinePosition position) {
+        EffectStore valueToChange = idToEffectMap.get(id);
+        return valueToChange.effect.isKeyframe(positionToLocal(position, valueToChange));
     }
 }

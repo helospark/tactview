@@ -57,8 +57,8 @@ public class BlurEffect extends StatelessVideoEffect {
 
     private OpenCVRegion createBlurRegion(StatelessEffectRequest request) {
         OpenCVRegion region = new OpenCVRegion();
-        Point topLeft = topLeftPointProvider.getValueAt(request.getClipPosition());
-        Point bottomRight = bottomRightPointProvider.getValueAt(request.getClipPosition());
+        Point topLeft = topLeftPointProvider.getValueAt(request.getEffectPosition());
+        Point bottomRight = bottomRightPointProvider.getValueAt(request.getEffectPosition());
         region.x = (int) (topLeft.x * request.getCurrentFrame().getWidth());
         region.y = (int) (topLeft.y * request.getCurrentFrame().getHeight());
 

@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
+import java.util.Map;
+
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
@@ -55,6 +57,16 @@ public class IntegerProvider extends KeyframeableEffect {
     @Override
     public boolean isPrimitive() {
         return true;
+    }
+
+    @Override
+    public boolean hasKeyframes() {
+        return interpolator.hasKeyframes();
+    }
+
+    @Override
+    public Map<TimelinePosition, Object> getValues() {
+        return interpolator.getValues();
     }
 
 }

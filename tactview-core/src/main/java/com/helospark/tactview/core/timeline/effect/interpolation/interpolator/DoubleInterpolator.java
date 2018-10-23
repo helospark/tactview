@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -67,6 +68,18 @@ public class DoubleInterpolator implements EffectInterpolator {
 
     public void valueRemoved(TimelinePosition globalTimelinePosition) {
         values.remove(globalTimelinePosition);
+    }
+
+    public boolean hasKeyframes() {
+        return !values.isEmpty();
+    }
+
+    public Map<TimelinePosition, Object> getValues() {
+        TreeMap<TimelinePosition, Object> result = new TreeMap<>();
+        for (var entry : values.entrySet()) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
 }

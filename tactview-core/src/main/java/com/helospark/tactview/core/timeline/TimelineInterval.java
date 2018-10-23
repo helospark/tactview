@@ -56,4 +56,8 @@ public class TimelineInterval {
         return new TimelineInterval(offsetStartPosition, offsetStartPosition.add(length));
     }
 
+    public TimelineInterval butAddOffset(TimelinePosition offsetStartPosition) {
+        return new TimelineInterval(this.startPosition.add(offsetStartPosition), length);
+    }
+
 }
