@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 
@@ -118,7 +119,7 @@ public class TimelineDragAndDropHandler {
                 .build();
     }
 
-    private void moveClip(DragEvent event, String channelId, boolean revertable) {
+    private CompletableFuture<ClipMovedCommand> moveClip(DragEvent event, String channelId, boolean revertable) {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
@@ -137,8 +138,9 @@ public class TimelineDragAndDropHandler {
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(30).getSeconds()))
                     .build();
 
-            commandInterpreter.sendWithResult(command);
+            return commandInterpreter.sendWithResult(command);
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     private void resizeClip(DragEvent event, boolean b) {

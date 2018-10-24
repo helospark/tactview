@@ -63,6 +63,7 @@ public class UiTimeline {
         timelineGroup.getChildren().add(timelineBoxes);
 
         positionIndicatorLine = new Line();
+        positionIndicatorLine.setLayoutX(6.0); // TODO: Layout need to be fixed
         positionIndicatorLine.setStartY(0);
         positionIndicatorLine.endYProperty().bind(timelineBoxes.heightProperty());
         positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
@@ -71,9 +72,10 @@ public class UiTimeline {
         timelineGroup.getChildren().add(positionIndicatorLine);
 
         Line specialPositionLine = new Line();
+        specialPositionLine.setLayoutX(6.0); // TODO: Layout need to be fixed
         specialPositionLine.translateXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartX());
         specialPositionLine.startYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartY());
-        // specialPositionLine.translateXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEndX());
+        specialPositionLine.visibleProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEnabledProperty());
         specialPositionLine.endYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEndY());
         specialPositionLine.setId("special-position-line");
         timelineGroup.getChildren().add(specialPositionLine);

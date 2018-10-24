@@ -44,7 +44,8 @@ public class ClipAddedListener {
     @Slf4j
     private Logger logger;
 
-    public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder, ProjectRepository projectRepository,
+    public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
+            ProjectRepository projectRepository,
             UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository) {
         this.timelineImagePatternService = timelineImagePatternService;
         this.messagingService = messagingService;
