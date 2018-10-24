@@ -60,4 +60,8 @@ public class TimelineInterval {
         return new TimelineInterval(this.startPosition.add(offsetStartPosition), length);
     }
 
+    public TimelineInterval butMoveEndPostionTo(TimelinePosition position) {
+        return new TimelineInterval(position.subtract(length), position);
+    }
+
 }

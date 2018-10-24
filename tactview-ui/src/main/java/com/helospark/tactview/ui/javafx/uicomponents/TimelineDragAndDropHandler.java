@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AddClipRequest;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -121,6 +122,7 @@ public class TimelineDragAndDropHandler {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
+
             TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
 
             ClipMovedCommand command = ClipMovedCommand.builder()
@@ -131,6 +133,8 @@ public class TimelineDragAndDropHandler {
                     .withOriginalChannelId(currentlyDraggedEffect.getOriginalChannelId())
                     .withNewChannelId(channelId)
                     .withTimelineManager(timelineManager)
+                    .withEnableJumpingToSpecialPosition(true)
+                    .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(30).getSeconds()))
                     .build();
 
             commandInterpreter.sendWithResult(command);

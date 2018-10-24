@@ -1,8 +1,11 @@
 package com.helospark.tactview.core.timeline;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -229,24 +232,40 @@ public class TimelineManager implements Saveable {
                 .findFirst();
     }
 
-    public boolean moveClip(String clipId, TimelinePosition newPosition, String newChannelId) {
+    public boolean moveClip(MoveClipRequest moveClipRequest) {
+        String clipId = moveClipRequest.clipId;
+        TimelinePosition newPosition = moveClipRequest.newPosition;
+        String newChannelId = moveClipRequest.newChannelId;
+
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip " + clipId));
         TimelineChannel newChannel = findChannelWithId(newChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find channel " + newChannelId));
 
+        TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
+
+        Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
+
+        if (moveClipRequest.enableJumpingToSpecialPosition) {
+            specialPositionUsed = calculateSpecialPositionAround(newPosition, newChannelId, moveClipRequest.maximumJump, clipToMove.getInterval(), clipToMove.getId())
+                    .stream()
+                    .findFirst();
+            if (specialPositionUsed.isPresent()) {
+                newPosition = specialPositionUsed.get().getClipPosition();
+            }
+        }
+
         if (!originalChannel.equals(newChannel)) {
-            TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
             // todo: some atomity would be nice here
             if (newChannel.canAddResourceAt(clipToMove.getInterval())) {
                 originalChannel.removeClip(clipId);
                 newChannel.addResource(clipToMove);
 
-                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId));
+                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed));
             }
         } else {
             boolean success = originalChannel.moveClip(clipId, newPosition);
 
             if (success) {
-                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId));
+                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed));
             }
         }
         return true;
@@ -343,6 +362,60 @@ public class TimelineManager implements Saveable {
     @Override
     public void loadContent(String data, String id, String version) {
 
+    }
+
+    // TODO: some cleanup on below
+    public Set<ClosesIntervalChannel> calculateSpecialPositionAround(TimelinePosition position, String channelId, TimelineLength inRadius, TimelineInterval intervalToAdd, String excludeClip) {
+        Set<ClosesIntervalChannel> set = new TreeSet<>();
+        TimelineChannel channel = findChannelWithId(channelId).orElseThrow();
+        TimelineLength clipLength = intervalToAdd.getLength();
+        TimelinePosition endPosition = position.add(clipLength);
+        set.addAll(findSpecialPositionAround(position, inRadius, excludeClip));
+
+        set.addAll(findSpecialPositionAround(endPosition, inRadius, excludeClip)
+                .stream()
+                .map(a -> {
+                    a.setPosition(a.getClipPosition().subtract(clipLength));
+                    return a;
+                })
+                .collect(Collectors.toList()));
+
+        return set.stream()
+                .filter(a -> channel.canAddResourceAtExcluding(new TimelineInterval(a.getClipPosition(), a.getClipPosition().add(clipLength)), excludeClip))
+                .collect(Collectors.toCollection(TreeSet::new));
+    }
+
+    private Set<ClosesIntervalChannel> findSpecialPositionAround(TimelinePosition position, TimelineLength length, String excludeClip) {
+        return channels.stream()
+                .flatMap(channel -> {
+                    List<TimelineInterval> spec = channel.findSpecialPositionsAround(position, length, excludeClip);
+                    return findClosesIntervalForChannel(spec, position, channel, length).stream();
+                })
+                .collect(Collectors.toCollection(TreeSet::new));
+    }
+
+    private Optional<ClosesIntervalChannel> findClosesIntervalForChannel(List<TimelineInterval> findSpecialPositionAround, TimelinePosition position, TimelineChannel channel, TimelineLength length) {
+        BigDecimal minimumLength = null;
+        TimelinePosition minimumPosition = null;
+
+        for (TimelineInterval interval : findSpecialPositionAround) {
+            BigDecimal startLength = interval.getStartPosition().distanceFrom(position);
+            if (minimumLength == null || startLength.compareTo(minimumLength) < 0) {
+                minimumLength = startLength;
+                minimumPosition = interval.getStartPosition();
+            }
+            BigDecimal endLength = interval.getEndPosition().distanceFrom(position);
+            if (minimumLength == null || endLength.compareTo(minimumLength) < 0) {
+                minimumLength = endLength;
+                minimumPosition = interval.getEndPosition();
+            }
+        }
+
+        if (minimumLength == null || minimumLength.compareTo(length.getSeconds()) > 0) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new ClosesIntervalChannel(new TimelineLength(minimumLength), channel.getId(), minimumPosition, minimumPosition));
+        }
     }
 
 }

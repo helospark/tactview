@@ -2,6 +2,8 @@ package com.helospark.tactview.ui.javafx.commands.impl;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.MoveClipRequest;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
@@ -19,6 +21,9 @@ public class ClipMovedCommand implements UiCommand {
 
     private TimelineManager timelineManager;
 
+    private boolean enableJumpingToSpecialPosition;
+    private TimelineLength maximumJumpLength;
+
     @Generated("SparkTools")
     private ClipMovedCommand(Builder builder) {
         this.isRevertable = builder.isRevertable;
@@ -28,16 +33,32 @@ public class ClipMovedCommand implements UiCommand {
         this.newPosition = builder.newPosition;
         this.previousPosition = builder.previousPosition;
         this.timelineManager = builder.timelineManager;
+        this.enableJumpingToSpecialPosition = builder.enableJumpingToSpecialPosition;
+        this.maximumJumpLength = builder.maximumJumpLength;
     }
 
     @Override
     public void execute() {
-        timelineManager.moveClip(clipId, newPosition, newChannelId);
+        MoveClipRequest request = MoveClipRequest.builder()
+                .withClipId(clipId)
+                .withNewPosition(newPosition)
+                .withNewChannelId(newChannelId)
+                .withMaximumJump(maximumJumpLength)
+                .withEnableJumpingToSpecialPosition(enableJumpingToSpecialPosition)
+                .build();
+
+        timelineManager.moveClip(request);
     }
 
     @Override
     public void revert() {
-        timelineManager.moveClip(clipId, previousPosition, originalChannelId);
+        MoveClipRequest request = MoveClipRequest.builder()
+                .withClipId(clipId)
+                .withNewPosition(previousPosition)
+                .withNewChannelId(originalChannelId)
+                .withEnableJumpingToSpecialPosition(false)
+                .build();
+        timelineManager.moveClip(request);
     }
 
     @Override
@@ -59,6 +80,8 @@ public class ClipMovedCommand implements UiCommand {
         private TimelinePosition newPosition;
         private TimelinePosition previousPosition;
         private TimelineManager timelineManager;
+        private boolean enableJumpingToSpecialPosition;
+        private TimelineLength maximumJumpLength;
 
         private Builder() {
         }
@@ -95,6 +118,16 @@ public class ClipMovedCommand implements UiCommand {
 
         public Builder withTimelineManager(TimelineManager timelineManager) {
             this.timelineManager = timelineManager;
+            return this;
+        }
+
+        public Builder withEnableJumpingToSpecialPosition(boolean enableJumpingToSpecialPosition) {
+            this.enableJumpingToSpecialPosition = enableJumpingToSpecialPosition;
+            return this;
+        }
+
+        public Builder withMaximumJumpLength(TimelineLength maximumJumpLength) {
+            this.maximumJumpLength = maximumJumpLength;
             return this;
         }
 

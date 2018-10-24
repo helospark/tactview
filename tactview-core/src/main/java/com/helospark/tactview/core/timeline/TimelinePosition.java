@@ -89,8 +89,12 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
         return this.getSeconds().compareTo(other.getSeconds()) <= 0;
     }
 
-    public TimelinePosition subtract(TimelinePosition endPosition) {
+    public TimelinePosition subtract(SecondsAware endPosition) {
         return new TimelinePosition(this.getSeconds().subtract(endPosition.getSeconds()));
+    }
+
+    public BigDecimal distanceFrom(TimelinePosition position) {
+        return seconds.subtract(position.seconds).abs();
     }
 
 }

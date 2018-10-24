@@ -70,4 +70,12 @@ public class TimelineLength implements SecondsAware {
         return this.getSeconds().compareTo(length.getSeconds()) > 0;
     }
 
+    public int compareTo(TimelineLength other) {
+        return seconds.compareTo(other.seconds);
+    }
+
+    public TimelineLength multiply(int i) {
+        return new TimelineLength(this.seconds.multiply(BigDecimal.valueOf(i)));
+    }
+
 }

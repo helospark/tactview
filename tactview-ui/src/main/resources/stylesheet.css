@@ -120,6 +120,11 @@
 	-fx-stroke-width: 2px;
 }
 
+#special-position-line {
+    -fx-stroke: red;
+    -fx-stroke-width: 2px;
+}
+
 .input-mode-enabled {
     -fx-opacity: 0.4;
 }

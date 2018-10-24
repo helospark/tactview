@@ -34,6 +34,7 @@ public class TimelineState {
     private SimpleDoubleProperty translate = new SimpleDoubleProperty(0);
 
     private SimpleIntegerProperty linePosition = new SimpleIntegerProperty(0);
+    private MoveSpecialPointLineProperties moveSpecialPointLineProperties = new MoveSpecialPointLineProperties();
 
     private MessagingService messagingService;
 
@@ -180,13 +181,17 @@ public class TimelineState {
     public void changeChannelFor(Pane clip, String newChannelId) {
         HBox originalChannel = findChannelForClip(clip).orElse(null);
         if (!originalChannel.getUserData().equals(newChannelId)) {
-            //            removeClip((String) clip.getUserData());
-            //            HBox newChannel = findChannelById(newChannelId).orElseThrow(() -> new IllegalArgumentException("New channel doesn't exist"));
-            //            newChannel.getChildren().add(clip);
+            // removeClip((String) clip.getUserData());
+            // HBox newChannel = findChannelById(newChannelId).orElseThrow(() -> new IllegalArgumentException("New channel doesn't exist"));
+            // newChannel.getChildren().add(clip);
             channelToClips.get(originalChannel.getUserData()).remove(clip);
             channelToClips.get(newChannelId).add(clip);
         }
-        //        System.out.println("Channel change: " + channel.getUserData() + " " + newChannelId);
+        // System.out.println("Channel change: " + channel.getUserData() + " " + newChannelId);
+    }
+
+    public MoveSpecialPointLineProperties getMoveSpecialPointLineProperties() {
+        return moveSpecialPointLineProperties;
     }
 
 }

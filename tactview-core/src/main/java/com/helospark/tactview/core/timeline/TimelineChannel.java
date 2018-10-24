@@ -1,8 +1,12 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class TimelineChannel {
     private NonIntersectingIntervalList<TimelineClip> clips = new NonIntersectingIntervalList<>();
@@ -95,6 +99,35 @@ public class TimelineChannel {
     public void generateSavedContent() {
         for (TimelineClip clip : clips) {
             clip.generateSavedContent();
+        }
+    }
+
+    public List<TimelineInterval> findSpecialPositionsAround(TimelinePosition position, TimelineLength length, String excludeClip) {
+        TimelineInterval inInterval = new TimelineInterval(position.subtract(length), length.multiply(2));
+        List<TimelineInterval> specialPointsFromClips = clips.computeIntersectingIntervals(inInterval)
+                .stream()
+                .filter(a -> !a.getId().equals(excludeClip))
+                .map(a -> a.getInterval())
+                .collect(Collectors.toList());
+        List<TimelineInterval> otherSpecialPoints = Collections.singletonList(new TimelineInterval(TimelinePosition.ofZero(), TimelineLength.ofZero()));
+        // We could add effects
+        ArrayList<TimelineInterval> result = new ArrayList<>(specialPointsFromClips);
+        result.addAll(otherSpecialPoints);
+        // ...
+        return result;
+    }
+
+    public boolean canAddResourceAtExcluding(TimelineInterval interval, String excludeClipId) {
+        Optional<TimelineClip> optionalExcludedClip = findClipById(excludeClipId);
+        if (optionalExcludedClip.isPresent()) {
+            // Should be part of list
+            TimelineClip excludedClip = optionalExcludedClip.get();
+            clips.remove(excludedClip);
+            boolean result = clips.canAddInterval(interval);
+            clips.addInterval(excludedClip);
+            return result;
+        } else {
+            return clips.canAddInterval(interval);
         }
     }
 }

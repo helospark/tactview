@@ -70,6 +70,14 @@ public class UiTimeline {
         positionIndicatorLine.setId("timeline-position-line");
         timelineGroup.getChildren().add(positionIndicatorLine);
 
+        Line specialPositionLine = new Line();
+        specialPositionLine.translateXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartX());
+        specialPositionLine.startYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartY());
+        // specialPositionLine.translateXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEndX());
+        specialPositionLine.endYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEndY());
+        specialPositionLine.setId("special-position-line");
+        timelineGroup.getChildren().add(specialPositionLine);
+
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
         timelineBoxes.setOnScroll(timeLineZoomCallback::onScroll);

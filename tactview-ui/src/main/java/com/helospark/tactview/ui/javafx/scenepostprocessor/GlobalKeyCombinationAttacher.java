@@ -67,14 +67,6 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
                         event.consume();
                     });
         });
-        // scene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
-        // if (event.getCode().equals(KeyCode.KP_LEFT)) {
-        // timelineManager.moveForwardOneFrame();
-        // }
-        // if (event.getCode().equals(KeyCode.KP_RIGHT)) {
-        // timelineManager.moveForwardOneFrame();
-        // }
-        // });
     }
 
     private void setupDefaultKeyCombinations() {
