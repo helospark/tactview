@@ -6,11 +6,14 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
+import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
+import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Configuration
@@ -27,9 +30,9 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory desaturizeEffect(OpenCVBasedGaussianBlur gaussianBlur, MessagingService messagingService) {
+    public StandardEffectFactory desaturizeEffect(OpenCVBasedGaussianBlur gaussianBlur, MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new DesaturizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000))))
+                .withFactory(request -> new DesaturizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
                 .withMessagingService(messagingService)
                 .withName("Desaturize")
                 .withSupportedEffectId("desaturize")
@@ -53,6 +56,26 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Rotate")
                 .withSupportedEffectId("rotate")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory brightnessContrastEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new BrightnessContrassEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
+                .withMessagingService(messagingService)
+                .withName("Brightness")
+                .withSupportedEffectId("brightesscontrast")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory gammaEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new GammaEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
+                .withMessagingService(messagingService)
+                .withName("Gamma")
+                .withSupportedEffectId("gamma")
                 .build();
     }
 }

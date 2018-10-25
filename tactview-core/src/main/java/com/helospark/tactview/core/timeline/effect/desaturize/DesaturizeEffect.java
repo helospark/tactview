@@ -1,41 +1,32 @@
 package com.helospark.tactview.core.timeline.effect.desaturize;
 
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 public class DesaturizeEffect extends StatelessVideoEffect {
+    private IndependentPixelOperation independentPixelOperations;
 
-    public DesaturizeEffect(TimelineInterval interval) {
+    public DesaturizeEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperations) {
         super(interval);
     }
 
     @Override
     public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getCurrentFrame().getBuffer().capacity());
-        ClipFrameResult currentFrame = request.getCurrentFrame();
-        ClipFrameResult result = new ClipFrameResult(buffer, currentFrame.getWidth(), currentFrame.getHeight());
-        int[] pixel = new int[4];
-        int[] resultPixel = new int[4];
-        for (int i = 0; i < currentFrame.getHeight(); ++i) {
-            for (int j = 0; j < currentFrame.getWidth(); ++j) {
-                currentFrame.getPixelComponents(pixel, j, i);
-                int desaturized = (pixel[0] + pixel[1] + pixel[2]) / 3;
-                resultPixel[0] = desaturized;
-                resultPixel[1] = desaturized;
-                resultPixel[2] = desaturized;
-                resultPixel[3] = pixel[3];
-                result.setPixel(resultPixel, j, i);
-            }
-        }
-        return result;
+        return independentPixelOperations.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
+            int desaturized = (pixelRequest.input[0] + pixelRequest.input[1] + pixelRequest.input[2]) / 3;
+            pixelRequest.output[0] = desaturized;
+            pixelRequest.output[1] = desaturized;
+            pixelRequest.output[2] = desaturized;
+            pixelRequest.output[3] = pixelRequest.input[3];
+        });
+
     }
 
     @Override
