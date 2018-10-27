@@ -85,4 +85,12 @@ public class DoubleProvider extends KeyframeableEffect {
         return interpolator.getValues();
     }
 
+    public double getMin() {
+        return min;
+    }
+
+    public double getMax() {
+        return max;
+    }
+
 }

@@ -8,12 +8,13 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Configuration
 public class CoreClipFactoryChainItemConfiguration {
 
     @Bean
-    public StandardProceduralClipFactoryChainItem singleColorProceduralClip() {
+    public StandardProceduralClipFactoryChainItem singleColorProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("singlecolor", "Single color",
                 request -> {
                     TimelineLength defaultLength = TimelineLength.ofMillis(30000);
@@ -22,7 +23,7 @@ public class CoreClipFactoryChainItemConfiguration {
                             .withHeight(1080)
                             .withLength(defaultLength)
                             .build();
-                    return new SingleColorProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                    return new SingleColorProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 });
     }
 

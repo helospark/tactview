@@ -208,7 +208,10 @@ public class JavaFXUiMain extends Application {
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 
-        upper.add(effectPropertyView.getPropertyWindow(), 0, 0);
+        FlowPane propertyBox = effectPropertyView.getPropertyWindow();
+        ScrollPane propertyBoxScrollPane = new ScrollPane(propertyBox);
+        propertyBoxScrollPane.setFitToWidth(true);
+        upper.add(propertyBoxScrollPane, 0, 0);
         upper.add(tabPane, 1, 0);
         upper.add(rightVBox, 2, 0);
 
@@ -225,7 +228,7 @@ public class JavaFXUiMain extends Application {
 
         inputModeRepository.registerInputModeChangeConsumerr(onClassChange(lower));
         inputModeRepository.registerInputModeChangeConsumerr(onClassChange(tabPane));
-        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(effectPropertyView.getPropertyWindow()));
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(propertyBox));
 
         lightDi.getListOfBeans(ScenePostProcessor.class)
                 .stream()

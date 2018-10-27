@@ -66,7 +66,9 @@ public class PropertyView {
     }
 
     private EffectPropertyPage createBox(List<ValueProviderDescriptor> descriptors) {
-        Builder result = EffectPropertyPage.builder().withBox(new GridPane());
+        GridPane grid = new GridPane();
+        grid.getStyleClass().add("effect-property-grid");
+        Builder result = EffectPropertyPage.builder().withBox(grid);
         for (int i = 0; i < descriptors.size(); ++i) {
             addElement(descriptors.get(i), result, i);
         }

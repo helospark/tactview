@@ -28,10 +28,10 @@ public class ClipFrameResult {
     }
 
     public void getPixelComponents(int[] result, int x, int y) {
-        int r = signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 0));
-        int g = signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 1));
-        int b = signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 2));
-        int a = signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 3));
+        int r = getRed(x, y);
+        int g = getGreen(x, y);
+        int b = getBlue(x, y);
+        int a = getAlpha(x, y);
         result[0] = r;
         result[1] = g;
         result[2] = b;
@@ -88,5 +88,21 @@ public class ClipFrameResult {
     public void setAlpha(int alpha, int x, int y) {
         byte a = (byte) (saturateIfNeeded(alpha) & 0xFF);
         buffer.put(y * width * 4 + x * 4 + 3, a);
+    }
+
+    public int getRed(int x, int y) {
+        return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 0));
+    }
+
+    public int getGreen(int x, int y) {
+        return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 1));
+    }
+
+    public int getBlue(int x, int y) {
+        return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 2));
+    }
+
+    public int getAlpha(int x, int y) {
+        return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 3));
     }
 }

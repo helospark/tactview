@@ -39,6 +39,7 @@ public class IndependentPixelOperation {
     }
 
     public void executePixelTransformation(int width, int height, BiConsumer<Integer, Integer> consumer) {
+        // TODO: do it in parallel
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 consumer.accept(x, y);

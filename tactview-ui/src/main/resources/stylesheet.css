@@ -134,7 +134,7 @@
     -fx-opacity: 0.4;
 }
 
-.double-property-field {
+.double-property-field,.integer-property-field {
     -fx-pref-width: 80px;
 }
 
@@ -146,6 +146,11 @@
 .text-field.on-keyframe {
     -fx-control-inner-background: #606060;
     -fx-font-weight: 900;
+}
+
+.effect-property-grid {
+    -fx-vgap: 4px;
+    -fx-hgap: 8px;
 }
 
 /** tmp **/

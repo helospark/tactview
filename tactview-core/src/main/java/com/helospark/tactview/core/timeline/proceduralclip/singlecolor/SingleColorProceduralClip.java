@@ -18,13 +18,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 public class SingleColorProceduralClip extends VisualTimelineClip {
     private ColorProvider colorProvider;
     private IntegerProvider alphaProvider;
 
-    public SingleColorProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval) {
+    private IndependentPixelOperation independentPixelOperation;
+
+    public SingleColorProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(visualMediaMetadata, interval, TimelineClipType.IMAGE);
+        this.independentPixelOperation = independentPixelOperation;
     }
 
     @Override
@@ -44,11 +48,9 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
                 (int) (color.blue * 255),
                 alphaProvider.getValueAt(relativePosition)};
 
-        for (int i = 0; i < height; ++i) {
-            for (int j = 0; j < width; ++j) {
-                frameResult.setPixel(colorComponents, j, i);
-            }
-        }
+        independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
+            frameResult.setPixel(colorComponents, x, y);
+        });
 
         return applyEffects(relativePosition, frameResult, request);
     }
@@ -96,7 +98,7 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
 
     @Override
     protected TimelineClip cloneClip() {
-        return new SingleColorProceduralClip(mediaMetadata, interval);
+        return new SingleColorProceduralClip(mediaMetadata, interval, independentPixelOperation);
     }
 
 }

@@ -4,6 +4,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -12,9 +13,14 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyComm
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveKeyframeCommand;
 
+import javafx.beans.binding.Bindings;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.util.StringConverter;
+import javafx.util.converter.NumberStringConverter;
 
 @Component
 public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<DoubleProvider> {
@@ -35,6 +41,20 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         TextField textField = new TextField();
         textField.getStyleClass().add("double-property-field");
 
+        HBox hbox = new HBox();
+        hbox.getChildren().add(textField);
+
+        if (doubleProvider.getSizeFunction().equals(SizeFunction.CLAMP_TO_MIN_MAX)) {
+            Slider slider = new Slider();
+            slider.setMin(doubleProvider.getMin());
+            slider.setMax(doubleProvider.getMax());
+            slider.setShowTickLabels(true);
+            slider.setShowTickMarks(true);
+            StringConverter<Number> converter = new NumberStringConverter();
+            Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
+            hbox.getChildren().add(slider);
+        }
+
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> textField.getText())
                 .withDescriptorId(doubleProvider.getId())
@@ -47,7 +67,7 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                     }
                 })
                 .withUpdateFromValue(value -> textField.setText(String.valueOf(value)))
-                .withVisibleNode(textField)
+                .withVisibleNode(hbox)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();

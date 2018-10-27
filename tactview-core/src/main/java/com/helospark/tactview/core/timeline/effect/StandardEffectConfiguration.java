@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDen
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
+import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
@@ -111,6 +112,16 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Threshold")
                 .withSupportedEffectId("adaptivethreshold")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory mirrorEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new MirrorEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withMessagingService(messagingService)
+                .withName("Mirror")
+                .withSupportedEffectId("mirror")
                 .build();
     }
 }
