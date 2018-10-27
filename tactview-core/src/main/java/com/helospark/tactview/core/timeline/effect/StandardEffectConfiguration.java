@@ -7,12 +7,17 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
+import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
+import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
+import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
+import com.helospark.tactview.core.timeline.effect.threshold.ThresholdEffect;
+import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -76,6 +81,36 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Gamma")
                 .withSupportedEffectId("gamma")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory invertEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new InvertEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
+                .withMessagingService(messagingService)
+                .withName("Invert")
+                .withSupportedEffectId("invert")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory denoiseEffect(MessagingService messagingService, OpenCVBasedDenoiseEffect openCVBasedDenoiseEffect) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new DenoiseEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVBasedDenoiseEffect))
+                .withMessagingService(messagingService)
+                .withName("Denoise")
+                .withSupportedEffectId("denoise")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory thresholdEffect(MessagingService messagingService, OpenCVThresholdImplementation openCVThresholdImplementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ThresholdEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVThresholdImplementation))
+                .withMessagingService(messagingService)
+                .withName("Threshold")
+                .withSupportedEffectId("adaptivethreshold")
                 .build();
     }
 }

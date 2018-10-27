@@ -10,6 +10,12 @@ cp libopencvblur.so ../tactview-core/src/main/resources/linux-x86-64/.
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvscale.so -o libopencvscale.so opencvscale.cpp `pkg-config --libs opencv` 
 cp libopencvscale.so ../tactview-core/src/main/resources/linux-x86-64/.
 
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvdenoise.so -o libopencvdenoise.so opencvdenoise.cpp `pkg-config --libs opencv` 
+cp libopencvdenoise.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvthreshold.so -o libopencvthreshold.so opencvthreshold.cpp `pkg-config --libs opencv` 
+cp libopencvthreshold.so ../tactview-core/src/main/resources/linux-x86-64/.
+
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvrotate.so -o libopencvrotate.so opencvrotate.cpp `pkg-config --libs opencv` 
 cp libopencvrotate.so ../tactview-core/src/main/resources/linux-x86-64/.
 

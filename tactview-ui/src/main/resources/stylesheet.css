@@ -9,6 +9,7 @@
 
 .timelinerow,#content-area {
 	-fx-background-color: #333333;
+	-fx-background: #333333;
 }
 
 .menu-item,.context-menu,.menu-bar {
@@ -37,7 +38,11 @@
 }
 
 .text-field {
-    -fx-control-inner-background: #303030
+    -fx-control-inner-background: #303030;
+}
+
+.color-picker {
+    -fx-background-color: #303030;
 }
 
 .icon {

@@ -31,7 +31,7 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     }
 
     @Override
-    protected EffectLine handle(DoubleProvider doubleProvider) {
+    protected PrimitiveEffectLine handle(DoubleProvider doubleProvider) {
         TextField textField = new TextField();
         textField.getStyleClass().add("double-property-field");
 

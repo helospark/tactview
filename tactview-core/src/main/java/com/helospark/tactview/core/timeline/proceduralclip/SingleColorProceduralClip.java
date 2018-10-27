@@ -14,12 +14,13 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 
 public class SingleColorProceduralClip extends VisualTimelineClip {
-    private IntegerProvider redProvider;
-    private IntegerProvider greenProvider;
-    private IntegerProvider blueProvider;
+    private ColorProvider colorProvider;
     private IntegerProvider alphaProvider;
 
     public SingleColorProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval) {
@@ -36,14 +37,16 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
         ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4);
         ClipFrameResult frameResult = new ClipFrameResult(buffer, width, height);
 
-        int[] color = new int[]{redProvider.getValueAt(relativePosition),
-                greenProvider.getValueAt(relativePosition),
-                blueProvider.getValueAt(relativePosition),
+        Color color = colorProvider.getValueAt(relativePosition);
+        int[] colorComponents = new int[]{
+                (int) (color.red * 255),
+                (int) (color.green * 255),
+                (int) (color.blue * 255),
                 alphaProvider.getValueAt(relativePosition)};
 
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
-                frameResult.setPixel(color, j, i);
+                frameResult.setPixel(colorComponents, j, i);
             }
         }
 
@@ -60,31 +63,22 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
     public List<ValueProviderDescriptor> getDescriptors() {
         List<ValueProviderDescriptor> result = super.getDescriptors();
 
-        redProvider = new IntegerProvider(0, 255, new DoubleInterpolator(TimelinePosition.ofZero(), 255.0));
-        greenProvider = new IntegerProvider(0, 255, new DoubleInterpolator(TimelinePosition.ofZero(), 255.0));
-        blueProvider = new IntegerProvider(0, 255, new DoubleInterpolator(TimelinePosition.ofZero(), 255.0));
+        colorProvider = new ColorProvider(new DoubleProvider(new DoubleInterpolator(1.0)),
+                new DoubleProvider(new DoubleInterpolator(1.0)),
+                new DoubleProvider(new DoubleInterpolator(1.0)));
+
         alphaProvider = new IntegerProvider(0, 255, new DoubleInterpolator(TimelinePosition.ofZero(), 255.0));
 
-        ValueProviderDescriptor redDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(redProvider)
+        ValueProviderDescriptor colorDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(colorProvider)
                 .withName("red")
-                .build();
-        ValueProviderDescriptor greenDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(greenProvider)
-                .withName("green")
-                .build();
-        ValueProviderDescriptor blueDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(blueProvider)
-                .withName("blue")
                 .build();
         ValueProviderDescriptor alphaDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(alphaProvider)
                 .withName("alpha")
                 .build();
 
-        result.add(redDescriptor);
-        result.add(greenDescriptor);
-        result.add(blueDescriptor);
+        result.add(colorDescriptor);
         result.add(alphaDescriptor);
 
         return result;

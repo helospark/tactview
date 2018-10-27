@@ -25,6 +25,11 @@ public class DoubleProvider extends KeyframeableEffect {
         this.interpolator = interpolator;
     }
 
+    public DoubleProvider(DoubleInterpolator interpolator) {
+        this.sizeFunction = SizeFunction.NO_TRANSFORMATION;
+        this.interpolator = interpolator;
+    }
+
     @Override
     public Double getValueAt(TimelinePosition position) {
         Double value = interpolator.valueAt(position);

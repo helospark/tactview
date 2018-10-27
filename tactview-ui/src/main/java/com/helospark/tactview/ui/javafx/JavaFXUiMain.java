@@ -37,6 +37,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.ImageView;
@@ -61,8 +62,6 @@ public class JavaFXUiMain extends Application {
     public static final int H = 260;
 
     static LightDiContext lightDi;
-
-    private static PlaybackController playbackController;
 
     static BufferedImage bufferedImage;
 
@@ -140,7 +139,6 @@ public class JavaFXUiMain extends Application {
 
         FlowPane effectTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
         // leftHBox.setPrefWidth(scene.getWidth() - 300);
-        effectTabContent.setId("effect-view");
 
         List<EffectFactory> effects = lightDi.getListOfBeans(EffectFactory.class);
 
@@ -152,7 +150,11 @@ public class JavaFXUiMain extends Application {
                 });
         Tab effectTab = new Tab();
         effectTab.setText("effects");
-        effectTab.setContent(effectTabContent);
+
+        ScrollPane effectScrollPane = new ScrollPane(effectTabContent);
+        effectScrollPane.setFitToWidth(true);
+        effectScrollPane.setId("effect-view");
+        effectTab.setContent(effectScrollPane);
         tabPane.getTabs().add(effectTab);
 
         FlowPane proceduralClipTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
@@ -281,7 +283,6 @@ public class JavaFXUiMain extends Application {
                 .withAdditionalDependencies(Collections.singletonList(new JnaLightDiPlugin()))
                 .build();
         lightDi = LightDi.initContextByClass(MainApplicationConfiguration.class, configuration);
-        playbackController = lightDi.getBean(PlaybackController.class);
         uiTimeline = lightDi.getBean(UiTimeline.class);
         uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
         effectPropertyView = lightDi.getBean(PropertyView.class);

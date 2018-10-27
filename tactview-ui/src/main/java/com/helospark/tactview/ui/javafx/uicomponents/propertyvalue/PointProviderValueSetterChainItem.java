@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.List;
+
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
@@ -46,8 +48,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         CompositeEffectLine result = CompositeEffectLine
                 .builder()
                 .withVisibleNode(box)
-                .withXCoordinate(xProvider)
-                .withYCoordinate(yProvider)
+                .withValues(List.of(xProvider, yProvider))
                 .withDescriptorId(pointProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)

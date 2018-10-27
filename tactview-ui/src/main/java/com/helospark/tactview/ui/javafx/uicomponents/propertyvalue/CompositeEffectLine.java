@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.Generated;
@@ -11,8 +13,8 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import javafx.scene.Node;
 
 public class CompositeEffectLine extends EffectLine {
-    private EffectLine xCoordinate;
-    private EffectLine yCoordinate;
+    private List<EffectLine> values;
+    public Consumer<TimelinePosition> additionalUpdateUi;
 
     @Generated("SparkTools")
     private CompositeEffectLine(Builder builder) {
@@ -21,20 +23,23 @@ public class CompositeEffectLine extends EffectLine {
         this.visibleNode = builder.visibleNode;
         this.descriptorId = builder.descriptorId;
         this.updateFromValue = builder.updateFromValue;
-        this.xCoordinate = builder.xCoordinate;
-        this.yCoordinate = builder.yCoordinate;
+        this.values = builder.values;
+        this.additionalUpdateUi = builder.additionalUpdateUi;
     }
 
     @Override
     public void sendKeyframe(TimelinePosition position) {
-        xCoordinate.sendKeyframe(position);
-        yCoordinate.sendKeyframe(position);
+        values.stream()
+                .forEach(a -> a.sendKeyframe(position));
     }
 
     @Override
     public void updateUi(TimelinePosition position) {
-        xCoordinate.updateUi(position);
-        yCoordinate.updateUi(position);
+        if (additionalUpdateUi != null) {
+            additionalUpdateUi.accept(position);
+        }
+        values.stream()
+                .forEach(a -> a.updateUi(position));
     }
 
     @Generated("SparkTools")
@@ -49,8 +54,8 @@ public class CompositeEffectLine extends EffectLine {
         private Node visibleNode;
         private String descriptorId;
         private Consumer<Object> updateFromValue;
-        private EffectLine xCoordinate;
-        private EffectLine yCoordinate;
+        private List<EffectLine> values = Collections.emptyList();
+        private Consumer<TimelinePosition> additionalUpdateUi;
 
         private Builder() {
         }
@@ -80,13 +85,13 @@ public class CompositeEffectLine extends EffectLine {
             return this;
         }
 
-        public Builder withXCoordinate(EffectLine xCoordinate) {
-            this.xCoordinate = xCoordinate;
+        public Builder withValues(List<EffectLine> values) {
+            this.values = values;
             return this;
         }
 
-        public Builder withYCoordinate(EffectLine yCoordinate) {
-            this.yCoordinate = yCoordinate;
+        public Builder withAdditionalUpdateUi(Consumer<TimelinePosition> additionalUpdateUi) {
+            this.additionalUpdateUi = additionalUpdateUi;
             return this;
         }
 
