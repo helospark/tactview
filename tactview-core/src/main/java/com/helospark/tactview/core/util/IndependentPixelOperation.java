@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.util;
 
+import java.util.function.BiConsumer;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 
@@ -36,4 +38,11 @@ public class IndependentPixelOperation {
         return resultFrame;
     }
 
+    public void executePixelTransformation(int width, int height, BiConsumer<Integer, Integer> consumer) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                consumer.accept(x, y);
+            }
+        }
+    }
 }

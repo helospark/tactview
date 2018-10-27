@@ -5,6 +5,9 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
+import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 
 @Configuration
 public class CoreClipFactoryChainItemConfiguration {
@@ -20,6 +23,20 @@ public class CoreClipFactoryChainItemConfiguration {
                             .withLength(defaultLength)
                             .build();
                     return new SingleColorProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem textProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
+        return new StandardProceduralClipFactoryChainItem("text", "Text",
+                request -> {
+                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
+                    ImageMetadata metadata = ImageMetadata.builder()
+                            .withWidth(1920)
+                            .withHeight(1080)
+                            .withLength(defaultLength)
+                            .build();
+                    return new TextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter);
                 });
     }
 }

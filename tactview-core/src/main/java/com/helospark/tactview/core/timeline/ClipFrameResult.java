@@ -49,14 +49,10 @@ public class ClipFrameResult {
     }
 
     public void setPixel(int[] resultPixel, Integer x, Integer y) {
-        byte r = (byte) (saturateIfNeeded(resultPixel[0]) & 0xFF);
-        byte g = (byte) (saturateIfNeeded(resultPixel[1]) & 0xFF);
-        byte b = (byte) (saturateIfNeeded(resultPixel[2]) & 0xFF);
-        byte a = (byte) (saturateIfNeeded(resultPixel[3]) & 0xFF);
-        buffer.put(y * width * 4 + x * 4 + 0, r);
-        buffer.put(y * width * 4 + x * 4 + 1, g);
-        buffer.put(y * width * 4 + x * 4 + 2, b);
-        buffer.put(y * width * 4 + x * 4 + 3, a);
+        setRed(resultPixel[0], x, y);
+        setGreen(resultPixel[1], x, y);
+        setBlue(resultPixel[2], x, y);
+        setAlpha(resultPixel[3], x, y);
     }
 
     private int saturateIfNeeded(int i) {
@@ -72,5 +68,25 @@ public class ClipFrameResult {
     public static ClipFrameResult sameSizeAs(ClipFrameResult currentFrame) {
         ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(currentFrame.width * currentFrame.height * 4);
         return new ClipFrameResult(result, currentFrame.width, currentFrame.height);
+    }
+
+    public void setRed(int red, int x, int y) {
+        byte r = (byte) (saturateIfNeeded(red) & 0xFF);
+        buffer.put(y * width * 4 + x * 4 + 0, r);
+    }
+
+    public void setGreen(int green, int x, int y) {
+        byte g = (byte) (saturateIfNeeded(green) & 0xFF);
+        buffer.put(y * width * 4 + x * 4 + 1, g);
+    }
+
+    public void setBlue(int blue, int x, int y) {
+        byte b = (byte) (saturateIfNeeded(blue) & 0xFF);
+        buffer.put(y * width * 4 + x * 4 + 2, b);
+    }
+
+    public void setAlpha(int alpha, int x, int y) {
+        byte a = (byte) (saturateIfNeeded(alpha) & 0xFF);
+        buffer.put(y * width * 4 + x * 4 + 3, a);
     }
 }

@@ -1,4 +1,4 @@
-package com.helospark.tactview.core.timeline.proceduralclip;
+package com.helospark.tactview.core.timeline.proceduralclip.singlecolor;
 
 import java.nio.ByteBuffer;
 import java.util.List;

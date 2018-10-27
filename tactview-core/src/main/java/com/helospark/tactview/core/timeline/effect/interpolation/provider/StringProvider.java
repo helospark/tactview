@@ -9,6 +9,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.St
 public class StringProvider extends KeyframeableEffect {
     private StringInterpolator stringInterpolator;
 
+    public StringProvider(StringInterpolator stringInterpolator) {
+        this.stringInterpolator = stringInterpolator;
+    }
+
     @Override
     public String getValueAt(TimelinePosition position) {
         return stringInterpolator.valueAt(position);

@@ -7,17 +7,29 @@ import java.util.TreeMap;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class StringInterpolator implements EffectInterpolator {
+    private String defaultValue;
     private TreeMap<TimelinePosition, String> values;
+
+    public StringInterpolator() {
+        this.values = new TreeMap<>();
+        this.defaultValue = "";
+    }
+
+    public StringInterpolator(String defaultValue) {
+        this.values = new TreeMap<>();
+        this.defaultValue = defaultValue;
+    }
 
     public StringInterpolator(TreeMap<TimelinePosition, String> values) {
         this.values = values;
+        this.defaultValue = "";
     }
 
     @Override
     public String valueAt(TimelinePosition position) {
         Entry<TimelinePosition, String> floorEntry = values.floorEntry(position);
         if (floorEntry == null) {
-            return "";
+            return defaultValue;
         } else {
             return floorEntry.getValue();
         }

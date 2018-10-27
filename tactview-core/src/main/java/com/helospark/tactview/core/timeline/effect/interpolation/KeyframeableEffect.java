@@ -41,6 +41,10 @@ public abstract class KeyframeableEffect {
         return scaleDependent;
     }
 
+    public void setScaleDependent() {
+        scaleDependent = true;
+    }
+
     public SizeFunction getSizeFunction() {
         return SizeFunction.NO_TRANSFORMATION;
     }

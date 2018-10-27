@@ -11,8 +11,6 @@ import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 
 import javafx.scene.control.ColorPicker;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 @Component
 public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<ColorProvider> {
@@ -38,20 +36,11 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         PrimitiveEffectLine greenProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(lineProvider.getChildren().get(1));
         PrimitiveEffectLine blueProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(lineProvider.getChildren().get(2));
 
-        HBox hbox = new HBox();
-        VBox vbox = new VBox();
-
-        vbox.getChildren().add(redProvider.getVisibleNode());
-        vbox.getChildren().add(greenProvider.getVisibleNode());
-        vbox.getChildren().add(blueProvider.getVisibleNode());
-
         ColorPicker colorPicker = new ColorPicker();
-
-        hbox.getChildren().addAll(vbox, colorPicker);
 
         CompositeEffectLine result = CompositeEffectLine
                 .builder()
-                .withVisibleNode(hbox)
+                .withVisibleNode(colorPicker)
                 .withValues(List.of(redProvider, greenProvider, blueProvider))
                 .withDescriptorId(lineProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)

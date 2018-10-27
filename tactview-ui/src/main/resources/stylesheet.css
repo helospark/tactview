@@ -37,12 +37,12 @@
     -fx-border-style: solid;
 }
 
-.text-field {
-    -fx-control-inner-background: #303030;
+.text-field,.text-area,.combo-box {
+    -fx-control-inner-background: #404040;
 }
 
-.color-picker {
-    -fx-background-color: #303030;
+.color-picker,.combo-box {
+    -fx-background-color: #404040;
 }
 
 .icon {
@@ -136,6 +136,11 @@
 
 .double-property-field {
     -fx-pref-width: 80px;
+}
+
+.string-property-field {
+    -fx-pref-width: 200px;
+    -fx-pref-height: 100px;
 }
 
 .text-field.on-keyframe {
