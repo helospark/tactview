@@ -79,7 +79,7 @@ public class TimelineManager implements Saveable {
         } else {
             throw new IllegalArgumentException("Cannot add clip");
         }
-        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable()));
+        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
         messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors(), clip));
     }
 
@@ -168,7 +168,7 @@ public class TimelineManager implements Saveable {
         VisualTimelineClip clipById = (VisualTimelineClip) findClipById(id).get();
         StatelessEffect effect = createEffect(effectId, position);
         int newEffectChannelId = clipById.addEffectAtAnyChannel(effect);
-        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect, newEffectChannelId));
+        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect, newEffectChannelId, effect.getGlobalInterval()));
         return effect;
     }
 
@@ -182,10 +182,11 @@ public class TimelineManager implements Saveable {
     }
 
     public void removeResource(String clipId) {
+        TimelineInterval originalInterval = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No such clip")).getGlobalInterval();
         TimelineChannel channel = findChannelForClipId(clipId)
                 .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
         channel.removeClip(clipId);
-        messagingService.sendMessage(new ClipRemovedMessage(clipId));
+        messagingService.sendMessage(new ClipRemovedMessage(clipId, originalInterval));
     }
 
     public Optional<TimelineClip> findClipById(String id) {
@@ -241,6 +242,7 @@ public class TimelineManager implements Saveable {
         TimelineChannel newChannel = findChannelWithId(newChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find channel " + newChannelId));
 
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
+        TimelineInterval originalInterval = clipToMove.getGlobalInterval();
 
         Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
 
@@ -259,13 +261,13 @@ public class TimelineManager implements Saveable {
                 originalChannel.removeClip(clipId);
                 newChannel.addResource(clipToMove);
 
-                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed));
+                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed, originalInterval, clipToMove.getGlobalInterval()));
             }
         } else {
             boolean success = originalChannel.moveClip(clipId, newPosition);
 
             if (success) {
-                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed));
+                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed, originalInterval, clipToMove.getGlobalInterval()));
             }
         }
         return true;
@@ -285,6 +287,8 @@ public class TimelineManager implements Saveable {
                     .withOldPosition(interval.getStartPosition())
                     .withNewPosition(effect.getInterval().getStartPosition())
                     .withNewChannelIndex(newChannel)
+                    .withOriginalInterval(interval)
+                    .withNewInterval(effect.getInterval())
                     .build();
 
             messagingService.sendMessage(message);
@@ -326,6 +330,7 @@ public class TimelineManager implements Saveable {
 
     public void resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {
         TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
+        TimelineInterval originalInterval = clip.getInterval();
         boolean success = clip.resizeEffect(effect, left, globalPosition);
 
         if (success) {
@@ -334,6 +339,7 @@ public class TimelineManager implements Saveable {
                     .withClipId(clip.getId())
                     .withEffectId(renewedClip.getId())
                     .withNewInterval(renewedClip.getInterval())
+                    .withOriginalInterval(originalInterval)
                     .build();
             messagingService.sendMessage(clipResizedMessage);
         }

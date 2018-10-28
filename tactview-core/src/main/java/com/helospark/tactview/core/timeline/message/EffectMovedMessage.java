@@ -1,10 +1,14 @@
 package com.helospark.tactview.core.timeline.message;
 
+import java.util.List;
+
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 
-public class EffectMovedMessage {
+public class EffectMovedMessage implements AffectedModifiedIntervalAware {
     private String effectId;
 
     private String originalClipId;
@@ -16,6 +20,9 @@ public class EffectMovedMessage {
     private int oldChannelIndex;
     private int newChannelIndex;
 
+    private TimelineInterval originalInterval;
+    private TimelineInterval newInterval;
+
     @Generated("SparkTools")
     private EffectMovedMessage(Builder builder) {
         this.effectId = builder.effectId;
@@ -25,6 +32,8 @@ public class EffectMovedMessage {
         this.newPosition = builder.newPosition;
         this.oldChannelIndex = builder.oldChannelIndex;
         this.newChannelIndex = builder.newChannelIndex;
+        this.originalInterval = builder.originalInterval;
+        this.newInterval = builder.newInterval;
     }
 
     public String getEffectId() {
@@ -56,8 +65,14 @@ public class EffectMovedMessage {
     }
 
     @Override
+    public List<TimelineInterval> getAffectedIntervals() {
+        return List.of(originalInterval, newInterval);
+    }
+
+    @Override
     public String toString() {
-        return "EffectMovedMessage [effectId=" + effectId + ", originalClipId=" + originalClipId + ", newClipId=" + newClipId + ", oldPosition=" + oldPosition + ", newPosition=" + newPosition + ", oldChannelIndex=" + oldChannelIndex
+        return "EffectMovedMessage [effectId=" + effectId + ", originalClipId=" + originalClipId + ", newClipId=" + newClipId + ", oldPosition=" + oldPosition + ", newPosition=" + newPosition
+                + ", oldChannelIndex=" + oldChannelIndex
                 + ", newChannelIndex=" + newChannelIndex + "]";
     }
 
@@ -75,6 +90,8 @@ public class EffectMovedMessage {
         private TimelinePosition newPosition;
         private int oldChannelIndex;
         private int newChannelIndex;
+        private TimelineInterval originalInterval;
+        private TimelineInterval newInterval;
 
         private Builder() {
         }
@@ -114,9 +131,18 @@ public class EffectMovedMessage {
             return this;
         }
 
+        public Builder withOriginalInterval(TimelineInterval originalInterval) {
+            this.originalInterval = originalInterval;
+            return this;
+        }
+
+        public Builder withNewInterval(TimelineInterval newInterval) {
+            this.newInterval = newInterval;
+            return this;
+        }
+
         public EffectMovedMessage build() {
             return new EffectMovedMessage(this);
         }
     }
-
 }

@@ -17,7 +17,8 @@ import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImpl
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
-import com.helospark.tactview.core.timeline.effect.threshold.ThresholdEffect;
+import com.helospark.tactview.core.timeline.effect.threshold.AdaptiveThresholdEffect;
+import com.helospark.tactview.core.timeline.effect.threshold.SimpleThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -106,12 +107,22 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory thresholdEffect(MessagingService messagingService, OpenCVThresholdImplementation openCVThresholdImplementation) {
+    public StandardEffectFactory adaptiveThresholdEffect(MessagingService messagingService, OpenCVThresholdImplementation openCVThresholdImplementation) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new ThresholdEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVThresholdImplementation))
+                .withFactory(request -> new AdaptiveThresholdEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVThresholdImplementation))
+                .withMessagingService(messagingService)
+                .withName("Adaptive threshold")
+                .withSupportedEffectId("adaptivethreshold")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory thresholdEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new SimpleThresholdEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withMessagingService(messagingService)
                 .withName("Threshold")
-                .withSupportedEffectId("adaptivethreshold")
+                .withSupportedEffectId("threshold")
                 .build();
     }
 

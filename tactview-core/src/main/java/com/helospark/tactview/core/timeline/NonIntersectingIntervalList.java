@@ -90,4 +90,9 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         }
     }
 
+    public void removeAll(List<T> intersections) {
+        intersections.stream()
+                .forEach(a -> remove(a));
+    }
+
 }

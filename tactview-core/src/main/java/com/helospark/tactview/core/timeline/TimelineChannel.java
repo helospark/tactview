@@ -93,6 +93,7 @@ public class TimelineChannel {
     public boolean resizeClip(TimelineClip clip, boolean left, TimelinePosition position) {
         TimelineInterval originalInterval = clip.getInterval();
         TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(position) : originalInterval.butWithEndPosition(position);
+
         return clips.resize(clip, newInterval);
     }
 
@@ -130,4 +131,5 @@ public class TimelineChannel {
             return clips.canAddInterval(interval);
         }
     }
+
 }

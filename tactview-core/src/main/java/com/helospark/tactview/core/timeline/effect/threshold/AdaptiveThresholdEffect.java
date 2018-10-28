@@ -12,13 +12,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdRequest;
 
-public class ThresholdEffect extends StatelessVideoEffect {
+public class AdaptiveThresholdEffect extends StatelessVideoEffect {
     private IntegerProvider addedConstantProvider;
     private IntegerProvider blockSizeProvider;
 
     private OpenCVThresholdImplementation thresholdImplementation;
 
-    public ThresholdEffect(TimelineInterval interval, OpenCVThresholdImplementation thresholdImplementation) {
+    public AdaptiveThresholdEffect(TimelineInterval interval, OpenCVThresholdImplementation thresholdImplementation) {
         super(interval);
         this.thresholdImplementation = thresholdImplementation;
     }

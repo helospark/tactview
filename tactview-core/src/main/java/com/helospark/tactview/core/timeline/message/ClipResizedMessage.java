@@ -1,11 +1,15 @@
 package com.helospark.tactview.core.timeline.message;
 
+import java.util.List;
+
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 
-public class ClipResizedMessage {
+public class ClipResizedMessage implements AffectedModifiedIntervalAware {
     private String clipId;
+    private TimelineInterval originalInterval;
     private TimelineInterval newInterval;
 
     public String getClipId() {
@@ -48,6 +52,11 @@ public class ClipResizedMessage {
         public ClipResizedMessage build() {
             return new ClipResizedMessage(this);
         }
+    }
+
+    @Override
+    public List<TimelineInterval> getAffectedIntervals() {
+        return List.of(originalInterval, newInterval);
     }
 
 }
