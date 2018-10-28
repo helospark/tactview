@@ -54,4 +54,13 @@ public class StringInterpolator implements EffectInterpolator {
         }
         return result;
     }
+
+    @Override
+    public EffectInterpolator cloneInterpolator() {
+        TreeMap<TimelinePosition, String> newValues = new TreeMap<>(values);
+        StringInterpolator result = new StringInterpolator(defaultValue);
+        result.values = newValues;
+
+        return result;
+    }
 }

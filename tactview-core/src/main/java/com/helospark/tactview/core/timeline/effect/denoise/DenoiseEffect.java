@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVDenoiseRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 
@@ -45,9 +45,9 @@ public class DenoiseEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        templateWindowSizeProvider = new IntegerProvider(0, 30, new DoubleInterpolator(3.0));
-        searchWindowSizeProvider = new IntegerProvider(0, 50, new DoubleInterpolator(10.0));
-        strengthProvider = new DoubleProvider(0, 50, new DoubleInterpolator(10.0));
+        templateWindowSizeProvider = new IntegerProvider(0, 30, new MultiKeyframeBasedDoubleInterpolator(3.0));
+        searchWindowSizeProvider = new IntegerProvider(0, 50, new MultiKeyframeBasedDoubleInterpolator(10.0));
+        strengthProvider = new DoubleProvider(0, 50, new MultiKeyframeBasedDoubleInterpolator(10.0));
 
         ValueProviderDescriptor templateWindowSizeProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(templateWindowSizeProvider)

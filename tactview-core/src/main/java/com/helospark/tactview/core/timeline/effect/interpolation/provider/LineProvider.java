@@ -39,9 +39,4 @@ public class LineProvider extends KeyframeableEffect {
         return startPointProvider.getSizeFunction();
     }
 
-    @Override
-    public boolean hasKeyframes() {
-        return false;
-    }
-
 }

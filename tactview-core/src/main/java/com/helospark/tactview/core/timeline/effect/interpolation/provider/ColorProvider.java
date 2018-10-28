@@ -29,11 +29,6 @@ public class ColorProvider extends KeyframeableEffect {
     }
 
     @Override
-    public boolean hasKeyframes() {
-        return false;
-    }
-
-    @Override
     public List<KeyframeableEffect> getChildren() {
         return Arrays.asList(redProvider, greenProvider, blueProvider);
     }

@@ -23,7 +23,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
@@ -141,15 +141,15 @@ public class TextProceduralClip extends VisualTimelineClip {
         List<ValueProviderDescriptor> result = super.getDescriptors();
 
         textProvider = new StringProvider(new StringInterpolator());
-        sizeProvider = new IntegerProvider(0, 255, new DoubleInterpolator(20.0));
+        sizeProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(20.0));
         sizeProvider.setScaleDependent();
-        colorProvider = new ColorProvider(new DoubleProvider(new DoubleInterpolator(0.6)),
-                new DoubleProvider(new DoubleInterpolator(0.6)),
-                new DoubleProvider(new DoubleInterpolator(0.6)));
+        colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)));
         fontProvider = new ValueListProvider<>(createFontList(), new StringInterpolator("Serif.plain"));
         alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StringInterpolator("left"));
-        italicProvider = new BooleanProvider(new DoubleInterpolator(0.0));
-        boldProvider = new BooleanProvider(new DoubleInterpolator(0.0));
+        italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
+        boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
 
         ValueProviderDescriptor textDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(textProvider)

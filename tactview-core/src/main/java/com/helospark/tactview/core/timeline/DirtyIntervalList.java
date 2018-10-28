@@ -37,33 +37,6 @@ public class DirtyIntervalList {
                 .collect(Collectors.toList());
     }
 
-    /*
-    public void clearInterval(TimelineInterval interval) {
-        executorService.execute(() -> {
-            List<IntervalContainer> intersections = clearIntervals.computeIntersectingIntervals(interval);
-            IntervalContainer mergedInterval = mergeIntervalContainer(interval, intersections);
-            clearIntervals.removeAll(intersections);
-            clearIntervals.addInterval(mergedInterval);
-        });
-    }
-    
-    private IntervalContainer mergeIntervalContainer(TimelineInterval interval, List<IntervalContainer> intersections) {
-        BigDecimal minimalStartPoint = interval.getStartPosition().getSeconds();
-        BigDecimal maximalEndPoint = interval.getEndPosition().getSeconds();
-        for (IntervalContainer container : intersections) {
-            BigDecimal currentStartPoint = container.getInterval().getStartPosition().getSeconds();
-            BigDecimal currentEndPoint = container.getInterval().getEndPosition().getSeconds();
-            if (currentStartPoint.compareTo(minimalStartPoint) < 0) {
-                minimalStartPoint = currentStartPoint;
-            }
-            if (currentEndPoint.compareTo(maximalEndPoint) > 0) {
-                maximalEndPoint = currentEndPoint;
-            }
-        }
-        return new IntervalContainer(new TimelineInterval(new TimelinePosition(minimalStartPoint), new TimelinePosition(maximalEndPoint)), System.currentTimeMillis());
-    }
-    */
-
     static class IntervalContainer implements IntervalAware {
         private TimelineInterval interval;
         private long lastModified;

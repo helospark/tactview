@@ -4,15 +4,15 @@ import java.util.Map;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 
 public class IntegerProvider extends KeyframeableEffect {
     private Integer min = 0;
     private Integer max = Integer.MAX_VALUE;
-    private DoubleInterpolator interpolator;
+    private MultiKeyframeBasedDoubleInterpolator interpolator;
 
-    public IntegerProvider(Integer min, Integer max, DoubleInterpolator interpolator) {
+    public IntegerProvider(Integer min, Integer max, MultiKeyframeBasedDoubleInterpolator interpolator) {
         this.min = min;
         this.max = max;
         this.interpolator = interpolator;
@@ -38,7 +38,7 @@ public class IntegerProvider extends KeyframeableEffect {
 
     @Override
     public void interpolatorChanged(EffectInterpolator newInterpolator) {
-        this.interpolator = (DoubleInterpolator) newInterpolator;
+        this.interpolator = (MultiKeyframeBasedDoubleInterpolator) newInterpolator;
     }
 
     @Override
@@ -57,11 +57,6 @@ public class IntegerProvider extends KeyframeableEffect {
     @Override
     public boolean isPrimitive() {
         return true;
-    }
-
-    @Override
-    public boolean hasKeyframes() {
-        return interpolator.hasKeyframes();
     }
 
     @Override

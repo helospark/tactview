@@ -34,11 +34,6 @@ public class StringProvider extends KeyframeableEffect {
     }
 
     @Override
-    public boolean hasKeyframes() {
-        return stringInterpolator.hasKeyframes();
-    }
-
-    @Override
     public Map<TimelinePosition, Object> getValues() {
         return stringInterpolator.getValues();
     }

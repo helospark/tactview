@@ -46,8 +46,4 @@ public class PointProvider extends KeyframeableEffect {
         return xProvider.getSizeFunction();
     }
 
-    @Override
-    public boolean hasKeyframes() {
-        return false;
-    }
 }

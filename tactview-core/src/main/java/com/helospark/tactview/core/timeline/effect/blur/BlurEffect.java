@@ -18,7 +18,7 @@ import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussi
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVGaussianBlurRequest;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVRegion;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
@@ -81,8 +81,8 @@ public class BlurEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        kernelWidthProvider = new IntegerProvider(0, 100, new DoubleInterpolator(new TreeMap<>(Map.of(TimelinePosition.ofZero(), 3.0, new TimelinePosition(5), 15.0))));
-        kernelHeightProvider = new IntegerProvider(0, 100, new DoubleInterpolator(TimelinePosition.ofZero(), 3.0));
+        kernelWidthProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(new TreeMap<>(Map.of(TimelinePosition.ofZero(), 3.0, new TimelinePosition(5), 15.0))));
+        kernelHeightProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 3.0));
 
         topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.0), doubleProviderWithDefaultValue(0.0));
         bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(1.0), doubleProviderWithDefaultValue(1.0));
@@ -108,7 +108,7 @@ public class BlurEffect extends StatelessVideoEffect {
     }
 
     private DoubleProvider doubleProviderWithDefaultValue(double defaultValue) {
-        return new DoubleProvider(IMAGE_SIZE_IN_0_to_1_RANGE, new DoubleInterpolator(defaultValue));
+        return new DoubleProvider(IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(defaultValue));
     }
 
 }

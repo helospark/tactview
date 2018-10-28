@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -52,8 +52,8 @@ public class MirrorEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        mirrorVerticallyProvider = new BooleanProvider(new DoubleInterpolator(0.0));
-        mirrorHorizontalProvider = new BooleanProvider(new DoubleInterpolator(1.0));
+        mirrorVerticallyProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
+        mirrorHorizontalProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0));
 
         ValueProviderDescriptor mirrorVerticallyDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(mirrorVerticallyProvider)

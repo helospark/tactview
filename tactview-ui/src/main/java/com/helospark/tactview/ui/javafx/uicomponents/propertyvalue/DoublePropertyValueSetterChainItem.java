@@ -1,8 +1,14 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.aware.ContextAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.DoubleInterpolatorFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
@@ -11,10 +17,12 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.InterpolatorChangedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveKeyframeCommand;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
@@ -23,10 +31,11 @@ import javafx.util.StringConverter;
 import javafx.util.converter.NumberStringConverter;
 
 @Component
-public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<DoubleProvider> {
+public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<DoubleProvider> implements ContextAware {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
+    private LightDiContext context;
 
     public DoublePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
             UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
@@ -78,13 +87,38 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         removeKeyframeMenuItem.setOnAction(e -> removeKeyframe(doubleProvider));
         MenuItem removeAllAndSet = new MenuItem("Remove all and set");
         removeAllAndSet.setOnAction(e -> removeAllAndSet(result, doubleProvider.getId()));
+        Menu menu = createInterpolators(doubleProvider.getId());
 
         ContextMenu contextMenu = new ContextMenu();
-        contextMenu.getItems().addAll(addKeyframeMenuItem, removeKeyframeMenuItem, removeAllAndSet);
+        contextMenu.getItems().addAll(addKeyframeMenuItem, removeKeyframeMenuItem, removeAllAndSet, menu);
         textField.setContextMenu(contextMenu);
 
         return result;
 
+    }
+
+    private Menu createInterpolators(String id) {
+        Menu menu = new Menu("Change interpolator");
+
+        List<DoubleInterpolatorFactory> interpolators = context.getListOfBeans(DoubleInterpolatorFactory.class);
+        List<MenuItem> menuItems = interpolators.stream()
+                .map(interpolator -> {
+                    MenuItem menuItem = new MenuItem(interpolator.getId());
+                    menuItem.setOnAction(e -> {
+                        InterpolatorChangedCommand interpolatorChangedCommand = InterpolatorChangedCommand.builder()
+                                .withDescriptorId(id)
+                                .withNewInterpolatorId(interpolator.getId())
+                                .withEffectParametersRepository(effectParametersRepository)
+                                .build();
+                        commandInterpreter.sendWithResult(interpolatorChangedCommand);
+                    });
+                    return menuItem;
+                })
+                .collect(Collectors.toList());
+
+        menu.getItems().addAll(menuItems);
+
+        return menu;
     }
 
     private void removeKeyframe(DoubleProvider doubleProvider) {
@@ -111,6 +145,11 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
 
     private String doubleProviderValueToString(String id, TimelinePosition position) {
         return effectParametersRepository.getValueAt(id, position);
+    }
+
+    @Override
+    public void setContext(LightDiContext context) {
+        this.context = context;
     }
 
 }

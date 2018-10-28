@@ -10,7 +10,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
 public class ScaleEffect extends StatelessVideoEffect {
@@ -46,8 +46,8 @@ public class ScaleEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        widthScale = new DoubleProvider(0, 20, new DoubleInterpolator(TimelinePosition.ofZero(), 1.0));
-        heightScale = new DoubleProvider(0, 20, new DoubleInterpolator(TimelinePosition.ofZero(), 1.0));
+        widthScale = new DoubleProvider(0, 20, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0));
+        heightScale = new DoubleProvider(0, 20, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0));
 
         ValueProviderDescriptor widthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(widthScale)

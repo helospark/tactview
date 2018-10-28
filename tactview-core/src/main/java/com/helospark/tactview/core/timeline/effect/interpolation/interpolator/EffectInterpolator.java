@@ -6,4 +6,6 @@ public interface EffectInterpolator {
 
     public Object valueAt(TimelinePosition position);
 
+    public EffectInterpolator cloneInterpolator();
+
 }

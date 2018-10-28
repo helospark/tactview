@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -39,8 +39,8 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        contrastProvider = new DoubleProvider(0, 10, new DoubleInterpolator(1.0));
-        brightnessProvider = new DoubleProvider(0, 200, new DoubleInterpolator(0.0));
+        contrastProvider = new DoubleProvider(0, 10, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        brightnessProvider = new DoubleProvider(0, 200, new MultiKeyframeBasedDoubleInterpolator(0.0));
 
         ValueProviderDescriptor contrastDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(contrastProvider)

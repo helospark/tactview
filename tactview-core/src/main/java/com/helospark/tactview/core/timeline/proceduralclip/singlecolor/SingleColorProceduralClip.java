@@ -13,7 +13,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
@@ -65,11 +65,11 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
     public List<ValueProviderDescriptor> getDescriptors() {
         List<ValueProviderDescriptor> result = super.getDescriptors();
 
-        colorProvider = new ColorProvider(new DoubleProvider(new DoubleInterpolator(1.0)),
-                new DoubleProvider(new DoubleInterpolator(1.0)),
-                new DoubleProvider(new DoubleInterpolator(1.0)));
+        colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)));
 
-        alphaProvider = new IntegerProvider(0, 255, new DoubleInterpolator(TimelinePosition.ofZero(), 255.0));
+        alphaProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 255.0));
 
         ValueProviderDescriptor colorDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(colorProvider)

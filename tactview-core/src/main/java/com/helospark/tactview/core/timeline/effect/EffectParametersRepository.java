@@ -17,6 +17,9 @@ import com.helospark.tactview.core.timeline.IntervalAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.DoubleInterpolatorFactory;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
@@ -29,13 +32,15 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class EffectParametersRepository {
     private MessagingService messagingService;
+    private List<DoubleInterpolatorFactory> interpolatorFactories;
     @Slf4j
     private Logger logger;
 
     private Map<String, EffectStore> idToEffectMap = new ConcurrentHashMap<>();
 
-    public EffectParametersRepository(MessagingService messagingService) {
+    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories) {
         this.messagingService = messagingService;
+        this.interpolatorFactories = interpolatorFactories;
     }
 
     @PostConstruct
@@ -82,7 +87,7 @@ public class EffectParametersRepository {
         }
 
         if (counterToAvoidInfiniteLoops >= 1000) {
-            logger.error("Infinite loop why extracting effects");
+            logger.error("Infinite loop why extracting effects, elements: {}", effects);
         }
 
         return effects.stream();
@@ -108,7 +113,6 @@ public class EffectParametersRepository {
     public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
         return Optional.ofNullable(idToEffectMap.get(id))
                 .map(a -> a.effect)
-                .filter(a -> a.hasKeyframes())
                 .map(a -> a.getValueAt(position));
     }
 
@@ -143,5 +147,28 @@ public class EffectParametersRepository {
     public boolean isKeyframeAt(String id, TimelinePosition position) {
         EffectStore valueToChange = idToEffectMap.get(id);
         return valueToChange.effect.isKeyframe(positionToLocal(position, valueToChange));
+    }
+
+    public Object getCurrentInterpolator(String descriptorId) {
+        EffectStore effectStore = idToEffectMap.get(descriptorId);
+        return effectStore.effect.getInterpolator();
+    }
+
+    public void changeInterpolator(String descriptorId, String newInterpolatorId) {
+        EffectInterpolator previousInterpolator = idToEffectMap.get(descriptorId).effect.getInterpolator();
+        if (previousInterpolator instanceof DoubleInterpolator) {
+            DoubleInterpolator interpolator = interpolatorFactories.stream()
+                    .filter(factory -> factory.doesSuppert(newInterpolatorId))
+                    .findFirst()
+                    .orElseThrow()
+                    .createInterpolator((DoubleInterpolator) previousInterpolator);
+            changeInterpolatorToInstance(descriptorId, interpolator);
+        }
+        // TODO: do the rest for other interpolators
+    }
+
+    public void changeInterpolatorToInstance(String descriptorId, Object interpolator) {
+        EffectStore effectStore = idToEffectMap.get(descriptorId);
+        effectStore.effect.setInterpolator(interpolator);
     }
 }

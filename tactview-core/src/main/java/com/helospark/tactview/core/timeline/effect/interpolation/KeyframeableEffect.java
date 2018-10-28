@@ -49,8 +49,6 @@ public abstract class KeyframeableEffect {
         return SizeFunction.NO_TRANSFORMATION;
     }
 
-    public abstract boolean hasKeyframes();
-
     public Map<TimelinePosition, Object> getValues() {
         return Collections.emptyMap();
     }
@@ -59,4 +57,11 @@ public abstract class KeyframeableEffect {
         return getValues().containsKey(position);
     }
 
+    public EffectInterpolator getInterpolator() {
+        return null;
+    }
+
+    public void setInterpolator(Object previousInterpolator) {
+
+    }
 }

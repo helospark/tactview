@@ -30,11 +30,6 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
     }
 
     @Override
-    public boolean hasKeyframes() {
-        return stringInterpolator.hasKeyframes();
-    }
-
-    @Override
     public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
         stringInterpolator.valueAdded(globalTimelinePosition, value);
     }

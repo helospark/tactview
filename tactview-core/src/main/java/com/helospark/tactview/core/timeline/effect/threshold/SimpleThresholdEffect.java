@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -43,7 +43,7 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        thresholdLimitProvider = new IntegerProvider(0, 255, new DoubleInterpolator(127.0));
+        thresholdLimitProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(127.0));
 
         ValueProviderDescriptor thresholdDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(thresholdLimitProvider)

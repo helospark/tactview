@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdRequest;
@@ -42,8 +42,8 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        addedConstantProvider = new IntegerProvider(-50, 50, new DoubleInterpolator(0.0));
-        blockSizeProvider = new IntegerProvider(1, 10, new DoubleInterpolator(2.0));
+        addedConstantProvider = new IntegerProvider(-50, 50, new MultiKeyframeBasedDoubleInterpolator(0.0));
+        blockSizeProvider = new IntegerProvider(1, 10, new MultiKeyframeBasedDoubleInterpolator(2.0));
 
         ValueProviderDescriptor addedConstantDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(addedConstantProvider)
