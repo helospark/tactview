@@ -6,6 +6,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
+import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
@@ -133,6 +134,16 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Mirror")
                 .withSupportedEffectId("mirror")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory colorize(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ColorizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withMessagingService(messagingService)
+                .withName("Colorize")
+                .withSupportedEffectId("colorize")
                 .build();
     }
 }

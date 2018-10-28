@@ -9,6 +9,8 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
@@ -17,6 +19,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected VisualMediaMetadata mediaMetadata;
 
     protected PointProvider translatePointProvider;
+    protected DoubleProvider globalClipAlphaProvider;
+    protected BooleanProvider enabledProvider;
 
     public VisualTimelineClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
@@ -75,7 +79,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptors() {
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
         List<ValueProviderDescriptor> result = new ArrayList<>();
         DoubleProvider translateXProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new MultiKeyframeBasedDoubleInterpolator(0.0));
         DoubleProvider translateYProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new MultiKeyframeBasedDoubleInterpolator(0.0));
@@ -83,15 +87,37 @@ public abstract class VisualTimelineClip extends TimelineClip {
         translateYProvider.setScaleDependent();
 
         translatePointProvider = new PointProvider(translateXProvider, translateYProvider);
+        globalClipAlphaProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        enabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0, new StepInterpolator()));
 
         ValueProviderDescriptor translateDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translatePointProvider)
                 .withName("translate")
                 .build();
 
+        ValueProviderDescriptor globalClipAlphaDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(globalClipAlphaProvider)
+                .withName("Global clip alpha")
+                .build();
+
+        ValueProviderDescriptor enabledDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(enabledProvider)
+                .withName("Enabled")
+                .build();
+
         result.add(translateDescriptor);
+        result.add(globalClipAlphaDescriptor);
+        result.add(enabledDescriptor);
 
         return result;
+    }
+
+    public boolean isEnabled(TimelinePosition position) {
+        return enabledProvider.getValueAt(position);
+    }
+
+    public double getAlpha(TimelinePosition position) {
+        return globalClipAlphaProvider.getValueAt(position);
     }
 
 }

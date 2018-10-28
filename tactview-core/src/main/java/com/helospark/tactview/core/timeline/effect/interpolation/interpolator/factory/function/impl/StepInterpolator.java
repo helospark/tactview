@@ -10,12 +10,18 @@ public class StepInterpolator implements UnivariateInterpolator {
     @Override
     public UnivariateFunction interpolate(double[] xval, double[] yval) throws MathIllegalArgumentException, DimensionMismatchException {
         return x -> {
-            for (int i = 0; i < xval.length; ++i) {
-                if (xval[i] >= x) {
-                    return yval[i];
-                }
+            if (xval.length == 0) {
+                throw new IllegalArgumentException("No values");
             }
-            throw new IllegalArgumentException("No values");
+            int i = 0;
+            while (i < xval.length && xval[i] <= x) {
+                ++i;
+            }
+            if (i == 0) {
+                return yval[0];
+            } else {
+                return yval[i - 1];
+            }
         };
     }
 

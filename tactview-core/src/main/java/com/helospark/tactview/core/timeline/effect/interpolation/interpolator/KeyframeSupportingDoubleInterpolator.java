@@ -10,8 +10,6 @@ public interface KeyframeSupportingDoubleInterpolator extends DoubleInterpolator
 
     public void valueRemoved(TimelinePosition globalTimelinePosition);
 
-    public boolean hasKeyframes();
-
     public Map<TimelinePosition, Object> getValues();
 
 }

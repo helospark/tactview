@@ -62,8 +62,8 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptors() {
-        List<ValueProviderDescriptor> result = super.getDescriptors();
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)),

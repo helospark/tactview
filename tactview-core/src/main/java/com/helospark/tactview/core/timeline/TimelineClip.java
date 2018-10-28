@@ -37,7 +37,14 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         return id;
     }
 
-    protected abstract List<ValueProviderDescriptor> getDescriptors();
+    protected final List<ValueProviderDescriptor> getDescriptors() {
+        if (valueDescriptors == null) { // threads?
+            valueDescriptors = getDescriptorsInternal();
+        }
+        return valueDescriptors;
+    };
+
+    protected abstract List<ValueProviderDescriptor> getDescriptorsInternal();
 
     @Override
     public void setInterval(TimelineInterval newInterval) {

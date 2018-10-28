@@ -17,6 +17,7 @@ import com.helospark.tactview.core.Saveable;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -27,6 +28,7 @@ import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -45,15 +47,17 @@ public class TimelineManager implements Saveable {
     private ClipFactoryChain clipFactoryChain;
     private FrameBufferMerger frameBufferMerger;
     private ObjectMapper objectMapper;
+    private IndependentPixelOperation independentPixelOperation;
 
     public TimelineManager(FrameBufferMerger frameBufferMerger,
             List<EffectFactory> effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper, IndependentPixelOperation independentPixelOperation) {
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
         this.frameBufferMerger = frameBufferMerger;
         this.objectMapper = objectMapper;
+        this.independentPixelOperation = independentPixelOperation;
     }
 
     public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
@@ -79,8 +83,9 @@ public class TimelineManager implements Saveable {
         } else {
             throw new IllegalArgumentException("Cannot add clip");
         }
+        List<ValueProviderDescriptor> descriptors = clip.getDescriptors(); // must call before sending clip added message to initialize descriptors
         messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
-        messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors(), clip));
+        messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), descriptors, clip));
     }
 
     private Optional<TimelineChannel> findChannelWithId(String channelId) {
@@ -100,6 +105,7 @@ public class TimelineManager implements Saveable {
                 .flatMap(Optional::stream)
                 .filter(clip -> clip instanceof VisualTimelineClip) // audio separate?
                 .map(clip -> (VisualTimelineClip) clip)
+                .filter(clip -> clip.isEnabled(request.getPosition()))
                 .map(clip -> {
                     GetFrameRequest frameRequest = GetFrameRequest.builder()
                             .withScale(request.getScale())
@@ -111,6 +117,7 @@ public class TimelineManager implements Saveable {
 
                     ClipFrameResult frameResult = clip.getFrame(frameRequest);
                     ClipFrameResult expandedFrame = expandFrame(frameResult, clip, request);
+                    applyClipAlphaToFrame(expandedFrame, clip.getAlpha(request.getPosition()));
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
                     return expandedFrame;
                 })
@@ -122,6 +129,15 @@ public class TimelineManager implements Saveable {
 
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
         return finalResult.getBuffer();
+    }
+
+    private void applyClipAlphaToFrame(ClipFrameResult expandedFrame, double alpha) {
+        if (alpha < 1.0) {
+            independentPixelOperation.executePixelTransformation(expandedFrame.getWidth(), expandedFrame.getHeight(), (x, y) -> {
+                int newAlpha = (int) (expandedFrame.getAlpha(x, y) * alpha);
+                expandedFrame.setAlpha(newAlpha, x, y);
+            });
+        }
     }
 
     private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {

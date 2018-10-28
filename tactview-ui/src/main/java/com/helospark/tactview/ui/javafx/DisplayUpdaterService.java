@@ -53,10 +53,12 @@ public class DisplayUpdaterService {
         Thread thread = new Thread(() -> {
             while (running) {
                 try {
-                    Thread.sleep(500);
-                    long currentPostionLastModified = globalDirtyClipManager.positionLastModified(uiTimelineManager.getCurrentPosition());
+                    Thread.sleep(200);
+                    TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
+                    long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
                     if (currentPostionLastModified > currentPositionLastRendered) {
                         updateCurrentPosition();
+                        logger.debug("Current position changed, updating {}", currentPosition);
                     }
                 } catch (Exception e) {
                     logger.warn("Unable to check dirty state of display", e);
@@ -95,6 +97,7 @@ public class DisplayUpdaterService {
             }
         }
         currentPositionLastRendered = System.currentTimeMillis();
+        logger.debug("Rendered at {}", currentPositionLastRendered);
         Platform.runLater(() -> {
             int width = uiProjectRepostiory.getPreviewWidth();
             int height = uiProjectRepostiory.getPreviewHeight();

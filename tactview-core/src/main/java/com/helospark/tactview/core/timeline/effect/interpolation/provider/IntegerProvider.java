@@ -1,18 +1,21 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
+import java.util.Collections;
 import java.util.Map;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 
 public class IntegerProvider extends KeyframeableEffect {
     private Integer min = 0;
     private Integer max = Integer.MAX_VALUE;
-    private MultiKeyframeBasedDoubleInterpolator interpolator;
+    private DoubleInterpolator interpolator;
 
-    public IntegerProvider(Integer min, Integer max, MultiKeyframeBasedDoubleInterpolator interpolator) {
+    public IntegerProvider(Integer min, Integer max, DoubleInterpolator interpolator) {
         this.min = min;
         this.max = max;
         this.interpolator = interpolator;
@@ -33,7 +36,9 @@ public class IntegerProvider extends KeyframeableEffect {
 
     @Override
     public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
-        interpolator.valueAdded(globalTimelinePosition, value);
+        if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
+            ((KeyframeSupportingDoubleInterpolator) interpolator).valueAdded(globalTimelinePosition, value);
+        }
     }
 
     @Override
@@ -43,7 +48,9 @@ public class IntegerProvider extends KeyframeableEffect {
 
     @Override
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
-        interpolator.valueRemoved(globalTimelinePosition);
+        if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
+            ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemoved(globalTimelinePosition);
+        }
     }
 
     public Integer getMin() {
@@ -61,7 +68,11 @@ public class IntegerProvider extends KeyframeableEffect {
 
     @Override
     public Map<TimelinePosition, Object> getValues() {
-        return interpolator.getValues();
+        if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
+            return ((KeyframeSupportingDoubleInterpolator) interpolator).getValues();
+        } else {
+            return Collections.emptyMap();
+        }
     }
 
 }

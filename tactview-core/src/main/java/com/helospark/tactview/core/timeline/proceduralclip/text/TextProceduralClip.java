@@ -25,6 +25,7 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
@@ -61,6 +62,8 @@ public class TextProceduralClip extends VisualTimelineClip {
         String currentText = textProvider.getValueAt(relativePosition);
         double currentSize = (sizeProvider.getValueAt(relativePosition) * request.getScale());
         var color = colorProvider.getValueAt(relativePosition);
+        System.out.println("FontProvider: " + fontProvider);
+        System.out.println("FontProvider.value: " + fontProvider.getValueAt(relativePosition));
         ValueListElement fontElement = fontProvider.getValueAt(relativePosition);
         ValueListElement alignmentElement = alignmentProvider.getValueAt(relativePosition);
 
@@ -137,8 +140,8 @@ public class TextProceduralClip extends VisualTimelineClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptors() {
-        List<ValueProviderDescriptor> result = super.getDescriptors();
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         textProvider = new StringProvider(new StringInterpolator());
         sizeProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(20.0));
@@ -148,8 +151,8 @@ public class TextProceduralClip extends VisualTimelineClip {
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)));
         fontProvider = new ValueListProvider<>(createFontList(), new StringInterpolator("Serif.plain"));
         alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StringInterpolator("left"));
-        italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
-        boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
+        italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
+        boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
 
         ValueProviderDescriptor textDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(textProvider)

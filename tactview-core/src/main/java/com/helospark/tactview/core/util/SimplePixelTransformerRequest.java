@@ -1,5 +1,8 @@
 package com.helospark.tactview.core.util;
 
+import java.util.Collections;
+import java.util.Map;
+
 import javax.annotation.Generated;
 
 public class SimplePixelTransformerRequest {
@@ -7,13 +10,19 @@ public class SimplePixelTransformerRequest {
     public int y;
     public int[] input;
     public int[] output;
+    private Map<ThreadLocalProvider<?>, Object> threadLocals;
 
     @Generated("SparkTools")
     private SimplePixelTransformerRequest(Builder builder) {
         this.x = builder.x;
         this.y = builder.y;
-        this.input = builder.originalPixelComponents;
-        this.output = builder.responsePixelComponents;
+        this.input = builder.input;
+        this.output = builder.output;
+        this.threadLocals = builder.threadLocals;
+    }
+
+    public <T> T getThreadLocal(ThreadLocalProvider<T> clazz) {
+        return (T) threadLocals.get(clazz);
     }
 
     @Generated("SparkTools")
@@ -25,8 +34,9 @@ public class SimplePixelTransformerRequest {
     public static final class Builder {
         private int x;
         private int y;
-        private int[] originalPixelComponents;
-        private int[] responsePixelComponents;
+        private int[] input;
+        private int[] output;
+        private Map<ThreadLocalProvider<?>, Object> threadLocals = Collections.emptyMap();
 
         private Builder() {
         }
@@ -41,13 +51,18 @@ public class SimplePixelTransformerRequest {
             return this;
         }
 
-        public Builder withOriginalPixelComponents(int[] originalPixelComponents) {
-            this.originalPixelComponents = originalPixelComponents;
+        public Builder withInput(int[] input) {
+            this.input = input;
             return this;
         }
 
-        public Builder withResponsePixelComponents(int[] responsePixelComponents) {
-            this.responsePixelComponents = responsePixelComponents;
+        public Builder withOutput(int[] output) {
+            this.output = output;
+            return this;
+        }
+
+        public Builder withThreadLocals(Map<ThreadLocalProvider<?>, Object> threadLocals) {
+            this.threadLocals = threadLocals;
             return this;
         }
 

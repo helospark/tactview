@@ -30,11 +30,6 @@ public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolato
     }
 
     @Override
-    public boolean hasKeyframes() {
-        return false;
-    }
-
-    @Override
     public Map<TimelinePosition, Object> getValues() {
         return Collections.emptyMap();
     }

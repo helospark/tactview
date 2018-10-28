@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class TimelinePosition implements SecondsAware, Comparable<TimelinePosition> {
+    private static final TimelinePosition ZERO_POSITION = new TimelinePosition(BigDecimal.ZERO);
     private BigDecimal seconds;
 
     public TimelinePosition(BigDecimal seconds) {
@@ -42,7 +43,7 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
     }
 
     public static TimelinePosition ofZero() {
-        return new TimelinePosition(BigDecimal.ZERO);
+        return ZERO_POSITION;
     }
 
     public boolean isLessThan(int i) {

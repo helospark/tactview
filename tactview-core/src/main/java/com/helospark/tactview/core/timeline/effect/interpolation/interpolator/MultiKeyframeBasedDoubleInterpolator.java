@@ -19,9 +19,21 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
         this.defaultValue = singleDefaultValue;
     }
 
+    public MultiKeyframeBasedDoubleInterpolator(Double singleDefaultValue, UnivariateInterpolator interpolatorImplementation) {
+        this.values = new TreeMap<>();
+        this.defaultValue = singleDefaultValue;
+        this.interpolatorImplementation = interpolatorImplementation;
+    }
+
     public MultiKeyframeBasedDoubleInterpolator(TimelinePosition singleDefaultKey, Double singleDefaultValue) {
         this.values = new TreeMap<>();
         values.put(singleDefaultKey, singleDefaultValue);
+    }
+
+    public MultiKeyframeBasedDoubleInterpolator(TimelinePosition singleDefaultKey, Double singleDefaultValue, UnivariateInterpolator interpolatorImplementation) {
+        this.values = new TreeMap<>();
+        values.put(singleDefaultKey, singleDefaultValue);
+        this.interpolatorImplementation = interpolatorImplementation;
     }
 
     public MultiKeyframeBasedDoubleInterpolator(TreeMap<TimelinePosition, Double> values) {
@@ -70,11 +82,6 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
     @Override
     public void valueRemoved(TimelinePosition globalTimelinePosition) {
         values.remove(globalTimelinePosition);
-    }
-
-    @Override
-    public boolean hasKeyframes() {
-        return !values.isEmpty();
     }
 
     @Override

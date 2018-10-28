@@ -26,8 +26,8 @@ public class GlobalDirtyClipManager {
             message.getAffectedIntervals()
                     .stream()
                     .forEach(a -> {
-                        logger.debug("Interval {} marked as dirty", a);
                         dirtyIntervalList.dirtyInterval(a);
+                        logger.debug("Interval {} marked as dirty", a);
                     });
         });
     }

@@ -1,40 +1,46 @@
 package com.helospark.tactview.core.timeline;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class DirtyIntervalList {
-    private NonIntersectingIntervalList<IntervalContainer> clearIntervals = new NonIntersectingIntervalList<>();
+    private NonIntersectingIntervalList<IntervalContainer> knownIntervals = new NonIntersectingIntervalList<>();
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     public long positionLastModified(TimelinePosition position) {
-        return clearIntervals.getElementWithIntervalContainingPoint(position)
+        return knownIntervals.getElementWithIntervalContainingPoint(position)
                 .map(container -> container.lastModified)
                 .orElse(0L);
     }
 
     public void dirtyInterval(TimelineInterval interval) {
         executorService.execute(() -> {
-            List<IntervalContainer> intersections = clearIntervals.computeIntersectingIntervals(interval);
-            List<IntervalContainer> intervalsToReaddForStartPosition = findIntersectingIntervalsAtPosition(interval.getStartPosition(), intersections);
-            List<IntervalContainer> intervalsToReaddForEndPosition = findIntersectingIntervalsAtPosition(interval.getEndPosition(), intersections);
-            clearIntervals.removeAll(intersections);
-            clearIntervals.addInterval(new IntervalContainer(interval, System.currentTimeMillis()));
-            intervalsToReaddForStartPosition.stream()
-                    .forEach(a -> clearIntervals.addInterval(a));
-            intervalsToReaddForEndPosition.stream()
-                    .forEach(a -> clearIntervals.addInterval(a));
+            List<IntervalContainer> intersections = knownIntervals.computeIntersectingIntervals(interval);
+            knownIntervals.removeAll(intersections);
+            TimelineInterval mergedInterval = mergeIntervals(interval, intersections);
+            IntervalContainer newInterval = new IntervalContainer(mergedInterval, System.currentTimeMillis());
+            System.out.println(newInterval);
+            knownIntervals.addInterval(newInterval);
         });
 
     }
 
-    private List<IntervalContainer> findIntersectingIntervalsAtPosition(TimelinePosition position, List<IntervalContainer> intersections) {
-        return intersections.stream()
-                .filter(interval -> interval.getInterval().contains(position))
-                .map(interval -> new IntervalContainer(new TimelineInterval(interval.getInterval().getStartPosition(), position), interval.lastModified))
-                .collect(Collectors.toList());
+    private TimelineInterval mergeIntervals(TimelineInterval interval, List<IntervalContainer> intervalsToReaddForStartPosition) {
+        BigDecimal minStartPosition = interval.getStartPosition().getSeconds();
+        BigDecimal maxEndPosition = interval.getEndPosition().getSeconds();
+        for (var currentInterval : intervalsToReaddForStartPosition) {
+            BigDecimal currentStartSeconds = currentInterval.getInterval().getStartPosition().getSeconds();
+            BigDecimal currentEndSeconds = currentInterval.getInterval().getEndPosition().getSeconds();
+            if (currentStartSeconds.compareTo(minStartPosition) < 0) {
+                minStartPosition = currentStartSeconds;
+            }
+            if (currentEndSeconds.compareTo(maxEndPosition) > 0) {
+                maxEndPosition = currentEndSeconds;
+            }
+        }
+        return new TimelineInterval(new TimelinePosition(minStartPosition), new TimelinePosition(maxEndPosition));
     }
 
     static class IntervalContainer implements IntervalAware {
@@ -53,6 +59,11 @@ public class DirtyIntervalList {
 
         public long getLastModified() {
             return lastModified;
+        }
+
+        @Override
+        public String toString() {
+            return "IntervalContainer [interval=" + interval + ", lastModified=" + lastModified + "]";
         }
 
     }

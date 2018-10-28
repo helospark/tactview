@@ -1,6 +1,9 @@
 package com.helospark.tactview.core.util;
 
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
@@ -9,15 +12,23 @@ import com.helospark.tactview.core.timeline.ClipFrameResult;
 public class IndependentPixelOperation {
 
     public ClipFrameResult createNewImageWithAppliedTransformation(ClipFrameResult currentFrame, SimplePixelTransformer pixelTransformer) {
+        return createNewImageWithAppliedTransformation(currentFrame, List.of(), pixelTransformer);
+    }
+
+    public ClipFrameResult createNewImageWithAppliedTransformation(ClipFrameResult currentFrame, List<ThreadLocalProvider<?>> threadLocalProviders, SimplePixelTransformer pixelTransformer) {
         ClipFrameResult resultFrame = ClipFrameResult.sameSizeAs(currentFrame);
         int[] pixelComponents = new int[4];
         int[] resultPixelComponents = new int[4];
 
+        Map<ThreadLocalProvider<?>, Object> threadLocals = threadLocalProviders.stream()
+                .collect(Collectors.toMap(a -> a, a -> a.get()));
+
         SimplePixelTransformerRequest request = SimplePixelTransformerRequest.builder()
                 .withx(0)
                 .withy(0)
-                .withOriginalPixelComponents(pixelComponents)
-                .withResponsePixelComponents(resultPixelComponents)
+                .withInput(pixelComponents)
+                .withOutput(resultPixelComponents)
+                .withThreadLocals(threadLocals)
                 .build();
 
         // TODO: do it in parallel
@@ -46,4 +57,5 @@ public class IndependentPixelOperation {
             }
         }
     }
+
 }
