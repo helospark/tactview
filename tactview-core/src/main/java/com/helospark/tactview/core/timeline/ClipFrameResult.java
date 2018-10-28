@@ -70,6 +70,11 @@ public class ClipFrameResult {
         return new ClipFrameResult(result, currentFrame.width, currentFrame.height);
     }
 
+    public static ClipFrameResult fromSize(int tempImageWidth, int tempImageHeight) {
+        ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(tempImageWidth * tempImageHeight * 4);
+        return new ClipFrameResult(result, tempImageWidth, tempImageHeight);
+    }
+
     public void setRed(int red, int x, int y) {
         byte r = (byte) (saturateIfNeeded(red) & 0xFF);
         buffer.put(y * width * 4 + x * 4 + 0, r);
@@ -105,4 +110,5 @@ public class ClipFrameResult {
     public int getAlpha(int x, int y) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 3));
     }
+
 }

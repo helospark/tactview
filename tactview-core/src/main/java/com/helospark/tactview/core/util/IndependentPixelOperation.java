@@ -1,7 +1,11 @@
 package com.helospark.tactview.core.util;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -10,6 +14,8 @@ import com.helospark.tactview.core.timeline.ClipFrameResult;
 
 @Component
 public class IndependentPixelOperation {
+    private ExecutorService workerExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
     public ClipFrameResult createNewImageWithAppliedTransformation(ClipFrameResult currentFrame, SimplePixelTransformer pixelTransformer) {
         return createNewImageWithAppliedTransformation(currentFrame, List.of(), pixelTransformer);
@@ -50,12 +56,26 @@ public class IndependentPixelOperation {
     }
 
     public void executePixelTransformation(int width, int height, BiConsumer<Integer, Integer> consumer) {
-        // TODO: do it in parallel
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                consumer.accept(x, y);
-            }
+        int taskSize = height / numberOfThreads;
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+        for (int i = 0; i < numberOfThreads; ++i) {
+            int currentIndex = i;
+            CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
+                int startIndex = currentIndex * taskSize;
+                int endIndex = (currentIndex == numberOfThreads - 1 ? height : (currentIndex + 1) * taskSize);
+                for (int y = startIndex; y < endIndex; y++) {
+                    for (int x = 0; x < width; x++) {
+                        consumer.accept(x, y);
+                    }
+                }
+            }, workerExecutor);
+            futures.add(future);
         }
+        CompletableFuture.allOf(toArray(futures)).join(); // block until finished
+    }
+
+    private CompletableFuture<?>[] toArray(List<CompletableFuture<?>> futures) {
+        return futures.toArray(new CompletableFuture[futures.size()]);
     }
 
 }

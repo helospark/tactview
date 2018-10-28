@@ -21,7 +21,6 @@ public class DirtyIntervalList {
             knownIntervals.removeAll(intersections);
             TimelineInterval mergedInterval = mergeIntervals(interval, intersections);
             IntervalContainer newInterval = new IntervalContainer(mergedInterval, System.currentTimeMillis());
-            System.out.println(newInterval);
             knownIntervals.addInterval(newInterval);
         });
 
