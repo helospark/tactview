@@ -130,9 +130,9 @@ public class JavaFXUiMain extends Application {
         upper.setHgap(5);
         upper.setVgap(5);
         upper.setId("upper-content-area");
-        ColumnConstraints column1 = new ColumnConstraints(300, 600, 1000);
+        ColumnConstraints column1 = new ColumnConstraints(300, 300, 1000);
         column1.setHgrow(Priority.ALWAYS);
-        ColumnConstraints column2 = new ColumnConstraints(300, 300, 500);
+        ColumnConstraints column2 = new ColumnConstraints(300, 600, 500);
         upper.getColumnConstraints().addAll(column1, column2);
 
         TabPane tabPane = new TabPane();

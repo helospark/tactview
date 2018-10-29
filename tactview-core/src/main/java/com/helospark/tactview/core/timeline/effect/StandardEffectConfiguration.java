@@ -11,6 +11,10 @@ import com.helospark.tactview.core.timeline.effect.contractbrightness.Brightness
 import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
+import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
+import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeDetectImplementation;
+import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
+import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErodeDilateImplementation;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
@@ -155,6 +159,26 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Pixelize")
                 .withSupportedEffectId("pixelize")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory erodeDilate(MessagingService messagingService, OpenCVErodeDilateImplementation openCVErodeDilateImplementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ErodeDilateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVErodeDilateImplementation))
+                .withMessagingService(messagingService)
+                .withName("Erode/Dilate")
+                .withSupportedEffectId("erodedilate")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory edgeDetect(MessagingService messagingService, OpenCVEdgeDetectImplementation openCVEdgeDetectImplementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new EdgeDetectEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVEdgeDetectImplementation))
+                .withMessagingService(messagingService)
+                .withName("Edge detect")
+                .withSupportedEffectId("edgedetect")
                 .build();
     }
 }

@@ -35,7 +35,8 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         slider.setMin(integerProvider.getMin());
         slider.setMax(integerProvider.getMax());
         slider.setShowTickLabels(true);
-        slider.setShowTickMarks(true);
+        slider.setMinorTickCount(3);
+        slider.valueProperty().addListener((obs, oldval, newVal) -> slider.setValue(newVal.intValue()));
         StringConverter<Number> converter = new NumberStringConverter();
         Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
 
