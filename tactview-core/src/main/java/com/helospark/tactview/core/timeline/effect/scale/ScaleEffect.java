@@ -7,7 +7,6 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
@@ -27,8 +26,8 @@ public class ScaleEffect extends StatelessVideoEffect {
     @Override
     public ClipFrameResult createFrame(StatelessEffectRequest request) {
         ClipFrameResult currentFrame = request.getCurrentFrame();
-        int newWidth = (int) (currentFrame.getWidth() * widthScale.getValueAt(request.getClipPosition()));
-        int newHeight = (int) (currentFrame.getHeight() * heightScale.getValueAt(request.getClipPosition()));
+        int newWidth = (int) (currentFrame.getWidth() * widthScale.getValueAt(request.getEffectPosition()));
+        int newHeight = (int) (currentFrame.getHeight() * heightScale.getValueAt(request.getEffectPosition()));
 
         OpenCVScaleRequest nativeRequest = new OpenCVScaleRequest();
         nativeRequest.input = currentFrame.getBuffer();
@@ -46,8 +45,8 @@ public class ScaleEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        widthScale = new DoubleProvider(0, 20, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0));
-        heightScale = new DoubleProvider(0, 20, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0));
+        widthScale = new DoubleProvider(0, 20, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        heightScale = new DoubleProvider(0, 20, new MultiKeyframeBasedDoubleInterpolator(1.0));
 
         ValueProviderDescriptor widthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(widthScale)

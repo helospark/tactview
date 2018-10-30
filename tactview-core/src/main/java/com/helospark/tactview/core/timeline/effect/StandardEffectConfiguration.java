@@ -16,6 +16,8 @@ import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeD
 import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
 import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErodeDilateImplementation;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
+import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
+import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenImplementation;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
@@ -179,6 +181,16 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Edge detect")
                 .withSupportedEffectId("edgedetect")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory greenScreen(MessagingService messagingService, OpenCVGreenScreenImplementation openCVGreenScreenImplementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new GreenScreenEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVGreenScreenImplementation))
+                .withMessagingService(messagingService)
+                .withName("Green screen")
+                .withSupportedEffectId("greenscreen")
                 .build();
     }
 }
