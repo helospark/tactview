@@ -30,3 +30,7 @@ cp libffmpegmediaencoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvgreenscreen.so -o libopencvgreenscreen.so opencvgreenscreen.cpp `pkg-config --libs opencv`
 cp libopencvgreenscreen.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvhistogram.so -o libopencvhistogram.so opencvhistogram.cpp `pkg-config --libs opencv`
+cp libopencvhistogram.so ../tactview-core/src/main/resources/linux-x86-64/.
+

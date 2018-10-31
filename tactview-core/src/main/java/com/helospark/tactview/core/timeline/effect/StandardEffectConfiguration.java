@@ -18,6 +18,8 @@ import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErod
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenImplementation;
+import com.helospark.tactview.core.timeline.effect.histogramequization.HistogramEquizationEffect;
+import com.helospark.tactview.core.timeline.effect.histogramequization.opencv.OpenCVHistogramEquizerImplementation;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
@@ -191,6 +193,16 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Green screen")
                 .withSupportedEffectId("greenscreen")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory equizeHistogram(MessagingService messagingService, OpenCVHistogramEquizerImplementation implementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new HistogramEquizationEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withMessagingService(messagingService)
+                .withName("Equize histogram")
+                .withSupportedEffectId("equize histogram")
                 .build();
     }
 }
