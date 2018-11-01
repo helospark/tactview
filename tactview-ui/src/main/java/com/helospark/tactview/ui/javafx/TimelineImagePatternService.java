@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.concurrent.CompletableFuture;
 
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -30,13 +29,15 @@ public class TimelineImagePatternService {
     private static final int BLACK_FILM_TAPE_LINE_WIDTH = 1;
 
     private UiProjectRepository uiProjectRepository;
+    private ByteBufferToImageConverter byteBufferToImageConverter;
 
-    public TimelineImagePatternService(UiProjectRepository uiProjectRepository) {
+    public TimelineImagePatternService(UiProjectRepository uiProjectRepository, ByteBufferToImageConverter byteBufferToImageConverter) {
         this.uiProjectRepository = uiProjectRepository;
+        this.byteBufferToImageConverter = byteBufferToImageConverter;
     }
 
-    public CompletableFuture<Image> createTimelinePattern(VisualTimelineClip videoClip, int timelineWidth) {
-        return CompletableFuture.supplyAsync(() -> doIt(videoClip, timelineWidth));
+    public Image createTimelinePattern(VisualTimelineClip videoClip, int timelineWidth) {
+        return doIt(videoClip, timelineWidth);
     }
 
     private Image doIt(VisualTimelineClip videoClip, int timelineWidth) {
@@ -61,21 +62,21 @@ public class TimelineImagePatternService {
         for (int i = 0; i < numberOfFrames; ++i) {
             GetFrameRequest frameRequest = GetFrameRequest.builder()
                     .withApplyEffects(false)
-                    .withExpectedWidth(scaledFrameWidth)
-                    .withExpectedHeight(scaledFrameHeight)
+                    .withExpectedWidth(uiProjectRepository.getPreviewWidth())
+                    .withExpectedHeight(uiProjectRepository.getPreviewHeight())
                     .withRelativePosition(new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i))))
                     .withScale(uiProjectRepository.getScaleFactor())
                     .build();
             ClipFrameResult frame = videoClip.getFrame(frameRequest);
-            BufferedImage bf = ByteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
-            java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, PREVIEW_HEIGHT, BufferedImage.SCALE_SMOOTH);
+            BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
+            java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
             graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
         }
 
         dragFilmEffect(timelineWidth, graphics);
 
-        return ByteBufferToImageConverter.convertToJavafxImage(result);
+        return byteBufferToImageConverter.convertToJavafxImage(result);
     }
 
     private void dragFilmEffect(int timelineWidth, Graphics graphics) {

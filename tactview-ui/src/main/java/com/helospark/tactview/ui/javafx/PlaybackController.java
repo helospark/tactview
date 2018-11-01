@@ -15,10 +15,13 @@ import javafx.scene.image.Image;
 public class PlaybackController {
     private TimelineManager timelineManager;
     private UiProjectRepository uiProjectRepository;
+    private ByteBufferToImageConverter byteBufferToImageConverter;
 
-    public PlaybackController(TimelineManager timelineManager, UiProjectRepository uiProjectRepository) {
+    public PlaybackController(TimelineManager timelineManager, UiProjectRepository uiProjectRepository,
+            ByteBufferToImageConverter byteBufferToImageConverter) {
         this.timelineManager = timelineManager;
         this.uiProjectRepository = uiProjectRepository;
+        this.byteBufferToImageConverter = byteBufferToImageConverter;
     }
 
     public Image getFrameAt(TimelinePosition position) {
@@ -32,7 +35,7 @@ public class PlaybackController {
                 .withPreviewHeight(height)
                 .build();
         ByteBuffer frame = timelineManager.getFrames(request);
-        Image javafxImage = ByteBufferToImageConverter.convertToJavaxImage(frame, width, height);
+        Image javafxImage = byteBufferToImageConverter.convertToJavaxImage(frame, width, height);
         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame);
         return javafxImage;
     }

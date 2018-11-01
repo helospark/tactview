@@ -46,21 +46,21 @@ public class EffectParametersRepository {
     @PostConstruct
     public void init() {
         messagingService.register(EffectDescriptorsAdded.class, message -> {
-            addDescriptorsToRepository(message.getDescriptors(), message.getIntervalAware());
+            addDescriptorsToRepository(message.getDescriptors(), message.getEffect(), message.getEffect().getId());
         });
         messagingService.register(ClipDescriptorsAdded.class, message -> {
-            addDescriptorsToRepository(message.getDescriptors(), message.getClip());
+            addDescriptorsToRepository(message.getDescriptors(), message.getClip(), message.getClipId());
         });
         messagingService.register(KeyframeAddedRequest.class, message -> {
             keyframeAdded(message);
         });
     }
 
-    private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, IntervalAware intervalAware) {
+    private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, IntervalAware intervalAware, String containingElementId) {
         list.stream()
                 .map(a -> a.getKeyframeableEffect())
                 .flatMap(a -> getPrimitiveKeyframeableEffects(a))
-                .forEach(a -> idToEffectMap.put(a.getId(), new EffectStore(a, intervalAware)));
+                .forEach(a -> idToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware)));
     }
 
     private Stream<KeyframeableEffect> getPrimitiveKeyframeableEffects(KeyframeableEffect a) {
@@ -98,7 +98,7 @@ public class EffectParametersRepository {
         if (valueToChange != null) {
             TimelinePosition relativePosition = positionToLocal(message.getGlobalTimelinePosition(), valueToChange);
             valueToChange.effect.keyframeAdded(relativePosition, message.getValue());
-            messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(message.getDescriptorId(), valueToChange.intervalAware.getGlobalInterval()));
+            messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(message.getDescriptorId(), valueToChange.intervalAware.getGlobalInterval(), valueToChange.containingElementId));
         } else {
             System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
         }
@@ -107,7 +107,7 @@ public class EffectParametersRepository {
     public void removeKeyframe(KeyframeRemovedRequest request) {
         EffectStore valueToChange = idToEffectMap.get(request.getDescriptorId());
         valueToChange.effect.removeKeyframeAt(positionToLocal(request.getGlobalTimelinePosition(), valueToChange));
-        messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(request.getDescriptorId(), valueToChange.intervalAware.getGlobalInterval()));
+        messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(request.getDescriptorId(), valueToChange.intervalAware.getGlobalInterval(), valueToChange.containingElementId));
     }
 
     public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
@@ -118,10 +118,12 @@ public class EffectParametersRepository {
 
     static class EffectStore {
         public KeyframeableEffect effect;
+        public String containingElementId;
         public IntervalAware intervalAware;
 
-        public EffectStore(KeyframeableEffect effect, IntervalAware intervalAware) {
+        public EffectStore(KeyframeableEffect effect, String elementId, IntervalAware intervalAware) {
             this.effect = effect;
+            this.containingElementId = elementId;
             this.intervalAware = intervalAware;
         }
 

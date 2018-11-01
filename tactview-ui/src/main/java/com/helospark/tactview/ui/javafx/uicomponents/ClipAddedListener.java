@@ -27,7 +27,6 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 
 @Component
@@ -104,17 +103,6 @@ public class ClipAddedListener {
         rectangle.getStyleClass().add("clip-rectangle");
         effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
 
-        if (clip instanceof VisualTimelineClip) {
-            VisualTimelineClip videoClip = ((VisualTimelineClip) clip);
-            timelineImagePatternService.createTimelinePattern(videoClip, width)
-                    .exceptionally(e -> {
-                        e.printStackTrace();
-                        return null;
-                    })
-                    .thenAccept(fillImage -> {
-                        Platform.runLater(() -> rectangle.setFill(new ImagePattern(fillImage)));
-                    });
-        }
         parentPane.getStyleClass().add("timeline-clip");
         rectangle.setOnMouseClicked(event -> {
             selectedNodeRepository.setOnlySelectedClip(parentPane);

@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableDoubleValue;
@@ -30,10 +31,10 @@ public class TimelineState {
     private Map<String, Runnable> idToRemoveRunnable = new HashMap<>();
 
     // ZOOM
-    private SimpleDoubleProperty zoomValue = new SimpleDoubleProperty(0);
+    private SimpleDoubleProperty zoomValue = new SimpleDoubleProperty(1.0);
     private SimpleDoubleProperty translate = new SimpleDoubleProperty(0);
 
-    private SimpleIntegerProperty linePosition = new SimpleIntegerProperty(0);
+    private SimpleDoubleProperty linePosition = new SimpleDoubleProperty(0.0);
     private MoveSpecialPointLineProperties moveSpecialPointLineProperties = new MoveSpecialPointLineProperties();
 
     private MessagingService messagingService;
@@ -49,8 +50,8 @@ public class TimelineState {
 
     public TimelinePosition pixelsToSeconds(double xCoordinate) {
         BigDecimal position = new BigDecimal(xCoordinate)
-                .multiply(BigDecimal.ONE) // zoom dummy
-                .subtract(BigDecimal.ZERO) // scroll dummy
+                .multiply(BigDecimal.valueOf(zoomValue.get()))
+                .subtract(BigDecimal.valueOf(translate.get()))
                 .divide(PIXEL_PER_SECOND);
         return new TimelinePosition(position);
     }
@@ -73,12 +74,20 @@ public class TimelineState {
         return zoomValue;
     }
 
+    public double getZoom() {
+        return zoomValue.get();
+    }
+
     public ObservableDoubleValue getTranslate() {
         return translate;
     }
 
-    public ObservableIntegerValue getLinePosition() {
-        return linePosition;
+    public DoubleBinding getLinePosition() {
+        DoubleBinding result = linePosition.multiply(zoomValue).subtract(translate);
+        result.addListener(a -> {
+            System.out.println("############x " + result.get());
+        });
+        return result;
     }
 
     public MessagingService getMessagingService() {
@@ -192,6 +201,16 @@ public class TimelineState {
 
     public MoveSpecialPointLineProperties getMoveSpecialPointLineProperties() {
         return moveSpecialPointLineProperties;
+    }
+
+    public void setZoom(double zoom) {
+        System.out.println("zoom:" + zoom);
+        this.zoomValue.set(zoom);
+    }
+
+    public void setTranslate(double newTranslate) {
+        System.out.println("translate:" + newTranslate);
+        this.translate.set(newTranslate);
     }
 
 }

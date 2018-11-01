@@ -82,7 +82,7 @@ public class UiTimeline {
 
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
-        timelineBoxes.setOnScroll(timeLineZoomCallback::onScroll);
+        timelineGroup.setOnScroll(timeLineZoomCallback::onScroll);
 
         timeLineScrollPane.setContent(timelineGroup);
 

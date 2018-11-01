@@ -144,7 +144,7 @@ public class TextProceduralClip extends VisualTimelineClip {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         textProvider = new StringProvider(new StringInterpolator());
-        sizeProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(20.0));
+        sizeProvider = new IntegerProvider(0, 500, new MultiKeyframeBasedDoubleInterpolator(100.0));
         sizeProvider.setScaleDependent();
         colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),

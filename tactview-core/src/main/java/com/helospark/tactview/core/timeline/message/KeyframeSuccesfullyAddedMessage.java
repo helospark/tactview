@@ -8,10 +8,12 @@ import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 public class KeyframeSuccesfullyAddedMessage implements AffectedModifiedIntervalAware {
     private String descriptorId;
     private TimelineInterval interval;
+    private String containingElementId;
 
-    public KeyframeSuccesfullyAddedMessage(String descriptorId, TimelineInterval globalInterval) {
+    public KeyframeSuccesfullyAddedMessage(String descriptorId, TimelineInterval globalInterval, String containingElementId) {
         this.descriptorId = descriptorId;
         this.interval = globalInterval;
+        this.containingElementId = containingElementId;
     }
 
     public String getDescriptorId() {
@@ -20,6 +22,10 @@ public class KeyframeSuccesfullyAddedMessage implements AffectedModifiedInterval
 
     public TimelineInterval getInterval() {
         return interval;
+    }
+
+    public String getContainingElementId() {
+        return containingElementId;
     }
 
     @Override

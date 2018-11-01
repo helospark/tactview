@@ -66,7 +66,6 @@ public class JavaFXUiMain extends Application {
     static BufferedImage bufferedImage;
 
     int frames = 0;
-    double zoom = 1.0;
     long currentTime = System.currentTimeMillis();
     static int second = 0;
 

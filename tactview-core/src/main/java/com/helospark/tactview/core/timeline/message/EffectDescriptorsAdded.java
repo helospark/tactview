@@ -2,18 +2,18 @@ package com.helospark.tactview.core.timeline.message;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.IntervalAware;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 public class EffectDescriptorsAdded {
     private String effectId;
     private List<ValueProviderDescriptor> descriptors;
-    private IntervalAware intervalAware;
+    private StatelessEffect effect;
 
-    public EffectDescriptorsAdded(String effectId, List<ValueProviderDescriptor> descriptors, IntervalAware intervalAware) {
+    public EffectDescriptorsAdded(String effectId, List<ValueProviderDescriptor> descriptors, StatelessEffect intervalAware) {
         this.descriptors = descriptors;
         this.effectId = effectId;
-        this.intervalAware = intervalAware;
+        this.effect = intervalAware;
     }
 
     public String getEffectId() {
@@ -24,8 +24,8 @@ public class EffectDescriptorsAdded {
         return descriptors;
     }
 
-    public IntervalAware getIntervalAware() {
-        return intervalAware;
+    public StatelessEffect getEffect() {
+        return effect;
     }
 
 }
