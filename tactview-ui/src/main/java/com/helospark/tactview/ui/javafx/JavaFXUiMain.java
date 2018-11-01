@@ -133,6 +133,7 @@ public class JavaFXUiMain extends Application {
         column1.setHgrow(Priority.ALWAYS);
         ColumnConstraints column2 = new ColumnConstraints(300, 600, 500);
         upper.getColumnConstraints().addAll(column1, column2);
+        upper.setMaxHeight(400);
 
         TabPane tabPane = new TabPane();
 

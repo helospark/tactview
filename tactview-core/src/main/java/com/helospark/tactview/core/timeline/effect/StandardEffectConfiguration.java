@@ -6,6 +6,8 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
+import com.helospark.tactview.core.timeline.effect.cartoon.CartoonEffect;
+import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
@@ -22,6 +24,8 @@ import com.helospark.tactview.core.timeline.effect.histogramequization.Histogram
 import com.helospark.tactview.core.timeline.effect.histogramequization.opencv.OpenCVHistogramEquizerImplementation;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
+import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
+import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
 import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
 import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
@@ -30,6 +34,7 @@ import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.AdaptiveThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.SimpleThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
+import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -203,6 +208,36 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Equize histogram")
                 .withSupportedEffectId("equize histogram")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory cartoonEffect(MessagingService messagingService, OpenCVCartoonEffectImplementation implementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new CartoonEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withMessagingService(messagingService)
+                .withName("Cartoon")
+                .withSupportedEffectId("cartoon")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory pencilSketch(MessagingService messagingService, OpenCVPencilSketchImplementation implementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new PencilSketchEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withMessagingService(messagingService)
+                .withName("Pencil")
+                .withSupportedEffectId("pencil")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory warpEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new TrigonometricWrapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withMessagingService(messagingService)
+                .withName("Warp")
+                .withSupportedEffectId("warp")
                 .build();
     }
 }

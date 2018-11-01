@@ -111,4 +111,8 @@ public class ClipFrameResult {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 3));
     }
 
+    public boolean inBounds(int x, int y) {
+        return x >= 0 && y >= 0 && x < width && y < height;
+    }
+
 }

@@ -1,9 +1,10 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -31,7 +32,7 @@ import javafx.scene.shape.Rectangle;
 @Component
 public class ClipPatternDrawerListener {
     private Map<String, ClipPatternUpdateDomain> clipsToUpdate = new ConcurrentHashMap<>();
-    private Queue<ClipPatternUpdateRequest> updateRequests = new ConcurrentLinkedQueue<>();
+    private Set<ClipPatternUpdateRequest> updateRequests = new ConcurrentSkipListSet<>();
     private volatile boolean running = true;
 
     private MessagingService messagingService;
@@ -54,23 +55,23 @@ public class ClipPatternDrawerListener {
         messagingService.register(ClipAddedMessage.class, message -> {
             if (message.getClip() instanceof VisualTimelineClip) {
                 clipsToUpdate.put(message.getClipId(), new ClipPatternUpdateDomain((VisualTimelineClip) message.getClip(), timelineState.getZoom()));
-                updateRequests.offer(new ClipPatternUpdateRequest(message.getClipId()));
+                updateRequests.add(new ClipPatternUpdateRequest(message.getClipId()));
             }
         });
         messagingService.register(ClipRemovedMessage.class, message -> {
             clipsToUpdate.remove(message.getElementId());
         });
         messagingService.register(ClipResizedMessage.class, message -> {
-            updateRequests.offer(new ClipPatternUpdateRequest(message.getClipId()));
+            updateRequests.add(new ClipPatternUpdateRequest(message.getClipId()));
         });
         messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> {
             if (clipsToUpdate.containsKey(message.getContainingElementId())) {
-                updateRequests.offer(new ClipPatternUpdateRequest(message.getContainingElementId()));
+                updateRequests.add(new ClipPatternUpdateRequest(message.getContainingElementId()));
             }
         });
         messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> {
             if (clipsToUpdate.containsKey(message.getContainingElementId())) {
-                updateRequests.offer(new ClipPatternUpdateRequest(message.getContainingElementId()));
+                updateRequests.add(new ClipPatternUpdateRequest(message.getContainingElementId()));
             }
         });
     }
@@ -85,16 +86,18 @@ public class ClipPatternDrawerListener {
             while (running) {
                 try {
                     ThreadSleep.sleep(1000);
-                    ClipPatternUpdateRequest request;
-                    while ((request = updateRequests.poll()) != null) {
+                    Set<ClipPatternUpdateRequest> clonedRequests = new HashSet<ClipPatternUpdateRequest>(updateRequests);
+                    updateRequests.clear();
+                    for (var request : clonedRequests) {
                         if (clipsToUpdate.containsKey(request.clipId)) {
+                            logger.info("Updating timeline image pattern for {}", request.clipId);
                             updatePattern(request);
                         }
                     }
                     double currentZoomLevel = timelineState.getZoom();
                     for (var entry : clipsToUpdate.entrySet()) {
                         if (Math.abs(entry.getValue().createdImageAtZoomLevel - currentZoomLevel) > 0.2) {
-                            updateRequests.offer(new ClipPatternUpdateRequest(entry.getKey()));
+                            updateRequests.add(new ClipPatternUpdateRequest(entry.getKey()));
                         }
                     }
                 } catch (Exception e) {
@@ -124,6 +127,7 @@ public class ClipPatternDrawerListener {
 
         public ClipPatternUpdateDomain(VisualTimelineClip videoClip, double createImageAtZoomLevel) {
             this.videoClip = videoClip;
+            this.createdImageAtZoomLevel = createImageAtZoomLevel;
         }
 
         public ClipPatternUpdateDomain butWithZoomLevel(double newZoomLevel) {
@@ -132,11 +136,41 @@ public class ClipPatternDrawerListener {
 
     }
 
-    static class ClipPatternUpdateRequest {
+    static class ClipPatternUpdateRequest implements Comparable<ClipPatternUpdateRequest> {
         private String clipId;
 
         public ClipPatternUpdateRequest(String clipId) {
             this.clipId = clipId;
+        }
+
+        @Override
+        public int compareTo(ClipPatternUpdateRequest o) {
+            return clipId.compareTo(o.clipId);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((clipId == null) ? 0 : clipId.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ClipPatternUpdateRequest other = (ClipPatternUpdateRequest) obj;
+            if (clipId == null) {
+                if (other.clipId != null)
+                    return false;
+            } else if (!clipId.equals(other.clipId))
+                return false;
+            return true;
         }
 
     }

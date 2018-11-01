@@ -34,3 +34,8 @@ cp libopencvgreenscreen.so ../tactview-core/src/main/resources/linux-x86-64/.
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvhistogram.so -o libopencvhistogram.so opencvhistogram.cpp `pkg-config --libs opencv`
 cp libopencvhistogram.so ../tactview-core/src/main/resources/linux-x86-64/.
 
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvcartoon.so -o libopencvcartoon.so opencvcartoon.cpp `pkg-config --libs opencv`
+cp libopencvcartoon.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvpencil.so -o libopencvpencil.so opencvpencil.cpp `pkg-config --libs opencv`
+cp libopencvpencil.so ../tactview-core/src/main/resources/linux-x86-64/.

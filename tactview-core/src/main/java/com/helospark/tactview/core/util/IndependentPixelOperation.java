@@ -23,35 +23,46 @@ public class IndependentPixelOperation {
 
     public ClipFrameResult createNewImageWithAppliedTransformation(ClipFrameResult currentFrame, List<ThreadLocalProvider<?>> threadLocalProviders, SimplePixelTransformer pixelTransformer) {
         ClipFrameResult resultFrame = ClipFrameResult.sameSizeAs(currentFrame);
-        int[] pixelComponents = new int[4];
-        int[] resultPixelComponents = new int[4];
 
-        Map<ThreadLocalProvider<?>, Object> threadLocals = threadLocalProviders.stream()
-                .collect(Collectors.toMap(a -> a, a -> a.get()));
+        int taskSize = resultFrame.getHeight() / numberOfThreads;
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+        for (int i = 0; i < numberOfThreads; ++i) {
+            int currentIndex = i;
+            CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
+                int startIndex = currentIndex * taskSize;
+                int endIndex = (currentIndex == numberOfThreads - 1 ? resultFrame.getHeight() : (currentIndex + 1) * taskSize);
 
-        SimplePixelTransformerRequest request = SimplePixelTransformerRequest.builder()
-                .withx(0)
-                .withy(0)
-                .withInput(pixelComponents)
-                .withOutput(resultPixelComponents)
-                .withThreadLocals(threadLocals)
-                .build();
+                int[] pixelComponents = new int[4];
+                int[] resultPixelComponents = new int[4];
 
-        // TODO: do it in parallel
-        for (int y = 0; y < currentFrame.getHeight(); y++) {
-            for (int x = 0; x < currentFrame.getWidth(); x++) {
-                currentFrame.getPixelComponents(pixelComponents, x, y);
+                Map<ThreadLocalProvider<?>, Object> threadLocals = threadLocalProviders.stream()
+                        .collect(Collectors.toMap(a -> a, a -> a.get()));
 
-                request.x = x;
-                request.y = y;
-                request.output = resultPixelComponents;
-                request.input = pixelComponents;
+                SimplePixelTransformerRequest request = SimplePixelTransformerRequest.builder()
+                        .withx(0)
+                        .withy(0)
+                        .withInput(pixelComponents)
+                        .withOutput(resultPixelComponents)
+                        .withThreadLocals(threadLocals)
+                        .build();
+                for (int y = startIndex; y < endIndex; y++) {
+                    for (int x = 0; x < currentFrame.getWidth(); x++) {
+                        currentFrame.getPixelComponents(pixelComponents, x, y);
 
-                pixelTransformer.transform(request);
+                        request.x = x;
+                        request.y = y;
+                        request.output = resultPixelComponents;
+                        request.input = pixelComponents;
 
-                resultFrame.setPixel(request.output, x, y);
-            }
+                        pixelTransformer.transform(request);
+
+                        resultFrame.setPixel(request.output, x, y);
+                    }
+                }
+            }, workerExecutor);
+            futures.add(future);
         }
+        CompletableFuture.allOf(toArray(futures)).join(); // block until finished
         return resultFrame;
     }
 

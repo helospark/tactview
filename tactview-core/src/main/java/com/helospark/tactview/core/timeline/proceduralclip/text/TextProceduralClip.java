@@ -62,8 +62,6 @@ public class TextProceduralClip extends VisualTimelineClip {
         String currentText = textProvider.getValueAt(relativePosition);
         double currentSize = (sizeProvider.getValueAt(relativePosition) * request.getScale());
         var color = colorProvider.getValueAt(relativePosition);
-        System.out.println("FontProvider: " + fontProvider);
-        System.out.println("FontProvider.value: " + fontProvider.getValueAt(relativePosition));
         ValueListElement fontElement = fontProvider.getValueAt(relativePosition);
         ValueListElement alignmentElement = alignmentProvider.getValueAt(relativePosition);
 

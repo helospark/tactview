@@ -131,7 +131,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     public <T extends StatelessEffect> List<T> getEffectsAt(TimelinePosition position, Class<T> type) {
         return effectChannels.stream()
-                .map(effectChannel -> effectChannel.getElementWithIntervalContainingPoint(position))
+                .map(effectChannel -> effectChannel.getElementWithIntervalContainingPoint(position.subtract(renderOffset)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .filter(effect -> type.isAssignableFrom(effect.getClass()))
