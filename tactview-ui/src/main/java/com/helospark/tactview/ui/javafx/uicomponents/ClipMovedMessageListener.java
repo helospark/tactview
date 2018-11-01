@@ -30,7 +30,7 @@ public class ClipMovedMessageListener {
     }
 
     private void move(ClipMovedMessage message, Pane group) {
-        group.setTranslateX(timelineState.secondsToPixels(message.getNewPosition()));
+        group.setLayoutX(timelineState.secondsToPixels(message.getNewPosition()));
         timelineState.changeChannelFor(group, message.getChannelId());
         if (message.getSpecialPositionUsed().isPresent()) {
             drawSpecialPositionLine(message);

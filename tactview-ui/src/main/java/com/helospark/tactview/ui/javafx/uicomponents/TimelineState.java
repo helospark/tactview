@@ -50,8 +50,6 @@ public class TimelineState {
 
     public TimelinePosition pixelsToSeconds(double xCoordinate) {
         BigDecimal position = new BigDecimal(xCoordinate)
-                .multiply(BigDecimal.valueOf(zoomValue.get()))
-                .subtract(BigDecimal.valueOf(translate.get()))
                 .divide(PIXEL_PER_SECOND);
         return new TimelinePosition(position);
     }
@@ -83,7 +81,7 @@ public class TimelineState {
     }
 
     public DoubleBinding getLinePosition() {
-        DoubleBinding result = linePosition.multiply(zoomValue).subtract(translate);
+        DoubleBinding result = linePosition.add(0);
         result.addListener(a -> {
             System.out.println("############x " + result.get());
         });

@@ -27,7 +27,7 @@ public class ClipResizedListener {
                         TimelineInterval interval = message.getNewInterval();
                         double startPosition = timelineState.secondsToPixels(interval.getStartPosition());
                         double width = timelineState.secondsToPixels(interval.getLength());
-                        clipGroup.setTranslateX(startPosition);
+                        clipGroup.setLayoutX(startPosition);
                         ((Rectangle) clipGroup.getChildren().get(0)).setWidth(width);
                     });
         });

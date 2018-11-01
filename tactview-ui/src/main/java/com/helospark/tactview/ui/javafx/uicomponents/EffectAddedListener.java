@@ -97,7 +97,7 @@ public class EffectAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX - rectangle.getTranslateX() < 15;
+        return currentX - rectangle.getLayoutX() < 15;
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {

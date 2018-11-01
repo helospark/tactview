@@ -124,6 +124,7 @@ public class TimelineDragAndDropHandler {
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
 
+            System.out.println("JASDGOFJKD: " + event.getX());
             TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
 
             ClipMovedCommand command = ClipMovedCommand.builder()

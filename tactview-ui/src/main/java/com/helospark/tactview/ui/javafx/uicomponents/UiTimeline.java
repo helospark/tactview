@@ -17,6 +17,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -58,9 +59,10 @@ public class UiTimeline {
 
         timeLineScrollPane = new ScrollPane();
         Group timelineGroup = new Group();
+        Group zoomGroup = new Group();
         VBox timelineBoxes = new VBox();
         timelineBoxes.setPrefWidth(2000);
-        timelineGroup.getChildren().add(timelineBoxes);
+        zoomGroup.getChildren().add(timelineBoxes);
 
         positionIndicatorLine = new Line();
         positionIndicatorLine.setLayoutX(6.0); // TODO: Layout need to be fixed
@@ -69,20 +71,25 @@ public class UiTimeline {
         positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.endXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.setId("timeline-position-line");
-        timelineGroup.getChildren().add(positionIndicatorLine);
+        zoomGroup.getChildren().add(positionIndicatorLine);
 
         Line specialPositionLine = new Line();
         specialPositionLine.setLayoutX(6.0); // TODO: Layout need to be fixed
-        specialPositionLine.translateXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartX());
+        specialPositionLine.layoutXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartX());
         specialPositionLine.startYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartY());
         specialPositionLine.visibleProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEnabledProperty());
         specialPositionLine.endYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEndY());
         specialPositionLine.setId("special-position-line");
-        timelineGroup.getChildren().add(specialPositionLine);
+        zoomGroup.getChildren().add(specialPositionLine);
 
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
-        timelineGroup.setOnScroll(timeLineZoomCallback::onScroll);
+        timelineGroup.getChildren().add(zoomGroup);
+
+        zoomGroup.addEventFilter(ScrollEvent.SCROLL, e -> {
+            timeLineZoomCallback.onScroll(e, timeLineScrollPane);
+            e.consume();
+        });
 
         timeLineScrollPane.setContent(timelineGroup);
 

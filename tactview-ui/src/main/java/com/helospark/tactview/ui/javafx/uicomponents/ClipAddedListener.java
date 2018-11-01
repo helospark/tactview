@@ -98,7 +98,7 @@ public class ClipAddedListener {
         int width = timelineState.secondsToPixels(clip.getInterval().getLength());
         rectangle.setWidth(width);
         rectangle.setHeight(50);
-        parentPane.translateXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
+        parentPane.layoutXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
         parentPane.setUserData(clipAddedMessage.getClipId());
         rectangle.getStyleClass().add("clip-rectangle");
         effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
@@ -118,7 +118,7 @@ public class ClipAddedListener {
             ClipboardContent content = new ClipboardContent();
 
             timelineState.findClipById(clipAddedMessage.getClipId()).ifPresent(clip2 -> {
-                TimelinePosition position = timelineState.pixelsToSeconds(clip2.getTranslateX());
+                TimelinePosition position = timelineState.pixelsToSeconds(clip2.getLayoutX());
                 String channelId = (String) timelineState.findChannelForClip(clip2).get().getUserData();
                 ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId(), channelId);
                 if (isResizing(clipAddedMessage, rectangle, currentX)) {
@@ -152,11 +152,11 @@ public class ClipAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX - rectangle.getTranslateX() < 15;
+        return currentX - rectangle.getLayoutX() < 15;
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {
-        return rectangle.getTranslateX() + rectangle.getWidth() - currentX < 15;
+        return rectangle.getLayoutX() + rectangle.getWidth() - currentX < 15;
     }
 
 }

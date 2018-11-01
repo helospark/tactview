@@ -2,7 +2,9 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import com.helospark.lightdi.annotation.Component;
 
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ScrollEvent;
 
 @Component
@@ -14,13 +16,13 @@ public class TimeLineZoomCallback {
         this.timelineState = timelineState;
     }
 
-    public void onScroll(ScrollEvent evt) {
+    public void onScroll(ScrollEvent evt, ScrollPane scrollPane) {
         if (evt.isControlDown()) {
             evt.consume();
             double factor = 1.0;
             factor = evt.getDeltaY() > 0 ? 0.05 : -0.05;
 
-            Node node = (Node) evt.getTarget();
+            Node node = (Node) evt.getSource();
             double x = evt.getX();
 
             double oldScale = node.getScaleX();
@@ -30,16 +32,17 @@ public class TimeLineZoomCallback {
             if (scale > 50)
                 scale = 50;
             node.setScaleX(scale);
-            System.out.println("scale: " + scale);
 
-            //            double f = (scale / oldScale) - 1;
-            //            Bounds bounds = node.localToScene(node.getBoundsInLocal());
-            //            double dx = (x - (bounds.getWidth() / 2 + bounds.getMinX()));
+            double f = (scale / oldScale) - 1;
+            Bounds bounds = node.localToParent(node.getBoundsInLocal());
+            double dx = (x - (bounds.getWidth() / 2 + bounds.getMinX()));
 
-            //            double newTranslate = node.getTranslateX() - f * dx;
-            //            node.setTranslateX(newTranslate);
+            double newTranslate = node.getTranslateX() - f * dx;
+
+            node.setTranslateX(newTranslate);
+            scrollPane.setHvalue(newTranslate / bounds.getWidth());
             timelineState.setZoom(scale);
-            //            timelineState.setTranslate(newTranslate);
+            timelineState.setTranslate(newTranslate);
         }
     }
 
