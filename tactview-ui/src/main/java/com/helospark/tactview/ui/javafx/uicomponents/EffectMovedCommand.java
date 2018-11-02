@@ -13,7 +13,7 @@ public class EffectMovedCommand implements UiCommand {
     private String newClipId;
 
     private TimelinePosition originalPosition;
-    private TimelinePosition localNewPosition;
+    private TimelinePosition globalNewPosition;
 
     private boolean revertable;
 
@@ -25,14 +25,14 @@ public class EffectMovedCommand implements UiCommand {
         this.originalClipId = builder.originalClipId;
         this.newClipId = builder.newClipId;
         this.originalPosition = builder.originalPosition;
-        this.localNewPosition = builder.localNewPosition;
+        this.globalNewPosition = builder.globalNewPosition;
         this.revertable = builder.revertable;
         this.timelineManager = builder.timelineManager;
     }
 
     @Override
     public void execute() {
-        timelineManager.moveEffect(effectId, localNewPosition, newClipId);
+        timelineManager.moveEffect(effectId, globalNewPosition, newClipId);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class EffectMovedCommand implements UiCommand {
 
     @Override
     public String toString() {
-        return "EffectMovedCommand [effectId=" + effectId + ", originalClipId=" + originalClipId + ", newClipId=" + newClipId + ", originalPosition=" + originalPosition + ", globalNewPosition=" + localNewPosition + ", revertable=" + revertable
+        return "EffectMovedCommand [effectId=" + effectId + ", originalClipId=" + originalClipId + ", newClipId=" + newClipId + ", originalPosition=" + originalPosition + ", globalNewPosition=" + globalNewPosition + ", revertable=" + revertable
                 + ", timelineManager=" + timelineManager + "]";
     }
 
@@ -62,7 +62,7 @@ public class EffectMovedCommand implements UiCommand {
         private String originalClipId;
         private String newClipId;
         private TimelinePosition originalPosition;
-        private TimelinePosition localNewPosition;
+        private TimelinePosition globalNewPosition;
         private boolean revertable;
         private TimelineManager timelineManager;
 
@@ -89,8 +89,8 @@ public class EffectMovedCommand implements UiCommand {
             return this;
         }
 
-        public Builder withLocalNewPosition(TimelinePosition localNewPosition) {
-            this.localNewPosition = localNewPosition;
+        public Builder withGlobalNewPosition(TimelinePosition globalNewPosition) {
+            this.globalNewPosition = globalNewPosition;
             return this;
         }
 

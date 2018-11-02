@@ -42,6 +42,8 @@ public class DragRepository implements CleanableMode {
 
     public void clearEffectDrag() {
         effectDragInformation = null;
+        isResizing = false;
+        dragDirection = null;
     }
 
     public boolean isResizing() {

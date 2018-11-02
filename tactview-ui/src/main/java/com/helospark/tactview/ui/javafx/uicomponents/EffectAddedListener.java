@@ -28,7 +28,8 @@ public class EffectAddedListener {
     private DragRepository dragRepository;
     private EffectDragAdder effectDragAdder;
 
-    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, PropertyView effectPropertyView, SelectedNodeRepository selectedNodeRepository, DragRepository dragRepository,
+    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, PropertyView effectPropertyView, SelectedNodeRepository selectedNodeRepository,
+            DragRepository dragRepository,
             EffectDragAdder effectDragAdder) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
@@ -69,9 +70,11 @@ public class EffectAddedListener {
             double currentX = event.getX();
             EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition());
             if (isResizing(rectangle, currentX)) {
+                System.out.println("Resizing");
                 dragRepository.onEffectResized(dragInformation, isDraggingLeft(rectangle, currentX) ? DragDirection.LEFT : DragDirection.RIGHT);
                 content.putString("effectresized");
             } else {
+                System.out.println("Dragging");
                 dragRepository.onEffectDragged(dragInformation);
                 content.putString("effectdrag");
             }
@@ -80,7 +83,6 @@ public class EffectAddedListener {
 
         rectangle.setOnMouseMoved(event -> {
             double currentX = event.getX();
-            System.out.println(currentX);
             if (isResizing(rectangle, currentX)) {
                 rectangle.setCursor(Cursor.H_RESIZE);
             } else {
@@ -97,7 +99,7 @@ public class EffectAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX - rectangle.getLayoutX() < 15;
+        return currentX < 15;
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {

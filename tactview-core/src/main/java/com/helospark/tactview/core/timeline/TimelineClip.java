@@ -113,7 +113,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
     }
 
     private TimelineInterval newIntervalToBounds(StatelessEffect effect, TimelinePosition globalNewPosition) {
-        TimelinePosition localPosition = globalNewPosition;
+        TimelinePosition localPosition = globalNewPosition.from(this.interval.getStartPosition());
         TimelineInterval newInterval = new TimelineInterval(localPosition, effect.getInterval().getLength());
         TimelineInterval localClipInterval = this.interval.butMoveStartPostionTo(TimelinePosition.ofZero());
         if (newInterval.getLength().greaterThan(interval.getLength())) {
@@ -170,11 +170,11 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
     }
 
     public boolean resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {
-        // TimelinePosition localPositon = globalPosition.from(this.interval.getStartPosition());
+        TimelinePosition localPositon = globalPosition.from(this.interval.getStartPosition());
         NonIntersectingIntervalList<StatelessEffect> channel = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("No such channel"));
 
         TimelineInterval originalInterval = effect.getInterval();
-        TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(globalPosition) : originalInterval.butWithEndPosition(globalPosition);
+        TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(localPositon) : originalInterval.butWithEndPosition(localPositon);
 
         return channel.resize(effect, newInterval);
     }

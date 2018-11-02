@@ -16,7 +16,9 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
+import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.application.Platform;
@@ -90,6 +92,14 @@ public class TimelineDragAndDropHandler {
                     moveClip(event, channelId, false);
                 }
             }
+            if (dragRepository.currentEffectDragInformation() != null) {
+                if (dragRepository.isResizing()) {
+                    resizeEffect(event, false);
+                } else {
+                    moveEffect(event, false);
+                }
+                event.acceptTransferModes(TransferMode.LINK);
+            }
         });
 
         timeline.setOnDragDropped(event -> {
@@ -101,6 +111,15 @@ public class TimelineDragAndDropHandler {
                 }
                 event.getDragboard().clear();
                 dragRepository.clearClipDrag();
+            }
+            if (dragRepository.currentEffectDragInformation() != null) {
+                if (dragRepository.isResizing()) {
+                    resizeEffect(event, true);
+                } else {
+                    moveEffect(event, true);
+                }
+                event.getDragboard().clear();
+                dragRepository.clearEffectDrag();
             }
         });
 
@@ -180,7 +199,44 @@ public class TimelineDragAndDropHandler {
     }
 
     private String extractFilePathOrNull(List<File> dbFiles) {
+        if (dbFiles == null) {
+            return null;
+        }
         return dbFiles.stream().findFirst().map(f -> f.getAbsolutePath()).orElse(null);
+    }
+
+    private void resizeEffect(DragEvent event, boolean revertable) {
+        EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
+
+        double x = event.getX();
+
+        System.out.println("Move to " + x);
+
+        EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
+                .withEffectId(draggedEffect.getEffectId())
+                .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
+                .withGlobalPosition(timelineState.pixelsToSeconds(x))
+                .withRevertable(revertable)
+                .withTimelineManager(timelineManager)
+                .build();
+
+        commandInterpreter.sendWithResult(resizedCommand);
+    }
+
+    private void moveEffect(DragEvent event, boolean revertable) {
+        EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
+        TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
+
+        EffectMovedCommand command = EffectMovedCommand.builder()
+                .withEffectId(draggedEffect.getEffectId())
+                .withOriginalClipId(draggedEffect.getClipId())
+                .withNewClipId("0") // TODO
+                .withGlobalNewPosition(position)
+                .withRevertable(revertable)
+                .withOriginalPosition(draggedEffect.getOriginalPosition())
+                .withTimelineManager(timelineManager)
+                .build();
+        commandInterpreter.sendWithResult(command);
     }
 
 }

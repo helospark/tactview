@@ -5,14 +5,10 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddEffectCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
-import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 
 import javafx.scene.Node;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
 
 @Component
 public class EffectDragAdder {
@@ -32,7 +28,7 @@ public class EffectDragAdder {
     public void addEffectDragOnClip(Node clipPane, String clipId) {
         clipPane.setOnDragEntered(event -> {
             Dragboard db = event.getDragboard();
-            if (db.getString().startsWith("effect:") && !draggingEffect()) {
+            if (db.getString() != null && db.getString().startsWith("effect:") && !draggingEffect()) {
                 TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
                 AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
                 commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
@@ -41,65 +37,6 @@ public class EffectDragAdder {
             }
         });
 
-        clipPane.setOnDragOver(event -> {
-            if (draggingEffect()) {
-                if (dragRepository.isResizing()) {
-                    resizeEffect(clipPane, event, false);
-                } else {
-                    moveEffect(clipPane, event, false);
-                }
-
-                event.acceptTransferModes(TransferMode.LINK);
-                event.consume();
-            }
-        });
-
-        clipPane.setOnDragDropped(event -> {
-            if (draggingEffect()) {
-                if (dragRepository.isResizing()) {
-                    resizeEffect(clipPane, event, true);
-                } else {
-                    moveEffect(clipPane, event, true);
-                }
-                event.getDragboard().clear();
-                dragRepository.clearEffectDrag();
-            }
-        });
-
-    }
-
-    private void resizeEffect(Node clipPane, DragEvent event, boolean revertable) {
-        EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
-
-        double x = event.getX();
-
-        System.out.println("Move to " + x);
-
-        EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
-                .withEffectId(draggedEffect.getEffectId())
-                .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
-                .withGlobalPosition(timelineState.pixelsToSeconds(x))
-                .withRevertable(revertable)
-                .withTimelineManager(timelineManager)
-                .build();
-
-        commandInterpreter.sendWithResult(resizedCommand);
-    }
-
-    private void moveEffect(Node effectNode, DragEvent event, boolean revertable) {
-        EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
-        TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
-
-        EffectMovedCommand command = EffectMovedCommand.builder()
-                .withEffectId(draggedEffect.getEffectId())
-                .withOriginalClipId(draggedEffect.getClipId())
-                .withNewClipId((String) effectNode.getUserData())
-                .withLocalNewPosition(position)
-                .withRevertable(revertable)
-                .withOriginalPosition(draggedEffect.getOriginalPosition())
-                .withTimelineManager(timelineManager)
-                .build();
-        commandInterpreter.sendWithResult(command);
     }
 
     private boolean draggingEffect() {

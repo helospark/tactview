@@ -293,33 +293,22 @@ public class TimelineManager implements Saveable {
     public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, String newClipId) {
         TimelineClip currentClip = findClipForEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
         StatelessEffect effect = currentClip.getEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Effect not found"));
-        if (currentClip.getId().equals(newClipId)) {
-            TimelineInterval interval = effect.getInterval();
-            int newChannel = currentClip.moveEffect(effect, globalNewPosition);
+        TimelineInterval interval = effect.getInterval();
+        int newChannel = currentClip.moveEffect(effect, globalNewPosition);
 
-            EffectMovedMessage message = EffectMovedMessage.builder()
-                    .withEffectId(effectId)
-                    .withOriginalClipId(currentClip.getId())
-                    .withNewClipId(newClipId)
-                    .withOldPosition(interval.getStartPosition())
-                    .withNewPosition(effect.getInterval().getStartPosition())
-                    .withNewChannelIndex(newChannel)
-                    .withOriginalInterval(interval)
-                    .withNewInterval(effect.getInterval())
-                    .build();
+        EffectMovedMessage message = EffectMovedMessage.builder()
+                .withEffectId(effectId)
+                .withOriginalClipId(currentClip.getId())
+                .withNewClipId(newClipId)
+                .withOldPosition(interval.getStartPosition())
+                .withNewPosition(effect.getInterval().getStartPosition())
+                .withNewChannelIndex(newChannel)
+                .withOriginalInterval(interval)
+                .withNewInterval(effect.getInterval())
+                .build();
 
-            messagingService.sendMessage(message);
+        messagingService.sendMessage(message);
 
-            return true;
-        } else {
-            TimelineClip newClip = findClipById(newClipId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
-            TimelineInterval newInterval = new TimelineInterval(globalNewPosition, effect.getInterval().getLength());
-            // if (newClip.canAddEffectAt(newEffectChannel, newInterval)) {
-            // currentClip.removeEffect(effect);
-            // effect.setInterval(newInterval);
-            // newClip.addEffect(effect);
-            // }
-        }
         return true;
     }
 
