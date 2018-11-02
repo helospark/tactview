@@ -60,10 +60,12 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         return intervalAwares.iterator();
     }
 
-    public void remove(T clip) {
+    public T remove(T clip) {
         boolean result = intervalAwares.remove(clip);
         if (result == false) {
             throw new IllegalArgumentException("Remove was unsuccesful, because list no longer contains clip");
+        } else {
+            return clip;
         }
     }
 

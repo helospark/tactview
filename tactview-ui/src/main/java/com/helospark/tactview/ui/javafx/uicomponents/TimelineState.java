@@ -22,6 +22,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 @Component
 public class TimelineState {
@@ -40,6 +41,7 @@ public class TimelineState {
     private MessagingService messagingService;
 
     private ObservableList<HBox> channels = FXCollections.observableArrayList();
+    private ObservableList<Node> channelHeaders = FXCollections.observableArrayList();
     private Map<String, ObservableList<Pane>> channelToClips = new HashMap<>();
     private Map<String, ObservableList<Node>> clipsToEffects = new HashMap<>();
 
@@ -82,9 +84,6 @@ public class TimelineState {
 
     public DoubleBinding getLinePosition() {
         DoubleBinding result = linePosition.add(0);
-        result.addListener(a -> {
-            System.out.println("############x " + result.get());
-        });
         return result;
     }
 
@@ -156,9 +155,10 @@ public class TimelineState {
         linePosition.set(pixels);
     }
 
-    public void addChannel(Integer index, String channelId, HBox timeline) {
+    public void addChannel(Integer index, String channelId, HBox timeline, VBox timelineTitle) {
         timeline.setUserData(channelId);
         channels.add(index, timeline);
+        channelHeaders.add(index, timelineTitle);
         ObservableList<Pane> newList = FXCollections.observableArrayList();
         Bindings.bindContentBidirectional((ObservableList<Node>) (Object) newList, ((Pane) timeline.getChildren().get(0)).getChildren());
         channelToClips.put(channelId, newList);
@@ -209,6 +209,10 @@ public class TimelineState {
     public void setTranslate(double newTranslate) {
         System.out.println("translate:" + newTranslate);
         this.translate.set(newTranslate);
+    }
+
+    public ObservableList<Node> getChannelTitlesAsNodes() {
+        return channelHeaders;
     }
 
 }

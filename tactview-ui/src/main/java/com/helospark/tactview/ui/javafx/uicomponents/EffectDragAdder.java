@@ -30,10 +30,8 @@ public class EffectDragAdder {
 
     public void addEffectDragOnClip(Node clipPane, String clipId) {
         clipPane.setOnDragEntered(event -> {
-            System.out.println("Effect drag entered");
             Dragboard db = event.getDragboard();
             if (db.getString().startsWith("effect:") && !draggingEffect()) {
-                System.out.println("Adding dragged effect");
                 TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
                 AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
                 commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
@@ -46,9 +44,7 @@ public class EffectDragAdder {
         });
 
         clipPane.setOnDragOver(event -> {
-            System.out.println("Effect drag over");
             if (draggingEffect()) {
-                System.out.println("Dragging effect");
                 if (dragRepository.isResizing()) {
                     resizeEffect(clipPane, event, false);
                 } else {

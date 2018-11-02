@@ -27,6 +27,7 @@ import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
+import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -324,7 +325,10 @@ public class TimelineManager implements Saveable {
 
     public void removeEffect(String effectId) {
         findClipForEffect(effectId)
-                .ifPresent(clip -> clip.removeEffectById(effectId));
+                .ifPresent(clip -> {
+                    StatelessEffect removedElement = clip.removeEffectById(effectId);
+                    messagingService.sendAsyncMessage(new EffectRemovedMessage(removedElement.getId(), clip.getId(), removedElement.getGlobalInterval()));
+                });
     }
 
     public Optional<StatelessEffect> findEffectById(String effectId) {

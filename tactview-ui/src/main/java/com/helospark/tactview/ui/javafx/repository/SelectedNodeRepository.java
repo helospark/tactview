@@ -18,7 +18,7 @@ import com.helospark.tactview.ui.javafx.repository.selection.EffectSelectionChan
 import javafx.scene.Node;
 
 @Component
-public class SelectedNodeRepository {
+public class SelectedNodeRepository implements CleanableMode {
     private List<Node> selectedClips = new ArrayList<>();
     private List<Node> selectedEffects = new ArrayList<>();
 
@@ -39,8 +39,8 @@ public class SelectedNodeRepository {
     }
 
     public void clearAllSelectedItems() {
-        selectedClips.clear();
-        selectedEffects.clear();
+        clearClips();
+        clearEffects();
     }
 
     public void setOnlySelectedClip(Node clip) {
@@ -109,5 +109,10 @@ public class SelectedNodeRepository {
         return this.selectedEffects.stream()
                 .map(node -> (String) node.getUserData())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void clean() {
+        clearAllSelectedItems();
     }
 }

@@ -10,7 +10,9 @@ import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
 
 import java.util.function.Consumer;
 
+import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.aware.ContextAware;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -19,6 +21,7 @@ import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.key.GlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.key.KeyCombinationRepository;
 import com.helospark.tactview.ui.javafx.key.StandardGlobalShortcutHandler;
+import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
 
@@ -29,7 +32,7 @@ import javafx.scene.input.KeyCombination.Modifier;
 import javafx.scene.input.KeyEvent;
 
 @Component
-public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
+public class GlobalKeyCombinationAttacher implements ScenePostProcessor, ContextAware {
     private UiCommandInterpreterService commandInterpreter;
     private KeyCombinationRepository keyCombinationRepository;
     private SelectedNodeRepository selectedNodeRepository;
@@ -38,6 +41,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
     private ClipCutService clipCutService;
     private InputModeRepository inputModeRepository;
     private UiTimelineManager timelineManager;
+    private LightDiContext context;
 
     public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository,
             RemoveClipService removeClipService,
@@ -86,7 +90,9 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
                 }));
         keyCombinationRepository.registerKeyCombination(on(ESCAPE),
                 useHandler("Exit everything ongoing", event -> {
-                    inputModeRepository.reset();
+                    context.getListOfBeans(CleanableMode.class)
+                            .stream()
+                            .forEach(cleanable -> cleanable.clean());
                 }));
         keyCombinationRepository.registerKeyCombination(on(LEFT),
                 useHandler("Back one frame", event -> {
@@ -112,6 +118,11 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor {
 
     private GlobalShortcutHandler useHandler(String name, Consumer<KeyEvent> consumer) {
         return new StandardGlobalShortcutHandler(name, consumer);
+    }
+
+    @Override
+    public void setContext(LightDiContext context) {
+        this.context = context;
     }
 
 }

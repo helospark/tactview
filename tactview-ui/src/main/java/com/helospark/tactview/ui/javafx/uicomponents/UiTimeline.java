@@ -19,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
@@ -58,6 +59,8 @@ public class UiTimeline {
         borderPane.setTop(titleBarTop);
 
         timeLineScrollPane = new ScrollPane();
+        GridPane gridPane = new GridPane();
+
         Group timelineGroup = new Group();
         Group zoomGroup = new Group();
         VBox timelineBoxes = new VBox();
@@ -84,6 +87,9 @@ public class UiTimeline {
 
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
+        VBox timelineTitles = new VBox();
+        Bindings.bindContentBidirectional(timelineState.getChannelTitlesAsNodes(), timelineTitles.getChildren());
+
         timelineGroup.getChildren().add(zoomGroup);
 
         zoomGroup.addEventFilter(ScrollEvent.SCROLL, e -> {
@@ -93,7 +99,10 @@ public class UiTimeline {
 
         timeLineScrollPane.setContent(timelineGroup);
 
-        borderPane.setCenter(timeLineScrollPane);
+        gridPane.add(timelineTitles, 0, 0);
+        gridPane.add(timeLineScrollPane, 1, 0);
+
+        borderPane.setCenter(gridPane);
         return borderPane;
     }
 

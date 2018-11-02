@@ -5,7 +5,7 @@ import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragInformation;
 
 @Component
-public class DragRepository {
+public class DragRepository implements CleanableMode {
     private ClipDragInformation clipDragInformation;
     private EffectDragInformation effectDragInformation;
     private boolean isResizing;
@@ -65,6 +65,12 @@ public class DragRepository {
     public static enum DragDirection {
         LEFT,
         RIGHT
+    }
+
+    @Override
+    public void clean() {
+        clearClipDrag();
+        clearEffectDrag();
     }
 
 }

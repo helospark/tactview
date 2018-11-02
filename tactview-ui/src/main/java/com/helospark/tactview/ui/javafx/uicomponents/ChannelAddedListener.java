@@ -7,8 +7,10 @@ import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 import javafx.application.Platform;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 @Component
 public class ChannelAddedListener {
@@ -34,12 +36,12 @@ public class ChannelAddedListener {
         timeline.setPrefWidth(2000);
         timeline.setMinWidth(2000);
 
-        /*VBox timelineTitle = new VBox();
+        VBox timelineTitle = new VBox();
         timelineTitle.getChildren().add(new Label(message.getChannelId()));
         timelineTitle.setMaxWidth(200);
+        timelineTitle.setMinWidth(150);
         timelineTitle.setPrefHeight(50);
         timelineTitle.getStyleClass().add("timeline-title");
-        timeline.getChildren().add(timelineTitle);*/
 
         Pane timelineRow = new Pane();
         timelineRow.minWidth(2000);
@@ -49,6 +51,6 @@ public class ChannelAddedListener {
 
         timelineDragAndDropHandler.addDragAndDrop(timeline, timelineRow, message.getChannelId());
 
-        timelineState.addChannel(message.getIndex(), message.getChannelId(), timeline);
+        timelineState.addChannel(message.getIndex(), message.getChannelId(), timeline, timelineTitle);
     }
 }

@@ -139,10 +139,10 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
                 .collect(Collectors.toList());
     }
 
-    public void removeEffectById(String effectId) {
+    public StatelessEffect removeEffectById(String effectId) {
         StatelessEffect effect = getEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Cannot find effect"));
         NonIntersectingIntervalList<StatelessEffect> list = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("Cannot find channel"));
-        list.remove(effect);
+        return list.remove(effect);
     }
 
     public abstract boolean isResizable();
