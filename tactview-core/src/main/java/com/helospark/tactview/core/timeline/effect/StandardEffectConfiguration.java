@@ -31,6 +31,7 @@ import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImpl
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
+import com.helospark.tactview.core.timeline.effect.television.TelevisionRgbLinesEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.AdaptiveThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.SimpleThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
@@ -238,6 +239,16 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Warp")
                 .withSupportedEffectId("warp")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory televisionRgbLinesEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new TelevisionRgbLinesEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withMessagingService(messagingService)
+                .withName("Television RGB")
+                .withSupportedEffectId("televisionrgb")
                 .build();
     }
 }

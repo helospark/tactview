@@ -107,12 +107,21 @@ public class ClipFrameResult {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 2));
     }
 
+    public int getColorComponentWithOffset(int x, int y, int index) {
+        return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + index));
+    }
+
     public int getAlpha(int x, int y) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 3));
     }
 
     public boolean inBounds(int x, int y) {
         return x >= 0 && y >= 0 && x < width && y < height;
+    }
+
+    public void setColorComponentByOffset(int color, Integer x, Integer y, int offset) {
+        byte value = (byte) (saturateIfNeeded(color) & 0xFF);
+        buffer.put(y * width * 4 + x * 4 + offset, value);
     }
 
 }
