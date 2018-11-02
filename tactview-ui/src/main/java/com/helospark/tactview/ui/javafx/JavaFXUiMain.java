@@ -22,6 +22,7 @@ import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
+import com.helospark.tactview.ui.javafx.singleframe.FullImageViewController;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
@@ -192,6 +193,9 @@ public class JavaFXUiMain extends Application {
         rightVBox.getChildren().add(videoStatusBar);
 
         HBox underVideoBar = new HBox(1);
+        FullImageViewController fullScreenRenderer = lightDi.getBean(FullImageViewController.class);
+        Button fullscreenButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.IMAGE));
+        fullscreenButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
         Button playButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.PLAY));
         playButton.setOnMouseClicked(e -> uiTimelineManager.startPlayback());
         Button stopButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STOP));
@@ -201,6 +205,7 @@ public class JavaFXUiMain extends Application {
         Button jumpForwardButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FAST_FORWARD));
         jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
 
+        underVideoBar.getChildren().add(fullscreenButton);
         underVideoBar.getChildren().add(jumpBackButton);
         underVideoBar.getChildren().add(playButton);
         underVideoBar.getChildren().add(stopButton);
