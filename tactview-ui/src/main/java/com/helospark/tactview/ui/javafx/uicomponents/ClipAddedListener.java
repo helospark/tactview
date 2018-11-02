@@ -110,7 +110,6 @@ public class ClipAddedListener {
         parentPane.getChildren().add(rectangle);
 
         rectangle.setOnDragDetected(e -> {
-            System.out.println("Clip ondrag");
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
             double currentX = e.getX();
 

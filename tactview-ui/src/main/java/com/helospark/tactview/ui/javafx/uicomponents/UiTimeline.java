@@ -2,6 +2,9 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
@@ -35,6 +38,9 @@ public class UiTimeline {
     private Line positionIndicatorLine;
 
     private ScrollPane timeLineScrollPane;
+    private BorderPane borderPane;
+
+    private List<DragEventConsumerChainItem> dragEventConsumerChain = new ArrayList<>();
 
     public UiTimeline(TimeLineZoomCallback timeLineZoomCallback, MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
@@ -46,7 +52,7 @@ public class UiTimeline {
     }
 
     public Node createTimeline() {
-        BorderPane borderPane = new BorderPane();
+        borderPane = new BorderPane();
 
         Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
         addChannelButton.setOnMouseClicked(event -> {
@@ -103,15 +109,16 @@ public class UiTimeline {
         gridPane.add(timeLineScrollPane, 1, 0);
 
         borderPane.setCenter(gridPane);
-        return borderPane;
-    }
 
-    public Node getTimelineNode() {
-        return timeLineScrollPane;
+        return borderPane;
     }
 
     public void updateLine(TimelinePosition position) {
         timelineState.setLinePosition(position);
+    }
+
+    public void registerDragOverListener() {
+
     }
 
 }

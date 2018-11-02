@@ -336,12 +336,14 @@ public class TimelineManager implements Saveable {
     }
 
     public void resizeClip(TimelineClip clip, boolean left, TimelinePosition position) {
+        TimelineInterval originalInterval = clip.getInterval();
         TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such channel"));
         boolean success = channel.resizeClip(clip, left, position);
         if (success) {
             TimelineClip renewedClip = findClipById(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
             ClipResizedMessage clipResizedMessage = ClipResizedMessage.builder()
                     .withClipId(clip.getId())
+                    .withOriginalInterval(originalInterval)
                     .withNewInterval(renewedClip.getInterval())
                     .build();
             messagingService.sendMessage(clipResizedMessage);

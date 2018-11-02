@@ -20,6 +20,7 @@ public class EffectDragAdder {
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private DragRepository dragRepository;
+    private UiTimeline uiTimeline;
 
     public EffectDragAdder(TimelineManager timelineManager, TimelineState timelineState, UiCommandInterpreterService commandInterpreter, DragRepository dragRepository) {
         this.timelineManager = timelineManager;
@@ -38,9 +39,6 @@ public class EffectDragAdder {
                     dragRepository.onEffectDragged(new EffectDragInformation(clipPane, clipId, result.getAddedEffectId(), position));
                 });
             }
-        });
-
-        clipPane.setOnDragExited(event -> {
         });
 
         clipPane.setOnDragOver(event -> {
