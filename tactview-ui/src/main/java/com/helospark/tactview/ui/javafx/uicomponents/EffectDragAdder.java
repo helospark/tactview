@@ -32,7 +32,7 @@ public class EffectDragAdder {
                 TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
                 AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
                 commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
-                    dragRepository.onEffectDragged(new EffectDragInformation(clipPane, clipId, result.getAddedEffectId(), position));
+                    dragRepository.onEffectDragged(new EffectDragInformation(clipPane, clipId, result.getAddedEffectId(), position, 0));
                 });
             }
         });

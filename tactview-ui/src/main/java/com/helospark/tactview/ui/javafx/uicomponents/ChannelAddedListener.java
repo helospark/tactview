@@ -49,6 +49,8 @@ public class ChannelAddedListener {
         timelineRow.getStyleClass().add("timeline-clips");
         timeline.getChildren().add(timelineRow);
 
+        timelineTitle.prefHeightProperty().bind(timelineRow.heightProperty());
+
         timelineDragAndDropHandler.addDragAndDrop(timeline, timelineRow, message.getChannelId());
 
         timelineState.addChannel(message.getIndex(), message.getChannelId(), timeline, timelineTitle);

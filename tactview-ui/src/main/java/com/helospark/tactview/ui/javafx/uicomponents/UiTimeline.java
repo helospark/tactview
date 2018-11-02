@@ -2,9 +2,6 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
@@ -13,6 +10,7 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 
 import javafx.beans.binding.Bindings;
@@ -34,21 +32,21 @@ public class UiTimeline {
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManager timelineManager;
+    private UiTimelineManager uiTimelineManager;
 
     private Line positionIndicatorLine;
 
     private ScrollPane timeLineScrollPane;
     private BorderPane borderPane;
 
-    private List<DragEventConsumerChainItem> dragEventConsumerChain = new ArrayList<>();
-
     public UiTimeline(TimeLineZoomCallback timeLineZoomCallback, MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
-            TimelineManager timelineManager) {
+            TimelineManager timelineManager, UiTimelineManager uiTimelineManager) {
         this.timeLineZoomCallback = timeLineZoomCallback;
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
+        this.uiTimelineManager = uiTimelineManager;
     }
 
     public Node createTimeline() {
@@ -103,6 +101,15 @@ public class UiTimeline {
             e.consume();
         });
 
+        titleBarTop.setOnMouseClicked(e -> {
+            double xPosition = e.getX() - timelineTitles.getWidth();
+            jumpTo(xPosition);
+        });
+        titleBarTop.setOnMouseDragged(e -> {
+            double xPosition = e.getX() - timelineTitles.getWidth();
+            jumpTo(xPosition);
+        });
+
         timeLineScrollPane.setContent(timelineGroup);
 
         gridPane.add(timelineTitles, 0, 0);
@@ -113,12 +120,13 @@ public class UiTimeline {
         return borderPane;
     }
 
-    public void updateLine(TimelinePosition position) {
-        timelineState.setLinePosition(position);
+    private void jumpTo(double xPosition) {
+        TimelinePosition position = timelineState.pixelsToSeconds(xPosition);
+        uiTimelineManager.jumpAbsolute(position.getSeconds());
     }
 
-    public void registerDragOverListener() {
-
+    public void updateLine(TimelinePosition position) {
+        timelineState.setLinePosition(position);
     }
 
 }

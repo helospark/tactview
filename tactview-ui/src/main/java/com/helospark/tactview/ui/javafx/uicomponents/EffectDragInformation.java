@@ -9,12 +9,14 @@ public class EffectDragInformation {
     private String clipId;
     private String effectId;
     private TimelinePosition originalPosition;
+    private double anchorPointX;
 
-    public EffectDragInformation(Node effectNode, String clipId, String effectId, TimelinePosition originalPosition) {
+    public EffectDragInformation(Node effectNode, String clipId, String effectId, TimelinePosition originalPosition, double anchorPointX) {
         this.effectNode = effectNode;
         this.clipId = clipId;
         this.effectId = effectId;
         this.originalPosition = originalPosition;
+        this.anchorPointX = anchorPointX;
     }
 
     public Node getEffectNode() {
@@ -31,6 +33,10 @@ public class EffectDragInformation {
 
     public TimelinePosition getOriginalPosition() {
         return originalPosition;
+    }
+
+    public double getAnchorPointX() {
+        return anchorPointX;
     }
 
 }

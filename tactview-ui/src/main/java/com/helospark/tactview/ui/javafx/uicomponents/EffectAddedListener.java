@@ -68,7 +68,8 @@ public class EffectAddedListener {
             ClipboardContent content = new ClipboardContent();
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
             double currentX = event.getX();
-            EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition());
+            EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
+                    event.getX());
             if (isResizing(rectangle, currentX)) {
                 System.out.println("Resizing");
                 dragRepository.onEffectResized(dragInformation, isDraggingLeft(rectangle, currentX) ? DragDirection.LEFT : DragDirection.RIGHT);

@@ -2,17 +2,14 @@ package com.helospark.tactview.core.timeline.proceduralclip.gradient;
 
 import static com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
@@ -25,9 +22,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.LinePr
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
-public class GradientProceduralEffect extends VisualTimelineClip {
+public class GradientProceduralEffect extends ProceduralVisualClip {
 
     private IndependentPixelOperation independentPixelOperation;
 
@@ -39,13 +37,12 @@ public class GradientProceduralEffect extends VisualTimelineClip {
     private LineProvider lineProvider;
 
     public GradientProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
-        super(visualMediaMetadata, interval, TimelineClipType.IMAGE);
+        super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
 
     @Override
-    public ClipFrameResult getFrame(GetFrameRequest request) {
-        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
+    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipFrameResult result = ClipFrameResult.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
 
         if (typeProvider.getValueAt(relativePosition).getId().equals("radial")) {
@@ -67,12 +64,6 @@ public class GradientProceduralEffect extends VisualTimelineClip {
             });
         }
         return result;
-    }
-
-    @Override
-    public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
-        // TODO something is very wrong here
-        throw new IllegalStateException();
     }
 
     private void setColor(ClipFrameResult result, Integer x, Integer y, Color endColor) {
@@ -130,16 +121,6 @@ public class GradientProceduralEffect extends VisualTimelineClip {
         return new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(r)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(g)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(b)));
-    }
-
-    @Override
-    public VisualMediaMetadata getMediaMetadata() {
-        return mediaMetadata;
-    }
-
-    @Override
-    public boolean isResizable() {
-        return true;
     }
 
     @Override

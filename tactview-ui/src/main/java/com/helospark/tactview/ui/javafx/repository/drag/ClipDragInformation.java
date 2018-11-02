@@ -9,12 +9,14 @@ public class ClipDragInformation {
     private TimelinePosition originalPosition;
     private String clipId;
     private String originalChannelId;
+    private double anchorPointX;
 
-    public ClipDragInformation(Parent node, TimelinePosition originalPosition, String clipId, String originalChannelId) {
+    public ClipDragInformation(Parent node, TimelinePosition originalPosition, String clipId, String originalChannelId, double anchorPointX) {
         this.node = node;
         this.originalPosition = originalPosition;
         this.clipId = clipId;
         this.originalChannelId = originalChannelId;
+        this.anchorPointX = anchorPointX;
 
     }
 
@@ -32,6 +34,10 @@ public class ClipDragInformation {
 
     public String getOriginalChannelId() {
         return originalChannelId;
+    }
+
+    public double getAnchorPointX() {
+        return anchorPointX;
     }
 
 }

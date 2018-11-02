@@ -1,18 +1,18 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.impl;
 
 import java.math.BigDecimal;
-import java.util.Random;
 
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class RandomDoubleInterpolator implements DoubleInterpolator {
     private int min;
     private int max;
-    private int seed;
+    private RepeatableRandom repeatableRandom;
     private BigDecimal changeScale;
     private LinearInterpolator linearInterpolator = new LinearInterpolator();
 
@@ -20,7 +20,7 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
         this.min = min;
         this.max = max;
         this.changeScale = changeScale;
-        this.seed = new Random().nextInt();
+        this.repeatableRandom = new RepeatableRandom();
     }
 
     @Override
@@ -37,15 +37,13 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
     }
 
     private double getValueAt(BigDecimal seconds) {
-        int seedAtCurrentPosition = seconds.multiply(changeScale.multiply(BigDecimal.valueOf(1000))).intValue() * seed;
-        Random random = new Random(seedAtCurrentPosition);
-        return random.nextDouble() * (max - min) + min;
+        return repeatableRandom.nextDouble(seconds) * (max - min) + min;
     }
 
     @Override
     public EffectInterpolator cloneInterpolator() {
         RandomDoubleInterpolator result = new RandomDoubleInterpolator(min, max, changeScale);
-        result.seed = seed;
+        result.repeatableRandom = repeatableRandom;
         return result;
     }
 }

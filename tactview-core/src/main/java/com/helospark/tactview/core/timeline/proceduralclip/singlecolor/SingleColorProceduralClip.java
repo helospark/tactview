@@ -8,33 +8,30 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
-public class SingleColorProceduralClip extends VisualTimelineClip {
+public class SingleColorProceduralClip extends ProceduralVisualClip {
     private ColorProvider colorProvider;
     private IntegerProvider alphaProvider;
 
     private IndependentPixelOperation independentPixelOperation;
 
     public SingleColorProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
-        super(visualMediaMetadata, interval, TimelineClipType.IMAGE);
+        super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
 
     @Override
-    public ClipFrameResult getFrame(GetFrameRequest request) {
-        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-
+    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();
 
@@ -53,12 +50,6 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
         });
 
         return applyEffects(relativePosition, frameResult, request);
-    }
-
-    @Override
-    public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
-        // TODO something is very wrong here
-        throw new IllegalStateException();
     }
 
     @Override
@@ -84,16 +75,6 @@ public class SingleColorProceduralClip extends VisualTimelineClip {
         result.add(alphaDescriptor);
 
         return result;
-    }
-
-    @Override
-    public VisualMediaMetadata getMediaMetadata() {
-        return mediaMetadata;
-    }
-
-    @Override
-    public boolean isResizable() {
-        return true;
     }
 
     @Override

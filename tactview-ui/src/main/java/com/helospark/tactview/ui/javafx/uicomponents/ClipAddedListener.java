@@ -117,9 +117,10 @@ public class ClipAddedListener {
             ClipboardContent content = new ClipboardContent();
 
             timelineState.findClipById(clipAddedMessage.getClipId()).ifPresent(clip2 -> {
-                TimelinePosition position = timelineState.pixelsToSeconds(clip2.getLayoutX());
+                double xPosition = clip2.getLayoutX();
+                TimelinePosition position = timelineState.pixelsToSeconds(xPosition);
                 String channelId = (String) timelineState.findChannelForClip(clip2).get().getUserData();
-                ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId(), channelId);
+                ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId(), channelId, currentX);
                 if (isResizing(clipAddedMessage, rectangle, currentX)) {
                     DragRepository.DragDirection direction = isDraggingLeft(rectangle, currentX) ? DragRepository.DragDirection.LEFT : DragRepository.DragDirection.RIGHT;
                     dragRepository.onClipResizing(clipDragInformation, direction);

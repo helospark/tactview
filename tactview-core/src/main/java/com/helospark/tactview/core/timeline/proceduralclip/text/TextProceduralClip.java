@@ -7,7 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -18,10 +17,8 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
@@ -33,9 +30,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 
-public class TextProceduralClip extends VisualTimelineClip {
+public class TextProceduralClip extends ProceduralVisualClip {
     private StringProvider textProvider;
     private IntegerProvider sizeProvider;
     private ColorProvider colorProvider;
@@ -48,14 +46,12 @@ public class TextProceduralClip extends VisualTimelineClip {
 
     public TextProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval,
             BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
-        super(visualMediaMetadata, interval, TimelineClipType.VIDEO);
+        super(visualMediaMetadata, interval);
         this.bufferedImageToClipFrameResultConverter = bufferedImageToClipFrameResultConverter;
     }
 
     @Override
-    public ClipFrameResult getFrame(GetFrameRequest request) {
-        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-
+    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();
 
@@ -132,12 +128,6 @@ public class TextProceduralClip extends VisualTimelineClip {
     }
 
     @Override
-    public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
-        // TODO something is very wrong here
-        throw new IllegalStateException();
-    }
-
-    @Override
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
@@ -208,16 +198,6 @@ public class TextProceduralClip extends VisualTimelineClip {
                 .stream()
                 .map(f -> new ValueListElement(f.getName(), f.getFontName(Locale.US)))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public VisualMediaMetadata getMediaMetadata() {
-        return mediaMetadata;
-    }
-
-    @Override
-    public boolean isResizable() {
-        return true;
     }
 
     @Override

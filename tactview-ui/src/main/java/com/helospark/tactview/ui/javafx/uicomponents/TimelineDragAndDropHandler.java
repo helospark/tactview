@@ -71,7 +71,7 @@ public class TimelineDragAndDropHandler {
                                     String addedClipId = res.getAddedClipId();
                                     logger.debug("Clip added " + addedClipId);
                                     Pane addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
-                                    ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId);
+                                    ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId, 0);
                                     dragRepository.onClipDragged(clipDragInformation);
                                 } catch (Exception e1) {
                                     logger.warn("Error while adding clip", e1);
@@ -143,8 +143,7 @@ public class TimelineDragAndDropHandler {
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
 
-            System.out.println("JASDGOFJKD: " + event.getX());
-            TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
+            TimelinePosition position = timelineState.pixelsToSeconds(event.getX() - currentlyDraggedEffect.getAnchorPointX());
 
             ClipMovedCommand command = ClipMovedCommand.builder()
                     .withIsRevertable(revertable)

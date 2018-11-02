@@ -6,6 +6,7 @@ import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.GradientProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
@@ -53,6 +54,20 @@ public class CoreClipFactoryChainItemConfiguration {
                             .withLength(defaultLength)
                             .build();
                     return new GradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem gaussianNoiseProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("gaussianNoise", "Gaussian noise",
+                request -> {
+                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
+                    ImageMetadata metadata = ImageMetadata.builder()
+                            .withWidth(1920)
+                            .withHeight(1080)
+                            .withLength(defaultLength)
+                            .build();
+                    return new GaussianNoiseProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 });
     }
 }
