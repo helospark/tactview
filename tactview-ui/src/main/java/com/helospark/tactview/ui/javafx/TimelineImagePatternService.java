@@ -16,7 +16,9 @@ import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.scene.image.Image;
 
@@ -30,10 +32,13 @@ public class TimelineImagePatternService {
 
     private UiProjectRepository uiProjectRepository;
     private ByteBufferToImageConverter byteBufferToImageConverter;
+    private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
 
-    public TimelineImagePatternService(UiProjectRepository uiProjectRepository, ByteBufferToImageConverter byteBufferToImageConverter) {
+    public TimelineImagePatternService(UiProjectRepository uiProjectRepository, ByteBufferToImageConverter byteBufferToImageConverter,
+            ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter) {
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
+        this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
     }
 
     public Image createTimelinePattern(VisualTimelineClip videoClip, int timelineWidth) {
@@ -76,7 +81,7 @@ public class TimelineImagePatternService {
 
         dragFilmEffect(timelineWidth, graphics);
 
-        return byteBufferToImageConverter.convertToJavafxImage(result);
+        return byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
     }
 
     private void dragFilmEffect(int timelineWidth, Graphics graphics) {

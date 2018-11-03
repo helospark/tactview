@@ -1,13 +1,9 @@
-package com.helospark.tactview.ui.javafx;
+package com.helospark.tactview.core.util;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
-
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
 
 @Component
 public class ByteBufferToImageConverter {
@@ -15,10 +11,6 @@ public class ByteBufferToImageConverter {
 
     public ByteBufferToImageConverter(IndependentPixelOperation independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
-    }
-
-    public Image convertToJavafxImage(BufferedImage bufferedImage) {
-        return SwingFXUtils.toFXImage(bufferedImage, null);
     }
 
     public BufferedImage byteBufferToBufferedImage(ByteBuffer byteBuffer, int width, int height) {
@@ -43,8 +35,4 @@ public class ByteBufferToImageConverter {
         return value;
     }
 
-    public Image convertToJavaxImage(ByteBuffer frame, int width, int height) {
-        BufferedImage bufferedImage = byteBufferToBufferedImage(frame, width, height);
-        return convertToJavafxImage(bufferedImage);
-    }
 }

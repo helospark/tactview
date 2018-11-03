@@ -20,6 +20,7 @@ public class DynamicValueDoubleInterpolator implements DoubleInterpolator {
 
     @Override
     public Double valueAt(TimelinePosition position) {
+        // TODO: this needs finishing
         StatelessValueProviderRequest provider = StatelessValueProviderRequest.builder()
                 .withEffectPosition(position)
                 .build();

@@ -176,6 +176,13 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         TimelineInterval originalInterval = effect.getInterval();
         TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(localPositon) : originalInterval.butWithEndPosition(localPositon);
 
+        if (newInterval.getStartPosition().isLessThan(0)) {
+            return false;
+        }
+        if (newInterval.getEndPosition().isGreaterThan(interval.getEndPosition().from(interval.getStartPosition()))) {
+            return false;
+        }
+
         return channel.resize(effect, newInterval);
     }
 

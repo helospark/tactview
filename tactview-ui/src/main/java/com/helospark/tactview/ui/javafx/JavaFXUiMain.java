@@ -20,9 +20,10 @@ import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
+import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
-import com.helospark.tactview.ui.javafx.singleframe.FullImageViewController;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
@@ -80,7 +81,7 @@ public class JavaFXUiMain extends Application {
     static UiTimeline uiTimeline;
     static UiProjectRepository uiProjectRepository;
     static PropertyView effectPropertyView;
-    static UiRenderService renderService;
+    static RenderDialogOpener renderService;
     static DisplayUpdaterService displayUpdateService;
 
     @Override
@@ -106,7 +107,7 @@ public class JavaFXUiMain extends Application {
 
         MenuItem render = new MenuItem("Render");
         render.setOnAction(e -> {
-            renderService.renderProject();
+            renderService.render();
         });
 
         project.getItems().add(render);
@@ -193,7 +194,7 @@ public class JavaFXUiMain extends Application {
         rightVBox.getChildren().add(videoStatusBar);
 
         HBox underVideoBar = new HBox(1);
-        FullImageViewController fullScreenRenderer = lightDi.getBean(FullImageViewController.class);
+        SingleFullImageViewController fullScreenRenderer = lightDi.getBean(SingleFullImageViewController.class);
         Button fullscreenButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.IMAGE));
         fullscreenButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
         Button playButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.PLAY));
@@ -300,7 +301,7 @@ public class JavaFXUiMain extends Application {
         displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
         uiTimelineManager.registerConsumer(position -> displayUpdateService.updateDisplay(position));
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
-        renderService = lightDi.getBean(UiRenderService.class);
+        renderService = lightDi.getBean(RenderDialogOpener.class);
         lightDi.eagerInitAllBeans();
 
         launch(args);

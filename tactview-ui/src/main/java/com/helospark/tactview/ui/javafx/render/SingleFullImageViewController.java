@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx.singleframe;
+package com.helospark.tactview.ui.javafx.render;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
@@ -11,26 +11,28 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.ui.javafx.ByteBufferToImageConverter;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 @Component
-public class FullImageViewController {
+public class SingleFullImageViewController {
     private UiTimelineManager uiTimelineManager;
     private TimelineManager timelineManager;
     private ProjectRepository projectRepository;
-    private ByteBufferToImageConverter byteBufferToImageConverter;
+    private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
     @Slf4j
     private Logger logger;
 
-    public FullImageViewController(UiTimelineManager uiTimelineManager, TimelineManager timelineManager, ProjectRepository projectRepository, ByteBufferToImageConverter byteBufferToImageConverter) {
+    public SingleFullImageViewController(UiTimelineManager uiTimelineManager, TimelineManager timelineManager, ProjectRepository projectRepository,
+            ByteBufferToJavaFxImageConverter byteBufferToImageConverter) {
         this.uiTimelineManager = uiTimelineManager;
         this.timelineManager = timelineManager;
         this.projectRepository = projectRepository;
@@ -80,6 +82,13 @@ public class FullImageViewController {
             stage = new Stage();
             stage.setTitle("FullScreenRender");
             stage.setScene(dialog);
+
+            dialog.setOnKeyPressed(e -> {
+                if (e.getCode().equals(KeyCode.ESCAPE)) {
+                    stage.close();
+                }
+            });
+
             stage.show();
             stage.toFront();
         }

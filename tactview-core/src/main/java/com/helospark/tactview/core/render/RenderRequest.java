@@ -13,6 +13,7 @@ public class RenderRequest {
     private int width;
     private int height;
     private double framerate;
+    private String fileName;
 
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
@@ -22,6 +23,7 @@ public class RenderRequest {
         this.width = builder.width;
         this.height = builder.height;
         this.framerate = builder.framerate;
+        this.fileName = builder.fileName;
     }
 
     public TimelinePosition getStartPosition() {
@@ -48,6 +50,10 @@ public class RenderRequest {
         return framerate;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -61,6 +67,7 @@ public class RenderRequest {
         private int width;
         private int height;
         private double framerate;
+        private String fileName;
 
         private Builder() {
         }
@@ -92,6 +99,11 @@ public class RenderRequest {
 
         public Builder withFramerate(double framerate) {
             this.framerate = framerate;
+            return this;
+        }
+
+        public Builder withFileName(String fileName) {
+            this.fileName = fileName;
             return this;
         }
 

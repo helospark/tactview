@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.scene.image.Image;
 
@@ -15,10 +16,10 @@ import javafx.scene.image.Image;
 public class PlaybackController {
     private TimelineManager timelineManager;
     private UiProjectRepository uiProjectRepository;
-    private ByteBufferToImageConverter byteBufferToImageConverter;
+    private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
 
     public PlaybackController(TimelineManager timelineManager, UiProjectRepository uiProjectRepository,
-            ByteBufferToImageConverter byteBufferToImageConverter) {
+            ByteBufferToJavaFxImageConverter byteBufferToImageConverter) {
         this.timelineManager = timelineManager;
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
