@@ -5,14 +5,11 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVGaussianBlurRequest;
@@ -81,8 +78,10 @@ public class BlurEffect extends StatelessVideoEffect {
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        kernelWidthProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(new TreeMap<>(Map.of(TimelinePosition.ofZero(), 3.0, new TimelinePosition(5), 15.0))));
-        kernelHeightProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 3.0));
+        kernelWidthProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(20.0));
+        kernelHeightProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(20.0));
+        kernelHeightProvider.setScaleDependent();
+        kernelHeightProvider.setScaleDependent();
 
         topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.0), doubleProviderWithDefaultValue(0.0));
         bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(1.0), doubleProviderWithDefaultValue(1.0));

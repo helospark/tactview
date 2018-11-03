@@ -18,6 +18,7 @@ import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeD
 import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
 import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErodeDilateImplementation;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
+import com.helospark.tactview.core.timeline.effect.glow.LightGlowEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenImplementation;
 import com.helospark.tactview.core.timeline.effect.histogramequization.HistogramEquizationEffect;
@@ -249,6 +250,16 @@ public class StandardEffectConfiguration {
                 .withMessagingService(messagingService)
                 .withName("Television RGB")
                 .withSupportedEffectId("televisionrgb")
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory lightGlowEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation, OpenCVBasedGaussianBlur blueImplementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new LightGlowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), blueImplementation, independentPixelOperation))
+                .withMessagingService(messagingService)
+                .withName("Light glow")
+                .withSupportedEffectId("lightglow")
                 .build();
     }
 }
