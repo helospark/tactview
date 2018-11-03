@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.Saveable;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.timeline.blendmode.BlendMode;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -100,14 +102,17 @@ public class TimelineManager implements Saveable {
     }
 
     public ByteBuffer getSingleFrame(TimelineManagerFramesRequest request) {
+        List<BlendMode> blendModePerChannel = new LinkedList<>();
+        List<Double> globalAlpha = new LinkedList<>();
         List<ClipFrameResult> frames = channels
-                .parallelStream()
+                .stream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
                 .flatMap(Optional::stream)
                 .filter(clip -> clip instanceof VisualTimelineClip) // audio separate?
                 .map(clip -> (VisualTimelineClip) clip)
                 .filter(clip -> clip.isEnabled(request.getPosition()))
                 .map(clip -> {
+
                     GetFrameRequest frameRequest = GetFrameRequest.builder()
                             .withScale(request.getScale())
                             .withPosition(request.getPosition())
@@ -118,27 +123,21 @@ public class TimelineManager implements Saveable {
 
                     ClipFrameResult frameResult = clip.getFrame(frameRequest);
                     ClipFrameResult expandedFrame = expandFrame(frameResult, clip, request);
-                    applyClipAlphaToFrame(expandedFrame, clip.getAlpha(request.getPosition()));
+
+                    blendModePerChannel.add(clip.getBlendModeAt(request.getPosition()));
+                    globalAlpha.add(clip.getAlpha(request.getPosition()));
+
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
                     return expandedFrame;
                 })
                 .collect(Collectors.toList());
-        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
+        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight(), blendModePerChannel, globalAlpha);
 
         frames.stream()
                 .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.getBuffer()));
 
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
         return finalResult.getBuffer();
-    }
-
-    private void applyClipAlphaToFrame(ClipFrameResult expandedFrame, double alpha) {
-        if (alpha < 1.0) {
-            independentPixelOperation.executePixelTransformation(expandedFrame.getWidth(), expandedFrame.getHeight(), (x, y) -> {
-                int newAlpha = (int) (expandedFrame.getAlpha(x, y) * alpha);
-                expandedFrame.setAlpha(newAlpha, x, y);
-            });
-        }
     }
 
     private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
