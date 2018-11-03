@@ -4,4 +4,6 @@ public interface BlendModeStrategy {
 
     public void computeColor(int[] topLayer, int[] bottomLayer, int[] resultOut);
 
+    public String getId();
+
 }

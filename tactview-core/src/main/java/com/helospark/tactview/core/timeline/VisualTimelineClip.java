@@ -2,13 +2,13 @@ package com.helospark.tactview.core.timeline;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.blendmode.BlendMode;
+import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
+import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategyAccessor;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
@@ -126,7 +126,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     private List<BlendModeValueListElement> createBlendModes() {
-        return Arrays.stream(BlendMode.values())
+        return BlendModeStrategyAccessor.getStrategies()
+                .stream()
                 .map(blendMode -> new BlendModeValueListElement(blendMode.getId(), blendMode.getId(), blendMode))
                 .collect(Collectors.toList());
     }
@@ -139,7 +140,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return globalClipAlphaProvider.getValueAt(position);
     }
 
-    public BlendMode getBlendModeAt(TimelinePosition position) {
+    public BlendModeStrategy getBlendModeAt(TimelinePosition position) {
         TimelinePosition relativePosition = position.from(this.interval.getStartPosition());
         relativePosition = relativePosition.add(renderOffset);
         return blendModeProvider.getValueAt(relativePosition).getBlendMode();

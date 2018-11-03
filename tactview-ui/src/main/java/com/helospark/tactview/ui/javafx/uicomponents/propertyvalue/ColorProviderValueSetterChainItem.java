@@ -3,12 +3,12 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
-import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 
 import javafx.scene.control.ColorPicker;
 
@@ -17,16 +17,14 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     private DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem;
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private InputModeRepository inputModeRepository;
     private UiTimelineManager uiTimelineManager;
 
     public ColorProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager) {
+            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager) {
         super(ColorProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
-        this.inputModeRepository = inputModeRepository;
         this.uiTimelineManager = uiTimelineManager;
     }
 
@@ -56,6 +54,12 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 })
                 .build();
 
+        //        javafx.scene.paint.Color currentColor = queryCurrentColor(lineProvider);
+
+        //        redProvider.getUpdateFromValue().accept(currentColor.getRed());
+        //        greenProvider.getUpdateFromValue().accept(currentColor.getGreen());
+        //        blueProvider.getUpdateFromValue().accept(currentColor.getBlue());
+
         colorPicker.setOnAction(e -> {
             javafx.scene.paint.Color color = colorPicker.getValue();
             redProvider.updateFromValue.accept(color.getRed());
@@ -65,6 +69,14 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         });
 
         return result;
+    }
+
+    private javafx.scene.paint.Color queryCurrentColor(ColorProvider lineProvider) {
+        TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
+        double red = Double.parseDouble(effectParametersRepository.getValueAt(lineProvider.getChildren().get(0).getId(), currentPosition));
+        double green = Double.parseDouble(effectParametersRepository.getValueAt(lineProvider.getChildren().get(1).getId(), currentPosition));
+        double blue = Double.parseDouble(effectParametersRepository.getValueAt(lineProvider.getChildren().get(2).getId(), currentPosition));
+        return new javafx.scene.paint.Color(red, green, blue, 1.0);
     }
 
     private double effectLineToDouble(PrimitiveEffectLine provider) {

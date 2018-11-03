@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.blendmode.BlendMode;
+import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 
 @Component
 public class FrameBufferMerger {
@@ -15,7 +15,7 @@ public class FrameBufferMerger {
         this.emptyByteBufferFactory = emptyByteBufferFactory;
     }
 
-    public ClipFrameResult alphaMergeFrames(List<ClipFrameResult> frames, Integer width, Integer height, List<BlendMode> blendModePerChannel, List<Double> globalAlpha) {
+    public ClipFrameResult alphaMergeFrames(List<ClipFrameResult> frames, Integer width, Integer height, List<BlendModeStrategy> blendModePerChannel, List<Double> globalAlpha) {
         if (frames.size() > 0) {
             ClipFrameResult output = new ClipFrameResult(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4), width, height);
 
@@ -30,7 +30,7 @@ public class FrameBufferMerger {
         }
     }
 
-    private void alphaBlitFrame(ClipFrameResult result, ClipFrameResult clipFrameResult, Integer width, Integer height, BlendMode blendMode, double globalAlpha) {
+    private void alphaBlitFrame(ClipFrameResult result, ClipFrameResult clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
         int[] forground = new int[4];
         int[] blendedForground = new int[4];
         int[] background = new int[4];
@@ -40,7 +40,7 @@ public class FrameBufferMerger {
                 result.getPixelComponents(background, j, i);
                 clipFrameResult.getPixelComponents(forground, j, i);
 
-                blendMode.getStrategy().computeColor(forground, background, blendedForground);
+                blendMode.computeColor(forground, background, blendedForground);
 
                 double alpha = (blendedForground[3] * globalAlpha) / 255.0;
                 double backgroundAlpha = background[3] / 255.0; // maybe the previous layer's alpha needs to be taken into account?

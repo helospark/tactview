@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.Saveable;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.blendmode.BlendMode;
+import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -102,7 +102,7 @@ public class TimelineManager implements Saveable {
     }
 
     public ByteBuffer getSingleFrame(TimelineManagerFramesRequest request) {
-        List<BlendMode> blendModePerChannel = new LinkedList<>();
+        List<BlendModeStrategy> blendModePerChannel = new LinkedList<>();
         List<Double> globalAlpha = new LinkedList<>();
         List<ClipFrameResult> frames = channels
                 .stream()

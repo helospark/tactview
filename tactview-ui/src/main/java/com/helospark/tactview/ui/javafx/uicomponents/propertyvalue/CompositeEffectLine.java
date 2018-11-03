@@ -35,11 +35,11 @@ public class CompositeEffectLine extends EffectLine {
 
     @Override
     public void updateUi(TimelinePosition position) {
+        values.stream()
+                .forEach(a -> a.updateUi(position));
         if (additionalUpdateUi != null) {
             additionalUpdateUi.accept(position);
         }
-        values.stream()
-                .forEach(a -> a.updateUi(position));
     }
 
     @Generated("SparkTools")
