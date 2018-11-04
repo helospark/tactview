@@ -25,7 +25,7 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
     public abstract ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition);
 
     @Override
-    public ClipFrameResult getFrame(GetFrameRequest request) {
+    public ClipFrameResult getFrameInternal(GetFrameRequest request) {
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
         return createProceduralFrame(request, relativePosition);
     }

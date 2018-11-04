@@ -1,8 +1,10 @@
 package com.helospark.tactview.core.timeline.proceduralclip;
 
+import com.helospark.lightdi.annotation.Autowired;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.decoder.ImageMetadata;
+import com.helospark.tactview.core.timeline.LayerMaskApplier;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.GradientProceduralEffect;
@@ -14,10 +16,12 @@ import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Configuration
 public class CoreClipFactoryChainItemConfiguration {
+    @Autowired
+    private LayerMaskApplier layerMaskApplier;
 
     @Bean
     public StandardProceduralClipFactoryChainItem singleColorProceduralClip(IndependentPixelOperation independentPixelOperation) {
-        return new StandardProceduralClipFactoryChainItem("singlecolor", "Single color",
+        return new StandardProceduralClipFactoryChainItem(layerMaskApplier, "singlecolor", "Single color",
                 request -> {
                     TimelineLength defaultLength = TimelineLength.ofMillis(30000);
                     ImageMetadata metadata = ImageMetadata.builder()
@@ -31,7 +35,7 @@ public class CoreClipFactoryChainItemConfiguration {
 
     @Bean
     public StandardProceduralClipFactoryChainItem textProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
-        return new StandardProceduralClipFactoryChainItem("text", "Text",
+        return new StandardProceduralClipFactoryChainItem(layerMaskApplier, "text", "Text",
                 request -> {
                     TimelineLength defaultLength = TimelineLength.ofMillis(30000);
                     ImageMetadata metadata = ImageMetadata.builder()
@@ -45,7 +49,7 @@ public class CoreClipFactoryChainItemConfiguration {
 
     @Bean
     public StandardProceduralClipFactoryChainItem gradientProceduralClip(IndependentPixelOperation independentPixelOperation) {
-        return new StandardProceduralClipFactoryChainItem("gradient", "Gradient",
+        return new StandardProceduralClipFactoryChainItem(layerMaskApplier, "gradient", "Gradient",
                 request -> {
                     TimelineLength defaultLength = TimelineLength.ofMillis(30000);
                     ImageMetadata metadata = ImageMetadata.builder()
@@ -59,7 +63,7 @@ public class CoreClipFactoryChainItemConfiguration {
 
     @Bean
     public StandardProceduralClipFactoryChainItem gaussianNoiseProceduralClip(IndependentPixelOperation independentPixelOperation) {
-        return new StandardProceduralClipFactoryChainItem("gaussianNoise", "Gaussian noise",
+        return new StandardProceduralClipFactoryChainItem(layerMaskApplier, "gaussianNoise", "Gaussian noise",
                 request -> {
                     TimelineLength defaultLength = TimelineLength.ofMillis(30000);
                     ImageMetadata metadata = ImageMetadata.builder()

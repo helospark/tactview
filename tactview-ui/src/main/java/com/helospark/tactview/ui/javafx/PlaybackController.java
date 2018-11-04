@@ -36,7 +36,7 @@ public class PlaybackController {
                 .withPreviewHeight(height)
                 .build();
         ByteBuffer frame = timelineManager.getFrames(request);
-        Image javafxImage = byteBufferToImageConverter.convertToJavaxImage(frame, width, height);
+        Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame, width, height);
         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame);
         return javafxImage;
     }

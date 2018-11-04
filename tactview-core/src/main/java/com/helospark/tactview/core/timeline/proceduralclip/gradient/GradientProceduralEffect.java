@@ -47,8 +47,11 @@ public class GradientProceduralEffect extends ProceduralVisualClip {
 
         if (typeProvider.getValueAt(relativePosition).getId().equals("radial")) {
             Line line = lineProvider.getValueAt(relativePosition);
-            Point center = line.start.center(line.end).multiply(result.getWidth(), result.getHeight());
-            double radius = line.start.distanceFrom(center);
+
+            Point startPositionInPixels = line.start.multiply(result.getWidth(), result.getHeight());
+            Point endPositionInPixels = line.end.multiply(result.getWidth(), result.getHeight());
+            Point center = startPositionInPixels.center(endPositionInPixels);
+            double radius = startPositionInPixels.distanceFrom(center);
             Color startColor = startColorProvider.getValueAt(relativePosition);
             Color endColor = endColorProvider.getValueAt(relativePosition);
 

@@ -55,7 +55,7 @@ public class SingleFullImageViewController {
 
         CompletableFuture.supplyAsync(() -> {
             ByteBuffer image = timelineManager.getSingleFrame(frameRequest);
-            return byteBufferToImageConverter.convertToJavaxImage(image, width, height);
+            return byteBufferToImageConverter.convertToJavafxImage(image, width, height);
         }).exceptionally(e -> {
             logger.error("Error rendering image", e);
             return null;

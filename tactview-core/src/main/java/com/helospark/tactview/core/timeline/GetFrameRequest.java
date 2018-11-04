@@ -49,6 +49,10 @@ public class GetFrameRequest {
         return applyEffects;
     }
 
+    public Map<String, ClipFrameResult> getRequestedClips() {
+        return requestedClips;
+    }
+
     public TimelinePosition calculateRelativePositionFrom(IntervalAware intervalAware) {
         if (relativePosition != null) {
             return relativePosition;

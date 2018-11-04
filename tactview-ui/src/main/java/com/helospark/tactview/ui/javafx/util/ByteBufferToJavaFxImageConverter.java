@@ -21,7 +21,7 @@ public class ByteBufferToJavaFxImageConverter {
         return SwingFXUtils.toFXImage(bufferedImage, null);
     }
 
-    public Image convertToJavaxImage(ByteBuffer frame, int width, int height) {
+    public Image convertToJavafxImage(ByteBuffer frame, int width, int height) {
         BufferedImage bufferedImage = converter.byteBufferToBufferedImage(frame, width, height);
         return convertToJavafxImage(bufferedImage);
     }

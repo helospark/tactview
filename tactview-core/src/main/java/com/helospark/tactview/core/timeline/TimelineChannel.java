@@ -132,4 +132,10 @@ public class TimelineChannel {
         }
     }
 
+    public List<String> getAllClipId() {
+        return clips.stream()
+                .map(clip -> clip.getId())
+                .collect(Collectors.toList());
+    }
+
 }

@@ -121,8 +121,10 @@ public class TimelineManager implements Saveable {
         double globalAlpha;
         BlendModeStrategy blendModeStrategy;
         ClipFrameResult clipFrameResult;
+        String id;
 
-        public RenderFrameData(double globalAlpha, BlendModeStrategy blendModeStrategy, ClipFrameResult clipFrameResult) {
+        public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ClipFrameResult clipFrameResult) {
+            this.id = id;
             this.globalAlpha = globalAlpha;
             this.blendModeStrategy = blendModeStrategy;
             this.clipFrameResult = clipFrameResult;
@@ -131,21 +133,29 @@ public class TimelineManager implements Saveable {
     }
 
     public ByteBuffer getSingleFrame(TimelineManagerFramesRequest request) {
-
-        Map<String, TimelineClip> clipsToRender = channels
+        List<TimelineClip> allClips = channels
                 .stream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
                 .flatMap(Optional::stream)
+                .collect(Collectors.toList());
+
+        Map<String, TimelineClip> clipsToRender = allClips
+                .stream()
                 .collect(Collectors.toMap(a -> a.getId(), a -> a));
 
-        List<TreeNode> tree = buildRenderTree(clipsToRender);
+        List<String> renderOrder = allClips.stream()
+                .filter(a -> a instanceof VisualTimelineClip)
+                .map(a -> ((VisualTimelineClip) a))
+                .filter(a -> a.isEnabled(request.getPosition()))
+                .map(a -> a.getId())
+                .collect(Collectors.toList());
+
+        List<TreeNode> tree = buildRenderTree(clipsToRender, request.getPosition());
 
         List<List<TimelineClip>> layers = new ArrayList<>();
         recursiveLayering(tree, 0, layers);
 
         Map<String, RenderFrameData> clipsToFrames = new ConcurrentHashMap<>();
-
-        List<String> clipsRequiredForRender = new ArrayList<>();
 
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -153,16 +163,12 @@ public class TimelineManager implements Saveable {
                 if (clip instanceof VisualTimelineClip) { // TODO: rest later
                     VisualTimelineClip visualClip = (VisualTimelineClip) clip;
 
-                    if (visualClip.isEnabled(request.getPosition())) {
-                        clipsRequiredForRender.add(visualClip.getId());
-                    }
-
                     futures.add(CompletableFuture.supplyAsync(() -> {
-                        Map<String, ClipFrameResult> requiredClips = visualClip.getDependentClips()
+                        Map<String, ClipFrameResult> requiredClips = visualClip.getDependentClips(request.getPosition())
                                 .stream()
                                 .filter(a -> clipsToFrames.containsKey(a))
                                 .map(a -> clipsToFrames.get(a))
-                                .collect(Collectors.toMap(a -> visualClip.getId(), a -> a.clipFrameResult));
+                                .collect(Collectors.toMap(a -> a.id, a -> a.clipFrameResult));
 
                         GetFrameRequest frameRequest = GetFrameRequest.builder()
                                 .withScale(request.getScale())
@@ -181,7 +187,7 @@ public class TimelineManager implements Saveable {
 
                         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 
-                        return new RenderFrameData(alpha, blendMode, expandedFrame);
+                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame);
                     }, executorService).thenAccept(a -> {
                         clipsToFrames.put(visualClip.getId(), a);
                     }).exceptionally(e -> {
@@ -193,24 +199,26 @@ public class TimelineManager implements Saveable {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
         }
 
-        List<RenderFrameData> frames = clipsRequiredForRender.stream()
+        List<RenderFrameData> frames = renderOrder.stream()
                 .map(a -> clipsToFrames.get(a))
+                .filter(a -> a != null)
                 .collect(Collectors.toList());
 
         ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
 
-        frames.stream()
+        clipsToFrames.values()
+                .stream()
                 .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.clipFrameResult.getBuffer()));
 
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
         return finalResult.getBuffer();
     }
 
-    private List<TreeNode> buildRenderTree(Map<String, TimelineClip> clipsToRender) {
+    private List<TreeNode> buildRenderTree(Map<String, TimelineClip> clipsToRender, TimelinePosition position) {
         List<TreeNode> tree = new ArrayList<>();
 
         for (var clip : clipsToRender.values()) {
-            if (clip.getDependentClips().isEmpty()) {
+            if (clip.getDependentClips(position).isEmpty()) {
                 tree.add(new TreeNode(clip));
             }
         }
@@ -219,19 +227,16 @@ public class TimelineManager implements Saveable {
         int safetyLoopEscape = 0;
         while (!treeNodeToUpdate.isEmpty() && safetyLoopEscape < 1000) {
             for (var node : treeNodeToUpdate) {
-                List<String> dependentClips = node.clip.getDependentClips();
-                for (String dependentClipId : dependentClips) {
-                    if (clipsToRender.containsKey(dependentClipId)) {
-                        TimelineClip dependentClip = clipsToRender.get(dependentClipId);
-                        TreeNode dependentTreeNode = new TreeNode(dependentClip);
-                        treeNodeToUpdateTmp.add(dependentTreeNode);
-                        node.children.add(dependentTreeNode);
-                        // TODO: cycle check
-                    }
+                List<TreeNode> nodesDependentOnCurrentNode = findNodesDependentOn(clipsToRender, node.clip.id, position);
+                if (!nodesDependentOnCurrentNode.isEmpty()) {
+                    treeNodeToUpdateTmp.addAll(nodesDependentOnCurrentNode);
+                    node.children.addAll(nodesDependentOnCurrentNode);
+                    // TODO: cycle check
                 }
             }
             treeNodeToUpdate.clear();
             treeNodeToUpdate.addAll(treeNodeToUpdateTmp);
+            treeNodeToUpdateTmp.clear();
             ++safetyLoopEscape;
         }
         if (safetyLoopEscape >= 1000) {
@@ -240,7 +245,20 @@ public class TimelineManager implements Saveable {
         return tree;
     }
 
+    private List<TreeNode> findNodesDependentOn(Map<String, TimelineClip> clipsToRender, String dependentClipId, TimelinePosition position) {
+        List<TreeNode> result = new ArrayList<>();
+        for (TimelineClip clip : clipsToRender.values()) {
+            if (clip.getDependentClips(position).contains(dependentClipId)) {
+                result.add(new TreeNode(clip));
+            }
+        }
+        return result;
+    }
+
     private void recursiveLayering(List<TreeNode> tree, int i, List<List<TimelineClip>> layers) {
+        if (tree.isEmpty()) {
+            return;
+        }
         List<TimelineClip> currentLayer;
         if (layers.size() < i) {
             currentLayer = layers.get(i);
@@ -546,6 +564,12 @@ public class TimelineManager implements Saveable {
         } else {
             return Optional.of(new ClosesIntervalChannel(new TimelineLength(minimumLength), channel.getId(), minimumPosition, minimumPosition));
         }
+    }
+
+    public List<String> getAllClipIds() {
+        return channels.stream()
+                .flatMap(channel -> channel.getAllClipId().stream())
+                .collect(Collectors.toList());
     }
 
 }
