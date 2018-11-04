@@ -58,6 +58,15 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
                 .findFirst();
     }
 
+    public int getEffectWithIndex(StatelessEffect effect) {
+        for (int i = 0; i < effectChannels.size(); ++i) {
+            if (effectChannels.get(i).contains(effect)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public boolean canAddEffectAt(int index, TimelineInterval newInterval) {
         return getChannelByIndex(index)
                 .map(channel -> channel.canAddInterval(newInterval))
@@ -192,6 +201,12 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     protected List<String> getDependentClips(TimelinePosition position) {
         return new ArrayList<>();
+    }
+
+    public List<StatelessEffect> getEffects() {
+        return effectChannels.stream()
+                .flatMap(a -> a.stream())
+                .collect(Collectors.toList());
     }
 
 }

@@ -5,7 +5,6 @@ import java.util.function.Function;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.StatelessEffect;
-import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 public class StandardEffectFactory implements EffectFactory {
@@ -31,8 +30,6 @@ public class StandardEffectFactory implements EffectFactory {
     @Override
     public StatelessEffect createEffect(CreateEffectRequest request) {
         StatelessEffect result = factory.apply(request);
-
-        messagingService.sendAsyncMessage(new EffectDescriptorsAdded(result.getId(), result.getValueProviders(), result));
 
         return result;
     }

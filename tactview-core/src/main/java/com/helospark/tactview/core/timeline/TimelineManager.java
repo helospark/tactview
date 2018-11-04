@@ -33,6 +33,7 @@ import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
+import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
@@ -86,7 +87,7 @@ public class TimelineManager implements Saveable {
         return clip;
     }
 
-    private void addClip(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
+    public void addClip(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
         if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
             channelToAddResourceTo.addResource(clip);
         } else {
@@ -95,6 +96,13 @@ public class TimelineManager implements Saveable {
         List<ValueProviderDescriptor> descriptors = clip.getDescriptors(); // must call before sending clip added message to initialize descriptors
         messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
         messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), descriptors, clip));
+        // TODO: keyframes
+
+        for (var effect : clip.getEffects()) {
+            messagingService.sendAsyncMessage(new EffectDescriptorsAdded(effect.getId(), effect.getValueProviders(), effect));
+            int channelIndex = clip.getEffectWithIndex(effect);
+            messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clip.getId(), effect.interval.getStartPosition(), effect, channelIndex, effect.getGlobalInterval()));
+        }
     }
 
     private Optional<TimelineChannel> findChannelWithId(String channelId) {
@@ -315,9 +323,15 @@ public class TimelineManager implements Saveable {
     public StatelessEffect addEffectForClip(String id, String effectId, TimelinePosition position) {
         VisualTimelineClip clipById = (VisualTimelineClip) findClipById(id).get();
         StatelessEffect effect = createEffect(effectId, position);
-        int newEffectChannelId = clipById.addEffectAtAnyChannel(effect);
-        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), position, effect, newEffectChannelId, effect.getGlobalInterval()));
+        addEffectForClip(clipById, effect);
         return effect;
+    }
+
+    public void addEffectForClip(TimelineClip clipById, StatelessEffect effect) {
+        int newEffectChannelId = clipById.addEffectAtAnyChannel(effect);
+        messagingService.sendAsyncMessage(new EffectDescriptorsAdded(effect.getId(), effect.getValueProviders(), effect));
+        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), effect.interval.getStartPosition(), effect, newEffectChannelId, effect.getGlobalInterval()));
+        // TODO: keyframes
     }
 
     private StatelessEffect createEffect(String effectId, TimelinePosition position) {
@@ -346,7 +360,7 @@ public class TimelineManager implements Saveable {
                 .findFirst();
     }
 
-    private Optional<TimelineChannel> findChannelForClipId(String id) {
+    public Optional<TimelineChannel> findChannelForClipId(String id) {
         return channels
                 .stream()
                 .filter(channel -> channel.findClipById(id).isPresent())
