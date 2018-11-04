@@ -209,8 +209,6 @@ public class TimelineDragAndDropHandler {
 
         double x = event.getX();
 
-        System.out.println("Move to " + x);
-
         EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
                 .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
@@ -224,7 +222,7 @@ public class TimelineDragAndDropHandler {
 
     private void moveEffect(DragEvent event, boolean revertable) {
         EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
-        TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
+        TimelinePosition position = timelineState.pixelsToSeconds(event.getX() - draggedEffect.getAnchorPointX());
 
         EffectMovedCommand command = EffectMovedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())

@@ -71,11 +71,9 @@ public class EffectAddedListener {
             EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
                     event.getX());
             if (isResizing(rectangle, currentX)) {
-                System.out.println("Resizing");
                 dragRepository.onEffectResized(dragInformation, isDraggingLeft(rectangle, currentX) ? DragDirection.LEFT : DragDirection.RIGHT);
                 content.putString("effectresized");
             } else {
-                System.out.println("Dragging");
                 dragRepository.onEffectDragged(dragInformation);
                 content.putString("effectdrag");
             }

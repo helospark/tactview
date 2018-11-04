@@ -14,6 +14,7 @@ import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 
 import javafx.beans.binding.Bindings;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -69,10 +70,11 @@ public class UiTimeline {
         Group zoomGroup = new Group();
         VBox timelineBoxes = new VBox();
         timelineBoxes.setPrefWidth(2000);
+        timelineBoxes.setPadding(new Insets(0, 0, 0, -6));
         zoomGroup.getChildren().add(timelineBoxes);
 
         positionIndicatorLine = new Line();
-        positionIndicatorLine.setLayoutX(6.0); // TODO: Layout need to be fixed
+        //        positionIndicatorLine.setTranslateX(6.0); // TODO: Layout need to be fixed
         positionIndicatorLine.setStartY(0);
         positionIndicatorLine.endYProperty().bind(timelineBoxes.heightProperty());
         positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
@@ -81,7 +83,7 @@ public class UiTimeline {
         zoomGroup.getChildren().add(positionIndicatorLine);
 
         Line specialPositionLine = new Line();
-        specialPositionLine.setLayoutX(6.0); // TODO: Layout need to be fixed
+        //        specialPositionLine.setTranslateX(6.0); // TODO: Layout need to be fixed
         specialPositionLine.layoutXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartX());
         specialPositionLine.startYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartY());
         specialPositionLine.visibleProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEnabledProperty());
