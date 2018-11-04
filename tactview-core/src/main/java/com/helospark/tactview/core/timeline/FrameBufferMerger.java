@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.timeline.TimelineManager.RenderFrameData;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 
 @Component
@@ -15,12 +16,12 @@ public class FrameBufferMerger {
         this.emptyByteBufferFactory = emptyByteBufferFactory;
     }
 
-    public ClipFrameResult alphaMergeFrames(List<ClipFrameResult> frames, Integer width, Integer height, List<BlendModeStrategy> blendModePerChannel, List<Double> globalAlpha) {
+    public ClipFrameResult alphaMergeFrames(List<RenderFrameData> frames, Integer width, Integer height) {
         if (frames.size() > 0) {
             ClipFrameResult output = new ClipFrameResult(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4), width, height);
 
             for (int i = frames.size() - 1; i >= 0; --i) {
-                alphaBlitFrame(output, frames.get(i), width, height, blendModePerChannel.get(i), globalAlpha.get(i));
+                alphaBlitFrame(output, frames.get(i).clipFrameResult, width, height, frames.get(i).blendModeStrategy, frames.get(i).globalAlpha);
             }
 
             return output;

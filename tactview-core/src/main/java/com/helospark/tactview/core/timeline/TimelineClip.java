@@ -190,4 +190,8 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     }
 
+    protected List<String> getDependentClips() {
+        return new ArrayList<>();
+    }
+
 }

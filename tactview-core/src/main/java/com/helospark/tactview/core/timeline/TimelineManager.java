@@ -2,12 +2,17 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -37,6 +42,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class TimelineManager implements Saveable {
+    private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     // state
     private List<StatelessVideoEffect> globalEffects;
     private CopyOnWriteArrayList<TimelineChannel> channels = new CopyOnWriteArrayList<>();
@@ -101,43 +107,151 @@ public class TimelineManager implements Saveable {
         return getSingleFrame(request); // todo: multiple frames
     }
 
+    static class TreeNode {
+        private TimelineClip clip;
+        private List<TreeNode> children = new ArrayList<>();
+
+        public TreeNode(TimelineClip clip) {
+            this.clip = clip;
+        }
+
+    }
+
+    static class RenderFrameData {
+        double globalAlpha;
+        BlendModeStrategy blendModeStrategy;
+        ClipFrameResult clipFrameResult;
+
+        public RenderFrameData(double globalAlpha, BlendModeStrategy blendModeStrategy, ClipFrameResult clipFrameResult) {
+            this.globalAlpha = globalAlpha;
+            this.blendModeStrategy = blendModeStrategy;
+            this.clipFrameResult = clipFrameResult;
+        }
+
+    }
+
     public ByteBuffer getSingleFrame(TimelineManagerFramesRequest request) {
-        List<BlendModeStrategy> blendModePerChannel = new LinkedList<>();
-        List<Double> globalAlpha = new LinkedList<>();
-        List<ClipFrameResult> frames = channels
+
+        Map<String, TimelineClip> clipsToRender = channels
                 .stream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
                 .flatMap(Optional::stream)
-                .filter(clip -> clip instanceof VisualTimelineClip) // audio separate?
-                .map(clip -> (VisualTimelineClip) clip)
-                .filter(clip -> clip.isEnabled(request.getPosition()))
-                .map(clip -> {
+                .collect(Collectors.toMap(a -> a.getId(), a -> a));
 
-                    GetFrameRequest frameRequest = GetFrameRequest.builder()
-                            .withScale(request.getScale())
-                            .withPosition(request.getPosition())
-                            .withExpectedWidth(request.getPreviewWidth())
-                            .withExpectedHeight(request.getPreviewHeight())
-                            .withApplyEffects(true)
-                            .build();
+        List<TreeNode> tree = buildRenderTree(clipsToRender);
 
-                    ClipFrameResult frameResult = clip.getFrame(frameRequest);
-                    ClipFrameResult expandedFrame = expandFrame(frameResult, clip, request);
+        List<List<TimelineClip>> layers = new ArrayList<>();
+        recursiveLayering(tree, 0, layers);
 
-                    blendModePerChannel.add(clip.getBlendModeAt(request.getPosition()));
-                    globalAlpha.add(clip.getAlpha(request.getPosition()));
+        Map<String, RenderFrameData> clipsToFrames = new ConcurrentHashMap<>();
 
-                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
-                    return expandedFrame;
-                })
+        List<String> clipsRequiredForRender = new ArrayList<>();
+
+        for (int i = 0; i < layers.size(); ++i) {
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            for (var clip : layers.get(i)) {
+                if (clip instanceof VisualTimelineClip) { // TODO: rest later
+                    VisualTimelineClip visualClip = (VisualTimelineClip) clip;
+
+                    if (visualClip.isEnabled(request.getPosition())) {
+                        clipsRequiredForRender.add(visualClip.getId());
+                    }
+
+                    futures.add(CompletableFuture.supplyAsync(() -> {
+                        Map<String, ClipFrameResult> requiredClips = visualClip.getDependentClips()
+                                .stream()
+                                .filter(a -> clipsToFrames.containsKey(a))
+                                .map(a -> clipsToFrames.get(a))
+                                .collect(Collectors.toMap(a -> visualClip.getId(), a -> a.clipFrameResult));
+
+                        GetFrameRequest frameRequest = GetFrameRequest.builder()
+                                .withScale(request.getScale())
+                                .withPosition(request.getPosition())
+                                .withExpectedWidth(request.getPreviewWidth())
+                                .withExpectedHeight(request.getPreviewHeight())
+                                .withApplyEffects(true)
+                                .withRequestedClips(requiredClips)
+                                .build();
+
+                        ClipFrameResult frameResult = visualClip.getFrame(frameRequest);
+                        ClipFrameResult expandedFrame = expandFrame(frameResult, visualClip, request);
+
+                        BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
+                        double alpha = visualClip.getAlpha(request.getPosition());
+
+                        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
+
+                        return new RenderFrameData(alpha, blendMode, expandedFrame);
+                    }, executorService).thenAccept(a -> {
+                        clipsToFrames.put(visualClip.getId(), a);
+                    }).exceptionally(e -> {
+                        logger.error("Unable to render", e);
+                        return null;
+                    }));
+                }
+            }
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
+        }
+
+        List<RenderFrameData> frames = clipsRequiredForRender.stream()
+                .map(a -> clipsToFrames.get(a))
                 .collect(Collectors.toList());
-        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight(), blendModePerChannel, globalAlpha);
+
+        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
 
         frames.stream()
-                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.getBuffer()));
+                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.clipFrameResult.getBuffer()));
 
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
         return finalResult.getBuffer();
+    }
+
+    private List<TreeNode> buildRenderTree(Map<String, TimelineClip> clipsToRender) {
+        List<TreeNode> tree = new ArrayList<>();
+
+        for (var clip : clipsToRender.values()) {
+            if (clip.getDependentClips().isEmpty()) {
+                tree.add(new TreeNode(clip));
+            }
+        }
+        List<TreeNode> treeNodeToUpdate = new ArrayList<>(tree);
+        List<TreeNode> treeNodeToUpdateTmp = new ArrayList<>();
+        int safetyLoopEscape = 0;
+        while (!treeNodeToUpdate.isEmpty() && safetyLoopEscape < 1000) {
+            for (var node : treeNodeToUpdate) {
+                List<String> dependentClips = node.clip.getDependentClips();
+                for (String dependentClipId : dependentClips) {
+                    if (clipsToRender.containsKey(dependentClipId)) {
+                        TimelineClip dependentClip = clipsToRender.get(dependentClipId);
+                        TreeNode dependentTreeNode = new TreeNode(dependentClip);
+                        treeNodeToUpdateTmp.add(dependentTreeNode);
+                        node.children.add(dependentTreeNode);
+                        // TODO: cycle check
+                    }
+                }
+            }
+            treeNodeToUpdate.clear();
+            treeNodeToUpdate.addAll(treeNodeToUpdateTmp);
+            ++safetyLoopEscape;
+        }
+        if (safetyLoopEscape >= 1000) {
+            throw new IllegalStateException("Unexpected cycle in clips");
+        }
+        return tree;
+    }
+
+    private void recursiveLayering(List<TreeNode> tree, int i, List<List<TimelineClip>> layers) {
+        List<TimelineClip> currentLayer;
+        if (layers.size() < i) {
+            currentLayer = layers.get(i);
+        } else {
+            currentLayer = new ArrayList<>();
+            layers.add(currentLayer);
+        }
+        for (var element : tree) {
+            currentLayer.add(element.clip);
+            recursiveLayering(element.children, i + 1, layers);
+        }
     }
 
     private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
