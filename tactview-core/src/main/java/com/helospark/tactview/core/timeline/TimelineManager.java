@@ -39,6 +39,7 @@ import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
@@ -584,6 +585,24 @@ public class TimelineManager implements Saveable {
         return channels.stream()
                 .flatMap(channel -> channel.getAllClipId().stream())
                 .collect(Collectors.toList());
+    }
+
+    public void changeClipForEffect(StatelessEffect originalEffect, String newClipId, TimelinePosition newPosition) {
+        TimelineClip originalClip = findClipForEffect(originalEffect.getId()).orElseThrow();
+        TimelineClip newClip = findClipById(newClipId).orElseThrow();
+        originalClip.removeEffectById(originalEffect.getId());
+        newClip.addEffectAtAnyChannel(originalEffect);
+
+        EffectMovedToDifferentClipMessage message = EffectMovedToDifferentClipMessage.builder()
+                .withEffectId(originalEffect.getId())
+                .withModifiedInterval(originalEffect.getInterval())
+                .withNewClipId(newClipId)
+                .withOriginalClipId(originalClip.getId())
+                .build();
+
+        messagingService.sendAsyncMessage(message);
+
+        moveEffect(originalEffect.getId(), newPosition.add(newClip.getInterval().getStartPosition()), newClipId);
     }
 
 }

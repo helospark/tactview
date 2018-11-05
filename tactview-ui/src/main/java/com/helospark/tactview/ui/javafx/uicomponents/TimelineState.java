@@ -133,13 +133,14 @@ public class TimelineState {
         }
     }
 
-    public void removeEffect(String effectId) {
+    public Optional<Node> removeEffect(String effectId) {
         Optional<Node> effectToRemove = findEffectById(effectId);
         if (effectToRemove.isPresent()) {
             Node actualClip = effectToRemove.get();
             Pane parent = (Pane) actualClip.getParent();
             parent.getChildren().remove(actualClip);
         }
+        return effectToRemove;
     }
 
     public Optional<Node> findEffectById(String effectId) {
