@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
@@ -207,6 +208,11 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         return effectChannels.stream()
                 .flatMap(a -> a.stream())
                 .collect(Collectors.toList());
+    }
+
+    public Stream<StatelessEffect> interesectingEffects(TimelineInterval inInterval) {
+        return effectChannels.stream()
+                .flatMap(a -> a.computeIntersectingIntervals(inInterval).stream());
     }
 
 }

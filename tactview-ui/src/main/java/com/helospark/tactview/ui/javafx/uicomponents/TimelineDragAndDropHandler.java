@@ -227,11 +227,12 @@ public class TimelineDragAndDropHandler {
         EffectMovedCommand command = EffectMovedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
                 .withOriginalClipId(draggedEffect.getClipId())
-                .withNewClipId("0") // TODO
                 .withGlobalNewPosition(position)
                 .withRevertable(revertable)
                 .withOriginalPosition(draggedEffect.getOriginalPosition())
                 .withTimelineManager(timelineManager)
+                .withEnableJumpingToSpecialPosition(true)
+                .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(20).getSeconds()))
                 .build();
         commandInterpreter.sendWithResult(command);
     }

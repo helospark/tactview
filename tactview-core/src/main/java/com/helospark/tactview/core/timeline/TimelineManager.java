@@ -410,8 +410,13 @@ public class TimelineManager implements Saveable {
         Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
 
         if (moveClipRequest.enableJumpingToSpecialPosition) {
-            specialPositionUsed = calculateSpecialPositionAround(newPosition, newChannelId, moveClipRequest.maximumJump, clipToMove.getInterval(), clipToMove.getId())
+            TimelineChannel channel = findChannelWithId(newChannelId).orElseThrow();
+            TimelineLength clipLength = clipToMove.getInterval().getLength();
+
+            specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), clipToMove.getId())
                     .stream()
+                    .filter(a -> channel.canAddResourceAtExcluding(new TimelineInterval(a.getClipPosition(), a.getClipPosition().add(clipLength)), clipToMove.getId()))
+                    .sorted()
                     .findFirst();
             if (specialPositionUsed.isPresent()) {
                 newPosition = specialPositionUsed.get().getClipPosition();
@@ -436,21 +441,30 @@ public class TimelineManager implements Saveable {
         return true;
     }
 
-    public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, String newClipId) {
+    public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, Optional<TimelineLength> maximumJumpToSpecialPositions) {
         TimelineClip currentClip = findClipForEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
         StatelessEffect effect = currentClip.getEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Effect not found"));
         TimelineInterval interval = effect.getInterval();
+
+        Optional<ClosesIntervalChannel> specialPosition = Optional.empty();
+        if (maximumJumpToSpecialPositions.isPresent()) {
+            specialPosition = calculateSpecialPositionAround(globalNewPosition, maximumJumpToSpecialPositions.get(), effect.getGlobalInterval(), effectId)
+                    .stream()
+                    .findFirst();
+            globalNewPosition = specialPosition.map(a -> a.getSpecialPosition()).orElse(globalNewPosition);
+        }
+
         int newChannel = currentClip.moveEffect(effect, globalNewPosition);
 
         EffectMovedMessage message = EffectMovedMessage.builder()
                 .withEffectId(effectId)
                 .withOriginalClipId(currentClip.getId())
-                .withNewClipId(newClipId)
                 .withOldPosition(interval.getStartPosition())
                 .withNewPosition(effect.getInterval().getStartPosition())
                 .withNewChannelIndex(newChannel)
                 .withOriginalInterval(interval)
                 .withNewInterval(effect.getInterval())
+                .withSpecialPositionUsed(specialPosition)
                 .build();
 
         messagingService.sendMessage(message);
@@ -528,14 +542,13 @@ public class TimelineManager implements Saveable {
     }
 
     // TODO: some cleanup on below
-    public Set<ClosesIntervalChannel> calculateSpecialPositionAround(TimelinePosition position, String channelId, TimelineLength inRadius, TimelineInterval intervalToAdd, String excludeClip) {
+    public Set<ClosesIntervalChannel> calculateSpecialPositionAround(TimelinePosition position, TimelineLength inRadius, TimelineInterval intervalToAdd, String excludeId) {
         Set<ClosesIntervalChannel> set = new TreeSet<>();
-        TimelineChannel channel = findChannelWithId(channelId).orElseThrow();
         TimelineLength clipLength = intervalToAdd.getLength();
         TimelinePosition endPosition = position.add(clipLength);
-        set.addAll(findSpecialPositionAround(position, inRadius, excludeClip));
+        set.addAll(findSpecialPositionAround(position, inRadius, excludeId));
 
-        set.addAll(findSpecialPositionAround(endPosition, inRadius, excludeClip)
+        set.addAll(findSpecialPositionAround(endPosition, inRadius, excludeId)
                 .stream()
                 .map(a -> {
                     a.setPosition(a.getClipPosition().subtract(clipLength));
@@ -543,15 +556,13 @@ public class TimelineManager implements Saveable {
                 })
                 .collect(Collectors.toList()));
 
-        return set.stream()
-                .filter(a -> channel.canAddResourceAtExcluding(new TimelineInterval(a.getClipPosition(), a.getClipPosition().add(clipLength)), excludeClip))
-                .collect(Collectors.toCollection(TreeSet::new));
+        return set;
     }
 
-    private Set<ClosesIntervalChannel> findSpecialPositionAround(TimelinePosition position, TimelineLength length, String excludeClip) {
+    private Set<ClosesIntervalChannel> findSpecialPositionAround(TimelinePosition position, TimelineLength length, String excludeId) {
         return channels.stream()
                 .flatMap(channel -> {
-                    List<TimelineInterval> spec = channel.findSpecialPositionsAround(position, length, excludeClip);
+                    List<TimelineInterval> spec = channel.findSpecialPositionsAround(position, length, excludeId);
                     return findClosesIntervalForChannel(spec, position, channel, length).stream();
                 })
                 .collect(Collectors.toCollection(TreeSet::new));
@@ -602,7 +613,7 @@ public class TimelineManager implements Saveable {
 
         messagingService.sendAsyncMessage(message);
 
-        moveEffect(originalEffect.getId(), newPosition.add(newClip.getInterval().getStartPosition()), newClipId);
+        moveEffect(originalEffect.getId(), newPosition.add(newClip.getInterval().getStartPosition()), Optional.empty());
     }
 
 }

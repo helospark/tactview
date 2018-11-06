@@ -103,18 +103,26 @@ public class TimelineChannel {
         }
     }
 
-    public List<TimelineInterval> findSpecialPositionsAround(TimelinePosition position, TimelineLength length, String excludeClip) {
+    public List<TimelineInterval> findSpecialPositionsAround(TimelinePosition position, TimelineLength length, String excludeId) {
         TimelineInterval inInterval = new TimelineInterval(position.subtract(length), length.multiply(2));
         List<TimelineInterval> specialPointsFromClips = clips.computeIntersectingIntervals(inInterval)
                 .stream()
-                .filter(a -> !a.getId().equals(excludeClip))
+                .filter(a -> !a.getId().equals(excludeId))
                 .map(a -> a.getInterval())
                 .collect(Collectors.toList());
         List<TimelineInterval> otherSpecialPoints = Collections.singletonList(new TimelineInterval(TimelinePosition.ofZero(), TimelineLength.ofZero()));
         // We could add effects
         ArrayList<TimelineInterval> result = new ArrayList<>(specialPointsFromClips);
         result.addAll(otherSpecialPoints);
-        // ...
+
+        List<TimelineInterval> effectSpecialPoints = clips.stream()
+                .flatMap(a -> a.interesectingEffects(new TimelineInterval(position.from(a.getInterval().getStartPosition()).subtract(length), length.multiply(2))))
+                .filter(a -> !a.getId().equals(excludeId))
+                .map(a -> a.getGlobalInterval())
+                .collect(Collectors.toList());
+
+        result.addAll(effectSpecialPoints);
+
         return result;
     }
 

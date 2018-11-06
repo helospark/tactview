@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -179,6 +180,22 @@ public class TimelineState {
                 .filter(entry -> entry.getValue().contains(group))
                 .findFirst()
                 .flatMap(entry -> findChannelById(entry.getKey()));
+    }
+
+    public Optional<HBox> findChannelForClip(String originalClipId) {
+        return channelToClips.entrySet()
+                .stream()
+                .filter(entry -> doesChannelContainsClip(entry, originalClipId))
+                .findFirst()
+                .flatMap(entry -> findChannelById(entry.getKey()));
+    }
+
+    private boolean doesChannelContainsClip(Entry<String, ObservableList<Pane>> entry, String originalClipId) {
+        return entry.getValue()
+                .stream()
+                .filter(a -> a.getUserData().equals(originalClipId))
+                .findFirst()
+                .isPresent();
     }
 
     public void addEffectToClip(String clipId, Node createEffect) {

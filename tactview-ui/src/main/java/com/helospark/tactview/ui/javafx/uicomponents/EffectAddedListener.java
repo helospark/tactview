@@ -63,8 +63,6 @@ public class EffectAddedListener {
         });
 
         rectangle.setOnDragDetected(event -> {
-            System.out.println("Started dragging effect");
-
             ClipboardContent content = new ClipboardContent();
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
             double currentX = event.getX();
