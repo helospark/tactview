@@ -22,7 +22,6 @@ public class AddClipsCommand implements UiCommand {
 
     @Override
     public void execute() {
-        System.out.println("eXECUTING " + request);
         TimelineClip result = timelineManager.addResource(request);
         this.addedClipId = result.getId();
     }

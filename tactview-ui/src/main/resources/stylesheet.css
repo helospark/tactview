@@ -153,6 +153,15 @@
     -fx-hgap: 8px;
 }
 
+.effect-detail-grid {
+    -fx-vgap: 4px;
+    -fx-hgap: 8px;
+}
+
+.separator{
+    -fx-padding: 10px;
+}
+
 /** tmp **/
 
 .button {

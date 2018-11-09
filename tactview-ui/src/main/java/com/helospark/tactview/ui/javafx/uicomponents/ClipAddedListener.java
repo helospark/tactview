@@ -15,7 +15,6 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
-import com.helospark.tactview.ui.javafx.TimelineImagePatternService;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
@@ -31,7 +30,6 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipAddedListener {
-    private TimelineImagePatternService timelineImagePatternService;
     private MessagingService messagingService;
     private TimelineState timelineState;
     private EffectDragAdder effectDragAdder;
@@ -43,10 +41,9 @@ public class ClipAddedListener {
     @Slf4j
     private Logger logger;
 
-    public ClipAddedListener(TimelineImagePatternService timelineImagePatternService, MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
+    public ClipAddedListener(MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
             ProjectRepository projectRepository,
             UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository) {
-        this.timelineImagePatternService = timelineImagePatternService;
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectDragAdder = effectDragAdder;

@@ -47,7 +47,7 @@ public class EffectMovedCommand implements UiCommand {
 
     @Override
     public void revert() {
-        timelineManager.moveEffect(effectId, originalPosition);
+        timelineManager.moveEffect(effectId, originalPosition, Optional.empty());
     }
 
     @Override
