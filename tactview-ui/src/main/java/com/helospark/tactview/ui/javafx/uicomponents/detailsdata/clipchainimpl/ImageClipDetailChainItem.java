@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx.uicomponents.detailsdata.chainimpl;
+package com.helospark.tactview.ui.javafx.uicomponents.detailsdata.clipchainimpl;
 
 import java.util.Map;
 
@@ -10,7 +10,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 
 @Component
-public class ImageClipDetailChainItem extends TypeBasedDetailGridChainElement<ImageClip> {
+public class ImageClipDetailChainItem extends TypeBasedClipDetailGridChainElement<ImageClip> {
 
     public ImageClipDetailChainItem() {
         super(ImageClip.class);

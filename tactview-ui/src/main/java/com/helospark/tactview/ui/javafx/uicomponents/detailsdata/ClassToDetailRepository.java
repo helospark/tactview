@@ -17,14 +17,22 @@ public class ClassToDetailRepository {
     };
     private Map<String, String> classToDetail = new HashMap<>();
     private ClasspathJsonParser classpathJsonParser;
+    private List<ClassToDetailFileHolder> fileHolders;
 
-    public ClassToDetailRepository(ClasspathJsonParser classpathJsonParser) {
+    public ClassToDetailRepository(ClasspathJsonParser classpathJsonParser, List<ClassToDetailFileHolder> fileHolders) {
         this.classpathJsonParser = classpathJsonParser;
+        this.fileHolders = fileHolders;
     }
 
     @PostConstruct
     public void parse() {
-        List<ClassToDetailDomain> readFile = classpathJsonParser.readClasspathFile("localization/clip-description-en_us.json", TYPE_REFERENCE);
+        fileHolders.stream()
+                .flatMap(holder -> holder.getFiles().stream())
+                .forEach(fileName -> readFromFile(fileName));
+    }
+
+    public void readFromFile(String filename) {
+        List<ClassToDetailDomain> readFile = classpathJsonParser.readClasspathFile(filename, TYPE_REFERENCE);
         readFile.stream()
                 .forEach(file -> {
                     assertClassExists(file);

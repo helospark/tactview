@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
+import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -67,6 +68,11 @@ public class PropertyView {
             String clipId = message.getClipId();
             GridPane grid = detailsGridChain.createDetailsGridForClip(clipId);
             details.put(clipId, grid);
+        });
+        messagingService.register(EffectAddedMessage.class, message -> {
+            String effectId = message.getEffectId();
+            GridPane grid = detailsGridChain.createDetailsGridForEffect(effectId);
+            details.put(effectId, grid);
         });
 
         messagingService.register(EffectDescriptorsAdded.class, message -> Platform.runLater(() -> {
@@ -130,6 +136,7 @@ public class PropertyView {
         GridPane dataGrid = details.get(id);
         if (dataGrid != null) {
             VBox vbox = new VBox();
+            vbox.getStyleClass().add("description-vbox");
             vbox.getChildren().addAll(dataGrid, new Separator());
 
             propertyWindow.getChildren().add(vbox);

@@ -162,6 +162,14 @@
     -fx-padding: 10px;
 }
 
+.description-text-area {
+    -fx-max-width: 400px;
+}
+
+.description-vbox {
+    -fx-pref-width: 400px;
+}
+
 /** tmp **/
 
 .button {

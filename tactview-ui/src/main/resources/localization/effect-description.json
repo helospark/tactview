@@ -1,0 +1,15 @@
+[
+    {
+        "type": "com.helospark.tactview.core.timeline.effect.blur.BlurEffect",
+        "description": "Blurs an image using Gaussian blur"
+    },
+    {
+        "type": "com.helospark.tactview.core.timeline.effect.television.TelevisionRgbLinesEffect",
+        "description": "Renders the image with vertical red, blue and green lines. This creates a cheap TV like effect."
+    },
+    {
+        "type": "com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect",
+        "description": "Renders an image as a pencil sketch using OpenCV pencilSketch filter."
+    }
+    
+]

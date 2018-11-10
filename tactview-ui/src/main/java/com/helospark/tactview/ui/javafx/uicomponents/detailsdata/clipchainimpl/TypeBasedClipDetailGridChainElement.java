@@ -1,16 +1,16 @@
-package com.helospark.tactview.ui.javafx.uicomponents.detailsdata.chainimpl;
+package com.helospark.tactview.ui.javafx.uicomponents.detailsdata.clipchainimpl;
 
 import java.util.Map;
 
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.DetailGridChainElement;
+import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.ClipDetailGridChainElement;
 
 import javafx.scene.Node;
 
-public abstract class TypeBasedDetailGridChainElement<T> implements DetailGridChainElement {
+public abstract class TypeBasedClipDetailGridChainElement<T> implements ClipDetailGridChainElement {
     private Class<T> clazz;
 
-    public TypeBasedDetailGridChainElement(Class<T> clazz) {
+    public TypeBasedClipDetailGridChainElement(Class<T> clazz) {
         this.clazz = clazz;
     }
 
