@@ -9,9 +9,9 @@ import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.ImageMetadata;
-import com.helospark.tactview.core.decoder.MediaDataRequest;
+import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
-import com.helospark.tactview.core.decoder.MediaDecoder;
+import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashKey;
@@ -20,7 +20,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class OpenCvImageDecorderDecorator implements MediaDecoder {
+public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     private OpenCvMediaDecoder implementation;
     private MediaCache mediaCache;
 
@@ -44,7 +44,7 @@ public class OpenCvImageDecorderDecorator implements MediaDecoder {
     }
 
     @Override
-    public MediaDataResponse readFrames(MediaDataRequest request) {
+    public MediaDataResponse readFrames(VideoMediaDataRequest request) {
         MediaHashKey cacheKey = new MediaHashKey(request.getFile().getAbsolutePath(), request.getWidth(), request.getHeight());
         Optional<MediaHashValue> result = mediaCache.findInCache(cacheKey, 0);
 

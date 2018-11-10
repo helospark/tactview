@@ -2,9 +2,9 @@ package com.helospark.tactview.core.decoder;
 
 import java.io.File;
 
-public interface MediaDecoder {
+public interface VisualMediaDecoder {
 
     public VisualMediaMetadata readMetadata(File file);
 
-    public MediaDataResponse readFrames(MediaDataRequest request);
+    public MediaDataResponse readFrames(VideoMediaDataRequest request);
 }

@@ -13,9 +13,9 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.MediaDataRequest;
+import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
-import com.helospark.tactview.core.decoder.MediaDecoder;
+import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
@@ -25,7 +25,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
+public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private static final int CHUNK_SIZE = 30;
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
@@ -52,7 +52,7 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
     }
 
     @Override
-    public MediaDataResponse readFrames(MediaDataRequest request) {
+    public MediaDataResponse readFrames(VideoMediaDataRequest request) {
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
         int numberOfFrames = calculateNumberOfFrames(request);
         int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).intValue();
@@ -92,7 +92,7 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
         return new MediaDataResponse(result);
     }
 
-    private int calculateNumberOfFrames(MediaDataRequest request) {
+    private int calculateNumberOfFrames(VideoMediaDataRequest request) {
         int numberOfFrames = 1;
         if (request.getLength() != null) {
             numberOfFrames = lengthToFrames(request.getLength(), ((VideoMetadata) request.getMetadata()).getFps());
@@ -119,13 +119,13 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
         return result;
     }
 
-    private void storeInCache(MediaDataRequest request, int startFrame, String filePath, List<ByteBuffer> result) {
+    private void storeInCache(VideoMediaDataRequest request, int startFrame, String filePath, List<ByteBuffer> result) {
         MediaHashKey key = new MediaHashKey(filePath, request.getWidth(), request.getHeight());
         MediaHashValue value = new MediaHashValue(startFrame, result);
         mediaCache.cacheMedia(key, value);
     }
 
-    private Map<Integer, ByteBuffer> findInCache(MediaDataRequest request, int numberOfFrames, int startFrame, String filePath) {
+    private Map<Integer, ByteBuffer> findInCache(VideoMediaDataRequest request, int numberOfFrames, int startFrame, String filePath) {
         Map<Integer, ByteBuffer> frames = new TreeMap<>();
         int endFrames = startFrame + numberOfFrames;
         for (int frameToFindInCache = startFrame; frameToFindInCache < endFrames; ++frameToFindInCache) {
@@ -141,7 +141,7 @@ public class FFmpegBasedMediaDecoderDecorator implements MediaDecoder {
         return frames;
     }
 
-    private ByteBuffer[] readFromFile(MediaDataRequest request, int startFrame, int numberOfFrames, String filePath) {
+    private ByteBuffer[] readFromFile(VideoMediaDataRequest request, int startFrame, int numberOfFrames, String filePath) {
         FFmpegImageRequest ffmpegRequest = new FFmpegImageRequest();
         ffmpegRequest.numberOfFrames = numberOfFrames;
         ffmpegRequest.height = request.getHeight();

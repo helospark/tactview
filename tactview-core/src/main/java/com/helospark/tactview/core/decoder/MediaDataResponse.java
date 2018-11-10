@@ -4,14 +4,14 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 public class MediaDataResponse {
-    private List<ByteBuffer> videoFrames;
+    private List<ByteBuffer> frames;
 
     public MediaDataResponse(List<ByteBuffer> videoFrames) {
-        this.videoFrames = videoFrames;
+        this.frames = videoFrames;
     }
 
-    public List<ByteBuffer> getVideoFrames() {
-        return videoFrames;
+    public List<ByteBuffer> getFrames() {
+        return frames;
     }
 
 }

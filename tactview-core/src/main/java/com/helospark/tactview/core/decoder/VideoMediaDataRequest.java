@@ -7,7 +7,7 @@ import javax.annotation.Generated;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
-public class MediaDataRequest {
+public class VideoMediaDataRequest {
     private File file;
     private VisualMediaMetadata metadata;
 
@@ -20,7 +20,7 @@ public class MediaDataRequest {
     private int height;
 
     @Generated("SparkTools")
-    private MediaDataRequest(Builder builder) {
+    private VideoMediaDataRequest(Builder builder) {
         this.file = builder.file;
         this.metadata = builder.metadata;
         this.start = builder.start;
@@ -32,7 +32,7 @@ public class MediaDataRequest {
     }
 
     @Generated("SparkTools")
-    public MediaDataRequest() {
+    public VideoMediaDataRequest() {
     }
 
     public File getFile() {
@@ -126,8 +126,8 @@ public class MediaDataRequest {
             return this;
         }
 
-        public MediaDataRequest build() {
-            return new MediaDataRequest(this);
+        public VideoMediaDataRequest build() {
+            return new VideoMediaDataRequest(this);
         }
     }
 

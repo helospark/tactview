@@ -5,15 +5,15 @@ import static com.helospark.tactview.core.timeline.TimelineClipType.VIDEO;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import com.helospark.tactview.core.decoder.MediaDataRequest;
+import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 
 public class VideoClip extends VisualTimelineClip {
     private VideoMetadata mediaMetadata;
-    private MediaSource backingSource;
+    private VisualMediaSource backingSource;
     private TimelinePosition startPosition;
 
-    public VideoClip(VideoMetadata mediaMetadata, MediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
+    public VideoClip(VideoMetadata mediaMetadata, VisualMediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
         super(mediaMetadata, new TimelineInterval(startPosition, length), VIDEO);
         this.mediaMetadata = mediaMetadata;
         this.backingSource = backingSource;
@@ -22,7 +22,7 @@ public class VideoClip extends VisualTimelineClip {
 
     @Override
     public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
-        MediaDataRequest request = MediaDataRequest.builder()
+        VideoMediaDataRequest request = VideoMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withHeight(height)
                 .withWidth(width)
@@ -30,7 +30,7 @@ public class VideoClip extends VisualTimelineClip {
                 .withStart(position)
                 .withNumberOfFrames(1)
                 .build();
-        return backingSource.decoder.readFrames(request).getVideoFrames().get(0);
+        return backingSource.decoder.readFrames(request).getFrames().get(0);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class VideoClip extends VisualTimelineClip {
         return mediaMetadata;
     }
 
-    public MediaSource getBackingSource() {
+    public VisualMediaSource getBackingSource() {
         return backingSource;
     }
 

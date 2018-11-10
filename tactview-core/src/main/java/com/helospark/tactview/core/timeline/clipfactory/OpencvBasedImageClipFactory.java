@@ -10,7 +10,7 @@ import com.helospark.tactview.core.decoder.opencv.OpenCvImageDecorderDecorator;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.LayerMaskApplier;
-import com.helospark.tactview.core.timeline.MediaSource;
+import com.helospark.tactview.core.timeline.VisualMediaSource;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
@@ -39,7 +39,7 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
     public TimelineClip createClip(AddClipRequest request) {
         File file = request.getFile();
         TimelinePosition position = request.getPosition();
-        MediaSource mediaSource = new MediaSource(file, mediaDecoder);
+        VisualMediaSource mediaSource = new VisualMediaSource(file, mediaDecoder);
         ImageMetadata metadata = readMetadata(request);
         ImageClip result = new ImageClip(mediaSource, metadata, position, metadata.getLength());
         result.setLayerMaskApplier(layerMaskApplier);

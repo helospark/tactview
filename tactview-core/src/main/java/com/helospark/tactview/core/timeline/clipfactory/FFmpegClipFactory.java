@@ -10,7 +10,7 @@ import com.helospark.tactview.core.decoder.ffmpeg.FFmpegBasedMediaDecoderDecorat
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.LayerMaskApplier;
-import com.helospark.tactview.core.timeline.MediaSource;
+import com.helospark.tactview.core.timeline.VisualMediaSource;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
@@ -31,7 +31,7 @@ public class FFmpegClipFactory implements ClipFactory {
         File file = request.getFile();
         TimelinePosition position = request.getPosition();
         VideoMetadata metadata = mediaDecoder.readMetadata(file);
-        MediaSource videoSource = new MediaSource(file, mediaDecoder);
+        VisualMediaSource videoSource = new VisualMediaSource(file, mediaDecoder);
         VideoClip result = new VideoClip(metadata, videoSource, position, metadata.getLength());
         result.setLayerMaskApplier(layerMaskApplier);
         return result;

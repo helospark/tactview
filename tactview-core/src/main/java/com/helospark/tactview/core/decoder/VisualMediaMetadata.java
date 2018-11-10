@@ -2,10 +2,9 @@ package com.helospark.tactview.core.decoder;
 
 import com.helospark.tactview.core.timeline.TimelineLength;
 
-public abstract class VisualMediaMetadata {
+public abstract class VisualMediaMetadata extends MediaMetadata {
     protected int width;
     protected int height;
-    protected TimelineLength length;
 
     public int getWidth() {
         return width;
