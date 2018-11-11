@@ -8,5 +8,5 @@ public interface AVCodecBasedAudioMediaDecoderImplementation extends Library {
 
     public AVCodecAudioMetadataResponse readMetadata(String filepath);
 
-    public void readAudio(AVCodecAudioRequest request);
+    public int readAudio(AVCodecAudioRequest request);
 }
