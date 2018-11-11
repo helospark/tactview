@@ -215,4 +215,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
                 .flatMap(a -> a.computeIntersectingIntervals(inInterval).stream());
     }
 
+    public boolean isEnabled(TimelinePosition position) {
+        return true;
+    }
 }

@@ -81,15 +81,16 @@ extern "C" {
     struct AVCodecAudioRequest {
         const char* path;
 
-        long lengthInMicroseconds;
         long startMicroseconds;
-        int bufferSize;
+        long bufferSize;
 
-        int numberOfChannels;
+        long numberOfChannels;
         FFMpegFrame* channels;
     };
 
-    int decode_audio_file(AVCodecAudioRequest* request) {
+    int readAudio(AVCodecAudioRequest* request) {
+        std::cout << "Audio size: " << request->bufferSize << " " << request->path << " " << request->startMicroseconds << " " << request->numberOfChannels << std::endl;
+
         av_register_all();
 
         // get format from audio file
@@ -111,6 +112,7 @@ extern "C" {
                 break;
             }
         }
+        std::cout << "Stream index: " << stream_index << std::endl;
         if (stream_index == -1) {
             fprintf(stderr, "Could not retrieve audio stream from file '%s'\n", request->path);
             return -1;
@@ -139,30 +141,31 @@ extern "C" {
             fprintf(stderr, "Error allocating the frame\n");
             return -1;
         }
+        std::cout << "Data frame init done: " << std::endl;
 
         bool isPlanar = av_sample_fmt_is_planar(codec->sample_fmt);
+
 
         int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000);
         seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, stream->time_base);
         av_seek_frame(format, stream_index, seek_target, AVSEEK_FLAG_BACKWARD);
 
-
         int totalNumberOfSamplesRead = 0;
         bool running = true;
+        std::cout << "Before while: " << std::endl;
         while (av_read_frame(format, &packet) >= 0 && running) {
+            std::cout << "Read stream: " << packet.stream_index << std::endl;
             if(packet.stream_index==stream_index) {
                 int gotFrame;
+                //std::cout << "Before continue: " << std::endl;
                 if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
                     break;
                 }
-                if (!gotFrame || packet.pts < seek_target) {
+                if (!gotFrame) {
                     continue;
                 }
                 std::cout << "Got frame " << frame->nb_samples  << " " << isPlanar  << std::endl;
 
-                    for (int u = 0; u < 2 * frame->nb_samples; ++u) {
-                        std::cout << (int)frame->data[0][u] << " ";
-                    }
 
                 if (isPlanar) {
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
@@ -173,7 +176,7 @@ extern "C" {
                                     running = false;
                                     break;
                                 }
-                                //std::cout << outputBufferIndex << std::endl;
+                                std::cout << frame->data[0][i * sampleSize + k] << " ";
                                 request->channels[channel].data[totalNumberOfSamplesRead++] = frame->data[0][i * sampleSize + k];
                             }
                         }
@@ -181,19 +184,24 @@ extern "C" {
                 } else {
                     for (int i = 0, j = 0; i < frame->nb_samples; ++i, ++j) {
                         for (int channel = 0; channel < request->numberOfChannels; ++channel) {
-                            for (int k = 0; k < sampleSize; ++i) {
+                            for (int k = 0; k < sampleSize; ++k) {
                                 int outputBufferIndex = j * sampleSize + k;
                                 if (totalNumberOfSamplesRead >= request->bufferSize) {
                                     running = false;
                                     break;
                                 }
-                                request->channels[channel].data[totalNumberOfSamplesRead++] = frame->data[0][request->numberOfChannels * sampleSize * j + channel + k];
+                                request->channels[channel].data[totalNumberOfSamplesRead++] = frame->data[0][request->numberOfChannels * sampleSize * i + channel *sampleSize + k];
                             }
                         }
                     }
                 }
             }
+
         }
+                    std::cout << "new: " << std::endl;
+                    for (int u = 0; u <  totalNumberOfSamplesRead && u < 5000; ++u) {
+                        std::cout << (int)request->channels[0].data[u] << " ";
+                    }
 
         // clean up
         av_frame_free(&frame);

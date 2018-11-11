@@ -15,7 +15,7 @@ public class JavaDisplayableAudioVideoFragment {
         return image;
     }
 
-    public byte[] getData() {
+    public byte[] getAudioData() {
         return data;
     }
 

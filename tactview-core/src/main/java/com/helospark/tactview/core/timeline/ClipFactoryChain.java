@@ -3,7 +3,7 @@ package com.helospark.tactview.core.timeline;
 import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.decoder.MediaMetadata;
 
 @Component
 public class ClipFactoryChain {
@@ -18,7 +18,7 @@ public class ClipFactoryChain {
                 .createClip(request);
     }
 
-    public VisualMediaMetadata readMetadata(AddClipRequest request) {
+    public MediaMetadata readMetadata(AddClipRequest request) {
         return findFactory(request)
                 .readMetadata(request);
     }

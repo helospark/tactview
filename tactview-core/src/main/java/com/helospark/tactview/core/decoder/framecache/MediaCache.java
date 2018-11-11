@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,7 +24,7 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 
 @Component
 public class MediaCache {
-    private Map<MediaHashKey, NavigableMap<Integer, MediaHashValue>> backCache = new ConcurrentHashMap<>();
+    private Map<String, NavigableMap<Integer, MediaHashValue>> backCache = new ConcurrentHashMap<>();
     private Set<CacheRemoveDomain> toRemove = new ConcurrentSkipListSet<>();
     private MemoryManager memoryManager;
 
@@ -86,9 +85,17 @@ public class MediaCache {
         running = false;
     }
 
-    public void cacheMedia(MediaHashKey key, MediaHashValue value) {
-        MediaHashValue clonedValue = cloneValue(value);
+    public void cacheMedia(String key, MediaHashValue value) {
+        cacheMedia(key, value, true);
+    }
 
+    public void cacheMedia(String key, MediaHashValue value, boolean cloneValue) {
+        MediaHashValue clonedValue;
+        if (cloneValue) {
+            clonedValue = cloneValue(value);
+        } else {
+            clonedValue = value;
+        }
         NavigableMap<Integer, MediaHashValue> cachedFrames = backCache.get(key);
         if (cachedFrames == null) {
             cachedFrames = new ConcurrentSkipListMap<>();
@@ -107,7 +114,7 @@ public class MediaCache {
             copied.add(result);
         }
 
-        return new MediaHashValue(value.frameStart, copied);
+        return new MediaHashValue(value.frameStart, value.endIndex, copied);
     }
 
     private ByteBuffer requestBuffersForCloning(ByteBuffer bufferToClone) {
@@ -122,7 +129,7 @@ public class MediaCache {
         approximateSize -= buffer.capacity();
     }
 
-    public Optional<MediaHashValue> findInCache(MediaHashKey key, int frame) {
+    public Optional<MediaHashValue> findInCache(String key, int frame) {
         NavigableMap<Integer, MediaHashValue> media = backCache.get(key);
         if (media == null) {
             return Optional.empty();
@@ -130,7 +137,7 @@ public class MediaCache {
             Optional<MediaHashValue> result = media // todo: avoid linear search
                     .values()
                     .stream()
-                    .filter(value -> frame >= value.frameStart && frame < value.frameStart + value.frames.size())
+                    .filter(value -> frame >= value.frameStart && frame < value.endIndex)
                     .findFirst();
             result.ifPresent(value -> value.lastAccessed = System.currentTimeMillis());
             return result;
@@ -139,11 +146,13 @@ public class MediaCache {
 
     public static class MediaHashValue implements Comparable<MediaHashValue> {
         public int frameStart;
+        public int endIndex;
         public List<ByteBuffer> frames;
         private volatile long lastAccessed = System.currentTimeMillis();
 
-        public MediaHashValue(int frameStart, List<ByteBuffer> frames) {
+        public MediaHashValue(int frameStart, int endIndex, List<ByteBuffer> frames) {
             this.frameStart = frameStart;
+            this.endIndex = endIndex;
             this.frames = frames;
         }
 
@@ -165,43 +174,11 @@ public class MediaCache {
         copyTo.put(elementToCopy);
     }
 
-    public static class MediaHashKey {
-        public String file;
-        public int width;
-        public int height;
-
-        @Override
-        public boolean equals(final Object other) {
-            if (!(other instanceof MediaHashKey)) {
-                return false;
-            }
-            MediaHashKey castOther = (MediaHashKey) other;
-            return Objects.equals(file, castOther.file) && Objects.equals(width, castOther.width) && Objects.equals(height, castOther.height);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(file, width, height);
-        }
-
-        public MediaHashKey(String file, int width, int height) {
-            this.file = file;
-            this.width = width;
-            this.height = height;
-        }
-
-        @Override
-        public String toString() {
-            return "MediaHashKey [file=" + file + ", width=" + width + ", height=" + height + "]";
-        }
-
-    }
-
     public static class CacheRemoveDomain implements Comparable<CacheRemoveDomain> {
-        private MediaHashKey key;
+        private String key;
         private MediaHashValue value;
 
-        public CacheRemoveDomain(MediaHashKey key, MediaHashValue value) {
+        public CacheRemoveDomain(String key, MediaHashValue value) {
             this.key = key;
             this.value = value;
         }

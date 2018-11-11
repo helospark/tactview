@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class AudioMediaDataRequest {
@@ -14,6 +15,7 @@ public class AudioMediaDataRequest {
     private int expectedChannels;
 
     private TimelinePosition start;
+    private TimelineLength length;
 
     @Generated("SparkTools")
     private AudioMediaDataRequest(Builder builder) {
@@ -23,6 +25,7 @@ public class AudioMediaDataRequest {
         this.expectedBytesPerSample = builder.expectedBytesPerSample;
         this.expectedChannels = builder.expectedChannels;
         this.start = builder.start;
+        this.length = builder.length;
     }
 
     @Generated("SparkTools")
@@ -53,6 +56,10 @@ public class AudioMediaDataRequest {
         return expectedChannels;
     }
 
+    public TimelineLength getLength() {
+        return length;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -66,6 +73,7 @@ public class AudioMediaDataRequest {
         private int expectedBytesPerSample;
         private int expectedChannels;
         private TimelinePosition start;
+        private TimelineLength length;
 
         private Builder() {
         }
@@ -97,6 +105,11 @@ public class AudioMediaDataRequest {
 
         public Builder withStart(TimelinePosition start) {
             this.start = start;
+            return this;
+        }
+
+        public Builder withLength(TimelineLength length) {
+            this.length = length;
             return this;
         }
 

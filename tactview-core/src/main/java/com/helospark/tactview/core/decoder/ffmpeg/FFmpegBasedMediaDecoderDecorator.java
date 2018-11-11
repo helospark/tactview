@@ -13,13 +13,12 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
-import com.helospark.tactview.core.decoder.VisualMediaDecoder;
+import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VideoMetadata;
+import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
-import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashKey;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
@@ -120,16 +119,20 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     }
 
     private void storeInCache(VideoMediaDataRequest request, int startFrame, String filePath, List<ByteBuffer> result) {
-        MediaHashKey key = new MediaHashKey(filePath, request.getWidth(), request.getHeight());
-        MediaHashValue value = new MediaHashValue(startFrame, result);
+        String key = createHashKey(filePath, request);
+        MediaHashValue value = new MediaHashValue(startFrame, startFrame + result.size(), result);
         mediaCache.cacheMedia(key, value);
+    }
+
+    private String createHashKey(String filePath, VideoMediaDataRequest request) {
+        return filePath + " " + request.getWidth() + " " + request.getHeight();
     }
 
     private Map<Integer, ByteBuffer> findInCache(VideoMediaDataRequest request, int numberOfFrames, int startFrame, String filePath) {
         Map<Integer, ByteBuffer> frames = new TreeMap<>();
         int endFrames = startFrame + numberOfFrames;
         for (int frameToFindInCache = startFrame; frameToFindInCache < endFrames; ++frameToFindInCache) {
-            Optional<MediaHashValue> found = mediaCache.findInCache(new MediaHashKey(filePath, request.getWidth(), request.getHeight()), frameToFindInCache);
+            Optional<MediaHashValue> found = mediaCache.findInCache(createHashKey(filePath, request), frameToFindInCache);
             if (found.isPresent()) {
                 MediaHashValue foundCache = found.get();
                 int startCopyFrom = frameToFindInCache - foundCache.frameStart;

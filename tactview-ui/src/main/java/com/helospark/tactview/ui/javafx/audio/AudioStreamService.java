@@ -2,7 +2,6 @@ package com.helospark.tactview.ui.javafx.audio;
 
 import javax.annotation.PostConstruct;
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
@@ -18,17 +17,13 @@ public class AudioStreamService {
     private DataLine.Info dataLineInfo;
     private SourceDataLine sourceDataLine;
 
-    AudioInputStream audioInputStream;
-    static AudioInputStream ais;
-    static AudioFormat format;
-
     @Slf4j
     private Logger logger;
 
     @PostConstruct
     public void init() {
         try {
-            AudioFormat format = new AudioFormat(44100, 8, 2, true, false);
+            AudioFormat format = new AudioFormat(44100, 16, 2, true, true);
             dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
             sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
             sourceDataLine.open(format);
@@ -39,9 +34,11 @@ public class AudioStreamService {
     }
 
     public void streamAudio(byte[] data) {
-        int availableBytes = sourceDataLine.available();
-        int bytesToWrite = Math.min(data.length, availableBytes);
-        sourceDataLine.write(data, 0, bytesToWrite);
+        if (data.length > 0) {
+            int availableBytes = sourceDataLine.available();
+            int bytesToWrite = Math.min(data.length, availableBytes);
+            sourceDataLine.write(data, 0, bytesToWrite - (bytesToWrite % 8));
+        }
     }
 
 }

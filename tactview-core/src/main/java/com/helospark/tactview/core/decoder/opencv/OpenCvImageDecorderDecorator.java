@@ -9,12 +9,11 @@ import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.ImageMetadata;
-import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
+import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
-import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashKey;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
@@ -45,7 +44,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
 
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
-        MediaHashKey cacheKey = new MediaHashKey(request.getFile().getAbsolutePath(), request.getWidth(), request.getHeight());
+        String cacheKey = request.getFile().getAbsolutePath() + " " + request.getWidth() + " " + request.getHeight();
         Optional<MediaHashValue> result = mediaCache.findInCache(cacheKey, 0);
 
         ByteBuffer image;
@@ -62,7 +61,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
             implementation.readImage(imageRequest);
             image = imageRequest.data;
 
-            mediaCache.cacheMedia(cacheKey, new MediaHashValue(0, Collections.singletonList(image)));
+            mediaCache.cacheMedia(cacheKey, new MediaHashValue(0, 1, Collections.singletonList(image)));
         }
 
         List<ByteBuffer> frames = new ArrayList<>();

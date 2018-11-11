@@ -169,8 +169,6 @@ public class TimelineManager implements Saveable {
                 .collect(Collectors.toMap(a -> a.getId(), a -> a));
 
         List<String> renderOrder = allClips.stream()
-                .filter(a -> a instanceof VisualTimelineClip)
-                .map(a -> ((VisualTimelineClip) a))
                 .filter(a -> a.isEnabled(request.getPosition()))
                 .map(a -> a.getId())
                 .collect(Collectors.toList());
@@ -226,7 +224,7 @@ public class TimelineManager implements Saveable {
                     futures.add(CompletableFuture.supplyAsync(() -> {
                         AudioRequest audioRequest = AudioRequest.builder()
                                 .withPosition(request.getPosition())
-                                .withLength(new TimelineLength(BigDecimal.ONE.divide(projectRepository.getFps(), 2, RoundingMode.HALF_DOWN)))
+                                .withLength(new TimelineLength(BigDecimal.valueOf(30).divide(projectRepository.getFps(), 2, RoundingMode.HALF_DOWN)))
                                 .withSampleRate(44100)
                                 .build();
 
@@ -261,6 +259,7 @@ public class TimelineManager implements Saveable {
         clipsToFrames.values()
                 .stream()
                 .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.clipFrameResult.getBuffer()));
+        // TODO: deallocate audio
 
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
         // TODO: audio effects

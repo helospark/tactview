@@ -32,6 +32,7 @@ public class SoundClip extends AudibleTimelineClip {
                 .withExpectedBytesPerSample(mediaMetadata.getBytesPerSample())
                 .withExpectedSampleRate(mediaMetadata.getSampleRate()) // this could be scaled if processing is too slow
                 .withExpectedChannels(mediaMetadata.getChannels())
+                .withLength(audioRequest.getLength())
                 .build();
 
         List<ByteBuffer> data = backingSource.decoder.readFrames(request).getFrames();

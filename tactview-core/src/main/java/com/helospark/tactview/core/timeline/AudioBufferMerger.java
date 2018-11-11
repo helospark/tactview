@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
@@ -11,6 +12,9 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 public class AudioBufferMerger {
 
     public AudioFrameResult mergeBuffers(List<AudioFrameResult> renderAudioFrameData) {
+        if (renderAudioFrameData.isEmpty()) {
+            return new AudioFrameResult(Collections.emptyList(), 0, 0);
+        }
         int numberOfChannels = calculateNumberOfChannels(renderAudioFrameData);
         int maximumQuality = calculateMaximumQuality(renderAudioFrameData);
         int maximumByteLength = calculateMaximumBitLength(renderAudioFrameData);
@@ -25,7 +29,7 @@ public class AudioBufferMerger {
 
         for (AudioFrameResult data : renderAudioFrameData) {
             for (int channelIndex = 0; channelIndex < data.getChannels().size(); ++channelIndex) {
-                for (int sampleIndex = 0; sampleIndex < length; ++sampleIndex) {
+                for (int sampleIndex = 0; sampleIndex < length; sampleIndex += maximumByteLength) {
                     int newData = data.getRescaledSample(channelIndex, maximumByteLength, maximumQuality, sampleIndex);
                     int oldData = audioFrameResult.getSampleAt(channelIndex, sampleIndex);
                     audioFrameResult.setSampleAt(channelIndex, sampleIndex, newData + oldData);
@@ -40,7 +44,7 @@ public class AudioBufferMerger {
         int bytesPerSample = 0;
         for (var data : renderAudioFrameData) {
             if (data.getBytesPerSample() > bytesPerSample) {
-                bytesPerSample = data.getSamplePerSecond();
+                bytesPerSample = data.getBytesPerSample();
             }
         }
         return bytesPerSample;

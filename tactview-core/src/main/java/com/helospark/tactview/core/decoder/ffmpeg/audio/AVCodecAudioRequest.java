@@ -9,13 +9,13 @@ public class AVCodecAudioRequest extends Structure implements Structure.ByRefere
     public String path;
 
     public long startMicroseconds;
-    public int bufferSize;
+    public long bufferSize;
 
-    public int numberOfChannels;
+    public long numberOfChannels;
     public FFMpegFrame channels;
 
     @Override
     protected List<String> getFieldOrder() {
-        return List.of("path", "startMicroseconds", "bufferSize", "numberOfChannels", "frames");
+        return List.of("path", "startMicroseconds", "bufferSize", "numberOfChannels", "channels");
     }
 }

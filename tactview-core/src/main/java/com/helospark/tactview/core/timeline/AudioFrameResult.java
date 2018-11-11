@@ -7,13 +7,11 @@ public class AudioFrameResult {
     private List<ByteBuffer> channels;
     private int samples;
     private int bytesPerSample;
-    private TimelineLength length;
 
     public AudioFrameResult(List<ByteBuffer> channels, int samplesPerSecond, int bytesPerSample) {
         this.channels = channels;
         this.samples = samplesPerSecond;
         this.bytesPerSample = bytesPerSample;
-        this.length = TimelineLength.ofSeconds((double) channels.get(0).capacity() / (samplesPerSecond * bytesPerSample));
     }
 
     public List<ByteBuffer> getChannels() {
@@ -30,14 +28,23 @@ public class AudioFrameResult {
 
     public int getSampleAt(int channelIndex, int sampleIndex) {
         ByteBuffer channelBuffer = channels.get(channelIndex);
-        if (sampleIndex > channelBuffer.capacity()) {
+        if (sampleIndex + bytesPerSample > channelBuffer.capacity()) {
             return 0;
         }
-        return signedToUnsignedByte(channelBuffer.get(sampleIndex));
+        int result = 0;
+        for (int i = 0; i < bytesPerSample; ++i) {
+            result <<= 8;
+            result |= signedToUnsignedByte(channelBuffer.get(sampleIndex + i));
+        }
+        return result;
     }
 
     public void setSampleAt(int channelIndex, int sampleIndex, int newValue) {
-        channels.get(channelIndex).put(sampleIndex, (byte) (saturateIfNeeded(newValue) & 0xFF));
+        ByteBuffer channel = channels.get(channelIndex);
+        int saturatedValue = saturateIfNeeded(newValue, (long) 1 << (bytesPerSample * 8));
+        for (int i = 0; i < bytesPerSample; ++i) {
+            channel.put(sampleIndex + i, (byte) ((saturatedValue >> (i * 8)) & 0xFF));
+        }
     }
 
     private int signedToUnsignedByte(byte b) {
@@ -50,22 +57,26 @@ public class AudioFrameResult {
         return value;
     }
 
-    private int saturateIfNeeded(int i) {
-        if (i > 255) {
-            return 255;
-        } else if (i < 0) {
-            return 0;
+    private int saturateIfNeeded(int i, long limit) {
+        if (i >= limit) {
+            return (int) (limit - 1);
+        } else if (i < -limit) {
+            return (int) -limit;
         } else {
             return i;
         }
     }
 
     public TimelineLength getLength() {
-        return length;
+        if (channels.size() > 0) {
+            return TimelineLength.ofSeconds((double) channels.get(0).capacity() / (this.samples * bytesPerSample));
+        } else {
+            return TimelineLength.ofZero();
+        }
     }
 
     public int getRescaledSample(int channel, int rescaleToBits, int rescaleToSamples, int position) {
-        double scaledPosition = ((double) samples / rescaleToBits) * position;
+        double scaledPosition = ((double) samples / rescaleToSamples) * position / rescaleToBits;
         int samplePosition1 = (int) Math.ceil(scaledPosition);
         int samplePosition2 = (int) Math.floor(scaledPosition);
         int firstSample = getSampleAt(channel, samplePosition1);
