@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +22,7 @@ public abstract class AudibleTimelineClip extends TimelineClip {
         return new ArrayList<>();
     }
 
-    public abstract ByteBuffer requestAudioFrame(TimelinePosition position, int sampleRate, int channel);
+    public abstract AudioFrameResult requestAudioFrame(AudioRequest audioRequest);
 
     public abstract AudioMediaDecoder getMediaMetadata();
 }

@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.Saveable;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
@@ -37,7 +39,6 @@ import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -58,17 +59,19 @@ public class TimelineManager implements Saveable {
     private ClipFactoryChain clipFactoryChain;
     private FrameBufferMerger frameBufferMerger;
     private ObjectMapper objectMapper;
-    private IndependentPixelOperation independentPixelOperation;
+    private AudioBufferMerger audioBufferMerger;
+    private ProjectRepository projectRepository;
 
     public TimelineManager(FrameBufferMerger frameBufferMerger,
             List<EffectFactory> effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
-            ObjectMapper objectMapper, IndependentPixelOperation independentPixelOperation) {
+            ObjectMapper objectMapper, AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository) {
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
         this.frameBufferMerger = frameBufferMerger;
         this.objectMapper = objectMapper;
-        this.independentPixelOperation = independentPixelOperation;
+        this.audioBufferMerger = audioBufferMerger;
+        this.projectRepository = projectRepository;
     }
 
     public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
@@ -112,7 +115,7 @@ public class TimelineManager implements Saveable {
                 .findFirst();
     }
 
-    public ByteBuffer getFrames(TimelineManagerFramesRequest request) {
+    public AudioVideoFragment getFrames(TimelineManagerFramesRequest request) {
         return getSingleFrame(request); // todo: multiple frames
     }
 
@@ -141,7 +144,20 @@ public class TimelineManager implements Saveable {
 
     }
 
-    public ByteBuffer getSingleFrame(TimelineManagerFramesRequest request) {
+    static class RenderAudioFrameData {
+        List<ByteBuffer> channels;
+
+        public RenderAudioFrameData(List<ByteBuffer> channels) {
+            this.channels = channels;
+        }
+
+        public List<ByteBuffer> getChannels() {
+            return channels;
+        }
+
+    }
+
+    public AudioVideoFragment getSingleFrame(TimelineManagerFramesRequest request) {
         List<TimelineClip> allClips = channels
                 .stream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
@@ -165,6 +181,7 @@ public class TimelineManager implements Saveable {
         recursiveLayering(tree, 0, layers);
 
         Map<String, RenderFrameData> clipsToFrames = new ConcurrentHashMap<>();
+        Map<String, AudioFrameResult> audioToFrames = new ConcurrentHashMap<>();
 
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -203,6 +220,25 @@ public class TimelineManager implements Saveable {
                         logger.error("Unable to render", e);
                         return null;
                     }));
+                } else if (clip instanceof AudibleTimelineClip) {
+                    AudibleTimelineClip audibleClip = (AudibleTimelineClip) clip;
+
+                    futures.add(CompletableFuture.supplyAsync(() -> {
+                        AudioRequest audioRequest = AudioRequest.builder()
+                                .withPosition(request.getPosition())
+                                .withLength(new TimelineLength(BigDecimal.ONE.divide(projectRepository.getFps(), 2, RoundingMode.HALF_DOWN)))
+                                .withSampleRate(44100)
+                                .build();
+
+                        return audibleClip.requestAudioFrame(audioRequest);
+
+                    }, executorService).exceptionally(e -> {
+                        logger.error("Unable to get audio", e);
+                        return null;
+                    }).thenAccept(a -> {
+                        audioToFrames.put(audibleClip.getId(), a);
+                    }));
+
                 }
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
@@ -215,12 +251,21 @@ public class TimelineManager implements Saveable {
 
         ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
 
+        List<AudioFrameResult> audioFrames = renderOrder.stream()
+                .map(a -> audioToFrames.get(a))
+                .filter(a -> a != null)
+                .collect(Collectors.toList());
+
+        AudioFrameResult audioBuffer = audioBufferMerger.mergeBuffers(audioFrames);
+
         clipsToFrames.values()
                 .stream()
                 .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.clipFrameResult.getBuffer()));
 
         ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
-        return finalResult.getBuffer();
+        // TODO: audio effects
+
+        return new AudioVideoFragment(finalResult, audioBuffer);
     }
 
     private List<TreeNode> buildRenderTree(Map<String, TimelineClip> clipsToRender, TimelinePosition position) {

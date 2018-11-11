@@ -1,7 +1,6 @@
 package com.helospark.tactview.core.render;
 
-import java.nio.ByteBuffer;
-
+import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -13,7 +12,7 @@ public abstract class AbstractRenderService implements RenderService {
         this.timelineManager = timelineManager;
     }
 
-    protected ByteBuffer queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition) {
+    protected AudioVideoFragment queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition) {
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
                 .withFrameBufferSize(1)
                 .withPosition(currentPosition)
@@ -22,8 +21,7 @@ public abstract class AbstractRenderService implements RenderService {
                 .withScale(1.0)
                 .build();
 
-        ByteBuffer frame = timelineManager.getSingleFrame(frameRequest);
-        return frame;
+        return timelineManager.getSingleFrame(frameRequest);
     }
 
 }

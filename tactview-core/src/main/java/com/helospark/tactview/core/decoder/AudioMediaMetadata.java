@@ -6,12 +6,14 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 
 public class AudioMediaMetadata extends MediaMetadata {
     protected int sampleRate;
+    protected int bytesPerSample;
     protected int channels;
 
     @Generated("SparkTools")
     private AudioMediaMetadata(Builder builder) {
         this.length = builder.length;
         this.sampleRate = builder.sampleRate;
+        this.bytesPerSample = builder.bytesPerSample;
         this.channels = builder.channels;
     }
 
@@ -23,6 +25,10 @@ public class AudioMediaMetadata extends MediaMetadata {
         return channels;
     }
 
+    public int getBytesPerSample() {
+        return bytesPerSample;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -32,6 +38,7 @@ public class AudioMediaMetadata extends MediaMetadata {
     public static final class Builder {
         private TimelineLength length;
         private int sampleRate;
+        private int bytesPerSample;
         private int channels;
 
         private Builder() {
@@ -44,6 +51,11 @@ public class AudioMediaMetadata extends MediaMetadata {
 
         public Builder withSampleRate(int sampleRate) {
             this.sampleRate = sampleRate;
+            return this;
+        }
+
+        public Builder withBytesPerSample(int bytesPerSample) {
+            this.bytesPerSample = bytesPerSample;
             return this;
         }
 

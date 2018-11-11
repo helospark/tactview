@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import com.helospark.tactview.core.decoder.AudioMediaDataRequest;
 import com.helospark.tactview.core.decoder.AudioMediaDecoder;
@@ -23,13 +24,21 @@ public class SoundClip extends AudibleTimelineClip {
     }
 
     @Override
-    public ByteBuffer requestAudioFrame(TimelinePosition position, int sampleRate, int channel) {
+    public AudioFrameResult requestAudioFrame(AudioRequest audioRequest) {
         AudioMediaDataRequest request = AudioMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withMetadata(mediaMetadata)
-                .withStart(position)
+                .withStart(audioRequest.getPosition())
+                .withExpectedBytesPerSample(mediaMetadata.getBytesPerSample())
+                .withExpectedSampleRate(mediaMetadata.getSampleRate()) // this could be scaled if processing is too slow
+                .withExpectedChannels(mediaMetadata.getChannels())
                 .build();
-        return backingSource.decoder.readFrames(request).getFrames().get(0);
+
+        List<ByteBuffer> data = backingSource.decoder.readFrames(request).getFrames();
+
+        AudioFrameResult result = new AudioFrameResult(data, mediaMetadata.getSampleRate(), mediaMetadata.getBytesPerSample());
+
+        return result;
     }
 
     @Override

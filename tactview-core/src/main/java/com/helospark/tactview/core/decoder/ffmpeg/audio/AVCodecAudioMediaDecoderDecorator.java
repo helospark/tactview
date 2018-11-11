@@ -15,9 +15,9 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     private AVCodecBasedAudioMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
 
-    //    public AVCodecAudioMediaDecoderDecorator(AVCodecBasedAudioMediaDecoderImplementation implementation) {
-    //        this.implementation = implementation;
-    //    }
+    public AVCodecAudioMediaDecoderDecorator(AVCodecBasedAudioMediaDecoderImplementation implementation) {
+        this.implementation = implementation;
+    }
 
     @Override
     public MediaDataResponse readFrames(AudioMediaDataRequest request) {
@@ -34,6 +34,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         return AudioMediaMetadata.builder()
                 .withChannels(readMetadata.channels)
                 .withSampleRate(readMetadata.sampleRate)
+                .withBytesPerSample(readMetadata.bytesPerSample)
                 .withLength(TimelineLength.ofMicroseconds(readMetadata.lengthInMicroseconds))
                 .build();
     }

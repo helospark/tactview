@@ -36,7 +36,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int frameIndex = 0;
         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())) {
-            ByteBuffer frame = queryFrameAt(renderRequest, currentPosition);
+            ByteBuffer frame = queryFrameAt(renderRequest, currentPosition).getVideoResult().getBuffer();
 
             FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
             nativeRequest.frames = new FFMpegFrame();

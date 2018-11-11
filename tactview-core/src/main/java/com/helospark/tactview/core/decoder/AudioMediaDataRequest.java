@@ -9,6 +9,9 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 public class AudioMediaDataRequest {
     private File file;
     private AudioMediaMetadata metadata;
+    private int expectedSampleRate;
+    private int expectedBytesPerSample;
+    private int expectedChannels;
 
     private TimelinePosition start;
 
@@ -16,6 +19,9 @@ public class AudioMediaDataRequest {
     private AudioMediaDataRequest(Builder builder) {
         this.file = builder.file;
         this.metadata = builder.metadata;
+        this.expectedSampleRate = builder.expectedSampleRate;
+        this.expectedBytesPerSample = builder.expectedBytesPerSample;
+        this.expectedChannels = builder.expectedChannels;
         this.start = builder.start;
     }
 
@@ -35,6 +41,18 @@ public class AudioMediaDataRequest {
         return metadata;
     }
 
+    public int getExpectedSampleRate() {
+        return expectedSampleRate;
+    }
+
+    public int getExpectedBytesPerSample() {
+        return expectedBytesPerSample;
+    }
+
+    public int getExpectedChannels() {
+        return expectedChannels;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -44,6 +62,9 @@ public class AudioMediaDataRequest {
     public static final class Builder {
         private File file;
         private AudioMediaMetadata metadata;
+        private int expectedSampleRate;
+        private int expectedBytesPerSample;
+        private int expectedChannels;
         private TimelinePosition start;
 
         private Builder() {
@@ -56,6 +77,21 @@ public class AudioMediaDataRequest {
 
         public Builder withMetadata(AudioMediaMetadata metadata) {
             this.metadata = metadata;
+            return this;
+        }
+
+        public Builder withExpectedSampleRate(int expectedSampleRate) {
+            this.expectedSampleRate = expectedSampleRate;
+            return this;
+        }
+
+        public Builder withExpectedBytesPerSample(int expectedBytesPerSample) {
+            this.expectedBytesPerSample = expectedBytesPerSample;
+            return this;
+        }
+
+        public Builder withExpectedChannels(int expectedChannels) {
+            this.expectedChannels = expectedChannels;
             return this;
         }
 

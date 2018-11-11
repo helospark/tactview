@@ -6,14 +6,14 @@ import com.helospark.tactview.core.decoder.ffmpeg.FFMpegFrame;
 import com.sun.jna.Structure;
 
 public class AVCodecAudioRequest extends Structure implements Structure.ByReference {
-    public int numberOfFrames;
+    public long lengthInMicroseconds;
     public long startMicroseconds;
 
     public int numberOfChannels;
-    public FFMpegFrame frames;
+    public FFMpegFrame channels;
 
     @Override
     protected List<String> getFieldOrder() {
-        return List.of("numberOfFrames", "startMicroseconds", "numberOfChannels", "frames");
+        return List.of("lengthInMicroseconds", "startMicroseconds", "numberOfChannels", "frames");
     }
 }

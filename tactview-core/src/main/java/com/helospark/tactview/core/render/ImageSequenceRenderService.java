@@ -73,7 +73,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
         String fileNameWithoutExtension = fileName.substring(0, extensionIndex);
         for (int i = 0; i < FRAME_PER_BATCH; ++i) {
             try {
-                ByteBuffer frame = queryFrameAt(renderRequest, new TimelinePosition(currentPosition));
+                ByteBuffer frame = queryFrameAt(renderRequest, new TimelinePosition(currentPosition)).getVideoResult().getBuffer();
 
                 BufferedImage image = byteBufferToImageConverter.byteBufferToBufferedImage(frame, renderRequest.getWidth(), renderRequest.getHeight());
 

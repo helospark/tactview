@@ -21,12 +21,11 @@ import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 
 @Component
 public class DisplayUpdaterService {
     private ExecutorService executorService = Executors.newFixedThreadPool(4);
-    private Map<TimelinePosition, Future<Image>> framecache = new ConcurrentHashMap<>();
+    private Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
     private volatile long currentPositionLastRendered = -1;
     private volatile boolean running = true;
 
@@ -84,8 +83,8 @@ public class DisplayUpdaterService {
     }
 
     public void updateDisplay(TimelinePosition currentPosition) {
-        Future<Image> cachedKey = framecache.remove(currentPosition);
-        Image actualImage;
+        Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
+        JavaDisplayableAudioVideoFragment actualImage;
         if (cachedKey == null) {
             actualImage = playbackController.getFrameAt(currentPosition);
         } else {
@@ -102,7 +101,7 @@ public class DisplayUpdaterService {
             int width = uiProjectRepostiory.getPreviewWidth();
             int height = uiProjectRepostiory.getPreviewHeight();
             GraphicsContext gc = canvas.getGraphicsContext2D();
-            gc.drawImage(actualImage, 0, 0, width, height);
+            gc.drawImage(actualImage.getImage(), 0, 0, width, height);
         });
 
         startCacheJobs(currentPosition);
@@ -112,7 +111,7 @@ public class DisplayUpdaterService {
         List<TimelinePosition> expectedNextFrames = uiTimelineManager.expectedNextFrames();
         for (TimelinePosition nextFrameTime : expectedNextFrames) {
             if (!framecache.containsKey(nextFrameTime)) {
-                Future<Image> task = executorService.submit(() -> {
+                Future<JavaDisplayableAudioVideoFragment> task = executorService.submit(() -> {
                     return playbackController.getFrameAt(currentPosition);
                 });
                 framecache.put(nextFrameTime, task);
