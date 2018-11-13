@@ -29,13 +29,20 @@ public class AudioBufferMerger {
 
         for (AudioFrameResult data : renderAudioFrameData) {
             for (int channelIndex = 0; channelIndex < data.getChannels().size(); ++channelIndex) {
-                for (int sampleIndex = 0; sampleIndex < length; sampleIndex += maximumByteLength) {
+                for (int sampleIndex = 0; sampleIndex < length / maximumByteLength; ++sampleIndex) {
                     int newData = data.getRescaledSample(channelIndex, maximumByteLength, maximumQuality, sampleIndex);
                     int oldData = audioFrameResult.getSampleAt(channelIndex, sampleIndex);
                     audioFrameResult.setSampleAt(channelIndex, sampleIndex, newData + oldData);
                 }
             }
         }
+
+        System.out.println();
+        System.out.println("After merge");
+        for (int i = 0; i < 100; ++i) {
+            System.out.print(((int) audioFrameResult.getChannels().get(0).get(i)) + " ");
+        }
+        System.out.println();
 
         return audioFrameResult;
     }

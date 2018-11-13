@@ -169,18 +169,25 @@ extern "C" {
 
                 if (isPlanar) {
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
-                        int startIndex = channel * frame->nb_samples * sampleSize;
-                        for (int i = startIndex, j = 0; i < startIndex + frame->nb_samples; ++i, ++j) {
+                        if (channel == 1 )
+                              std::cout << "Second channel data: " << std::endl;
+                        int startIndex = channel * frame->nb_samples;
+                        for (int i = 0, j = 0; i < frame->nb_samples; ++i, ++j) {
                             for (int k = 0; k < sampleSize; ++k) {
-                                if (totalNumberOfSamplesRead >= request->bufferSize) {
+                                int toUpdate = totalNumberOfSamplesRead + j * sampleSize + k;
+                                if (toUpdate >= request->bufferSize) {
                                     running = false;
                                     break;
                                 }
-                                std::cout << frame->data[0][i * sampleSize + k] << " ";
-                                request->channels[channel].data[totalNumberOfSamplesRead++] = frame->data[0][i * sampleSize + k];
+                              if (channel == 1 && toUpdate < 5000) {
+                                std::cout << (int)frame->data[0][i * sampleSize + k] << " ";
+                              }
+                              //  
+                                request->channels[channel].data[toUpdate] = frame->data[channel][i * sampleSize + k];
                             }
                         }
                     }
+                    totalNumberOfSamplesRead += frame->nb_samples * sampleSize;
                 } else {
                     for (int i = 0, j = 0; i < frame->nb_samples; ++i, ++j) {
                         for (int channel = 0; channel < request->numberOfChannels; ++channel) {
@@ -190,6 +197,7 @@ extern "C" {
                                     running = false;
                                     break;
                                 }
+                                // TODO: this only supports single channel
                                 request->channels[channel].data[totalNumberOfSamplesRead++] = frame->data[0][request->numberOfChannels * sampleSize * i + channel *sampleSize + k];
                             }
                         }

@@ -39,22 +39,25 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
 
         Optional<MediaHashValue> cachedResult = mediaCache.findInCache(hashKey, startSample);
         if (cachedResult.isPresent()) {
+            int frameStartIndexInBuffer = cachedResult.get().frameStart;
             List<ByteBuffer> foindInCache = cachedResult.get().frames;
 
-            return copyRelevantParts(request, startSample, foindInCache);
+            return copyRelevantParts(request, startSample - frameStartIndexInBuffer, foindInCache);
         } else {
             MediaDataResponse result = readFromFile(request);
             mediaCache.cacheMedia(hashKey, new MediaHashValue(startSample, result.getFrames().get(0).capacity(), result.getFrames()), false);
 
-            return copyRelevantParts(request, startSample, result.getFrames());
+            return copyRelevantParts(request, 0, result.getFrames());
         }
     }
 
     private MediaDataResponse copyRelevantParts(AudioMediaDataRequest request, int startSample, List<ByteBuffer> foindInCache) {
         BigDecimal sampleRate = new BigDecimal(request.getExpectedSampleRate());
-        int endSample = startSample + request.getLength().getSeconds().multiply(sampleRate).intValue();
+        int endSample = startSample + request.getLength().getSeconds()
+                .multiply(sampleRate)
+                .intValue() * request.getExpectedBytesPerSample();
         List<ByteBuffer> buffers = new ArrayList<>();
-        int to = Math.min(endSample, startSample + foindInCache.get(0).capacity());
+        int to = Math.min(endSample, foindInCache.get(0).capacity());
         int size = to - startSample;
         for (int channel = 0; channel < request.getExpectedChannels(); ++channel) {
             ByteBuffer channelBuffer = memoryManager.requestBuffer(size);
@@ -88,7 +91,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         System.out.println();
         System.out.println("New on java side");
         for (int i = 0; i < 5000; ++i) {
-            System.out.print(result.get(0).get(i) + " ");
+            System.out.print(((int) result.get(0).get(i)) + " ");
         }
         System.out.println();
 

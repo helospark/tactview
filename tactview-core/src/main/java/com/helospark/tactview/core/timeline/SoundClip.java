@@ -20,7 +20,7 @@ public class SoundClip extends AudibleTimelineClip {
         this.mediaMetadata = mediaMetadata;
         this.mediaDecoder = mediaDecoder;
         this.backingSource = backingSource;
-        this.startPosition = TimelinePosition.ofZero();
+        this.startPosition = startPosition;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class SoundClip extends AudibleTimelineClip {
         AudioMediaDataRequest request = AudioMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withMetadata(mediaMetadata)
-                .withStart(audioRequest.getPosition())
+                .withStart(audioRequest.getPosition().from(interval.getStartPosition()))
                 .withExpectedBytesPerSample(mediaMetadata.getBytesPerSample())
                 .withExpectedSampleRate(mediaMetadata.getSampleRate()) // this could be scaled if processing is too slow
                 .withExpectedChannels(mediaMetadata.getChannels())

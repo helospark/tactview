@@ -14,17 +14,17 @@ public class JavaByteArrayConverter {
         int fullLength = numberOfChannels * numberOfSamplesPerChannel;
         byte[] result = new byte[fullLength];
 
-        for (int sample = 0; sample < numberOfSamplesPerChannel; sample += bytes) {
+        for (int sample = 0; sample < samples * length; ++sample) {
             for (int channel = 0; channel < numberOfChannels; ++channel) {
                 if (channel < originalNumberOfChannels) {
                     int rescaledSample = audioFrameResult.getRescaledSample(channel, bytes, samples, sample);
                     byte[] bytesToAdd = toBytes(rescaledSample, bytes);
                     for (int i = 0; i < bytes; ++i) {
-                        result[sample * numberOfChannels + channel + i] = bytesToAdd[i];
+                        result[sample * bytes * numberOfChannels + channel * bytes + i] = bytesToAdd[i];
                     }
                 } else {
                     for (int i = 0; i < bytes; ++i) {
-                        result[sample * numberOfChannels + channel + i] = 0;
+                        result[sample * bytes * numberOfChannels + channel * bytes + i] = 0;
                     }
                 }
             }
@@ -33,10 +33,10 @@ public class JavaByteArrayConverter {
         return result;
     }
 
-    private byte[] toBytes(int rescaledSample, int bytes) {
+    private byte[] toBytes(int sample, int bytes) {
         byte[] result = new byte[bytes];
         for (int i = 0; i < bytes; ++i) {
-            result[i] = (byte) ((rescaledSample >> (i * 8)) & 0xFF);
+            result[i] = (byte) ((sample >> ((bytes - i - 1) * 8)) & 0xFF);
         }
         return result;
     }
