@@ -23,7 +23,7 @@ public class AudioStreamService {
     @PostConstruct
     public void init() {
         try {
-            AudioFormat format = new AudioFormat(48000, 32, 2, true, false);
+            AudioFormat format = new AudioFormat(48000, 8, 1, true, true);
             dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
             sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
             sourceDataLine.open(format);
@@ -35,11 +35,11 @@ public class AudioStreamService {
 
     public void streamAudio(byte[] data) {
         if (data.length > 0) {
-            System.out.println("Sending this music: ");
-            for (int i = 0; i < data.length && i < 100; ++i) {
-                System.out.print(data[i] + " ");
-            }
-            System.out.println();
+            //            System.out.println("Sending this music: ");
+            //            for (int i = 0; i < data.length && i < 500; ++i) {
+            //                System.out.print(((int) data[i]) + " ");
+            //            }
+            //            System.out.println();
 
             int availableBytes = sourceDataLine.available();
             int bytesToWrite = Math.min(data.length, availableBytes);

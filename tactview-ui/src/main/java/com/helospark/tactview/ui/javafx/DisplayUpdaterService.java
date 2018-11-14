@@ -108,7 +108,7 @@ public class DisplayUpdaterService {
         });
         audioStreamService.streamAudio(actualAudioVideoFragment.getAudioData());
 
-        //        startCacheJobs(currentPosition);
+        startCacheJobs(currentPosition);
     }
 
     private void startCacheJobs(TimelinePosition currentPosition) {

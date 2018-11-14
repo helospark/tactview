@@ -8,7 +8,7 @@ public class JavaByteArrayConverter {
 
     public byte[] convert(AudioFrameResult audioFrameResult, int bytes, int samples, int channels) {
         double length = audioFrameResult.getLength().getSeconds().doubleValue();
-        int numberOfSamplesPerChannel = (int) (bytes * samples * length);
+        int numberOfSamplesPerChannel = (int) Math.ceil(bytes * samples * length);
         int numberOfChannels = channels;
         int originalNumberOfChannels = audioFrameResult.getChannels().size();
         int fullLength = numberOfChannels * numberOfSamplesPerChannel;
@@ -36,7 +36,7 @@ public class JavaByteArrayConverter {
     private byte[] toBytes(int sample, int bytes) {
         byte[] result = new byte[bytes];
         for (int i = 0; i < bytes; ++i) {
-            result[i] = (byte) ((sample >> ((bytes - i - 1) * 8)) & 0xFF);
+            result[i] = (byte) ((sample >>> ((bytes - i - 1) * 8)) & 0xFF);
         }
         return result;
     }

@@ -57,4 +57,42 @@ public class AudioFrameResultTest {
         assertThat(buffer.get(2), is((byte) -75));
         assertThat(buffer.get(3), is((byte) -76));
     }
+
+    @Test
+    public void test4() {
+        java.nio.ByteBuffer buffer = ByteBuffer.wrap(new byte[]{-22, -61});
+        AudioFrameResult result = new AudioFrameResult(List.of(buffer), 48000, 2);
+
+        int value1 = result.getSampleAt(0, 0);
+
+        assertThat(value1, is(-5437));
+    }
+
+    @Test
+    public void test5() {
+        java.nio.ByteBuffer buffer = ByteBuffer.wrap(new byte[]{0, 0});
+        AudioFrameResult result = new AudioFrameResult(List.of(buffer), 48000, 2);
+
+        result.setSampleAt(0, 0, -5437);
+        int value1 = result.getSampleAt(0, 0);
+
+        assertThat(value1, is(-5437));
+    }
+
+    @Test
+    public void test6() {
+        java.nio.ByteBuffer buffer = ByteBuffer.wrap(new byte[]{-51, -52, 76, 63});
+        java.nio.ByteBuffer buffer2 = ByteBuffer.wrap(new byte[]{-51, -52, 76, -65});
+        AudioFrameResult result1 = new AudioFrameResult(List.of(buffer), 48000, 4);
+        AudioFrameResult result2 = new AudioFrameResult(List.of(buffer2), 48000, 4);
+
+        int value1 = result1.getRescaledSample(0, 1, 1, 0);
+        int value2 = result2.getRescaledSample(0, 1, 1, 0);
+
+        System.out.println(value1 + " " + value2);
+
+        assertThat(value1, is(-5437));
+        assertThat(value2, is(-5437));
+    }
+
 }

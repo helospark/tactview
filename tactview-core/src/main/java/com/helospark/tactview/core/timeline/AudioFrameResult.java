@@ -32,12 +32,13 @@ public class AudioFrameResult {
         if (byteOffset + bytesPerSample > channelBuffer.capacity()) {
             return 0;
         }
-        int result = 0;
-        for (int i = 0; i < bytesPerSample; ++i) {
-            result <<= 8;
-            result |= unsignedByteToInt(channelBuffer.get(byteOffset + i));
+        if (bytesPerSample == 2) {
+            return channelBuffer.getShort(byteOffset);
+        } else if (bytesPerSample == 1) {
+            return channelBuffer.get(byteOffset);
+        } else {
+            return channelBuffer.getInt(byteOffset);
         }
-        return result;
     }
 
     public static int unsignedByteToInt(byte b) {
@@ -47,19 +48,14 @@ public class AudioFrameResult {
     public void setSampleAt(int channelIndex, int sampleIndex, int newValue) {
         ByteBuffer channel = channels.get(channelIndex);
         int saturatedValue = saturateIfNeeded(newValue, (long) 1 << (bytesPerSample * 8));
-        for (int i = 0; i < bytesPerSample; ++i) {
-            channel.put(sampleIndex * bytesPerSample + i, (byte) ((saturatedValue >> ((bytesPerSample - i - 1) * 8)) & 0xFF));
-        }
-    }
-
-    private int signedToUnsignedByte(byte b) {
-        int value;
-        if (b < 0) {
-            value = 256 + b;
+        int byteOffset = sampleIndex * bytesPerSample;
+        if (bytesPerSample == 1) {
+            channel.put(byteOffset, (byte) saturatedValue);
+        } else if (bytesPerSample == 2) {
+            channel.putShort(byteOffset, (short) saturatedValue);
         } else {
-            value = b;
+            channel.putInt(byteOffset, saturatedValue);
         }
-        return value;
     }
 
     private int saturateIfNeeded(int i, long limit) {
@@ -81,24 +77,37 @@ public class AudioFrameResult {
     }
 
     public int getRescaledSample(int channel, int rescaleToBytes, int rescaleToSamples, int position) {
-        double scaledPosition = ((double) samples / rescaleToSamples) * position * bytesPerSample / rescaleToBytes;
+        double scaledPosition = ((double) samples / rescaleToSamples) * position;
         int samplePosition1 = (int) Math.ceil(scaledPosition);
         int samplePosition2 = (int) Math.floor(scaledPosition);
         int firstSample = getSampleAt(channel, samplePosition1);
-        int secondSample = getSampleAt(channel, samplePosition2);
 
         int scaleBits = (rescaleToBytes - bytesPerSample) * 8;
 
-        int unscaledResult = (firstSample + secondSample) / 2;
-
-        if (scaleBits > 0) {
-            long scaleValue = 1 << scaleBits;
-            return (int) (unscaledResult * scaleValue);
+        int unscaledResult;
+        if (samplePosition1 == samplePosition2) {
+            unscaledResult = firstSample;
         } else {
-            long scaleValue = 1 << -scaleBits;
-            return (int) (unscaledResult / scaleValue);
+            int secondSample = getSampleAt(channel, samplePosition2);
+            double distance = (scaledPosition - samplePosition2);
+            unscaledResult = (int) (firstSample * distance + secondSample * (1.0 - distance));
         }
 
+        int scaledResult;
+        if (scaleBits > 0) {
+            long scaleValue = 1 << scaleBits;
+            scaledResult = (int) (unscaledResult * scaleValue);
+        } else {
+            scaledResult = unscaledResult / (1 << -scaleBits);
+        }
+
+        if (rescaleToBytes == 2) {
+            return (short) scaledResult;
+        } else if (rescaleToBytes == 1) {
+            return (byte) scaledResult;
+        } else {
+            return scaledResult;
+        }
     }
 
 }

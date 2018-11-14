@@ -2,6 +2,7 @@ package com.helospark.tactview.core.decoder.framecache;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -169,7 +170,9 @@ public class MemoryManager {
         }
         for (int i = 0; i < remainingElements; ++i) {
             currentSize.addAndGet(bytes);
-            result.add(ByteBuffer.allocateDirect(bytes));
+            ByteBuffer resultBuffer = ByteBuffer.allocateDirect(bytes);
+            resultBuffer.order(ByteOrder.nativeOrder());
+            result.add(resultBuffer);
         }
 
         if (DEBUG) {
@@ -203,11 +206,17 @@ public class MemoryManager {
     }
 
     private void clearBuffer(ByteBuffer buffer) {
-        // TODO: more efficiency can be gained here
+        //        try {
+        //            // is it actually faster? TODO measure
+        //            long address = (long) buffer.getClass().getMethod("address").invoke(buffer); //damn module system
+        //            unsafe.setMemory(address, buffer.capacity(), (byte) 0);
+        //        } catch (Throwable e) {
+        //        logger.warn("Unable to clear bytebuffer the efficient way", e);
         buffer.position(0);
-        for (int i = 0; i < buffer.capacity(); i += 4) {
-            buffer.put(EMPTY_PIXEL);
+        for (int i = 0; i < buffer.capacity(); ++i) {
+            buffer.put((byte) 0);
         }
+        //        }
     }
 
     static class BufferInformation implements Comparable<BufferInformation> {
