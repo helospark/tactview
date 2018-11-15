@@ -225,7 +225,6 @@ public class TimelineManager implements Saveable {
                         AudioRequest audioRequest = AudioRequest.builder()
                                 .withPosition(request.getPosition())
                                 .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 2, RoundingMode.HALF_DOWN)))
-                                .withSampleRate(44100)
                                 .build();
 
                         return audibleClip.requestAudioFrame(audioRequest);
@@ -242,29 +241,41 @@ public class TimelineManager implements Saveable {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
         }
 
-        List<RenderFrameData> frames = renderOrder.stream()
-                .map(a -> clipsToFrames.get(a))
-                .filter(a -> a != null)
-                .collect(Collectors.toList());
+        ClipFrameResult finalImage = renderVideo(request, renderOrder, clipsToFrames);
+        AudioFrameResult audioBuffer = renderAudio(renderOrder, audioToFrames);
 
-        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
+        clipsToFrames.values()
+                .stream()
+                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.clipFrameResult.getBuffer()));
+        audioToFrames.values()
+                .stream()
+                .flatMap(a -> a.getChannels().stream())
+                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
 
+        ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
+        // TODO: audio effects
+
+        return new AudioVideoFragment(finalResult, audioBuffer);
+    }
+
+    private AudioFrameResult renderAudio(List<String> renderOrder, Map<String, AudioFrameResult> audioToFrames) {
         List<AudioFrameResult> audioFrames = renderOrder.stream()
                 .map(a -> audioToFrames.get(a))
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
 
         AudioFrameResult audioBuffer = audioBufferMerger.mergeBuffers(audioFrames);
+        return audioBuffer;
+    }
 
-        clipsToFrames.values()
-                .stream()
-                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.clipFrameResult.getBuffer()));
-        // TODO: deallocate audio
+    private ClipFrameResult renderVideo(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> clipsToFrames) {
+        List<RenderFrameData> frames = renderOrder.stream()
+                .map(a -> clipsToFrames.get(a))
+                .filter(a -> a != null)
+                .collect(Collectors.toList());
 
-        ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
-        // TODO: audio effects
-
-        return new AudioVideoFragment(finalResult, audioBuffer);
+        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
+        return finalImage;
     }
 
     private List<TreeNode> buildRenderTree(Map<String, TimelineClip> clipsToRender, TimelinePosition position) {

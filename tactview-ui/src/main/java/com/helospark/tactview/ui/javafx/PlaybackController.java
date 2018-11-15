@@ -41,7 +41,7 @@ public class PlaybackController {
         Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame.getVideoResult().getBuffer(), width, height);
         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
 
-        byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), 1, 44100, 1); // move data to repository
+        byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), 2, 44100, 1); // move data to repository
 
         for (var audioFrame : frame.getAudioResult().getChannels()) {
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(audioFrame);

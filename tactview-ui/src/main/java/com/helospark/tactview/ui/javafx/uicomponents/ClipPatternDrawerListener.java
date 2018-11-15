@@ -12,6 +12,8 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.AudibleTimelineClip;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
@@ -21,12 +23,14 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMe
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.AudioImagePatternService;
 import com.helospark.tactview.ui.javafx.TimelineImagePatternService;
 
 import javafx.application.Platform;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 @Component
@@ -37,15 +41,17 @@ public class ClipPatternDrawerListener {
 
     private MessagingService messagingService;
     private TimelineImagePatternService timelineImagePatternService;
+    private AudioImagePatternService audioImagePatternService;
     private TimelineState timelineState;
     @Slf4j
     private Logger logger;
 
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
-            TimelineState timelineState) {
+            TimelineState timelineState, AudioImagePatternService audioImagePatternService) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
         this.timelineState = timelineState;
+        this.audioImagePatternService = audioImagePatternService;
     }
 
     @PostConstruct
@@ -53,10 +59,8 @@ public class ClipPatternDrawerListener {
         startConsumingThread();
 
         messagingService.register(ClipAddedMessage.class, message -> {
-            if (message.getClip() instanceof VisualTimelineClip) {
-                clipsToUpdate.put(message.getClipId(), new ClipPatternUpdateDomain((VisualTimelineClip) message.getClip(), timelineState.getZoom()));
-                updateRequests.add(new ClipPatternUpdateRequest(message.getClipId()));
-            }
+            clipsToUpdate.put(message.getClipId(), new ClipPatternUpdateDomain(message.getClip(), timelineState.getZoom()));
+            updateRequests.add(new ClipPatternUpdateRequest(message.getClipId()));
         });
         messagingService.register(ClipRemovedMessage.class, message -> {
             clipsToUpdate.remove(message.getElementId());
@@ -110,22 +114,32 @@ public class ClipPatternDrawerListener {
     private void updatePattern(ClipPatternUpdateRequest request) {
         Pane clip = timelineState.findClipById(request.clipId).orElseThrow();
         ClipPatternUpdateDomain clipsToUpdateDomain = clipsToUpdate.get(request.clipId);
-        VisualTimelineClip videoClip = clipsToUpdateDomain.videoClip;
         double zoom = timelineState.getZoom();
 
         int width = (int) (clip.getWidth() * zoom);
         Rectangle rectangle = (Rectangle) clip.getChildren().get(0);
 
-        Image image = timelineImagePatternService.createTimelinePattern(videoClip, width);
-        Platform.runLater(() -> rectangle.setFill(new ImagePattern(image)));
+        TimelineClip clipToUpdate = clipsToUpdateDomain.videoClip;
+        Paint image;
+        if (clipToUpdate instanceof VisualTimelineClip) {
+            VisualTimelineClip videoClip = (VisualTimelineClip) clipToUpdate;
+            image = new ImagePattern(timelineImagePatternService.createTimelinePattern(videoClip, width));
+        } else if (clipToUpdate instanceof AudibleTimelineClip) {
+            AudibleTimelineClip audibleTimelineClip = (AudibleTimelineClip) clipToUpdate;
+            image = new ImagePattern(audioImagePatternService.createAudioImagePattern(audibleTimelineClip, width));
+        } else {
+            image = new Color(0, 0, 0, 1.0);
+        }
+
+        Platform.runLater(() -> rectangle.setFill(image));
         clipsToUpdate.put(request.clipId, clipsToUpdateDomain.butWithZoomLevel(zoom));
     }
 
     static class ClipPatternUpdateDomain {
-        private VisualTimelineClip videoClip;
+        private TimelineClip videoClip;
         private double createdImageAtZoomLevel;
 
-        public ClipPatternUpdateDomain(VisualTimelineClip videoClip, double createImageAtZoomLevel) {
+        public ClipPatternUpdateDomain(TimelineClip videoClip, double createImageAtZoomLevel) {
             this.videoClip = videoClip;
             this.createdImageAtZoomLevel = createImageAtZoomLevel;
         }

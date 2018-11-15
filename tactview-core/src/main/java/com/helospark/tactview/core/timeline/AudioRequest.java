@@ -5,13 +5,11 @@ import javax.annotation.Generated;
 public class AudioRequest {
     private TimelinePosition position;
     private TimelineLength length;
-    private int sampleRate;
 
     @Generated("SparkTools")
     private AudioRequest(Builder builder) {
         this.position = builder.position;
         this.length = builder.length;
-        this.sampleRate = builder.sampleRate;
     }
 
     public TimelineLength getLength() {
@@ -20,10 +18,6 @@ public class AudioRequest {
 
     public TimelinePosition getPosition() {
         return position;
-    }
-
-    public int getSampleRate() {
-        return sampleRate;
     }
 
     @Generated("SparkTools")
@@ -35,7 +29,6 @@ public class AudioRequest {
     public static final class Builder {
         private TimelinePosition position;
         private TimelineLength length;
-        private int sampleRate;
 
         private Builder() {
         }
@@ -47,11 +40,6 @@ public class AudioRequest {
 
         public Builder withLength(TimelineLength length) {
             this.length = length;
-            return this;
-        }
-
-        public Builder withSampleRate(int sampleRate) {
-            this.sampleRate = sampleRate;
             return this;
         }
 

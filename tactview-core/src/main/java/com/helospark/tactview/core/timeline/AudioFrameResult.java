@@ -26,6 +26,10 @@ public class AudioFrameResult {
         return samples;
     }
 
+    public int getNumberSamples() {
+        return channels.get(0).capacity() / bytesPerSample;
+    }
+
     public int getSampleAt(int channelIndex, int sampleIndex) {
         int byteOffset = sampleIndex * bytesPerSample;
         ByteBuffer channelBuffer = channels.get(channelIndex);

@@ -37,13 +37,6 @@ public class AudioBufferMerger {
             }
         }
 
-        //        System.out.println();
-        //        System.out.println("After merge");
-        //        for (int i = 0; i < 500; ++i) {
-        //            System.out.print(((int) audioFrameResult.getChannels().get(0).get(i)) + " ");
-        //        }
-        //        System.out.println();
-
         return audioFrameResult;
     }
 

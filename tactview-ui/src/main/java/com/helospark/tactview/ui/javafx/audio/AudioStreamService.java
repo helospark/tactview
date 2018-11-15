@@ -23,7 +23,7 @@ public class AudioStreamService {
     @PostConstruct
     public void init() {
         try {
-            AudioFormat format = new AudioFormat(48000, 8, 1, true, true);
+            AudioFormat format = new AudioFormat(48000, 16, 1, true, true);
             dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
             sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
             sourceDataLine.open(format);

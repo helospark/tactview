@@ -9,15 +9,13 @@ import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 
 public class SoundClip extends AudibleTimelineClip {
-    private AudioMediaMetadata mediaMetadata;
     private AudioMediaDecoder mediaDecoder;
     private AudioMediaSource backingSource;
     private TimelinePosition startPosition;
 
     public SoundClip(AudioMediaMetadata mediaMetadata, AudioMediaDecoder mediaDecoder,
             AudioMediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
-        super(new TimelineInterval(startPosition, length));
-        this.mediaMetadata = mediaMetadata;
+        super(new TimelineInterval(startPosition, length), mediaMetadata);
         this.mediaDecoder = mediaDecoder;
         this.backingSource = backingSource;
         this.startPosition = startPosition;
@@ -43,7 +41,7 @@ public class SoundClip extends AudibleTimelineClip {
     }
 
     @Override
-    public AudioMediaDecoder getMediaMetadata() {
+    public AudioMediaDecoder getMediaDecoder() {
         return mediaDecoder;
     }
 

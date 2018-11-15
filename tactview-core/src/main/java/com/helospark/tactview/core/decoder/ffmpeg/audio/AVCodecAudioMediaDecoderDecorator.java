@@ -21,6 +21,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 
 @Component
 public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
+    private static final int MINIMUM_LENGTH_TO_READ = 30;
     private AVCodecBasedAudioMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
@@ -35,7 +36,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     public MediaDataResponse readFrames(AudioMediaDataRequest request) {
         BigDecimal sampleRate = new BigDecimal(request.getExpectedSampleRate());
         String hashKey = request.getFile().getAbsolutePath() + " " + request.getExpectedSampleRate();
-        int startSample = request.getStart().getSeconds().multiply(sampleRate).intValue() * request.getExpectedBytesPerSample();
+        int startSample = secondsToBytes(request.getStart().getSeconds(), request.getExpectedBytesPerSample(), sampleRate);
 
         Optional<MediaHashValue> cachedResult = mediaCache.findInCache(hashKey, startSample);
         if (cachedResult.isPresent()) {
@@ -44,10 +45,11 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
 
             return copyRelevantParts(request, startSample - frameStartIndexInBuffer, foindInCache);
         } else {
-            MediaDataResponse result = readFromFile(request);
-            mediaCache.cacheMedia(hashKey, new MediaHashValue(startSample, result.getFrames().get(0).capacity(), result.getFrames()), false);
+            FileReadResult result = readFromFile(request);
+            int realStartSample = secondsToBytes(result.actualStartPosition, request.getExpectedBytesPerSample(), sampleRate);
+            mediaCache.cacheMedia(hashKey, new MediaHashValue(realStartSample, realStartSample + result.actualLength, result.data), false);
 
-            return copyRelevantParts(request, 0, result.getFrames());
+            return copyRelevantParts(request, realStartSample - realStartSample, result.data);
         }
     }
 
@@ -70,13 +72,15 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         return new MediaDataResponse(buffers);
     }
 
-    private MediaDataResponse readFromFile(AudioMediaDataRequest request) {
-        int bufferSize = request.getExpectedBytesPerSample() * request.getExpectedSampleRate() * 30;
+    private FileReadResult readFromFile(AudioMediaDataRequest request) {
+        BigDecimal remainder = request.getStart().getSeconds().remainder(BigDecimal.valueOf(MINIMUM_LENGTH_TO_READ));
+        BigDecimal correctedStartPosition = request.getStart().getSeconds().subtract(remainder);
+        int bufferSize = request.getExpectedBytesPerSample() * request.getExpectedSampleRate() * MINIMUM_LENGTH_TO_READ;
         AVCodecAudioRequest nativeRequest = new AVCodecAudioRequest();
         nativeRequest.numberOfChannels = request.getExpectedChannels();
         nativeRequest.bufferSize = bufferSize;
         nativeRequest.path = request.getFile().getAbsolutePath();
-        nativeRequest.startMicroseconds = request.getStart().getSeconds().multiply(BigDecimal.valueOf(1000000)).longValue();
+        nativeRequest.startMicroseconds = correctedStartPosition.multiply(BigDecimal.valueOf(1000000)).longValue();
         nativeRequest.channels = new FFMpegFrame();
         FFMpegFrame[] channels = (FFMpegFrame[]) nativeRequest.channels.toArray(request.getExpectedChannels());
         List<ByteBuffer> result = new ArrayList<>();
@@ -86,16 +90,9 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
             result.add(buffer);
         }
 
-        implementation.readAudio(nativeRequest);
+        int readBytes = implementation.readAudio(nativeRequest);
 
-        System.out.println();
-        System.out.println("New on java side");
-        for (int i = 0; i < 5000; ++i) {
-            System.out.print(((int) result.get(0).get(i)) + " ");
-        }
-        System.out.println();
-
-        return new MediaDataResponse(result);
+        return new FileReadResult(correctedStartPosition, readBytes, result);
     }
 
     @Override
@@ -107,6 +104,23 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
                 .withBytesPerSample(readMetadata.bytesPerSample)
                 .withLength(TimelineLength.ofMicroseconds(readMetadata.lengthInMicroseconds))
                 .build();
+    }
+
+    private int secondsToBytes(BigDecimal startSeconds, int bytesPerSample, BigDecimal sampleRate) {
+        return startSeconds.multiply(sampleRate).intValue() * bytesPerSample;
+    }
+
+    private class FileReadResult {
+        BigDecimal actualStartPosition;
+        int actualLength;
+        List<ByteBuffer> data;
+
+        public FileReadResult(BigDecimal actualStartPosition, int actualLength, List<ByteBuffer> data) {
+            this.actualStartPosition = actualStartPosition;
+            this.actualLength = actualLength;
+            this.data = data;
+        }
+
     }
 
 }
