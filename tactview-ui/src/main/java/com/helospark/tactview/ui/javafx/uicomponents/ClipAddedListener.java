@@ -7,10 +7,11 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.VideoMetadata;
+import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -69,10 +70,11 @@ public class ClipAddedListener {
     private void initializeProjectOnFirstVideoClipAdded(TimelineClip clip) {
         if (!projectRepository.isInitialized() && clip instanceof VisualTimelineClip) {
             VisualTimelineClip visualClip = (VisualTimelineClip) clip;
+            VisualMediaMetadata metadata = visualClip.getMediaMetadata();
             projectRepository.initializer()
                     .withWidth(visualClip.getMediaMetadata().getWidth())
                     .withHeight(visualClip.getMediaMetadata().getHeight())
-                    .withFps(visualClip instanceof VideoClip ? new BigDecimal(((VideoClip) visualClip).getMediaMetadata().getFps()) : new BigDecimal("30"))
+                    .withFps(metadata instanceof VideoMetadata ? new BigDecimal(((VideoMetadata) metadata).getFps()) : new BigDecimal("30"))
                     .withIsInitialized(true)
                     .init();
             double horizontalScaleFactor = 320.0 / projectRepository.getWidth();

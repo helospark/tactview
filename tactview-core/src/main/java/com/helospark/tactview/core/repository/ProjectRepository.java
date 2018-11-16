@@ -17,7 +17,7 @@ public class ProjectRepository implements Saveable {
     private boolean isInitialized = false;
     private int width = 0;
     private int height = 0;
-    private BigDecimal fps = BigDecimal.ONE;
+    private BigDecimal fps = BigDecimal.valueOf(24);
 
     public ProjectRepository(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;

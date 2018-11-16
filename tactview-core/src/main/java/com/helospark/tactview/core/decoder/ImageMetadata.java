@@ -8,9 +8,10 @@ public class ImageMetadata extends VisualMediaMetadata {
 
     @Generated("SparkTools")
     private ImageMetadata(Builder builder) {
+        this.length = builder.length;
         this.width = builder.width;
         this.height = builder.height;
-        this.length = builder.length;
+        this.resizable = builder.resizable;
     }
 
     @Generated("SparkTools")
@@ -20,11 +21,17 @@ public class ImageMetadata extends VisualMediaMetadata {
 
     @Generated("SparkTools")
     public static final class Builder {
+        private TimelineLength length;
         private int width;
         private int height;
-        private TimelineLength length;
+        private boolean resizable;
 
         private Builder() {
+        }
+
+        public Builder withLength(TimelineLength length) {
+            this.length = length;
+            return this;
         }
 
         public Builder withWidth(int width) {
@@ -37,8 +44,8 @@ public class ImageMetadata extends VisualMediaMetadata {
             return this;
         }
 
-        public Builder withLength(TimelineLength length) {
-            this.length = length;
+        public Builder withResizable(boolean resizable) {
+            this.resizable = resizable;
             return this;
         }
 

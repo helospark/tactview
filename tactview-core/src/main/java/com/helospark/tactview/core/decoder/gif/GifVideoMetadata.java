@@ -1,38 +1,30 @@
-package com.helospark.tactview.core.decoder;
-
-import java.math.BigDecimal;
+package com.helospark.tactview.core.decoder.gif;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.TimelineLength;
 
-public class VideoMetadata extends VisualMediaMetadata {
-    protected double fps;
+public class GifVideoMetadata extends VisualMediaMetadata {
+    private int numberOfFrames;
+    private int loopCount;
 
     @Generated("SparkTools")
-    private VideoMetadata(Builder builder) {
+    private GifVideoMetadata(Builder builder) {
         this.length = builder.length;
         this.width = builder.width;
         this.height = builder.height;
         this.resizable = builder.resizable;
-        this.fps = builder.fps;
-    }
-
-    protected VideoMetadata() {
-
-    }
-
-    public double getFps() {
-        return fps;
-    }
-
-    @Override
-    public TimelineLength getLength() {
-        return length;
+        this.numberOfFrames = builder.numberOfFrames;
+        this.loopCount = builder.loopCount;
     }
 
     public long getNumberOfFrames() {
-        return length.getSeconds().multiply(BigDecimal.valueOf(fps)).longValue();
+        return numberOfFrames;
+    }
+
+    public int getLoopCount() {
+        return loopCount;
     }
 
     @Generated("SparkTools")
@@ -46,7 +38,8 @@ public class VideoMetadata extends VisualMediaMetadata {
         private int width;
         private int height;
         private boolean resizable;
-        private double fps;
+        private int numberOfFrames;
+        private int loopCount;
 
         private Builder() {
         }
@@ -71,13 +64,18 @@ public class VideoMetadata extends VisualMediaMetadata {
             return this;
         }
 
-        public Builder withFps(double fps) {
-            this.fps = fps;
+        public Builder withNumberOfFrames(int numberOfFrames) {
+            this.numberOfFrames = numberOfFrames;
             return this;
         }
 
-        public VideoMetadata build() {
-            return new VideoMetadata(this);
+        public Builder withLoopCount(int loopCount) {
+            this.loopCount = loopCount;
+            return this;
+        }
+
+        public GifVideoMetadata build() {
+            return new GifVideoMetadata(this);
         }
     }
 
