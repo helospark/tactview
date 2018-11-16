@@ -2,6 +2,9 @@ package com.helospark.tactview.core.timeline;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 
 public class AudioFrameResult {
     private List<ByteBuffer> channels;
@@ -74,7 +77,7 @@ public class AudioFrameResult {
 
     public TimelineLength getLength() {
         if (channels.size() > 0) {
-            return TimelineLength.ofSeconds((double) channels.get(0).capacity() / (this.samples));
+            return TimelineLength.ofSeconds((double) channels.get(0).capacity() / (this.samples * this.bytesPerSample));
         } else {
             return TimelineLength.ofZero();
         }
@@ -112,6 +115,15 @@ public class AudioFrameResult {
         } else {
             return scaledResult;
         }
+    }
+
+    public static AudioFrameResult sameSizeAndFormatAs(AudioFrameResult input) {
+        List<ByteBuffer> newChannels = input.getChannels()
+                .stream()
+                .map(channelBuffer -> GlobalMemoryManagerAccessor.memoryManager.requestBuffer(channelBuffer.capacity()))
+                .collect(Collectors.toList());
+
+        return new AudioFrameResult(newChannels, input.getSamplePerSecond(), input.getBytesPerSample());
     }
 
 }

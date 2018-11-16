@@ -1,14 +1,16 @@
 package com.helospark.tactview.core.timeline.effect;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.StatelessEffect;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.timeline.TimelineClipType;
 
 public class StandardEffectFactory implements EffectFactory {
-    private MessagingService messagingService;
+    protected List<TimelineClipType> supportedClipTypes;
 
     private String supportedEffectId;
     private String name;
@@ -16,7 +18,7 @@ public class StandardEffectFactory implements EffectFactory {
 
     @Generated("SparkTools")
     private StandardEffectFactory(Builder builder) {
-        this.messagingService = builder.messagingService;
+        this.supportedClipTypes = builder.supportedClipTypes;
         this.supportedEffectId = builder.supportedEffectId;
         this.name = builder.name;
         this.factory = builder.factory;
@@ -24,7 +26,7 @@ public class StandardEffectFactory implements EffectFactory {
 
     @Override
     public boolean doesSupport(CreateEffectRequest request) {
-        return request.getEffectId().equals(supportedEffectId);
+        return request.getEffectId().equals(supportedEffectId) && (supportedClipTypes == null || supportedClipTypes.contains(request.getTimelineClipType()));
     }
 
     @Override
@@ -51,7 +53,7 @@ public class StandardEffectFactory implements EffectFactory {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private MessagingService messagingService;
+        private List<TimelineClipType> supportedClipTypes = Collections.emptyList();
         private String supportedEffectId;
         private String name;
         private Function<CreateEffectRequest, StatelessEffect> factory;
@@ -59,8 +61,8 @@ public class StandardEffectFactory implements EffectFactory {
         private Builder() {
         }
 
-        public Builder withMessagingService(MessagingService messagingService) {
-            this.messagingService = messagingService;
+        public Builder withSupportedClipTypes(List<TimelineClipType> supportedClipTypes) {
+            this.supportedClipTypes = supportedClipTypes;
             return this;
         }
 

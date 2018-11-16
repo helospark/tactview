@@ -22,7 +22,7 @@ public class SoundClip extends AudibleTimelineClip {
     }
 
     @Override
-    public AudioFrameResult requestAudioFrame(AudioRequest audioRequest) {
+    public AudioFrameResult requestAudioFrameInternal(AudioRequest audioRequest) {
         AudioMediaDataRequest request = AudioMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withMetadata(mediaMetadata)

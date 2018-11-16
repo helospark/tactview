@@ -70,6 +70,7 @@ public class AudioImagePatternService {
 
         for (int i = 0; i < numberOfSamplesToCollect; ++i) {
             AudioRequest frameRequest = AudioRequest.builder()
+                    .withApplyEffects(false)
                     .withPosition(new TimelinePosition(timeJump.multiply(BigDecimal.valueOf(i))))
                     .withLength(TimelineLength.ofMillis(1))
                     .build();

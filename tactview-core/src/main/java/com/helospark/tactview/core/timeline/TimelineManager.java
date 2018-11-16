@@ -223,6 +223,7 @@ public class TimelineManager implements Saveable {
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
                         AudioRequest audioRequest = AudioRequest.builder()
+                                .withApplyEffects(true)
                                 .withPosition(request.getPosition())
                                 .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 2, RoundingMode.HALF_DOWN)))
                                 .build();
@@ -377,8 +378,8 @@ public class TimelineManager implements Saveable {
     }
 
     public StatelessEffect addEffectForClip(String id, String effectId, TimelinePosition position) {
-        VisualTimelineClip clipById = (VisualTimelineClip) findClipById(id).get();
-        StatelessEffect effect = createEffect(effectId, position);
+        TimelineClip clipById = findClipById(id).get();
+        StatelessEffect effect = createEffect(effectId, position, clipById);
         addEffectForClip(clipById, effect);
         return effect;
     }
@@ -390,8 +391,8 @@ public class TimelineManager implements Saveable {
         // TODO: keyframes
     }
 
-    private StatelessEffect createEffect(String effectId, TimelinePosition position) {
-        CreateEffectRequest request = new CreateEffectRequest(position, effectId);
+    private StatelessEffect createEffect(String effectId, TimelinePosition position, TimelineClip clipById) {
+        CreateEffectRequest request = new CreateEffectRequest(position, effectId, clipById.getType());
         return effectFactoryChain.stream()
                 .filter(effectFactory -> effectFactory.doesSupport(request))
                 .findFirst()

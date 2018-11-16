@@ -1,14 +1,17 @@
 package com.helospark.tactview.core.timeline.effect;
 
+import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class CreateEffectRequest {
     private TimelinePosition position;
     private String effectId;
+    private TimelineClipType timelineClipType;
 
-    public CreateEffectRequest(TimelinePosition position, String effectId) {
+    public CreateEffectRequest(TimelinePosition position, String effectId, TimelineClipType timelineClipType) {
         this.position = position;
         this.effectId = effectId;
+        this.timelineClipType = timelineClipType;
     }
 
     public TimelinePosition getPosition() {
@@ -17,6 +20,10 @@ public class CreateEffectRequest {
 
     public String getEffectId() {
         return effectId;
+    }
+
+    public TimelineClipType getTimelineClipType() {
+        return timelineClipType;
     }
 
 }
