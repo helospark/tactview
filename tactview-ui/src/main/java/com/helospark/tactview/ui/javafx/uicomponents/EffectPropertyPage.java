@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import javafx.scene.layout.GridPane;
 
 public class EffectPropertyPage {
+    private String componentId;
     private GridPane box;
     private List<Consumer<TimelinePosition>> updateFunctions;
 
@@ -18,6 +19,7 @@ public class EffectPropertyPage {
     private EffectPropertyPage(Builder builder) {
         this.box = builder.box;
         this.updateFunctions = builder.updateFunctions;
+        this.componentId = builder.componentId;
     }
 
     public EffectPropertyPage(GridPane box, List<Consumer<TimelinePosition>> updateFunctions) {
@@ -33,6 +35,10 @@ public class EffectPropertyPage {
         return updateFunctions;
     }
 
+    public String getComponentId() {
+        return componentId;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -40,6 +46,7 @@ public class EffectPropertyPage {
 
     @Generated("SparkTools")
     public static final class Builder {
+        private String componentId;
         private GridPane box;
         private List<Consumer<TimelinePosition>> updateFunctions = new ArrayList<>();
 
@@ -53,6 +60,11 @@ public class EffectPropertyPage {
 
         public GridPane getBox() {
             return box;
+        }
+
+        public Builder withComponentId(String componentId) {
+            this.componentId = componentId;
+            return this;
         }
 
         public Builder addUpdateFunctions(Consumer<TimelinePosition> updateFunction) {

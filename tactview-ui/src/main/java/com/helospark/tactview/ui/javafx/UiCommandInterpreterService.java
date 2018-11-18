@@ -37,7 +37,7 @@ public class UiCommandInterpreterService {
     public CompletableFuture<UiCommand> revertLast() {
         return CompletableFuture.supplyAsync(() -> {
             UiCommand previousOperation = commandHistory.poll();
-            logger.info("Executing " + previousOperation);
+            logger.info("Reverting " + previousOperation);
             previousOperation.revert();
             redoHistory.push(previousOperation);
             return previousOperation;

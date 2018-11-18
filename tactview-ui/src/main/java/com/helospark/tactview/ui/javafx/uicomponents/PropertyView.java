@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -14,8 +15,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
+import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
+import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
+import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
+import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -76,19 +81,37 @@ public class PropertyView {
         });
 
         messagingService.register(EffectDescriptorsAdded.class, message -> Platform.runLater(() -> {
-            EffectPropertyPage asd = createBox(message.getDescriptors());
+            EffectPropertyPage asd = createBox(message.getDescriptors(), message.getEffectId());
             effectProperties.put(message.getEffectId(), asd);
         }));
         messagingService.register(ClipDescriptorsAdded.class, message -> Platform.runLater(() -> {
-            EffectPropertyPage asd = createBox(message.getDescriptors());
+            EffectPropertyPage asd = createBox(message.getDescriptors(), message.getClipId());
             clipProperties.put(message.getClipId(), asd);
         }));
+        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> {
+            updateValuesAtCurrentPosition();
+        });
+        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> {
+            updateValuesAtCurrentPosition();
+        });
+        messagingService.register(ClipRemovedMessage.class, message -> {
+            getCurrentlyShownComponentId()
+                    .filter(a -> a.equals(message.getElementId()))
+                    .ifPresent(a -> closeCurrentPage());
+        });
+        messagingService.register(EffectRemovedMessage.class, message -> {
+            getCurrentlyShownComponentId()
+                    .filter(a -> a.equals(message.getEffectId()))
+                    .ifPresent(a -> closeCurrentPage());
+        });
     }
 
-    private EffectPropertyPage createBox(List<ValueProviderDescriptor> descriptors) {
+    private EffectPropertyPage createBox(List<ValueProviderDescriptor> descriptors, String id) {
         GridPane grid = new GridPane();
         grid.getStyleClass().add("effect-property-grid");
-        Builder result = EffectPropertyPage.builder().withBox(grid);
+        Builder result = EffectPropertyPage.builder()
+                .withBox(grid)
+                .withComponentId(id);
         for (int i = 0; i < descriptors.size(); ++i) {
             addElement(descriptors.get(i), result, i);
         }
@@ -153,9 +176,25 @@ public class PropertyView {
         shownEntries = null;
     }
 
+    public void updateValuesAtCurrentPosition() {
+        updateValues(uiTimelineManager.getCurrentPosition());
+    }
+
     public void updateValues(TimelinePosition position) {
         if (shownEntries != null) {
             shownEntries.getUpdateFunctions().stream().forEach(updateFunction -> updateFunction.accept(position));
+        }
+    }
+
+    public Optional<String> getCurrentlyShownComponentId() {
+        return Optional.ofNullable(shownEntries)
+                .map(a -> a.getComponentId());
+    }
+
+    public void closeCurrentPage() {
+        if (shownEntries != null) {
+            shownEntries = null;
+            Platform.runLater(() -> propertyWindow.getChildren().clear());
         }
     }
 
