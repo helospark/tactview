@@ -10,9 +10,9 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingDoubleInterpolator {
-    private TreeMap<TimelinePosition, Double> values;
-    private UnivariateInterpolator interpolatorImplementation = new LinearInterpolator();
-    private double defaultValue;
+    protected TreeMap<TimelinePosition, Double> values;
+    protected UnivariateInterpolator interpolatorImplementation = new LinearInterpolator();
+    protected double defaultValue;
 
     public MultiKeyframeBasedDoubleInterpolator(Double singleDefaultValue) {
         this.values = new TreeMap<>();
@@ -53,19 +53,23 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
         } else if (position.isLessThan(firstEntry.getKey())) {
             return firstEntry.getValue();
         } else {
-            return interpolatorImplementation.interpolate(getKeysAsSeconds(values), getValuesAsDouble(values))
-                    .value(position.getSeconds().doubleValue());
+            return doInterpolate(position);
         }
     }
 
-    private double[] getValuesAsDouble(TreeMap<TimelinePosition, Double> values) {
+    protected Double doInterpolate(TimelinePosition position) {
+        return interpolatorImplementation.interpolate(getKeys(values), getValuesAsDouble(values))
+                .value(position.getSeconds().doubleValue());
+    }
+
+    protected double[] getValuesAsDouble(TreeMap<TimelinePosition, Double> values) {
         return values.values()
                 .stream()
                 .mapToDouble(Double::valueOf)
                 .toArray();
     }
 
-    private double[] getKeysAsSeconds(TreeMap<TimelinePosition, Double> values) {
+    protected double[] getKeys(TreeMap<TimelinePosition, Double> values) {
         return values.keySet()
                 .stream()
                 .map(key -> key.getSeconds())

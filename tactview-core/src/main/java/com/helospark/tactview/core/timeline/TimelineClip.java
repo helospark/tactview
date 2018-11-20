@@ -139,6 +139,10 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         return newInterval;
     }
 
+    public <T extends StatelessEffect> List<T> getEffectsAtGlobalPosition(TimelinePosition position, Class<T> type) {
+        return getEffectsAt(position.from(interval.getStartPosition()), type); // Maybe not proper, see videoclip
+    }
+
     public <T extends StatelessEffect> List<T> getEffectsAt(TimelinePosition position, Class<T> type) {
         return effectChannels.stream()
                 .map(effectChannel -> effectChannel.getElementWithIntervalContainingPoint(position.subtract(renderOffset)))
@@ -192,6 +196,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         if (newInterval.getEndPosition().isGreaterThan(interval.getEndPosition().from(interval.getStartPosition()))) {
             return false;
         }
+        effect.notifyAfterResize();
 
         return channel.resize(effect, newInterval);
     }

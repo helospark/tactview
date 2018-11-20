@@ -27,6 +27,7 @@ import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -134,12 +135,14 @@ public class TimelineManager implements Saveable {
         BlendModeStrategy blendModeStrategy;
         ClipFrameResult clipFrameResult;
         String id;
+        Optional<AbstractVideoTransitionEffect> videoTransition;
 
-        public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ClipFrameResult clipFrameResult) {
+        public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ClipFrameResult clipFrameResult, List<AbstractVideoTransitionEffect> list) {
             this.id = id;
             this.globalAlpha = globalAlpha;
             this.blendModeStrategy = blendModeStrategy;
             this.clipFrameResult = clipFrameResult;
+            videoTransition = list.isEmpty() ? Optional.empty() : Optional.ofNullable(list.get(0)); // should multiple transition be handled?
         }
 
     }
@@ -211,7 +214,7 @@ public class TimelineManager implements Saveable {
 
                         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 
-                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame);
+                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame, clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class));
                     }, executorService).thenAccept(a -> {
                         clipsToFrames.put(visualClip.getId(), a);
                     }).exceptionally(e -> {
@@ -275,7 +278,7 @@ public class TimelineManager implements Saveable {
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
 
-        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request.getPreviewWidth(), request.getPreviewHeight());
+        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request);
         return finalImage;
     }
 
@@ -381,6 +384,7 @@ public class TimelineManager implements Saveable {
         TimelineClip clipById = findClipById(id).get();
         StatelessEffect effect = createEffect(effectId, position, clipById);
         addEffectForClip(clipById, effect);
+        effect.notifyAfterInitialized();
         return effect;
     }
 

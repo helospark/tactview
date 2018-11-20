@@ -7,6 +7,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManager.RenderFrameData;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
+import com.helospark.tactview.core.timeline.effect.transition.ExternalStatelessVideoTransitionEffectRequest;
 
 @Component
 public class FrameBufferMerger {
@@ -16,12 +17,26 @@ public class FrameBufferMerger {
         this.emptyByteBufferFactory = emptyByteBufferFactory;
     }
 
-    public ClipFrameResult alphaMergeFrames(List<RenderFrameData> frames, Integer width, Integer height) {
+    public ClipFrameResult alphaMergeFrames(List<RenderFrameData> frames, TimelineManagerFramesRequest request) {
+        int width = request.getPreviewWidth();
+        int height = request.getPreviewHeight();
         if (frames.size() > 0) {
             ClipFrameResult output = new ClipFrameResult(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4), width, height);
 
             for (int i = frames.size() - 1; i >= 0; --i) {
-                alphaBlitFrame(output, frames.get(i).clipFrameResult, width, height, frames.get(i).blendModeStrategy, frames.get(i).globalAlpha);
+                if (frames.get(i).videoTransition.isPresent()) {
+                    ExternalStatelessVideoTransitionEffectRequest transitionRequest = ExternalStatelessVideoTransitionEffectRequest.builder()
+                            .withGlobalPosition(request.getPosition())
+                            .withFirstFrame(frames.get(i).clipFrameResult)
+                            .withSecondFrame(output)
+                            .withScale(request.getScale())
+                            .build();
+                    ClipFrameResult transitionedImage = frames.get(i).videoTransition.get().applyTransition(transitionRequest);
+                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(output.getBuffer());
+                    output = transitionedImage;
+                } else {
+                    alphaBlitFrame(output, frames.get(i).clipFrameResult, width, height, frames.get(i).blendModeStrategy, frames.get(i).globalAlpha);
+                }
             }
 
             return output;

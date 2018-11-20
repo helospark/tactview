@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline;
 import static java.math.RoundingMode.HALF_DOWN;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 public class TimelinePosition implements SecondsAware, Comparable<TimelinePosition> {
@@ -96,6 +97,14 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
 
     public BigDecimal distanceFrom(TimelinePosition position) {
         return seconds.subtract(position.seconds).abs();
+    }
+
+    public TimelinePosition multiply(BigDecimal rhs) {
+        return new TimelinePosition(this.seconds.multiply(rhs));
+    }
+
+    public TimelinePosition divide(TimelineLength length) {
+        return new TimelinePosition(this.seconds.divide(length.getSeconds(), 2, RoundingMode.HALF_UP));
     }
 
 }
