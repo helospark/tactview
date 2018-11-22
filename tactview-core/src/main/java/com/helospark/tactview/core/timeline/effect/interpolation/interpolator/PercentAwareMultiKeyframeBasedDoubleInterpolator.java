@@ -38,14 +38,15 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
     public Double valueAt(TimelinePosition nonScaledPosition) {
         Entry<TimelinePosition, Double> lastEntry = values.lastEntry();
         Entry<TimelinePosition, Double> firstEntry = values.firstEntry();
+        double[] keys = getKeys(values);
         TimelinePosition position = nonScaledPosition.divide(length);
         if (values.isEmpty()) {
             return defaultValue;
         } else if (values.size() == 1) {
             return values.firstEntry().getValue();
-        } else if (position.isGreaterThan(lastEntry.getKey().divide(length))) {
+        } else if (position.getSeconds().doubleValue() >= keys[keys.length - 1]) {
             return lastEntry.getValue();
-        } else if (position.isLessThan(firstEntry.getKey().divide(length))) {
+        } else if (position.getSeconds().doubleValue() <= keys[0]) {
             return firstEntry.getValue();
         } else {
             return doInterpolate(position);
