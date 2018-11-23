@@ -109,11 +109,22 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     if (selectedClipIds.size() > 0) { // copy ony the first for now
                         String selectedClipId = selectedClipIds.get(0);
                         copyPasteRepository.copyClip(selectedClipId);
+                    } else {
+                        List<String> selectedEffects = selectedNodeRepository.getSelectedEffectIds();
+                        if (selectedEffects.size() > 0) {
+                            String selectedEffectId = selectedEffects.get(0);
+                            copyPasteRepository.copyEffect(selectedEffects.get(0));
+                        }
                     }
                 }));
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.V),
                 useHandler("Copy", event -> {
-                    copyPasteRepository.pasteWithoutChannel();
+                    List<String> selectedClipIds = selectedNodeRepository.getSelectedClipIds();
+                    if (selectedClipIds.isEmpty()) {
+                        copyPasteRepository.pasteWithoutAdditionalInfo();
+                    } else {
+                        copyPasteRepository.pasteOnExistingEffect(selectedClipIds.get(0));
+                    }
                 }));
     }
 

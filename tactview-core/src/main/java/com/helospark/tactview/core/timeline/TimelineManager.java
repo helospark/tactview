@@ -384,7 +384,6 @@ public class TimelineManager implements Saveable {
         TimelineClip clipById = findClipById(id).get();
         StatelessEffect effect = createEffect(effectId, position, clipById);
         addEffectForClip(clipById, effect);
-        effect.notifyAfterInitialized();
         return effect;
     }
 
@@ -392,6 +391,7 @@ public class TimelineManager implements Saveable {
         int newEffectChannelId = clipById.addEffectAtAnyChannel(effect);
         messagingService.sendAsyncMessage(new EffectDescriptorsAdded(effect.getId(), effect.getValueProviders(), effect));
         messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), effect.interval.getStartPosition(), effect, newEffectChannelId, effect.getGlobalInterval()));
+        effect.notifyAfterInitialized();
         // TODO: keyframes
     }
 
@@ -695,6 +695,10 @@ public class TimelineManager implements Saveable {
         TimelinePosition position = channel.findPositionWhereIntervalWithLengthCanBeInserted(clip.getInterval().getLength());
         clip.setInterval(clip.getInterval().butMoveStartPostionTo(position));
         addClip(request.getChannel(), clip);
+    }
+
+    public void addExistingEffect(AddExistingEffectRequest request) {
+        addEffectForClip(request.getClipToAdd(), request.getEffect());
     }
 
 }
