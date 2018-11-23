@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.effect.StandardEffectFactory;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.transition.alphatransition.AlphaTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.blurtransition.BlurTransition;
+import com.helospark.tactview.core.timeline.effect.transition.chromadissolve.LightDissolveTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.floatout.FloatOutTransitionEffect;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -43,6 +44,16 @@ public class StandardTransitionEffectConfiguration {
                 .withFactory(request -> new BlurTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), blurImplementation))
                 .withName("Blur transition")
                 .withSupportedEffectId("blurtransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory lightDossolveTransitionEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new LightDissolveTransitionEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
+                .withName("Light dissolve transition")
+                .withSupportedEffectId("lightdissolvetransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

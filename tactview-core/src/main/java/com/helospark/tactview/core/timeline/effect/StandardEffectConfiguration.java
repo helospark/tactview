@@ -298,4 +298,5 @@ public class StandardEffectConfiguration {
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
+
 }

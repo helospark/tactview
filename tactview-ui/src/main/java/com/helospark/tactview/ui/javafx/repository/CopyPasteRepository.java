@@ -87,8 +87,4 @@ public class CopyPasteRepository {
         return false;
     }
 
-    static enum CopyableType {
-        CLIP,
-        EFFECT
-    }
 }
