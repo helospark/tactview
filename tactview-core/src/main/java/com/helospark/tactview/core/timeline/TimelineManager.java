@@ -675,4 +675,26 @@ public class TimelineManager implements Saveable {
         moveEffect(originalEffect.getId(), newPosition.add(newClip.getInterval().getStartPosition()), Optional.empty());
     }
 
+    public Optional<Integer> findChannelIndexForClipId(String clipId) {
+        return findChannelForClipId(clipId)
+                .flatMap(a -> findChannelIndex(clipId));
+    }
+
+    private Optional<Integer> findChannelIndex(String channelId) {
+        for (int i = 0; i < channels.size(); ++i) {
+            if (channels.get(i).getId().equals(channelId)) {
+                return Optional.of(i);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public void addExistingClip(AddExistingClipRequest request) {
+        TimelineChannel channel = request.getChannel();
+        TimelineClip clip = request.getClipToAdd();
+        TimelinePosition position = channel.findPositionWhereIntervalWithLengthCanBeInserted(clip.getInterval().getLength());
+        clip.setInterval(clip.getInterval().butMoveStartPostionTo(position));
+        addClip(request.getChannel(), clip);
+    }
+
 }

@@ -8,6 +8,7 @@ import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
 import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.LightDiContext;
@@ -17,11 +18,11 @@ import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
-import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.key.GlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.key.KeyCombinationRepository;
 import com.helospark.tactview.ui.javafx.key.StandardGlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
+import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
 
@@ -39,14 +40,14 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     private RemoveClipService removeClipService;
     private RemoveEffectService removeEffectService;
     private ClipCutService clipCutService;
-    private InputModeRepository inputModeRepository;
     private UiTimelineManager timelineManager;
+    private CopyPasteRepository copyPasteRepository;
     private LightDiContext context;
 
     public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository,
             RemoveClipService removeClipService,
             RemoveEffectService removeEffectService, ClipCutService clipCutService,
-            InputModeRepository inputModeRepository,
+            CopyPasteRepository copyPasteRepository,
             UiTimelineManager timelineManager) {
         this.commandInterpreter = commandInterpreter;
         this.keyCombinationRepository = keyCombinationRepository;
@@ -54,8 +55,8 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         this.removeClipService = removeClipService;
         this.removeEffectService = removeEffectService;
         this.clipCutService = clipCutService;
-        this.inputModeRepository = inputModeRepository;
         this.timelineManager = timelineManager;
+        this.copyPasteRepository = copyPasteRepository;
     }
 
     @Override
@@ -101,6 +102,18 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         keyCombinationRepository.registerKeyCombination(on(KeyCode.RIGHT),
                 useHandler("Back one frame", event -> {
                     timelineManager.moveForwardOneFrame();
+                }));
+        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.C),
+                useHandler("Copy", event -> {
+                    List<String> selectedClipIds = selectedNodeRepository.getSelectedClipIds();
+                    if (selectedClipIds.size() > 0) { // copy ony the first for now
+                        String selectedClipId = selectedClipIds.get(0);
+                        copyPasteRepository.copyClip(selectedClipId);
+                    }
+                }));
+        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.V),
+                useHandler("Copy", event -> {
+                    copyPasteRepository.pasteWithoutChannel();
                 }));
     }
 

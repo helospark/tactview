@@ -183,7 +183,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     public abstract boolean isResizable();
 
-    protected abstract TimelineClip cloneClip();
+    public abstract TimelineClip cloneClip();
 
     protected void changeRenderStartPosition(TimelinePosition position, TimelinePosition globalTimelinePosition) {
         this.renderOffset = position.toLength();

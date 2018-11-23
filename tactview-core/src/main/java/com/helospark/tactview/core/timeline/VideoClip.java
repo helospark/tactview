@@ -59,7 +59,7 @@ public class VideoClip extends VisualTimelineClip {
     }
 
     @Override
-    protected TimelineClip cloneClip() {
+    public TimelineClip cloneClip() {
         return new VideoClip(this);
     }
 }

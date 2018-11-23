@@ -27,4 +27,8 @@ public class CreateChannelCommand implements UiCommand {
         timelineManager.removeChannel(channelId);
     }
 
+    public String getChannelId() {
+        return channelId;
+    }
+
 }

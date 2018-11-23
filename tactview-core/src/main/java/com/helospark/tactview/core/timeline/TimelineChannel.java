@@ -146,4 +146,8 @@ public class TimelineChannel {
                 .collect(Collectors.toList());
     }
 
+    public TimelinePosition findPositionWhereIntervalWithLengthCanBeInserted(TimelineLength length) {
+        return clips.get(clips.size() - 1).getInterval().getEndPosition(); // tmp implementation
+    }
+
 }

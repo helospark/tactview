@@ -132,7 +132,7 @@ public class GradientProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    protected TimelineClip cloneClip() {
+    public TimelineClip cloneClip() {
         return new GradientProceduralEffect(this);
     }
 

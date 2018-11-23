@@ -97,4 +97,12 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
                 .forEach(a -> remove(a));
     }
 
+    public int size() {
+        return intervalAwares.size();
+    }
+
+    public T get(int index) {
+        return intervalAwares.get(index);
+    }
+
 }

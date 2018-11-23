@@ -83,7 +83,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    protected TimelineClip cloneClip() {
+    public TimelineClip cloneClip() {
         return new SingleColorProceduralClip(this);
     }
 

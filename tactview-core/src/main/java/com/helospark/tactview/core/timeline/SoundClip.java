@@ -50,7 +50,7 @@ public class SoundClip extends AudibleTimelineClip {
     }
 
     @Override
-    protected TimelineClip cloneClip() {
+    public TimelineClip cloneClip() {
         return new SoundClip(mediaMetadata, mediaDecoder, backingSource, interval.getStartPosition(), interval.getLength());
     }
 

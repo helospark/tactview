@@ -83,7 +83,7 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    protected TimelineClip cloneClip() {
+    public TimelineClip cloneClip() {
         return new GaussianNoiseProceduralClip(this);
     }
 

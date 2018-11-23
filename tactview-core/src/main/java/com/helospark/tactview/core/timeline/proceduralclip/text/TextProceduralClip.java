@@ -206,7 +206,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    protected TimelineClip cloneClip() {
+    public TimelineClip cloneClip() {
         return new TextProceduralClip(this);
     }
 }
