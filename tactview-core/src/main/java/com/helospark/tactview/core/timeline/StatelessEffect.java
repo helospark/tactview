@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +46,10 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
 
     public void notifyAfterInitialized() {
 
+    }
+
+    public List<String> getClipDependency(TimelinePosition position) {
+        return new ArrayList<>();
     }
 
 }

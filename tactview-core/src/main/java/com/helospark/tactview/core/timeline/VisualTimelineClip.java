@@ -79,6 +79,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                         .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
                         .withCurrentFrame(frameResult)
                         .withScale(frameRequest.getScale())
+                        .withRequestedClips(frameRequest.getRequestedClips())
                         .build();
 
                 ClipFrameResult appliedEffectsResult = effect.createFrame(request);
@@ -161,6 +162,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public boolean isEnabled(TimelinePosition position) {
         return enabledProvider.getValueAt(position);
     }
@@ -180,8 +182,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     @Override
-    protected List<String> getDependentClips(TimelinePosition position) {
-        List<String> dependentClips = new ArrayList<>();
+    protected List<String> getClipDependency(TimelinePosition position) {
+        List<String> dependentClips = super.getClipDependency(position);
         String value = layerMaskProvider.getValueAt(position);
         if (!value.isEmpty()) {
             dependentClips.add(value);

@@ -124,4 +124,17 @@ public class ClipFrameResult {
         buffer.put(y * width * 4 + x * 4 + offset, value);
     }
 
+    public boolean isSameSizeAs(ClipFrameResult displacementMap) {
+        return width == displacementMap.getWidth() && height == displacementMap.getHeight();
+    }
+
+    public void copyFrom(ClipFrameResult currentFrame) {
+        if (!isSameSizeAs(currentFrame)) {
+            throw new IllegalArgumentException("Copy requires images to be the same size");
+        }
+        this.buffer.position(0);
+        currentFrame.buffer.position(0);
+        this.buffer.put(currentFrame.buffer);
+    }
+
 }

@@ -113,7 +113,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                     .withExpectedWidth(IMAGE_PREVIEW_SIZE) // TODO: aspect ratio
                     .withExpectedHeight(27)
                     .withPosition(position)
-                    .withScale(uiProjectRepository.getScaleFactor())
+                    .withScale(uiProjectRepository.getScaleFactor() / ((double) uiProjectRepository.getPreviewWidth() / IMAGE_PREVIEW_SIZE))
                     .build();
             ClipFrameResult result = ((VisualTimelineClip) clip).getFrame(frameRequest);
             return imageConverter.convertToJavafxImage(result.getBuffer(), result.getWidth(), result.getHeight());

@@ -205,8 +205,17 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     }
 
-    protected List<String> getDependentClips(TimelinePosition position) {
-        return new ArrayList<>();
+    protected List<String> getClipDependency(TimelinePosition position) {
+        ArrayList<String> result = new ArrayList<>();
+
+        List<String> clipsRequiredForEffect = getEffectsAtGlobalPosition(position, StatelessEffect.class)
+                .stream()
+                .flatMap(a -> a.getClipDependency(position).stream())
+                .collect(Collectors.toList());
+
+        result.addAll(clipsRequiredForEffect);
+
+        return result;
     }
 
     public List<StatelessEffect> getEffects() {

@@ -191,7 +191,7 @@ public class TimelineManager implements Saveable {
                     VisualTimelineClip visualClip = (VisualTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
-                        Map<String, ClipFrameResult> requiredClips = visualClip.getDependentClips(request.getPosition())
+                        Map<String, ClipFrameResult> requiredClips = visualClip.getClipDependency(request.getPosition())
                                 .stream()
                                 .filter(a -> clipsToFrames.containsKey(a))
                                 .map(a -> clipsToFrames.get(a))
@@ -286,7 +286,7 @@ public class TimelineManager implements Saveable {
         List<TreeNode> tree = new ArrayList<>();
 
         for (var clip : clipsToRender.values()) {
-            if (clip.getDependentClips(position).isEmpty()) {
+            if (clip.getClipDependency(position).isEmpty()) {
                 tree.add(new TreeNode(clip));
             }
         }
@@ -316,7 +316,7 @@ public class TimelineManager implements Saveable {
     private List<TreeNode> findNodesDependentOn(Map<String, TimelineClip> clipsToRender, String dependentClipId, TimelinePosition position) {
         List<TreeNode> result = new ArrayList<>();
         for (TimelineClip clip : clipsToRender.values()) {
-            if (clip.getDependentClips(position).contains(dependentClipId)) {
+            if (clip.getClipDependency(position).contains(dependentClipId)) {
                 result.add(new TreeNode(clip));
             }
         }

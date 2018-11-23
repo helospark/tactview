@@ -17,6 +17,7 @@ import com.helospark.tactview.core.timeline.effect.contractbrightness.Brightness
 import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
+import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementMapEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeDetectImplementation;
 import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
@@ -34,8 +35,8 @@ import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSke
 import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
 import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
-import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.effect.television.TelevisionRgbLinesEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.AdaptiveThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.SimpleThresholdEffect;
@@ -69,9 +70,9 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory scaleEffect(OpenCVScaleEffectImplementation implementation, MessagingService messagingService) {
+    public StandardEffectFactory scaleEffect(ScaleService scaleService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new ScaleEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withFactory(request -> new ScaleEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService))
                 .withName("Scale")
                 .withSupportedEffectId("scale")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -284,6 +285,16 @@ public class StandardEffectConfiguration {
                 .withFactory(request -> new ColorChannelChangeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withName("Colorchannel change")
                 .withSupportedEffectId("colorchannelchange")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory displacementMapEffect(ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new DisplacementMapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService, independentPixelOperation))
+                .withName("Displacement map")
+                .withSupportedEffectId("displacementmap")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

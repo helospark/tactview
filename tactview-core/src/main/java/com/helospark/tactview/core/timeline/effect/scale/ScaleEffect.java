@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.scale;
 import java.util.Arrays;
 import java.util.List;
 
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -11,16 +10,18 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 
 public class ScaleEffect extends StatelessVideoEffect {
     private DoubleProvider widthScale;
     private DoubleProvider heightScale;
 
-    private OpenCVScaleEffectImplementation implementation;
+    private ScaleService scaleService;
 
-    public ScaleEffect(TimelineInterval interval, OpenCVScaleEffectImplementation implementation) {
+    public ScaleEffect(TimelineInterval interval, ScaleService scaleService) {
         super(interval);
-        this.implementation = implementation;
+        this.scaleService = scaleService;
     }
 
     @Override
@@ -29,18 +30,13 @@ public class ScaleEffect extends StatelessVideoEffect {
         int newWidth = (int) (currentFrame.getWidth() * widthScale.getValueAt(request.getEffectPosition()));
         int newHeight = (int) (currentFrame.getHeight() * heightScale.getValueAt(request.getEffectPosition()));
 
-        OpenCVScaleRequest nativeRequest = new OpenCVScaleRequest();
-        nativeRequest.input = currentFrame.getBuffer();
-        nativeRequest.interpolationType = 0; // todo
-        nativeRequest.newHeight = newHeight;
-        nativeRequest.newWidth = newWidth;
-        nativeRequest.originalWidth = currentFrame.getWidth();
-        nativeRequest.originalHeight = currentFrame.getHeight();
-        nativeRequest.output = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(newWidth * newHeight * 4);
+        ScaleRequest scaleRequest = ScaleRequest.builder()
+                .withImage(currentFrame)
+                .withNewWidth(newWidth)
+                .withNewHeight(newHeight)
+                .build();
 
-        implementation.scaleImage(nativeRequest);
-
-        return new ClipFrameResult(nativeRequest.output, newWidth, newHeight);
+        return scaleService.createScaledImage(scaleRequest);
     }
 
     @Override
