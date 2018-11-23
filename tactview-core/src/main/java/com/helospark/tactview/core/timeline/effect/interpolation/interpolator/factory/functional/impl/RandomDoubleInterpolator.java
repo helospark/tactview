@@ -6,7 +6,6 @@ import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class RandomDoubleInterpolator implements DoubleInterpolator {
@@ -41,7 +40,7 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
     }
 
     @Override
-    public EffectInterpolator cloneInterpolator() {
+    public RandomDoubleInterpolator deepClone() {
         RandomDoubleInterpolator result = new RandomDoubleInterpolator(min, max, changeScale);
         result.repeatableRandom = repeatableRandom;
         return result;

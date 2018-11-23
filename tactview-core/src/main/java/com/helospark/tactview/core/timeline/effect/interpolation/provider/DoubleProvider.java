@@ -16,19 +16,19 @@ public class DoubleProvider extends KeyframeableEffect {
     private double max;
     private DoubleInterpolator interpolator;
 
-    public DoubleProvider(double min, double max, MultiKeyframeBasedDoubleInterpolator interpolator) {
+    public DoubleProvider(double min, double max, DoubleInterpolator doubleInterpolator) {
         this.min = min;
         this.max = max;
-        this.interpolator = interpolator;
+        this.interpolator = doubleInterpolator;
         this.sizeFunction = SizeFunction.CLAMP_TO_MIN_MAX;
     }
 
-    public DoubleProvider(SizeFunction sizeFunction, MultiKeyframeBasedDoubleInterpolator interpolator) {
+    public DoubleProvider(SizeFunction sizeFunction, DoubleInterpolator interpolator) {
         this.sizeFunction = sizeFunction;
         this.interpolator = interpolator;
     }
 
-    public DoubleProvider(MultiKeyframeBasedDoubleInterpolator interpolator) {
+    public DoubleProvider(DoubleInterpolator interpolator) {
         this.sizeFunction = SizeFunction.NO_TRANSFORMATION;
         this.interpolator = interpolator;
     }
@@ -101,12 +101,18 @@ public class DoubleProvider extends KeyframeableEffect {
 
     @Override
     public EffectInterpolator getInterpolator() {
-        return interpolator.cloneInterpolator();
+        return interpolator.deepClone();
     }
 
     @Override
     public void setInterpolator(Object previousInterpolator) {
         this.interpolator = (DoubleInterpolator) previousInterpolator;
+    }
+
+    public DoubleProvider deepClone() {
+        DoubleProvider result = new DoubleProvider(min, max, interpolator.deepClone());
+        result.sizeFunction = sizeFunction;
+        return result;
     }
 
 }

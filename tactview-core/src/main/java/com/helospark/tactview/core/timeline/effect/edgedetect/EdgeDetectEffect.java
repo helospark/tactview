@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.edgedetect;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class EdgeDetectEffect extends StatelessVideoEffect {
     private OpenCVEdgeDetectImplementation implementation;
@@ -23,6 +25,11 @@ public class EdgeDetectEffect extends StatelessVideoEffect {
     public EdgeDetectEffect(TimelineInterval interval, OpenCVEdgeDetectImplementation implementation) {
         super(interval);
         this.implementation = implementation;
+    }
+
+    public EdgeDetectEffect(EdgeDetectEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -66,6 +73,11 @@ public class EdgeDetectEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(lowThresholdProviderDescriptor, highThresholdMultiplierDescritor, apertureSizeProviderDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new EdgeDetectEffect(this);
     }
 
 }

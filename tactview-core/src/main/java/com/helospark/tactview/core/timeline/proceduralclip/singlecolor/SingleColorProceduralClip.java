@@ -30,6 +30,11 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
         this.independentPixelOperation = independentPixelOperation;
     }
 
+    public SingleColorProceduralClip(SingleColorProceduralClip singleColorProceduralClip) {
+        super(singleColorProceduralClip);
+        this.independentPixelOperation = singleColorProceduralClip.independentPixelOperation;
+    }
+
     @Override
     public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
@@ -79,7 +84,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
 
     @Override
     protected TimelineClip cloneClip() {
-        return new SingleColorProceduralClip(mediaMetadata, interval, independentPixelOperation);
+        return new SingleColorProceduralClip(this);
     }
 
 }

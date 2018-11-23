@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.histogramequization;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class HistogramEquizationEffect extends StatelessVideoEffect {
     private OpenCVHistogramEquizerImplementation implementation;
@@ -26,6 +28,11 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
     public HistogramEquizationEffect(TimelineInterval interval, OpenCVHistogramEquizerImplementation implementation) {
         super(interval);
         this.implementation = implementation;
+    }
+
+    public HistogramEquizationEffect(HistogramEquizationEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -84,6 +91,11 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(grayscaleDescriptor, adaptiveDescriptor, adaptiveClipLimitDescriptor, adaptiveKernelWidthDescriptor, adaptiveKernelHeightDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new HistogramEquizationEffect(this);
     }
 
 }

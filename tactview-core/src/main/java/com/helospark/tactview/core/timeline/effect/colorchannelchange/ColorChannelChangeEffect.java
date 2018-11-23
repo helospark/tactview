@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -14,6 +15,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.St
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class ColorChannelChangeEffect extends StatelessVideoEffect {
     private IndependentPixelOperation independentPixelOperation;
@@ -26,6 +28,11 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
     public ColorChannelChangeEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public ColorChannelChangeEffect(ColorChannelChangeEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -105,6 +112,11 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
             this.function = function;
         }
 
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new ColorChannelChangeEffect(this);
     }
 
 }

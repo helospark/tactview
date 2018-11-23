@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RotateEffect extends StatelessVideoEffect {
     private DoubleProvider angleProvider;
@@ -21,6 +23,11 @@ public class RotateEffect extends StatelessVideoEffect {
     public RotateEffect(TimelineInterval interval, OpenCVRotateEffectImplementation implementation) {
         super(interval);
         this.implementation = implementation;
+    }
+
+    public RotateEffect(RotateEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -67,6 +74,11 @@ public class RotateEffect extends StatelessVideoEffect {
                 .build();
 
         return Arrays.asList(angleDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new RotateEffect(this);
     }
 
 }

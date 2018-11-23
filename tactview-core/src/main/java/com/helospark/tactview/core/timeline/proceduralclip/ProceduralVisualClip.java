@@ -16,6 +16,10 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
         super(visualMediaMetadata, interval, TimelineClipType.IMAGE);
     }
 
+    public ProceduralVisualClip(ProceduralVisualClip proceduralVisualClip) {
+        super(proceduralVisualClip);
+    }
+
     @Override
     public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
         // TODO something is very wrong here

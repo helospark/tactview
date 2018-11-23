@@ -25,6 +25,12 @@ public class ImageClip extends VisualTimelineClip {
         this.mediaMetadata = metadata;
     }
 
+    public ImageClip(ImageClip imageClip) {
+        super(imageClip);
+        this.mediaSource = imageClip.mediaSource;
+        this.mediaMetadata = imageClip.mediaMetadata;
+    }
+
     @Override
     public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
         VideoMediaDataRequest request = VideoMediaDataRequest.builder()
@@ -54,7 +60,7 @@ public class ImageClip extends VisualTimelineClip {
 
     @Override
     protected TimelineClip cloneClip() {
-        return new ImageClip(mediaSource, mediaMetadata, this.interval.getStartPosition(), this.interval.getLength());
+        return new ImageClip(this);
     }
 
 }

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.vignette;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class VignetteEffect extends StatelessVideoEffect {
     private IndependentPixelOperation independentPixelOperation;
@@ -22,6 +24,11 @@ public class VignetteEffect extends StatelessVideoEffect {
     public VignetteEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public VignetteEffect(VignetteEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -56,6 +63,11 @@ public class VignetteEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(vignettePowerFactorProviderDescriptor, vignetteStrengthProviderDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new VignetteEffect(this);
     }
 
 }

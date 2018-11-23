@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.transition.floatout;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
@@ -11,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
     private IndependentPixelOperation independentPixelOperation;
@@ -19,6 +21,11 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
     public FloatOutTransitionEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public FloatOutTransitionEffect(FloatOutTransitionEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -88,6 +95,11 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
                 new ValueListElement("right", "right"),
                 new ValueListElement("up", "up"),
                 new ValueListElement("down", "down"));
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new FloatOutTransitionEffect(this);
     }
 
 }

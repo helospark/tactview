@@ -8,8 +8,9 @@ import java.util.UUID;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
+import com.helospark.tactview.core.util.StatefulCloneable;
 
-public abstract class KeyframeableEffect {
+public abstract class KeyframeableEffect implements StatefulCloneable<KeyframeableEffect> {
     private String id = UUID.randomUUID().toString();
     protected boolean scaleDependent;
 
@@ -64,4 +65,7 @@ public abstract class KeyframeableEffect {
     public void setInterpolator(Object previousInterpolator) {
 
     }
+
+    @Override
+    public abstract KeyframeableEffect deepClone();
 }

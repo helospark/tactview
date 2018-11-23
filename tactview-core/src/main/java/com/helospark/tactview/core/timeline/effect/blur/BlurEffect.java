@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -21,6 +22,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BlurEffect extends StatelessVideoEffect {
     private OpenCVBasedGaussianBlur openCVBasedBlur;
@@ -33,6 +35,11 @@ public class BlurEffect extends StatelessVideoEffect {
     public BlurEffect(TimelineInterval interval, OpenCVBasedGaussianBlur openCVBasedBlur) {
         super(interval);
         this.openCVBasedBlur = openCVBasedBlur;
+    }
+
+    public BlurEffect(BlurEffect blurEffect) {
+        super(blurEffect);
+        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
     }
 
     @Override
@@ -108,6 +115,11 @@ public class BlurEffect extends StatelessVideoEffect {
 
     private DoubleProvider doubleProviderWithDefaultValue(double defaultValue) {
         return new DoubleProvider(IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(defaultValue));
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new BlurEffect(this);
     }
 
 }

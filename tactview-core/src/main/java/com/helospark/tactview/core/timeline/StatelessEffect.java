@@ -16,6 +16,11 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
         this.interval = interval;
     }
 
+    public StatelessEffect(StatelessEffect effect) {
+        id = UUID.randomUUID().toString();
+        this.interval = effect.interval;
+    }
+
     @Override
     public TimelineInterval getInterval() {
         return interval;
@@ -51,5 +56,7 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
     public List<String> getClipDependency(TimelinePosition position) {
         return new ArrayList<>();
     }
+
+    public abstract StatelessEffect cloneEffect();
 
 }

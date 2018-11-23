@@ -107,4 +107,12 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
         return new TimelinePosition(this.seconds.divide(length.getSeconds(), 2, RoundingMode.HALF_UP));
     }
 
+    public TimelineInterval toInterval() {
+        return new TimelineInterval(this, TimelineLength.ofZero());
+    }
+
+    public TimelinePosition negate() {
+        return new TimelinePosition(this.seconds.negate());
+    }
+
 }

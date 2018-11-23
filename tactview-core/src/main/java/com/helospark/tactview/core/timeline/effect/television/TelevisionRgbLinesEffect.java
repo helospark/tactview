@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.television;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -10,6 +11,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
     private static final int NUMBER_OF_COLOR_COMPONENTS = 3;
@@ -19,6 +21,11 @@ public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
     public TelevisionRgbLinesEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public TelevisionRgbLinesEffect(TelevisionRgbLinesEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -67,6 +74,11 @@ public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(widthDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new TelevisionRgbLinesEffect(this);
     }
 
 }

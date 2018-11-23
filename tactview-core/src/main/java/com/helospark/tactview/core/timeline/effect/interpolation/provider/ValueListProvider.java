@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,6 +47,11 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
 
     public Map<String, T> getElements() {
         return elements;
+    }
+
+    @Override
+    public ValueListProvider<T> deepClone() {
+        return new ValueListProvider<T>(new ArrayList<T>(elements.values()), stringInterpolator.deepClone());
     }
 
 }

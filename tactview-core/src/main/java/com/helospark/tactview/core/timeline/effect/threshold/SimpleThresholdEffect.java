@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.threshold;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -10,6 +11,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class SimpleThresholdEffect extends StatelessVideoEffect {
     private IndependentPixelOperation independentPixelOperation;
@@ -19,6 +21,11 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
     public SimpleThresholdEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public SimpleThresholdEffect(SimpleThresholdEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -51,6 +58,11 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(thresholdDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new SimpleThresholdEffect(this);
     }
 
 }

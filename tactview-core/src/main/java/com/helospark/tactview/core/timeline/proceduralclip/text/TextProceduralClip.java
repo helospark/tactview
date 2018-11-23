@@ -50,6 +50,11 @@ public class TextProceduralClip extends ProceduralVisualClip {
         this.bufferedImageToClipFrameResultConverter = bufferedImageToClipFrameResultConverter;
     }
 
+    public TextProceduralClip(TextProceduralClip textProceduralClip) {
+        super(textProceduralClip);
+        this.bufferedImageToClipFrameResultConverter = textProceduralClip.bufferedImageToClipFrameResultConverter;
+    }
+
     @Override
     public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
@@ -202,6 +207,6 @@ public class TextProceduralClip extends ProceduralVisualClip {
 
     @Override
     protected TimelineClip cloneClip() {
-        return new TextProceduralClip(mediaMetadata, interval, bufferedImageToClipFrameResultConverter);
+        return new TextProceduralClip(this);
     }
 }

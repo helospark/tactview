@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.pencil;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -13,6 +14,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Boolea
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchRequest;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class PencilSketchEffect extends StatelessVideoEffect {
     private OpenCVPencilSketchImplementation implementation;
@@ -24,6 +26,11 @@ public class PencilSketchEffect extends StatelessVideoEffect {
     public PencilSketchEffect(TimelineInterval interval, OpenCVPencilSketchImplementation implementation) {
         super(interval);
         this.implementation = implementation;
+    }
+
+    public PencilSketchEffect(PencilSketchEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -74,6 +81,11 @@ public class PencilSketchEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(sigmaSProviderDescriptor, sigmaRProviderDescriptor, shadeFactorProviderDescriptor, colorProviderDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new PencilSketchEffect(this);
     }
 
 }

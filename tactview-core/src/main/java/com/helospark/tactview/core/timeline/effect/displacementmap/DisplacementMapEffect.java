@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -18,6 +19,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class DisplacementMapEffect extends StatelessVideoEffect {
     private DependentClipProvider displacementMapProvider;
@@ -31,6 +33,11 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
         super(interval);
         this.scaleService = scaleService;
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public DisplacementMapEffect(DisplacementMapEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -133,6 +140,11 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
         result.add(horizontalDisplacementMultiplierProviderDescriptor);
 
         return result;
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new DisplacementMapEffect(this);
     }
 
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -11,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class PixelizeEffect extends StatelessVideoEffect {
     private DoubleProvider pixelWidthProvider;
@@ -21,6 +23,11 @@ public class PixelizeEffect extends StatelessVideoEffect {
     public PixelizeEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public PixelizeEffect(PixelizeEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -105,6 +112,11 @@ public class PixelizeEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(pixelWidthDescriptor, pixelHeightDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new PixelizeEffect(this);
     }
 
 }

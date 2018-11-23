@@ -39,4 +39,9 @@ public class LineProvider extends KeyframeableEffect {
         return startPointProvider.getSizeFunction();
     }
 
+    @Override
+    public KeyframeableEffect deepClone() {
+        return new LineProvider(startPointProvider.deepClone(), endPointProvider.deepClone());
+    }
+
 }

@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.PercentAwareMultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
     private DoubleProvider progressProvider;
@@ -19,6 +20,11 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
 
     public AbstractVideoTransitionEffect(TimelineInterval interval) {
         super(interval);
+    }
+
+    public AbstractVideoTransitionEffect(AbstractVideoTransitionEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     public ClipFrameResult applyTransition(ExternalStatelessVideoTransitionEffectRequest request) {

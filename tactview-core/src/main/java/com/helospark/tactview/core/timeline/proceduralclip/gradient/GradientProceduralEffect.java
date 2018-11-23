@@ -41,6 +41,11 @@ public class GradientProceduralEffect extends ProceduralVisualClip {
         this.independentPixelOperation = independentPixelOperation;
     }
 
+    public GradientProceduralEffect(GradientProceduralEffect gradientProceduralEffect) {
+        super(gradientProceduralEffect);
+        this.independentPixelOperation = gradientProceduralEffect.independentPixelOperation;
+    }
+
     @Override
     public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipFrameResult result = ClipFrameResult.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
@@ -128,7 +133,7 @@ public class GradientProceduralEffect extends ProceduralVisualClip {
 
     @Override
     protected TimelineClip cloneClip() {
-        return new GradientProceduralEffect(mediaMetadata, interval, independentPixelOperation);
+        return new GradientProceduralEffect(this);
     }
 
 }

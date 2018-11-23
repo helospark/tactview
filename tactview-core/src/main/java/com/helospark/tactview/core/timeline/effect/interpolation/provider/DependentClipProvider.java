@@ -44,4 +44,9 @@ public class DependentClipProvider extends KeyframeableEffect {
         return stringInterpolator.getValues();
     }
 
+    @Override
+    public KeyframeableEffect deepClone() {
+        return new DependentClipProvider(stringInterpolator.deepClone());
+    }
+
 }

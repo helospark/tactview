@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -11,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class TrigonometricWrapEffect extends StatelessVideoEffect {
     private IndependentPixelOperation independentPixelOperation;
@@ -24,6 +26,11 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
     public TrigonometricWrapEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public TrigonometricWrapEffect(TrigonometricWrapEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -94,6 +101,11 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(progressProviderDescriptor, frequencyXProviderDescriptor, frequencyYProviderDescriptor, amplitudeXProviderDescriptor, amplitudeYProviderDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new TrigonometricWrapEffect(this);
     }
 
 }

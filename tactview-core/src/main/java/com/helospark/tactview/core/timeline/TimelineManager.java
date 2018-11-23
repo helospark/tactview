@@ -580,8 +580,7 @@ public class TimelineManager implements Saveable {
         TimelineChannel channel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("No such channel"));
         TimelineClip clip = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
 
-        TimelinePosition localPosition = globalTimelinePosition.from(clip.getInterval().getStartPosition());
-        List<TimelineClip> cuttedParts = clip.createCutClipParts(localPosition);
+        List<TimelineClip> cuttedParts = clip.createCutClipParts(globalTimelinePosition);
 
         removeResource(clipId);
         addClip(channel, cuttedParts.get(0));

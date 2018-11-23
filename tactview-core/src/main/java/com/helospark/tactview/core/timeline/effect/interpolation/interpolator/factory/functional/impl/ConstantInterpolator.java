@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 
 public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolator {
@@ -35,7 +34,7 @@ public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolato
     }
 
     @Override
-    public EffectInterpolator cloneInterpolator() {
+    public ConstantInterpolator deepClone() {
         return new ConstantInterpolator(value);
     }
 }

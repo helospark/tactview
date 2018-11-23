@@ -23,7 +23,7 @@ public class StandardInterpolationFunctionFactory implements DoubleInterpolatorF
             UnivariateInterpolator newInterpolator = factory.get();
 
             MultiKeyframeBasedDoubleInterpolator multiKeyframeBasedDoubleInterpolator = (MultiKeyframeBasedDoubleInterpolator) previousInterpolator;
-            MultiKeyframeBasedDoubleInterpolator clone = multiKeyframeBasedDoubleInterpolator.cloneInterpolator();
+            MultiKeyframeBasedDoubleInterpolator clone = multiKeyframeBasedDoubleInterpolator.deepClone();
             clone.setInterpolatorFunction(newInterpolator);
             return clone;
         }

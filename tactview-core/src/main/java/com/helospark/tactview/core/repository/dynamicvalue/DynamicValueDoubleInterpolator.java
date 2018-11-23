@@ -2,7 +2,6 @@ package com.helospark.tactview.core.repository.dynamicvalue;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.valueprovidereffect.StatelessValueProviderEffect;
 import com.helospark.tactview.core.timeline.valueprovidereffect.StatelessValueProviderRequest;
 
@@ -14,7 +13,7 @@ public class DynamicValueDoubleInterpolator implements DoubleInterpolator {
     }
 
     @Override
-    public EffectInterpolator cloneInterpolator() {
+    public DynamicValueDoubleInterpolator deepClone() {
         return new DynamicValueDoubleInterpolator(effect);
     }
 

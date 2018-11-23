@@ -102,7 +102,7 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
     }
 
     @Override
-    public MultiKeyframeBasedDoubleInterpolator cloneInterpolator() {
+    public MultiKeyframeBasedDoubleInterpolator deepClone() {
         TreeMap<TimelinePosition, Double> newValues = new TreeMap<>(values);
         UnivariateInterpolator newInterpolatorImplementation = interpolatorImplementation;
         MultiKeyframeBasedDoubleInterpolator result = new MultiKeyframeBasedDoubleInterpolator(defaultValue);

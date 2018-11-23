@@ -4,12 +4,11 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 
 public class BooleanProvider extends KeyframeableEffect {
     private DoubleInterpolator doubleInterpolator;
 
-    public BooleanProvider(MultiKeyframeBasedDoubleInterpolator doubleInterpolator) {
+    public BooleanProvider(DoubleInterpolator doubleInterpolator) {
         this.doubleInterpolator = doubleInterpolator;
     }
 
@@ -36,6 +35,11 @@ public class BooleanProvider extends KeyframeableEffect {
     @Override
     public boolean isPrimitive() {
         return true;
+    }
+
+    @Override
+    public BooleanProvider deepClone() {
+        return new BooleanProvider(doubleInterpolator.deepClone());
     }
 
 }

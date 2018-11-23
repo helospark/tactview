@@ -75,4 +75,10 @@ public class IntegerProvider extends KeyframeableEffect {
         }
     }
 
+    @Override
+    public IntegerProvider deepClone() {
+        IntegerProvider result = new IntegerProvider(min, max, interpolator.deepClone());
+        return result;
+    }
+
 }

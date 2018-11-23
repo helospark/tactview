@@ -38,4 +38,9 @@ public class StringProvider extends KeyframeableEffect {
         return stringInterpolator.getValues();
     }
 
+    @Override
+    public KeyframeableEffect deepClone() {
+        return new StringProvider(stringInterpolator.deepClone());
+    }
+
 }

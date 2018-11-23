@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.transition.blurtransition;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVGaussianBlurRequest;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BlurTransition extends AbstractVideoTransitionEffect {
     private OpenCVBasedGaussianBlur gaussianBlur;
@@ -20,6 +22,11 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
     public BlurTransition(TimelineInterval interval, OpenCVBasedGaussianBlur gaussianBlur) {
         super(interval);
         this.gaussianBlur = gaussianBlur;
+    }
+
+    public BlurTransition(BlurTransition cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -74,6 +81,11 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
         result.add(sizeDescriptor);
 
         return result;
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new BlurTransition(this);
     }
 
 }

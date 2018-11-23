@@ -25,6 +25,28 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         this.type = type;
     }
 
+    public TimelineClip(TimelineClip clip) {
+        this.id = UUID.randomUUID().toString(); // id should not cloned
+        this.interval = clip.interval;
+        this.type = clip.type;
+        this.renderOffset = clip.renderOffset;
+
+        this.effectChannels = new ArrayList<NonIntersectingIntervalList<StatelessEffect>>(effectChannels.size());
+        for (int i = 0; i < clip.effectChannels.size(); ++i) {
+            this.effectChannels.add(cloneEffectList(clip.effectChannels.get(i)));
+        }
+    }
+
+    private NonIntersectingIntervalList<StatelessEffect> cloneEffectList(NonIntersectingIntervalList<StatelessEffect> nonIntersectingIntervalList) {
+        NonIntersectingIntervalList<StatelessEffect> result = new NonIntersectingIntervalList<>();
+        for (var effect : nonIntersectingIntervalList) {
+            StatelessEffect effectClone = effect.cloneEffect();
+            effectClone.setParentIntervalAware(this);
+            result.addInterval(effectClone);
+        }
+        return result;
+    }
+
     @Override
     public TimelineInterval getInterval() {
         return interval;
@@ -145,7 +167,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     public <T extends StatelessEffect> List<T> getEffectsAt(TimelinePosition position, Class<T> type) {
         return effectChannels.stream()
-                .map(effectChannel -> effectChannel.getElementWithIntervalContainingPoint(position.subtract(renderOffset)))
+                .map(effectChannel -> effectChannel.getElementWithIntervalContainingPoint(position))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .filter(effect -> type.isAssignableFrom(effect.getClass()))
@@ -163,24 +185,48 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     protected abstract TimelineClip cloneClip();
 
-    protected void changeRenderStartPosition(TimelinePosition position) {
+    protected void changeRenderStartPosition(TimelinePosition position, TimelinePosition globalTimelinePosition) {
         this.renderOffset = position.toLength();
-        this.interval = this.interval.butWithStartPosition(position);
+        this.interval = this.interval.butWithStartPosition(globalTimelinePosition);
+
+        getEffects()
+                .stream()
+                .forEach(a -> a.setInterval(a.getInterval().butAddOffset(position.negate())));
     }
 
     protected void changeRenderEndPosition(TimelinePosition localPosition) {
         this.interval = this.interval.butWithEndPosition(localPosition);
     }
 
-    public List<TimelineClip> createCutClipParts(TimelinePosition localPosition) {
+    public List<TimelineClip> createCutClipParts(TimelinePosition globalTimelinePosition) {
+        TimelinePosition localPosition = globalTimelinePosition.from(this.interval.getStartPosition());
         TimelineClip clipOne = this.cloneClip();
         TimelineClip clipTwo = this.cloneClip();
 
-        clipOne.changeRenderEndPosition(localPosition);
-        clipTwo.changeRenderStartPosition(localPosition);
-        // TODO: same for effects
+        clipOne.changeRenderEndPosition(globalTimelinePosition);
+        clipTwo.changeRenderStartPosition(localPosition, globalTimelinePosition);
+
+        handleEffect(localPosition, clipOne, false);
+        handleEffect(TimelinePosition.ofZero(), clipTwo, true);
 
         return List.of(clipOne, clipTwo);
+    }
+
+    private void handleEffect(TimelinePosition clipRelativePosition, TimelineClip clip, boolean cutRight) {
+        for (var effect : clip.getEffects()) {
+            if (effect.getInterval().getStartPosition().isGreaterThan(clip.getInterval().getLength().toPosition()) ||
+                    effect.getInterval().getEndPosition().isLessThan(TimelinePosition.ofZero())) {
+                clip.removeEffectById(effect.getId());
+            }
+        }
+        clip.interesectingEffects(clipRelativePosition.toInterval())
+                .forEach(intersectingEffect -> {
+                    if (cutRight) {
+                        intersectingEffect.setInterval(intersectingEffect.getInterval().butWithStartPosition(clipRelativePosition));
+                    } else {
+                        intersectingEffect.setInterval(intersectingEffect.getInterval().butWithEndPosition(clipRelativePosition));
+                    }
+                });
     }
 
     public boolean resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {

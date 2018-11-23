@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.erodedilate;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -14,6 +15,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.St
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class ErodeDilateEffect extends StatelessVideoEffect {
     private DoubleProvider kernelWidthProvider;
@@ -26,6 +28,11 @@ public class ErodeDilateEffect extends StatelessVideoEffect {
     public ErodeDilateEffect(TimelineInterval interval, OpenCVErodeDilateImplementation implementation) {
         super(interval);
         this.implementation = implementation;
+    }
+
+    public ErodeDilateEffect(ErodeDilateEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -101,6 +108,11 @@ public class ErodeDilateEffect extends StatelessVideoEffect {
             this.intId = intId;
         }
 
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new ErodeDilateEffect(this);
     }
 
 }

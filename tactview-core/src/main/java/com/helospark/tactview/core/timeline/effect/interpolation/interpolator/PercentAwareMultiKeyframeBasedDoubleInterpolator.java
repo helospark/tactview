@@ -62,7 +62,7 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
     }
 
     @Override
-    public MultiKeyframeBasedDoubleInterpolator cloneInterpolator() {
+    public MultiKeyframeBasedDoubleInterpolator deepClone() {
         TreeMap<TimelinePosition, Double> newValues = new TreeMap<>(values);
         UnivariateInterpolator newInterpolatorImplementation = interpolatorImplementation;
         MultiKeyframeBasedDoubleInterpolator result = new PercentAwareMultiKeyframeBasedDoubleInterpolator(defaultValue, length);

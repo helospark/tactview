@@ -46,4 +46,9 @@ public class PointProvider extends KeyframeableEffect {
         return xProvider.getSizeFunction();
     }
 
+    @Override
+    public PointProvider deepClone() {
+        return new PointProvider(xProvider.deepClone(), yProvider.deepClone());
+    }
+
 }

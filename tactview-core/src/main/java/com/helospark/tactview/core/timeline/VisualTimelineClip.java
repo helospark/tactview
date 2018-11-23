@@ -33,9 +33,20 @@ public abstract class VisualTimelineClip extends TimelineClip {
     private ValueListProvider<BlendModeValueListElement> blendModeProvider;
     private DependentClipProvider layerMaskProvider;
 
-    public VisualTimelineClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, TimelineClipType type) {
+    public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
-        this.mediaMetadata = visualMediaMetadata;
+        this.mediaMetadata = mediaMetadata;
+    }
+
+    public VisualTimelineClip(VisualTimelineClip clip) {
+        super(clip);
+        this.mediaMetadata = clip.mediaMetadata;
+        this.translatePointProvider = clip.translatePointProvider.deepClone();
+        this.globalClipAlphaProvider = clip.globalClipAlphaProvider.deepClone();
+        this.enabledProvider = clip.enabledProvider.deepClone();
+        this.blendModeProvider = clip.blendModeProvider.deepClone();
+        this.layerMaskApplier = clip.layerMaskApplier;
+
     }
 
     public ClipFrameResult getFrame(GetFrameRequest request) {

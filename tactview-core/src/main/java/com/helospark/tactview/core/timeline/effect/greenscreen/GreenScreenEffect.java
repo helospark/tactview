@@ -4,12 +4,14 @@ import java.util.Collections;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenImplementation;
 import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class GreenScreenEffect extends StatelessVideoEffect {
     private OpenCVGreenScreenImplementation implementation;
@@ -17,6 +19,11 @@ public class GreenScreenEffect extends StatelessVideoEffect {
     public GreenScreenEffect(TimelineInterval interval, OpenCVGreenScreenImplementation implementation) {
         super(interval);
         this.implementation = implementation;
+    }
+
+    public GreenScreenEffect(GreenScreenEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -38,6 +45,11 @@ public class GreenScreenEffect extends StatelessVideoEffect {
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new GreenScreenEffect(this);
     }
 
 }

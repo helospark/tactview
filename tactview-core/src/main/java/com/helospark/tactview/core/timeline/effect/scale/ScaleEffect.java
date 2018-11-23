@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class ScaleEffect extends StatelessVideoEffect {
     private DoubleProvider widthScale;
@@ -22,6 +24,11 @@ public class ScaleEffect extends StatelessVideoEffect {
     public ScaleEffect(TimelineInterval interval, ScaleService scaleService) {
         super(interval);
         this.scaleService = scaleService;
+    }
+
+    public ScaleEffect(ScaleEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -55,6 +62,11 @@ public class ScaleEffect extends StatelessVideoEffect {
                 .build();
 
         return Arrays.asList(widthDescriptor, heightDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new ScaleEffect(this);
     }
 
 }

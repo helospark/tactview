@@ -33,4 +33,9 @@ public class ColorProvider extends KeyframeableEffect {
         return Arrays.asList(redProvider, greenProvider, blueProvider);
     }
 
+    @Override
+    public KeyframeableEffect deepClone() {
+        return new ColorProvider(redProvider.deepClone(), greenProvider.deepClone(), blueProvider.deepClone());
+    }
+
 }

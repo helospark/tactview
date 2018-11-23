@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.mirror;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class MirrorEffect extends StatelessVideoEffect {
     private BooleanProvider mirrorVerticallyProvider;
@@ -22,6 +24,11 @@ public class MirrorEffect extends StatelessVideoEffect {
     public MirrorEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public MirrorEffect(MirrorEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -67,6 +74,11 @@ public class MirrorEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(mirrorHorizontalDescriptor, mirrorVerticallyDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new MirrorEffect(this);
     }
 
 }

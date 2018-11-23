@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.denoise;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class DenoiseEffect extends StatelessVideoEffect {
     private IntegerProvider templateWindowSizeProvider;
@@ -23,6 +25,11 @@ public class DenoiseEffect extends StatelessVideoEffect {
     public DenoiseEffect(TimelineInterval interval, OpenCVBasedDenoiseEffect openCVBasedDenoiseEffect) {
         super(interval);
         this.openCVBasedDenoiseEffect = openCVBasedDenoiseEffect;
+    }
+
+    public DenoiseEffect(DenoiseEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -63,6 +70,11 @@ public class DenoiseEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(templateWindowSizeProviderDescriptor, searchWindowSizeProviderDescriptor, strengthProviderDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new DenoiseEffect(this);
     }
 
 }

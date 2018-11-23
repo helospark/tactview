@@ -8,6 +8,10 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
         super(interval);
     }
 
+    public StatelessVideoEffect(StatelessVideoEffect effect) {
+        super(effect);
+    }
+
     public abstract ClipFrameResult createFrame(StatelessEffectRequest request);
 
     public boolean isLocal() {

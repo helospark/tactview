@@ -29,6 +29,10 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
         repeatableRandom = new RepeatableRandom();
     }
 
+    public GaussianNoiseProceduralClip(GaussianNoiseProceduralClip gaussianNoiseProceduralClip) {
+        super(gaussianNoiseProceduralClip);
+    }
+
     @Override
     public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipFrameResult result = ClipFrameResult.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
@@ -80,9 +84,7 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
 
     @Override
     protected TimelineClip cloneClip() {
-        GaussianNoiseProceduralClip result = new GaussianNoiseProceduralClip(mediaMetadata, interval, independentPixelOperation);
-        result.repeatableRandom = repeatableRandom;
-        return result;
+        return new GaussianNoiseProceduralClip(this);
     }
 
 }

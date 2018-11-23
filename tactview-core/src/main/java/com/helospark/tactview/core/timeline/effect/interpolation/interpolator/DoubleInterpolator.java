@@ -7,4 +7,7 @@ public interface DoubleInterpolator extends EffectInterpolator {
     @Override
     public Double valueAt(TimelinePosition position);
 
+    @Override
+    public abstract DoubleInterpolator deepClone();
+
 }

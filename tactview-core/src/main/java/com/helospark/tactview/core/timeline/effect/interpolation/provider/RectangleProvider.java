@@ -33,4 +33,11 @@ public class RectangleProvider extends KeyframeableEffect {
         return (List<KeyframeableEffect>) (Object) pointProviders;
     }
 
+    @Override
+    public KeyframeableEffect deepClone() {
+        List<PointProvider> clonedList = pointProviders.stream()
+                .map(a -> a.deepClone())
+                .collect(Collectors.toList());
+        return new RectangleProvider(clonedList);
+    }
 }

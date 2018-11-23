@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.contractbrightness;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -10,6 +11,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BrightnessContrassEffect extends StatelessVideoEffect {
     private DoubleProvider contrastProvider;
@@ -20,6 +22,11 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
     public BrightnessContrassEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperations) {
         super(interval);
         this.independentPixelOperations = independentPixelOperations;
+    }
+
+    public BrightnessContrassEffect(BrightnessContrassEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -52,6 +59,11 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(contrastDescriptor, brightnessDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new BrightnessContrassEffect(this);
     }
 
 }

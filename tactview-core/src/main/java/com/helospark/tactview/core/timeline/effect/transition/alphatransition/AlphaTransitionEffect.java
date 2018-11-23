@@ -3,11 +3,13 @@ package com.helospark.tactview.core.timeline.effect.transition.alphatransition;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class AlphaTransitionEffect extends AbstractVideoTransitionEffect {
     private IndependentPixelOperation independentPixelOperation;
@@ -15,6 +17,11 @@ public class AlphaTransitionEffect extends AbstractVideoTransitionEffect {
     public AlphaTransitionEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public AlphaTransitionEffect(AlphaTransitionEffect cloneFrom) {
+        super(cloneFrom);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
     @Override
@@ -39,6 +46,11 @@ public class AlphaTransitionEffect extends AbstractVideoTransitionEffect {
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
         return super.getValueProviders();
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new AlphaTransitionEffect(this);
     }
 
 }

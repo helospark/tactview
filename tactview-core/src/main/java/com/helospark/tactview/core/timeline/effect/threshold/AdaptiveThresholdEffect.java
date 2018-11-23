@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.threshold;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -21,6 +22,11 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
     public AdaptiveThresholdEffect(TimelineInterval interval, OpenCVThresholdImplementation thresholdImplementation) {
         super(interval);
         this.thresholdImplementation = thresholdImplementation;
+    }
+
+    public AdaptiveThresholdEffect(AdaptiveThresholdEffect adaptiveThresholdEffect) {
+        super(adaptiveThresholdEffect);
+        this.thresholdImplementation = adaptiveThresholdEffect.thresholdImplementation;
     }
 
     @Override
@@ -54,6 +60,11 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
                 .withName("Block size")
                 .build();
         return List.of(blockSizeDescriptor, addedConstantDescriptor);
+    }
+
+    @Override
+    public StatelessEffect cloneEffect() {
+        return new AdaptiveThresholdEffect(this);
     }
 
 }
