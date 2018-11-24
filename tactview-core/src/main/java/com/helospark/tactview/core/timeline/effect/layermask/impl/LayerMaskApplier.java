@@ -1,7 +1,8 @@
-package com.helospark.tactview.core.timeline;
+package com.helospark.tactview.core.timeline.effect.layermask.impl;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleRequest;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -16,9 +17,13 @@ public class LayerMaskApplier {
         this.scaleImplementation = scaleImplementation;
     }
 
-    public ClipFrameResult applyLayerMask(ClipFrameResult input, ClipFrameResult mask) {
+    public ClipFrameResult createNewImageWithLayerMask(LayerMaskApplyRequest layerMaskRequest) {
+        ClipFrameResult mask = layerMaskRequest.getMask();
+        ClipFrameResult input = layerMaskRequest.getCurrentFrame();
+        LayerMaskAlphaCalculator calculator = layerMaskRequest.getCalculator();
+
         ClipFrameResult scaledMask = null;
-        if (mask.getWidth() != input.getWidth() || mask.getHeight() != input.getHeight()) {
+        if (mask.getWidth() != input.getWidth() || mask.getHeight() != input.getHeight()) { // TODO: scale
             scaledMask = ClipFrameResult.sameSizeAs(input);
 
             OpenCVScaleRequest request = new OpenCVScaleRequest();
@@ -37,7 +42,10 @@ public class LayerMaskApplier {
         ClipFrameResult result = ClipFrameResult.sameSizeAs(input);
 
         independentPixelOperation.executePixelTransformation(input.getWidth(), input.getHeight(), (x, y) -> {
-            int intensity = (maskToUse.getRed(x, y) + maskToUse.getGreen(x, y) + maskToUse.getBlue(x, y)) / 3;
+            int intensity = calculator.calculateAlpha(maskToUse, x, y);
+            if (layerMaskRequest.isInvert()) {
+                intensity = 255 - intensity;
+            }
             for (int i = 0; i < 3; ++i) {
                 int color = input.getColorComponentWithOffset(x, y, i);
                 result.setColorComponentByOffset(color, x, y, i);

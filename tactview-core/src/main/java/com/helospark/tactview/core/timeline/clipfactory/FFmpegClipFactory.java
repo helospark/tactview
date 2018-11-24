@@ -9,21 +9,18 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.ffmpeg.FFmpegBasedMediaDecoderDecorator;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
-import com.helospark.tactview.core.timeline.LayerMaskApplier;
-import com.helospark.tactview.core.timeline.VisualMediaSource;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
+import com.helospark.tactview.core.timeline.VisualMediaSource;
 
 @Component
 @Order(value = Integer.MAX_VALUE)
 public class FFmpegClipFactory implements ClipFactory {
     private FFmpegBasedMediaDecoderDecorator mediaDecoder;
-    private LayerMaskApplier layerMaskApplier;
 
-    public FFmpegClipFactory(FFmpegBasedMediaDecoderDecorator mediaDecoder, LayerMaskApplier layerMaskApplier) {
+    public FFmpegClipFactory(FFmpegBasedMediaDecoderDecorator mediaDecoder) {
         this.mediaDecoder = mediaDecoder;
-        this.layerMaskApplier = layerMaskApplier;
     }
 
     @Override
@@ -33,7 +30,6 @@ public class FFmpegClipFactory implements ClipFactory {
         VideoMetadata metadata = mediaDecoder.readMetadata(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, mediaDecoder);
         VideoClip result = new VideoClip(metadata, videoSource, position, metadata.getLength());
-        result.setLayerMaskApplier(layerMaskApplier);
         return result;
     }
 

@@ -17,4 +17,9 @@ public class ValueListElement {
         return text;
     }
 
+    @Override
+    public String toString() {
+        return id; // id must be returned for UI to work
+    }
+
 }

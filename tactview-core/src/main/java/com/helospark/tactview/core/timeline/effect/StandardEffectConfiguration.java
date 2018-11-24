@@ -29,6 +29,9 @@ import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGree
 import com.helospark.tactview.core.timeline.effect.histogramequization.HistogramEquizationEffect;
 import com.helospark.tactview.core.timeline.effect.histogramequization.opencv.OpenCVHistogramEquizerImplementation;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskEffect;
+import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlphaCalculator;
+import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
@@ -295,6 +298,16 @@ public class StandardEffectConfiguration {
                 .withFactory(request -> new DisplacementMapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService, independentPixelOperation))
                 .withName("Displacement map")
                 .withSupportedEffectId("displacementmap")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory layerMaskEffect(ScaleService scaleService, LayerMaskApplier layerMaskApplier, List<LayerMaskAlphaCalculator> calculators) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new LayerMaskEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), layerMaskApplier, calculators))
+                .withName("Layer mask")
+                .withSupportedEffectId("layermaskeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

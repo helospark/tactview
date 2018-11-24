@@ -8,7 +8,6 @@ import com.helospark.tactview.core.decoder.gif.GifMediaDecoder;
 import com.helospark.tactview.core.decoder.gif.GifVideoMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
-import com.helospark.tactview.core.timeline.LayerMaskApplier;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
@@ -17,11 +16,9 @@ import com.helospark.tactview.core.timeline.VisualMediaSource;
 @Component
 public class GifClipFactory implements ClipFactory {
     private GifMediaDecoder gifMediaDecoder;
-    private LayerMaskApplier layerMaskApplier;
 
-    public GifClipFactory(GifMediaDecoder gifMediaDecoder, LayerMaskApplier layerMaskApplier) {
+    public GifClipFactory(GifMediaDecoder gifMediaDecoder) {
         this.gifMediaDecoder = gifMediaDecoder;
-        this.layerMaskApplier = layerMaskApplier;
     }
 
     @Override
@@ -42,7 +39,6 @@ public class GifClipFactory implements ClipFactory {
 
         VisualMediaSource videoSource = new VisualMediaSource(file, gifMediaDecoder);
         VideoClip videoClip = new VideoClip(metadata, videoSource, position, metadata.getLength());
-        videoClip.setLayerMaskApplier(layerMaskApplier);
         return videoClip;
     }
 

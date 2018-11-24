@@ -53,12 +53,12 @@ void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* fra
   */  
   for(int y=0; y<height; y++) {
     for (int i = 0; i < width; ++i) {
-        int id = y*pFrame->linesize[0] + i * 3;
+        int id = y*pFrame->linesize[0] + i * 4;
       //  fwrite(pFrame->data[0] + id, 1, 3, pFile);
-        frames[y * width * 4 + i * 4 + 0] = *(pFrame->data[0] + id + 0);
+        frames[y * width * 4 + i * 4 + 0] = *(pFrame->data[0] + id + 2);
         frames[y * width * 4 + i * 4 + 1] = *(pFrame->data[0] + id + 1);
-        frames[y * width * 4 + i * 4 + 2] = *(pFrame->data[0] + id + 2);
-        frames[y * width * 4 + i * 4 + 3] = 255;
+        frames[y * width * 4 + i * 4 + 2] = *(pFrame->data[0] + id + 0);
+        frames[y * width * 4 + i * 4 + 3] = *(pFrame->data[0] + id + 3);
     }
   }
   
@@ -241,7 +241,7 @@ void readFrames(FFmpegImageRequest* request) {
 			   pCodecCtx->pix_fmt,
 			   request->width,
 			   request->height,
-			   AV_PIX_FMT_RGB24,
+			   AV_PIX_FMT_BGRA,
 			   SWS_BILINEAR,
 			   NULL,
 			   NULL,

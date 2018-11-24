@@ -1,6 +1,5 @@
-package com.helospark.tactview.core.timeline;
+package com.helospark.tactview.core.timeline.blendmode;
 
-import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 
 public class BlendModeValueListElement extends ValueListElement {

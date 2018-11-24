@@ -3,35 +3,32 @@ package com.helospark.tactview.core.timeline;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategyAccessor;
+import com.helospark.tactview.core.timeline.blendmode.BlendModeValueListElement;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class VisualTimelineClip extends TimelineClip {
-    protected LayerMaskApplier layerMaskApplier;
-
     protected VisualMediaMetadata mediaMetadata;
 
     protected PointProvider translatePointProvider;
     protected DoubleProvider globalClipAlphaProvider;
     protected BooleanProvider enabledProvider;
     private ValueListProvider<BlendModeValueListElement> blendModeProvider;
-    private DependentClipProvider layerMaskProvider;
 
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
@@ -40,31 +37,12 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public VisualTimelineClip(VisualTimelineClip clip) {
         super(clip);
-        this.mediaMetadata = clip.mediaMetadata;
-        this.translatePointProvider = clip.translatePointProvider.deepClone();
-        this.globalClipAlphaProvider = clip.globalClipAlphaProvider.deepClone();
-        this.enabledProvider = clip.enabledProvider.deepClone();
-        this.blendModeProvider = clip.blendModeProvider.deepClone();
-        this.layerMaskApplier = clip.layerMaskApplier;
+        ReflectionUtil.copyOrCloneFieldFromTo(clip, this);
 
     }
 
     public ClipFrameResult getFrame(GetFrameRequest request) {
-        ClipFrameResult result = getFrameInternal(request);
-        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-
-        Optional<ClipFrameResult> layerMask = layerMaskProvider.getValueAt(relativePosition, request.getRequestedClips());
-        return layerMask
-                .map(mask -> {
-                    ClipFrameResult maskedResult = applyMask(result, mask);
-                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(result.getBuffer());
-                    return maskedResult;
-                })
-                .orElse(result);
-    }
-
-    protected ClipFrameResult applyMask(ClipFrameResult input, ClipFrameResult mask) {
-        return layerMaskApplier.applyLayerMask(input, mask);
+        return getFrameInternal(request);
     }
 
     protected ClipFrameResult getFrameInternal(GetFrameRequest request) {
@@ -131,7 +109,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
         globalClipAlphaProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
         enabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0, new StepInterpolator()));
         blendModeProvider = new ValueListProvider<>(createBlendModes(), new StringInterpolator("normal"));
-        layerMaskProvider = new DependentClipProvider(new StringInterpolator());
 
         ValueProviderDescriptor translateDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translatePointProvider)
@@ -152,16 +129,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withKeyframeableEffect(blendModeProvider)
                 .withName("Blend mode")
                 .build();
-        ValueProviderDescriptor layerMaskProviderDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(layerMaskProvider)
-                .withName("Layer mask")
-                .build();
 
         result.add(translateDescriptor);
         result.add(globalClipAlphaDescriptor);
         result.add(enabledDescriptor);
         result.add(blendModeDescriptor);
-        result.add(layerMaskProviderDescriptor);
 
         return result;
     }
@@ -186,20 +158,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
         TimelinePosition relativePosition = position.from(this.interval.getStartPosition());
         relativePosition = relativePosition.add(renderOffset);
         return blendModeProvider.getValueAt(relativePosition).getBlendMode();
-    }
-
-    public void setLayerMaskApplier(LayerMaskApplier layerMaskApplier) {
-        this.layerMaskApplier = layerMaskApplier;
-    }
-
-    @Override
-    protected List<String> getClipDependency(TimelinePosition position) {
-        List<String> dependentClips = super.getClipDependency(position);
-        String value = layerMaskProvider.getValueAt(position);
-        if (!value.isEmpty()) {
-            dependentClips.add(value);
-        }
-        return dependentClips;
     }
 
 }

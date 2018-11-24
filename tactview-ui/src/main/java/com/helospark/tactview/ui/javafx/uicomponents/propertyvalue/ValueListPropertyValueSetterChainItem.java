@@ -67,7 +67,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                 .withCurrentValueProvider(() -> ((ValueListElement) group.getSelectedToggle().getUserData()).getId())
                 .withDescriptorId(typeFixedValueProvider.getId())
                 .withUpdateFunction(position -> {
-                    String id = typeFixedValueProvider.getValueAt(position).getId();
+                    String id = effectParametersRepository.getValueAt(typeFixedValueProvider.getId(), position);
                     if (id != null) {
                         Toggle toggle = toggleMap.get(id);
                         group.selectToggle(toggle);
@@ -89,6 +89,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
 
         String currentlySelectedId = currentlySelectedId(typeFixedValueProvider.getId());
+        System.out.println("Current selected id " + currentlySelectedId);
 
         Map<String, ComboBoxElement> comboBoxElements = new HashMap<>();
 
@@ -106,7 +107,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                 .withCurrentValueProvider(() -> comboBox.getValue().getId())
                 .withDescriptorId(typeFixedValueProvider.getId())
                 .withUpdateFunction(position -> {
-                    String value = typeFixedValueProvider.getValueAt(position).getId();
+                    String value = effectParametersRepository.getValueAt(typeFixedValueProvider.getId(), position);
                     if (value != null) {
                         comboBox.getSelectionModel().select(comboBoxElements.get(value));
                     }
