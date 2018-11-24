@@ -7,7 +7,7 @@ import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Line;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -56,7 +56,7 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
                 .withUpdateFromValue(value -> {
-                    Line line = (Line) value;
+                    InterpolationLine line = (InterpolationLine) value;
                     startPointProvider.getUpdateFromValue().accept(line.start);
                     endPointProvider.getUpdateFromValue().accept(line.end);
                 })

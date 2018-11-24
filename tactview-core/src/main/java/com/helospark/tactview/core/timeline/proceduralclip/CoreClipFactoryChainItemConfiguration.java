@@ -5,7 +5,8 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.proceduralclip.gradient.GradientProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
@@ -45,7 +46,7 @@ public class CoreClipFactoryChainItemConfiguration {
 
     @Bean
     public StandardProceduralClipFactoryChainItem gradientProceduralClip(IndependentPixelOperation independentPixelOperation) {
-        return new StandardProceduralClipFactoryChainItem("gradient", "Gradient",
+        return new StandardProceduralClipFactoryChainItem("radialgradient", "Radial gradient",
                 request -> {
                     TimelineLength defaultLength = TimelineLength.ofMillis(30000);
                     ImageMetadata metadata = ImageMetadata.builder()
@@ -53,7 +54,21 @@ public class CoreClipFactoryChainItemConfiguration {
                             .withHeight(1080)
                             .withLength(defaultLength)
                             .build();
-                    return new GradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                    return new RadialGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem linearProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("lineargradient", "Linear gradient",
+                request -> {
+                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
+                    ImageMetadata metadata = ImageMetadata.builder()
+                            .withWidth(1920)
+                            .withHeight(1080)
+                            .withLength(defaultLength)
+                            .build();
+                    return new LinearGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 });
     }
 

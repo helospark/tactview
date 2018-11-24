@@ -1,6 +1,6 @@
 [
     {
-        "type": "com.helospark.tactview.core.timeline.proceduralclip.gradient.GradientProceduralEffect",
+        "type": "com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect",
         "description": "Draws a gradient between two colors"
     },
     {

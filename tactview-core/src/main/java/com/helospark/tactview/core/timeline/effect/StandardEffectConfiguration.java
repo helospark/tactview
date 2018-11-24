@@ -8,12 +8,14 @@ import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
+import com.helospark.tactview.core.timeline.effect.blur.BlurService;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.cartoon.CartoonEffect;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.colorchannelchange.ColorChannelChangeEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
+import com.helospark.tactview.core.timeline.effect.crop.CropEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
@@ -53,9 +55,9 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 public class StandardEffectConfiguration {
 
     @Bean
-    public StandardEffectFactory blurEffect(OpenCVBasedGaussianBlur gaussianBlur, MessagingService messagingService) {
+    public StandardEffectFactory blurEffect(BlurService blurService, MessagingService messagingService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new BlurEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), gaussianBlur))
+                .withFactory(request -> new BlurEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), blurService))
                 .withName("Gaussian blur")
                 .withSupportedEffectId("gaussianblur")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -308,6 +310,16 @@ public class StandardEffectConfiguration {
                 .withFactory(request -> new LayerMaskEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), layerMaskApplier, calculators))
                 .withName("Layer mask")
                 .withSupportedEffectId("layermaskeffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory cropEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new CropEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withName("Crop")
+                .withSupportedEffectId("cropeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

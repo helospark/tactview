@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Line;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
 public class LineProvider extends KeyframeableEffect {
@@ -18,10 +18,10 @@ public class LineProvider extends KeyframeableEffect {
     }
 
     @Override
-    public Line getValueAt(TimelinePosition position) {
+    public InterpolationLine getValueAt(TimelinePosition position) {
         Point x = startPointProvider.getValueAt(position);
         Point y = endPointProvider.getValueAt(position);
-        return new Line(x, y);
+        return new InterpolationLine(x, y);
     }
 
     @Override

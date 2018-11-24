@@ -1,13 +1,13 @@
 package com.helospark.tactview.ui.javafx.inputmode.strategy;
 
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Line;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 
-public class LineInputTypeStrategy implements InputTypeStrategy<Line> {
-    private Line result = new Line(new Point(0, 0), new Point(0, 0));
+public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLine> {
+    private InterpolationLine result = new InterpolationLine(new Point(0, 0), new Point(0, 0));
     private boolean hasEndPosition;
     private boolean hasStartPosition;
 
@@ -48,7 +48,7 @@ public class LineInputTypeStrategy implements InputTypeStrategy<Line> {
     }
 
     @Override
-    public Line getResult() {
+    public InterpolationLine getResult() {
         return result;
     }
 

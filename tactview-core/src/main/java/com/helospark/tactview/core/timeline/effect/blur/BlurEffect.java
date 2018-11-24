@@ -2,19 +2,15 @@ package com.helospark.tactview.core.timeline.effect.blur;
 
 import static com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
-import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
-import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVGaussianBlurRequest;
-import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVRegion;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
@@ -25,16 +21,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointP
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BlurEffect extends StatelessVideoEffect {
-    private OpenCVBasedGaussianBlur openCVBasedBlur;
+    private BlurService blurService;
+
     private IntegerProvider kernelHeightProvider;
     private IntegerProvider kernelWidthProvider;
 
     private PointProvider topLeftPointProvider;
     private PointProvider bottomRightPointProvider;
 
-    public BlurEffect(TimelineInterval interval, OpenCVBasedGaussianBlur openCVBasedBlur) {
+    public BlurEffect(TimelineInterval interval, BlurService blurService) {
         super(interval);
-        this.openCVBasedBlur = openCVBasedBlur;
+        this.blurService = blurService;
     }
 
     public BlurEffect(BlurEffect blurEffect) {
@@ -44,43 +41,43 @@ public class BlurEffect extends StatelessVideoEffect {
 
     @Override
     public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getCurrentFrame().getBuffer().capacity());
-        ClipFrameResult currentFrame = request.getCurrentFrame();
-        OpenCVGaussianBlurRequest nativeRequest = new OpenCVGaussianBlurRequest();
-        nativeRequest.input = currentFrame.getBuffer();
-        nativeRequest.output = buffer;
-        nativeRequest.width = currentFrame.getWidth();
-        nativeRequest.height = currentFrame.getHeight();
-        nativeRequest.kernelWidth = (int) (kernelWidthProvider.getValueAt(request.getEffectPosition()) * request.getScale()) * 2 + 1;
-        nativeRequest.kernelHeight = (int) (kernelHeightProvider.getValueAt(request.getEffectPosition()) * request.getScale()) * 2 + 1;
-        nativeRequest.blurRegion = createBlurRegion(request);
-        openCVBasedBlur.applyGaussianBlur(nativeRequest);
 
-        return new ClipFrameResult(buffer, currentFrame.getWidth(), currentFrame.getHeight());
+        BlurRequest blurRequest = BlurRequest.builder()
+                .withImage(request.getCurrentFrame())
+                .withKernelWidth((int) (kernelWidthProvider.getValueAt(request.getEffectPosition()) * request.getScale()))
+                .withKernelHeight((int) (kernelHeightProvider.getValueAt(request.getEffectPosition()) * request.getScale()))
+                .withRegion(Optional.ofNullable(createBlurRegion(request)))
+                .build();
+
+        return blurService.createBlurredImage(blurRequest);
     }
 
-    private OpenCVRegion createBlurRegion(StatelessEffectRequest request) {
-        OpenCVRegion region = new OpenCVRegion();
+    private Region createBlurRegion(StatelessEffectRequest request) {
         Point topLeft = topLeftPointProvider.getValueAt(request.getEffectPosition());
         Point bottomRight = bottomRightPointProvider.getValueAt(request.getEffectPosition());
-        region.x = (int) (topLeft.x * request.getCurrentFrame().getWidth());
-        region.y = (int) (topLeft.y * request.getCurrentFrame().getHeight());
+        int x = (int) (topLeft.x * request.getCurrentFrame().getWidth());
+        int y = (int) (topLeft.y * request.getCurrentFrame().getHeight());
 
         int rightX = (int) (bottomRight.x * request.getCurrentFrame().getWidth());
         int rightY = (int) (bottomRight.y * request.getCurrentFrame().getHeight());
 
-        region.width = rightX - region.x;
-        region.height = rightY - region.y;
+        int width = rightX - x;
+        int height = rightY - y;
 
         // TODO: better clamping
-        if (region.width < 10) {
-            region.width = 10;
+        if (width < 10) {
+            width = 10;
         }
-        if (region.height < 10) {
-            region.height = 10;
+        if (height < 10) {
+            height = 10;
         }
 
-        return region;
+        return Region.builder()
+                .withx(x)
+                .withy(y)
+                .withWidth(width)
+                .withHeight(height)
+                .build();
     }
 
     @Override

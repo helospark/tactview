@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Line;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
@@ -55,9 +55,9 @@ public class InputModeRepository {
         inputModeChanged(true);
     }
 
-    public void requestLine(Consumer<Line> consumer, SizeFunction sizeFunction) {
-        InputTypeStrategy<Line> currentStrategy = new LineInputTypeStrategy();
-        this.inputModeInput = new InputModeInput<>(Line.class, consumer, currentStrategy, sizeFunction);
+    public void requestLine(Consumer<InterpolationLine> consumer, SizeFunction sizeFunction) {
+        InputTypeStrategy<InterpolationLine> currentStrategy = new LineInputTypeStrategy();
+        this.inputModeInput = new InputModeInput<>(InterpolationLine.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
     }
 
