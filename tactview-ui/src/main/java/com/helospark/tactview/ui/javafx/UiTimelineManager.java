@@ -14,7 +14,7 @@ import javafx.application.Platform;
 
 @Component
 public class UiTimelineManager {
-    private static final int NUMBER_OF_FRAMES_TO_PRECACHE = 2;
+    private static final int NUMBER_OF_FRAMES_TO_PRECACHE = 20;
     // private IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
     private List<Consumer<TimelinePosition>> uiConsumers = new ArrayList<>();
     private List<Consumer<TimelinePosition>> consumers = new ArrayList<>();

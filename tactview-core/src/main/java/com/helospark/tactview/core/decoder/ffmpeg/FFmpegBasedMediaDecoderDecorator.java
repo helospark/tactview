@@ -11,7 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
+import com.google.common.util.concurrent.Striped;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
@@ -26,6 +29,7 @@ import com.helospark.tactview.core.util.cacheable.Cacheable;
 @Component
 public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private static final int CHUNK_SIZE = 30;
+    private Striped<Lock> duplicateReadLocks = Striped.lock(100);
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
 
@@ -52,6 +56,38 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
+
+        // TODO: eliminate copypaste copy paste from below
+
+        VideoMetadata metadata = (VideoMetadata) request.getMetadata();
+        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).intValue();
+        int additionalFramesToReadInBeginning = startFrame % CHUNK_SIZE;
+        int newStartFrame = startFrame - additionalFramesToReadInBeginning;
+        if (newStartFrame < 0) {
+            newStartFrame = 0;
+        }
+
+        // end
+
+        String readId = request.getFile().getAbsolutePath();
+        readId += metadata.getWidth() + "x" + metadata.getHeight();
+        readId += "x" + newStartFrame;
+
+        Lock lock = duplicateReadLocks.get(readId);
+
+        try {
+            lock.tryLock(10000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace(); // previous thread stuck?
+        }
+        try {
+            return readFramesInternal(request);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private MediaDataResponse readFramesInternal(VideoMediaDataRequest request) {
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
         int numberOfFrames = calculateNumberOfFrames(request);
         int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).intValue();
@@ -87,6 +123,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
             storeInCache(request, newStartFrame, filePath, readFrames);
 
             result = readResultBetweenIndices(readFrames, additionalFramesToReadInBeginning, numberOfFrames);
+            System.out.println("#############x Actually reading " + newStartFrame);
         }
         return new MediaDataResponse(result);
     }
