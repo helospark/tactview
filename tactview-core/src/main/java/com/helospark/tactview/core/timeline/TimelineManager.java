@@ -28,6 +28,8 @@ import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
+import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
+import com.helospark.tactview.core.timeline.framemerge.RenderFrameData;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -126,23 +128,6 @@ public class TimelineManager implements Saveable {
 
         public TreeNode(TimelineClip clip) {
             this.clip = clip;
-        }
-
-    }
-
-    static class RenderFrameData {
-        double globalAlpha;
-        BlendModeStrategy blendModeStrategy;
-        ClipFrameResult clipFrameResult;
-        String id;
-        Optional<AbstractVideoTransitionEffect> videoTransition;
-
-        public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ClipFrameResult clipFrameResult, List<AbstractVideoTransitionEffect> list) {
-            this.id = id;
-            this.globalAlpha = globalAlpha;
-            this.blendModeStrategy = blendModeStrategy;
-            this.clipFrameResult = clipFrameResult;
-            videoTransition = list.isEmpty() ? Optional.empty() : Optional.ofNullable(list.get(0)); // should multiple transition be handled?
         }
 
     }

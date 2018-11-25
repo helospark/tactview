@@ -38,7 +38,8 @@ public class ClipFrameResult {
         result[3] = a;
     }
 
-    private int signedToUnsignedByte(byte b) {
+    // TODO: move out
+    public static int signedToUnsignedByte(byte b) {
         int value;
         if (b < 0) {
             value = 256 + b;
