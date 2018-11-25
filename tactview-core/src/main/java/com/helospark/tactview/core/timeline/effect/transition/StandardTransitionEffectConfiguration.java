@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussi
 import com.helospark.tactview.core.timeline.effect.transition.alphatransition.AlphaTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.blurtransition.BlurTransition;
 import com.helospark.tactview.core.timeline.effect.transition.chromadissolve.LightDissolveTransitionEffect;
+import com.helospark.tactview.core.timeline.effect.transition.flash.WhiteFlashTransition;
 import com.helospark.tactview.core.timeline.effect.transition.floatout.FloatOutTransitionEffect;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -58,4 +59,13 @@ public class StandardTransitionEffectConfiguration {
                 .build();
     }
 
+    @Bean
+    public StandardEffectFactory whiteFlashTransitionEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new WhiteFlashTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
+                .withName("White flash")
+                .withSupportedEffectId("whiteflashtransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
 }
