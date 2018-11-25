@@ -42,7 +42,7 @@ public class AlphaBlitService {
                 int resultX = blitToX + x;
                 int resultY = blitToY + y;
 
-                if (resultX >= result.getWidth() || resultY >= result.getHeight()) {
+                if (resultX >= result.getWidth() || resultY >= result.getHeight() || resultX < 0 || resultY < 0) {
                     continue;
                 }
 

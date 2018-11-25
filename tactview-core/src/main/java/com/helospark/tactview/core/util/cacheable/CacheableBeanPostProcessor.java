@@ -9,8 +9,10 @@ import java.util.stream.Collectors;
 
 import org.objenesis.ObjenesisHelper;
 
+import com.github.benmanes.caffeine.cache.CacheWriter;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.descriptor.DependencyDescriptor;
 import com.helospark.lightdi.postprocessor.BeanPostProcessor;
@@ -48,7 +50,7 @@ public class CacheableBeanPostProcessor implements BeanPostProcessor {
         enhancer.setUseCache(false);
 
         final Class<?> proxyClass = enhancer.createClass();
-        Enhancer.registerStaticCallbacks(proxyClass, new Callback[] { createCacheableInterceptor(bean, cacheableMethods) });
+        Enhancer.registerStaticCallbacks(proxyClass, new Callback[]{createCacheableInterceptor(bean, cacheableMethods)});
         return ObjenesisHelper.newInstance(proxyClass);
     }
 
@@ -56,9 +58,28 @@ public class CacheableBeanPostProcessor implements BeanPostProcessor {
         Map<Method, LoadingCache<HashableArray, Object>> cacheables = new HashMap<>(cacheableMethods.size() * 2);
         for (Method method : cacheableMethods) {
             LightDiAnnotation annotation = AnnotationUtil.getSingleAnnotationOfType(method, Cacheable.class);
-            LoadingCache<HashableArray, Object> cache = Caffeine.newBuilder()
+            Class<?> cacheValue = method.getReturnType();
+
+            Caffeine<Object, Object> coffeinCacheBuilder = Caffeine.newBuilder()
                     .maximumSize(annotation.getAttributeAs("size", Integer.class))
-                    .expireAfterWrite(annotation.getAttributeAs("cacheTimeInMilliseconds", Integer.class), TimeUnit.MILLISECONDS)
+                    .expireAfterWrite(annotation.getAttributeAs("cacheTimeInMilliseconds", Integer.class), TimeUnit.MILLISECONDS);
+
+            if (CacheCleanable.class.isAssignableFrom(cacheValue)) {
+                coffeinCacheBuilder.writer(new CacheWriter<Object, Object>() {
+
+                    @Override
+                    public void write(Object key, Object value) {
+
+                    }
+
+                    @Override
+                    public void delete(Object key, Object value, RemovalCause cause) {
+                        ((CacheCleanable) value).clean();
+                    }
+                });
+            }
+
+            LoadingCache<HashableArray, Object> cache = coffeinCacheBuilder
                     .build(key -> method.invoke(bean, key.getElements()));
             cacheables.put(method, cache);
         }

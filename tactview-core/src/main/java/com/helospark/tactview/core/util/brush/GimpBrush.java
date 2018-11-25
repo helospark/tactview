@@ -2,7 +2,7 @@ package com.helospark.tactview.core.util.brush;
 
 import java.util.Arrays;
 
-public class GimpBrushHeader {
+public class GimpBrush {
     public int header_size;
     public int version;
     public int width;

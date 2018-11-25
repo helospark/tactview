@@ -1,13 +1,17 @@
 package com.helospark.tactview.core.util.cacheable;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +24,9 @@ import com.helospark.tactview.core.util.cacheable.context.BeanWithShortCacheLife
 import com.helospark.tactview.core.util.cacheable.context.BeanWithSomeCachedAndSomeNonCachedMethods;
 import com.helospark.tactview.core.util.cacheable.context.CacheableTestContext;
 import com.helospark.tactview.core.util.cacheable.context.CacheableWithVoid;
+import com.helospark.tactview.core.util.cacheable.context.cleanable.BeanWithCleanableValue;
+import com.helospark.tactview.core.util.cacheable.context.cleanable.CleanableValue;
+import com.helospark.tactview.core.util.cacheable.context.cleanable.MyCleaner;
 
 public class CacheableBeanPostProcessorTest {
     private LightDiContext context;
@@ -129,9 +136,9 @@ public class CacheableBeanPostProcessorTest {
         BeanWithCacheableParameter bean = context.getBean(BeanWithCacheableParameter.class);
 
         // WHEN
-        Integer cachedInvocationCount1 = bean.getInvocationCount(new String[] { "asd" });
-        Integer cachedInvocationCount2 = bean.getInvocationCount(new String[] { "asd" });
-        Integer cachedInvocationCount3 = bean.getInvocationCount(new String[] { "bsd" });
+        Integer cachedInvocationCount1 = bean.getInvocationCount(new String[]{"asd"});
+        Integer cachedInvocationCount2 = bean.getInvocationCount(new String[]{"asd"});
+        Integer cachedInvocationCount3 = bean.getInvocationCount(new String[]{"bsd"});
 
         // THEN
         assertThat(cachedInvocationCount1, is(1));
@@ -164,6 +171,28 @@ public class CacheableBeanPostProcessorTest {
         bean.getInvocationCount();
 
         // THEN should not fail
+    }
+
+    @Test
+    public void testWithCleanableValue() throws InterruptedException {
+        // GIVEN
+        BeanWithCleanableValue bean = context.getBean(BeanWithCleanableValue.class);
+        MyCleaner cleaner = mock(MyCleaner.class);
+
+        // WHEN
+        CleanableValue cleanableValue = bean.cleanableCache("someString1", cleaner);
+
+        // THEN
+        Awaitility.waitAtMost(2000, MILLISECONDS).until(() -> cleanWasCalled(cleaner));
+    }
+
+    private Boolean cleanWasCalled(MyCleaner cleaner) {
+        try {
+            verify(cleaner).clean("someString1");
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     static class CustomClass {

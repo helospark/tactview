@@ -156,6 +156,12 @@ public class MediaCache {
             this.frames = frames;
         }
 
+        public MediaHashValue(ByteBuffer singleFrame) {
+            this.frameStart = 0;
+            this.endIndex = 0;
+            this.frames = List.of(singleFrame);
+        }
+
         @Override
         public int compareTo(MediaHashValue o) {
             return Integer.valueOf(frameStart).compareTo(o.frameStart); // may not work correctly for variable length

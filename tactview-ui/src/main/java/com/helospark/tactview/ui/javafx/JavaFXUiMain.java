@@ -60,6 +60,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class JavaFXUiMain extends Application {
+    public static Stage STAGE = null;
     public static final int W = 320; // canvas dimensions.
     public static final int H = 260;
 
@@ -86,6 +87,7 @@ public class JavaFXUiMain extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        JavaFXUiMain.STAGE = stage;
         NotificationPane pane = new NotificationPane();
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);

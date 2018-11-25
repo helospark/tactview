@@ -6,7 +6,6 @@ import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.blendmode.impl.NormalBlendModeStrategy;
-import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.framemerge.AlphaBlitService;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
@@ -14,9 +13,10 @@ import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighli
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
+import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
-import com.helospark.tactview.core.util.brush.GimpBrushLoader;
+import com.helospark.tactview.core.util.brush.ScaledBrushProvider;
 
 @Configuration
 public class CoreClipFactoryChainItemConfiguration {
@@ -92,8 +92,8 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem drawnHighlightProceduralEffect(IndependentPixelOperation independentPixelOperation, GimpBrushLoader gimpBrushLoader,
-            AlphaBlitService alphaBlitService, NormalBlendModeStrategy normalBlendModeStrategy, ScaleService scaleService) {
+    public StandardProceduralClipFactoryChainItem drawnHighlightProceduralEffect(IndependentPixelOperation independentPixelOperation,
+            AlphaBlitService alphaBlitService, NormalBlendModeStrategy normalBlendModeStrategy, ScaledBrushProvider scaledBrushProvider, BresenhemPixelProvider bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("drawnhighlight", "Drawn highlight",
                 request -> {
                     TimelineLength defaultLength = TimelineLength.ofMillis(30000);
@@ -102,8 +102,8 @@ public class CoreClipFactoryChainItemConfiguration {
                             .withHeight(1080)
                             .withLength(defaultLength)
                             .build();
-                    return new DrawnHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), gimpBrushLoader, alphaBlitService, normalBlendModeStrategy,
-                            scaleService);
+                    return new DrawnHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), scaledBrushProvider, normalBlendModeStrategy, alphaBlitService,
+                            bresenhemPixelProvider);
                 });
     }
 }

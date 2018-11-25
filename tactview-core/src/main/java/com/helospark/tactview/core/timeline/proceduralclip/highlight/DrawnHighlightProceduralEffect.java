@@ -1,35 +1,57 @@
 package com.helospark.tactview.core.timeline.proceduralclip.highlight;
 
+import static com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE;
+
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.blendmode.impl.NormalBlendModeStrategy;
-import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
-import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.framemerge.AlphaBlitService;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
+import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.ReflectionUtil;
-import com.helospark.tactview.core.util.brush.GimpBrushHeader;
-import com.helospark.tactview.core.util.brush.GimpBrushLoader;
+import com.helospark.tactview.core.util.brush.GetBrushRequest;
+import com.helospark.tactview.core.util.brush.ScaledBrushProvider;
 
 public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
+    private PointProvider topLeftProvider;
+    private PointProvider bottomRightProvider;
+    private IntegerProvider brushSizeProvider;
+    private DoubleProvider endPositionProvider;
+    private ColorProvider colorProvider;
+    private FileProvider brushFileProvider;
+
     private AlphaBlitService alphaBlitService;
     private NormalBlendModeStrategy normalBlendModeStrategy;
-    private ScaleService scaleService;
+    private ScaledBrushProvider scaledBrushProvider;
+    private BresenhemPixelProvider bresenhemPixelProvider;
 
-    private GimpBrushHeader brush;
-
-    public DrawnHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, GimpBrushLoader gimpBrushLoader, AlphaBlitService alphaBlitService,
-            NormalBlendModeStrategy normalBlendModeStrategy, ScaleService scaleService) {
+    public DrawnHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, ScaledBrushProvider scaledBrushProvider, NormalBlendModeStrategy normalBlendModeStrategy,
+            AlphaBlitService alphaBlitService, BresenhemPixelProvider bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
-        brush = gimpBrushLoader.loadBrush("/usr/share/gimp/2.0/brushes/Media/Oils-02.gbr");
+        this.scaledBrushProvider = scaledBrushProvider;
         this.alphaBlitService = alphaBlitService;
         this.normalBlendModeStrategy = normalBlendModeStrategy;
-        this.scaleService = scaleService;
+        this.bresenhemPixelProvider = bresenhemPixelProvider;
 
     }
 
@@ -41,50 +63,121 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
     @Override
     public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipFrameResult result = ClipFrameResult.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
-        ClipFrameResult scaledBrush = createScaledBrush(request);
+        double progress;
 
-        //        int spacing = brush.spacing / (brush.width / 40);
-        //        if (spacing <= 0) {
-        int spacing = 1;
-        //        }
-        double progress = relativePosition.getSeconds().doubleValue() / 5.0;
-        progress = progress - (int) progress;
-        for (int i = 20; i < (request.getExpectedWidth() - 40) * progress; i += spacing) {
-            alphaBlitService.alphaBlitImageIntoResult(result, scaledBrush, i, request.getExpectedHeight() / 2, normalBlendModeStrategy, 1.0);
+        double endSeconds = endPositionProvider.getValueAt(relativePosition);
+        double actualSeconds = relativePosition.getSeconds().doubleValue();
+        if (endSeconds > actualSeconds) {
+            progress = actualSeconds / endSeconds;
+        } else {
+            progress = 1.0;
         }
 
-        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(scaledBrush.getBuffer());
+        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition) * request.getScale());
+        if (brushSize < 1) {
+            brushSize = 1;
+        }
+
+        Point topLeft = topLeftProvider.getValueAt(relativePosition);
+        topLeft = new Point(topLeft.x * request.getExpectedWidth(), topLeft.y * request.getExpectedHeight());
+
+        Point bottomRight = bottomRightProvider.getValueAt(relativePosition);
+        bottomRight = new Point(bottomRight.x * request.getExpectedWidth(), bottomRight.y * request.getExpectedHeight());
+
+        int width = (int) Math.abs(bottomRight.x - topLeft.x);
+        int height = (int) Math.abs(bottomRight.y - topLeft.y);
+
+        int centerX = (int) (topLeft.x + width / 2);
+        int centerY = (int) (bottomRight.y - height / 2);
+
+        String brushFilePath;
+        File brushFile = brushFileProvider.getValueAt(relativePosition);
+        if (brushFile.exists()) {
+            brushFilePath = brushFile.getAbsolutePath();
+        } else {
+            brushFilePath = "classpath:/brushes/Oils-03.gbr";
+        }
+
+        Optional<ClipFrameResult> brushImage = getBrush(brushFilePath, brushSize);
+        if (brushImage.isPresent() && width > 0 && height > 0) {
+            List<Vector2D> pixels = bresenhemPixelProvider.ellipsePixels(centerX, centerY, width, height);
+            int spacing = 1;
+            for (int i = 0; i < pixels.size() * progress; i += spacing) {
+                int x = (int) pixels.get(i).getX();
+                int y = (int) pixels.get(i).getY();
+                alphaBlitService.alphaBlitImageIntoResult(result, brushImage.get(), x, y, normalBlendModeStrategy, 1.0);
+            }
+        }
 
         return result;
     }
 
-    private ClipFrameResult createScaledBrush(GetFrameRequest request) {
-        ClipFrameResult brushImage = createBrushImage(brush);
+    private Optional<ClipFrameResult> getBrush(String brushFilePath, int brushSize) {
+        try {
+            GetBrushRequest brushRequest = GetBrushRequest.builder()
+                    .withFilename(brushFilePath)
+                    .withWidth(brushSize)
+                    .withHeight(brushSize)
+                    .build();
 
-        ScaleRequest scaleRequest = ScaleRequest.builder()
-                .withImage(brushImage)
-                .withNewWidth(20)
-                .withNewHeight(20)
-                .withPadImage(false)
-                .build();
-
-        ClipFrameResult scaledBrush = scaleService.createScaledImage(scaleRequest);
-
-        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(brushImage.getBuffer());
-
-        return scaledBrush;
+            return Optional.of(scaledBrushProvider.getBrushImage(brushRequest));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
-    private ClipFrameResult createBrushImage(GimpBrushHeader brush) {
-        ClipFrameResult resultBrush = ClipFrameResult.fromSize(brush.width, brush.height);
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
-        for (int y = 0; y < brush.height; ++y) {
-            for (int x = 0; x < brush.width; ++x) {
-                resultBrush.setAlpha(ClipFrameResult.signedToUnsignedByte(brush.data[y * brush.width + x]), x, y);
-            }
-        }
+        topLeftProvider = new PointProvider(doubleProviderWithDefaultValue(0.3), doubleProviderWithDefaultValue(0.4));
+        bottomRightProvider = new PointProvider(doubleProviderWithDefaultValue(0.7), doubleProviderWithDefaultValue(0.6));
+        colorProvider = createColorProvider(0, 0, 0);
+        brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
+        endPositionProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(2.0));
+        brushFileProvider = new FileProvider("gbr", new StringInterpolator());
 
-        return resultBrush;
+        LineProvider lineProvider = new LineProvider(topLeftProvider, bottomRightProvider);
+
+        ValueProviderDescriptor areaProvider = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(lineProvider)
+                .withName("Area")
+                .build();
+        ValueProviderDescriptor colorProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(colorProvider)
+                .withName("color")
+                .build();
+        ValueProviderDescriptor brushSizeProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(brushSizeProvider)
+                .withName("bursh size")
+                .build();
+        ValueProviderDescriptor endPositionProviderDesctiptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(endPositionProvider)
+                .withName("animation length")
+                .build();
+        ValueProviderDescriptor brushProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(brushFileProvider)
+                .withName("brush")
+                .build();
+
+        result.add(areaProvider);
+        result.add(colorProviderDescriptor);
+        result.add(brushSizeProviderDescriptor);
+        result.add(endPositionProviderDesctiptor);
+        result.add(brushProviderDescriptor);
+
+        return result;
+    }
+
+    private DoubleProvider doubleProviderWithDefaultValue(double defaultValue) {
+        return new DoubleProvider(IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(defaultValue));
+    }
+
+    private ColorProvider createColorProvider(double r, double g, double b) {
+        return new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(r)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(g)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(b)));
     }
 
     @Override
