@@ -213,7 +213,7 @@ public class TimelineManager implements Saveable {
                         AudioRequest audioRequest = AudioRequest.builder()
                                 .withApplyEffects(true)
                                 .withPosition(request.getPosition())
-                                .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 2, RoundingMode.HALF_DOWN)))
+                                .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 100, RoundingMode.HALF_DOWN)))
                                 .build();
 
                         return audibleClip.requestAudioFrame(audioRequest);

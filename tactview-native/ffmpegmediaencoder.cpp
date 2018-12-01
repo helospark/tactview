@@ -71,6 +71,8 @@ extern "C" {
         unsigned char* audioBuffer;
         unsigned int audioBufferPointer = 0;
         int bytesPerSample;
+        int numberOfSamplesPerAudioFrame;
+        int audioChannels;
     };
     RenderContext renderContext;
 
@@ -263,6 +265,7 @@ extern "C" {
             ost->sampleFormat = AV_SAMPLE_FMT_S64;
         }
         ost->bytesPerSample = request->bytesPerSample;
+        renderContext.numberOfSamplesPerAudioFrame = nb_samples;
 
 
         ost->frame     = alloc_audio_frame(c->sample_fmt, c->channel_layout,
@@ -285,8 +288,8 @@ extern "C" {
             }
 
             /* set options */
-            av_opt_set_int       (ost->swr_ctx, "in_channel_count",   c->channels,       0);
-            av_opt_set_int       (ost->swr_ctx, "in_sample_rate",     c->sample_rate,    0);
+            av_opt_set_int       (ost->swr_ctx, "in_channel_count",   request->audioChannels,       0);
+            av_opt_set_int       (ost->swr_ctx, "in_sample_rate",     request->sampleRate,    0);
             av_opt_set_sample_fmt(ost->swr_ctx, "in_sample_fmt",      ost->sampleFormat, 0);
             av_opt_set_int       (ost->swr_ctx, "out_channel_count",  c->channels,       0);
             av_opt_set_int       (ost->swr_ctx, "out_sample_rate",    c->sample_rate,    0);
@@ -307,9 +310,9 @@ extern "C" {
 
         int copySampleFromIndex = 0;
         for (j = 0; j <frame->nb_samples; j++) {
-            for (i = 0; i < ost->enc->channels; i++) {
+            for (i = 0; i < renderContext.audioChannels; i++) {
                 for (int k = 0; k < ost->bytesPerSample; ++k) {
-                    //std::err << (int)dataStart[copySampleFromIndex] << ' ';
+                    //std::cout << (int)dataStart[copySampleFromIndex] << ' ';
                     *q++ = dataStart[copySampleFromIndex++];
                 }
             }
@@ -330,7 +333,6 @@ extern "C" {
      */
     static int write_audio_frame(AVFormatContext *oc, OutputStream *ost, AVFrame *frame)
     {
-        std::cout << "Writing audio frame " << ost->next_pts << std::endl;
         AVCodecContext *c;
         AVPacket pkt = { 0 }; // data and size must be 0;
         int ret;
@@ -339,6 +341,7 @@ extern "C" {
 
         av_init_packet(&pkt);
         c = ost->enc;
+        std::cout << "Writing audio frame " << ((double)ost->next_pts * c->time_base.num / c->time_base.den) << " " << ost->samples_count << " " << dst_nb_samples << std::endl;
 
         if (frame) {
             /* convert samples from native format to destination codec format, using the resampler */
@@ -480,13 +483,13 @@ extern "C" {
      */
     static int write_video_frame(AVFormatContext *oc, OutputStream *ost, AVFrame* frame)
     {
-        std::cout << "Writing video frame " << ost->next_pts << std::endl;
         int ret;
         AVCodecContext *c;
         int got_packet = 0;
         AVPacket pkt = { 0 };
 
         c = ost->enc;
+        std::cout << "Writing video frame " << ((double)ost->next_pts * c->time_base.num / c->time_base.den) << std::endl;
 
 
         av_init_packet(&pkt);
@@ -602,8 +605,9 @@ extern "C" {
         renderContext.encode_video = encode_video;
         renderContext.encode_audio = encode_audio;
         renderContext.opt = opt;
-        renderContext.bytesPerSample = audio_st->bytesPerSample * audio_st->enc->channels;
+        renderContext.bytesPerSample = audio_st->bytesPerSample;
         renderContext.audioBuffer = new unsigned char[audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * 2];
+        renderContext.audioChannels = request->audioChannels;
     }
 
     void clearEncoder(FFmpegClearEncoderRequest* request) {
@@ -634,11 +638,11 @@ extern "C" {
 
             std::cout << "Audio samples: " << request->frame->numberOfAudioSamples << std::endl;
 
-            int nbSamples = audio_st->tmp_frame->nb_samples;
-                std::cout << "bytes/sample= " << renderContext.bytesPerSample << std::endl;
-                std::cout << "numbersam " << request->frame->numberOfAudioSamples << std::endl;
-            for (int i = 0; i < request->frame->numberOfAudioSamples; ++i) {
-                //std::cout << "bufferptr " << renderContext.audioBufferPointer << std::endl;
+            int nbSamples = renderContext.numberOfSamplesPerAudioFrame;
+            std::cout << "pointer:  " << renderContext.audioBufferPointer << " " << request->frame->numberOfAudioSamples << std::endl;
+            std::cout << "asd:  " << nbSamples << " x " <<  renderContext.bytesPerSample << std::endl;
+            for (int i = 0; i < request->frame->numberOfAudioSamples * renderContext.bytesPerSample; ++i) {
+                //std::cout << "a = " << renderContext.audioBufferPointer << " " << i << " " << (int)request->frame->audioData[i] << std::endl;
                 renderContext.audioBuffer[renderContext.audioBufferPointer++] = request->frame->audioData[i];
 
                 if (renderContext.audioBufferPointer >= nbSamples * renderContext.bytesPerSample) {

@@ -29,7 +29,7 @@ public class EffectDragAdder {
     public void addEffectDragOnClip(Node clipPane, String clipId) {
         clipPane.setOnDragEntered(event -> {
             Dragboard db = event.getDragboard();
-            if (db.getString() != null && db.getString().startsWith("effect:") && !draggingEffect()) {
+            if (db != null && db.getString() != null && db.getString().startsWith("effect:") && !draggingEffect()) {
                 TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
                 AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
                 commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
