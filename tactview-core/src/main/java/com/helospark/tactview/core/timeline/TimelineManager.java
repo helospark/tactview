@@ -178,7 +178,7 @@ public class TimelineManager implements Saveable {
                     VisualTimelineClip visualClip = (VisualTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
-                        Map<String, ClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
+                        Map<String, ReadOnlyClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
                                 .stream()
                                 .filter(a -> clipsToFrames.containsKey(a))
                                 .map(a -> clipsToFrames.get(a))
@@ -193,8 +193,8 @@ public class TimelineManager implements Saveable {
                                 .withRequestedClips(requiredClips)
                                 .build();
 
-                        ClipImage frameResult = visualClip.getFrame(frameRequest);
-                        ClipImage expandedFrame = expandFrame(frameResult, visualClip, request);
+                        ReadOnlyClipImage frameResult = visualClip.getFrame(frameRequest);
+                        ReadOnlyClipImage expandedFrame = expandFrame(frameResult, visualClip, request);
 
                         BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
                         double alpha = visualClip.getAlpha(request.getPosition());

@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
-import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -29,7 +29,7 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         Integer threshold = thresholdLimitProvider.getValueAt(request.getEffectPosition());
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
             int[] input = pixelRequest.input;

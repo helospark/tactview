@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RotateEffect extends StatelessVideoEffect {
@@ -31,7 +32,7 @@ public class RotateEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         double degrees = angleProvider.getValueAt(request.getClipPosition());
 
         int originalWidth = request.getCurrentFrame().getWidth();

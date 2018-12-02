@@ -33,7 +33,7 @@ public class MirrorEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         boolean verticallyMirrorred = mirrorVerticallyProvider.getValueAt(request.getEffectPosition());
         boolean horizontallyMirrorred = mirrorHorizontalProvider.getValueAt(request.getEffectPosition());
 

@@ -30,6 +30,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.String
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 
@@ -56,7 +57,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
+    public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();
 

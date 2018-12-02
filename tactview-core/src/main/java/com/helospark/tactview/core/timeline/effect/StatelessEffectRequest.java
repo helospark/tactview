@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class StatelessEffectRequest {
@@ -14,7 +13,7 @@ public class StatelessEffectRequest {
     private TimelinePosition clipPosition;
     private TimelinePosition effectPosition;
     private double scale;
-    private Map<String, ClipImage> requestedClips;
+    private Map<String, ReadOnlyClipImage> requestedClips;
 
     @Generated("SparkTools")
     private StatelessEffectRequest(Builder builder) {
@@ -41,7 +40,7 @@ public class StatelessEffectRequest {
         return scale;
     }
 
-    public Map<String, ClipImage> getRequestedClips() {
+    public Map<String, ReadOnlyClipImage> getRequestedClips() {
         return requestedClips;
     }
 
@@ -56,7 +55,7 @@ public class StatelessEffectRequest {
         private TimelinePosition clipPosition;
         private TimelinePosition effectPosition;
         private double scale;
-        private Map<String, ClipImage> requestedClips = Collections.emptyMap();
+        private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
 
         private Builder() {
         }
@@ -81,7 +80,7 @@ public class StatelessEffectRequest {
             return this;
         }
 
-        public Builder withRequestedClips(Map<String, ClipImage> requestedClips) {
+        public Builder withRequestedClips(Map<String, ReadOnlyClipImage> requestedClips) {
             this.requestedClips = requestedClips;
             return this;
         }

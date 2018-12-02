@@ -36,7 +36,7 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
 
         double fadeTime = (1.0 - keepAtWhite) / 2.0;
 
-        ClipImage firstFrame = transitionRequest.getFirstFrame();
+        ReadOnlyClipImage firstFrame = transitionRequest.getFirstFrame();
         ReadOnlyClipImage secondFrame = transitionRequest.getSecondFrame();
 
         ReadOnlyClipImage currentImageShown;

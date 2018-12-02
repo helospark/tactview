@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorP
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -36,7 +37,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
+    public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();
 

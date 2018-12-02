@@ -8,7 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
-import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public abstract class ProceduralVisualClip extends VisualTimelineClip {
 
@@ -26,12 +26,12 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
         throw new IllegalStateException();
     }
 
-    public abstract ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition);
+    public abstract ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition);
 
     @Override
-    public ClipImage getFrameInternal(GetFrameRequest request) {
+    public ReadOnlyClipImage getFrameInternal(GetFrameRequest request) {
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-        ClipImage result = createProceduralFrame(request, relativePosition);
+        ReadOnlyClipImage result = createProceduralFrame(request, relativePosition);
         return applyEffects(relativePosition, result, request);
     }
 

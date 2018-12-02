@@ -42,7 +42,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         int threshold = thresholdProvider.getValueAt(request.getEffectPosition());
         double lightStrenghtMultiplier = lightStrengthMultiplierProvider.getValueAt(request.getEffectPosition());
         ClipImage lightParts = independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelReques -> {

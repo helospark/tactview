@@ -1,7 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
-import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public abstract class StatelessVideoEffect extends StatelessEffect {
 
@@ -13,7 +13,7 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
         super(effect);
     }
 
-    public abstract ClipImage createFrame(StatelessEffectRequest request);
+    public abstract ReadOnlyClipImage createFrame(StatelessEffectRequest request);
 
     public boolean isLocal() {
         return true;

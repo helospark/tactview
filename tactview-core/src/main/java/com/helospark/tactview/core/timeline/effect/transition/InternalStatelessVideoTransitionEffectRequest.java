@@ -3,11 +3,10 @@ package com.helospark.tactview.core.timeline.effect.transition;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class InternalStatelessVideoTransitionEffectRequest {
-    private ClipImage firstFrame;
+    private ReadOnlyClipImage firstFrame;
     private ReadOnlyClipImage secondFrame;
     private TimelinePosition globalPosition;
     private TimelinePosition clipPosition;
@@ -26,7 +25,7 @@ public class InternalStatelessVideoTransitionEffectRequest {
         this.progress = builder.progress;
     }
 
-    public ClipImage getFirstFrame() {
+    public ReadOnlyClipImage getFirstFrame() {
         return firstFrame;
     }
 
@@ -61,7 +60,7 @@ public class InternalStatelessVideoTransitionEffectRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private ClipImage firstFrame;
+        private ReadOnlyClipImage firstFrame;
         private ReadOnlyClipImage secondFrame;
         private TimelinePosition globalPosition;
         private TimelinePosition clipPosition;
@@ -72,7 +71,7 @@ public class InternalStatelessVideoTransitionEffectRequest {
         private Builder() {
         }
 
-        public Builder withFirstFrame(ClipImage firstFrame) {
+        public Builder withFirstFrame(ReadOnlyClipImage firstFrame) {
             this.firstFrame = firstFrame;
             return this;
         }

@@ -22,6 +22,7 @@ import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApply
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskTypeListElement;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskGrayscaleToAlpha;
 import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class LayerMaskEffect extends StatelessVideoEffect {
@@ -45,8 +46,8 @@ public class LayerMaskEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
-        Optional<ClipImage> layerMask = layerMaskProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
+        Optional<ReadOnlyClipImage> layerMask = layerMaskProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
         LayerMaskAlphaCalculator layerMaskType = layerMaskTypeProvider.getValueAt(request.getEffectPosition()).getLayerMaskAlphaCalculator();
         if (layerMask.isPresent()) {
             LayerMaskApplyRequest layerMaskRequest = LayerMaskApplyRequest.builder()

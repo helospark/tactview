@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class DenoiseEffect extends StatelessVideoEffect {
@@ -33,7 +34,7 @@ public class DenoiseEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
         OpenCVDenoiseRequest denoiseRequest = new OpenCVDenoiseRequest();
 

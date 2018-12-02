@@ -35,7 +35,7 @@ public class PencilSketchEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         ClipImage result = ClipImage.sameSizeAs(currentFrame);
 

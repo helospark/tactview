@@ -9,7 +9,6 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
-import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -31,7 +30,7 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest effectRequest) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest effectRequest) {
         double contrast = contrastProvider.getValueAt(effectRequest.getEffectPosition());
         double brightness = brightnessProvider.getValueAt(effectRequest.getEffectPosition());
 

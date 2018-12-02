@@ -5,16 +5,16 @@ import java.util.Optional;
 
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
-import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class RenderFrameData {
     public double globalAlpha;
     public BlendModeStrategy blendModeStrategy;
-    public ClipImage clipFrameResult;
+    public ReadOnlyClipImage clipFrameResult;
     public String id;
     public Optional<AbstractVideoTransitionEffect> videoTransition;
 
-    public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ClipImage clipFrameResult, List<AbstractVideoTransitionEffect> list) {
+    public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ReadOnlyClipImage clipFrameResult, List<AbstractVideoTransitionEffect> list) {
         this.id = id;
         this.globalAlpha = globalAlpha;
         this.blendModeStrategy = blendModeStrategy;

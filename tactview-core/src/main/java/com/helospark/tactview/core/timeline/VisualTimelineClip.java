@@ -21,6 +21,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointP
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class VisualTimelineClip extends TimelineClip {
@@ -42,11 +43,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     }
 
-    public ClipImage getFrame(GetFrameRequest request) {
+    public ReadOnlyClipImage getFrame(GetFrameRequest request) {
         return getFrameInternal(request);
     }
 
-    protected ClipImage getFrameInternal(GetFrameRequest request) {
+    protected ReadOnlyClipImage getFrameInternal(GetFrameRequest request) {
         double scale = request.getScale();
         int width = (int) (mediaMetadata.getWidth() * scale);
         int height = (int) (mediaMetadata.getHeight() * scale);
@@ -59,7 +60,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return applyEffects(relativePosition, frameResult, request);
     }
 
-    protected ClipImage applyEffects(TimelinePosition relativePosition, ClipImage frameResult, GetFrameRequest frameRequest) {
+    protected ReadOnlyClipImage applyEffects(TimelinePosition relativePosition, ReadOnlyClipImage frameResult, GetFrameRequest frameRequest) {
         if (frameRequest.isApplyEffects()) {
             List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition, StatelessVideoEffect.class);
 
@@ -72,7 +73,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                         .withRequestedClips(frameRequest.getRequestedClips())
                         .build();
 
-                ClipImage appliedEffectsResult = effect.createFrame(request);
+                ReadOnlyClipImage appliedEffectsResult = effect.createFrame(request);
 
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 

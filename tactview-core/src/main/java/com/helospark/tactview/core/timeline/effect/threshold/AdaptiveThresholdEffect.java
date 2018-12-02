@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class AdaptiveThresholdEffect extends StatelessVideoEffect {
     private IntegerProvider addedConstantProvider;
@@ -30,7 +31,7 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipImage createFrame(StatelessEffectRequest request) {
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
 
         OpenCVThresholdRequest nativeRequest = new OpenCVThresholdRequest();
