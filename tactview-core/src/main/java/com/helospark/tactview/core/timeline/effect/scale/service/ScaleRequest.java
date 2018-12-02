@@ -8,14 +8,12 @@ public class ScaleRequest {
     private ReadOnlyClipImage image;
     private int newWidth;
     private int newHeight;
-    private Boolean padImage;
 
     @Generated("SparkTools")
     private ScaleRequest(Builder builder) {
         this.image = builder.image;
         this.newWidth = builder.newWidth;
         this.newHeight = builder.newHeight;
-        this.padImage = builder.padImage;
     }
 
     public ReadOnlyClipImage getImage() {
@@ -30,10 +28,6 @@ public class ScaleRequest {
         return newHeight;
     }
 
-    public boolean isPadImage() {
-        return padImage == null ? true : padImage;
-    }
-
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -44,7 +38,6 @@ public class ScaleRequest {
         private ReadOnlyClipImage image;
         private int newWidth;
         private int newHeight;
-        private Boolean padImage;
 
         private Builder() {
         }
@@ -61,11 +54,6 @@ public class ScaleRequest {
 
         public Builder withNewHeight(int newHeight) {
             this.newHeight = newHeight;
-            return this;
-        }
-
-        public Builder withPadImage(boolean padImage) {
-            this.padImage = padImage;
             return this;
         }
 

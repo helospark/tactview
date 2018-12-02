@@ -39,7 +39,6 @@ public class ScaledBrushProvider {
                 .withImage(brushImage)
                 .withNewWidth(brushRequest.getWidth())
                 .withNewHeight(brushRequest.getHeight())
-                .withPadImage(false)
                 .build();
 
         ClipImage scaledBrush = scaleService.createScaledImage(scaleRequest);

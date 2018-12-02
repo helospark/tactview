@@ -23,6 +23,7 @@ extern "C"
     } OpenCVScaleRequest;
 
     void scaleImage(OpenCVScaleRequest* request)  {
+        std::cout << "Scale: " << request->originalWidth << " " << request->originalHeight << " " << request->newWidth << " " << request->newHeight << std::endl;
         Mat inputMat(request->originalHeight, request->originalWidth, CV_8UC4, (void*)request->input);
         Mat outputMat(request->newHeight, request->newWidth, CV_8UC4, (void*)request->output);
 

@@ -14,7 +14,7 @@ public class JavaByteArrayConverter {
         int fullLength = numberOfChannels * numberOfSamplesPerChannel;
         byte[] result = new byte[fullLength];
 
-        for (int sample = 0; sample < samples * length; ++sample) {
+        for (int sample = 0; sample < (int) Math.floor(samples * length); ++sample) {
             for (int channel = 0; channel < numberOfChannels; ++channel) {
                 if (channel < originalNumberOfChannels) {
                     int rescaledSample = audioFrameResult.getRescaledSample(channel, bytes, samples, sample);

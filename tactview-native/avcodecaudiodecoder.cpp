@@ -65,7 +65,7 @@ extern "C" {
         response.channels = codec->channels;
         response.sampleRate = codec->sample_rate;
         response.lengthInMicroseconds = format->duration / (AV_TIME_BASE / 1000000);
-        response.bytesPerSample = av_get_bytes_per_sample(pCodec->sample_fmts[0]);
+        response.bytesPerSample = av_get_bytes_per_sample(codec->sample_fmt);
 
         avcodec_close(codec);
         avformat_free_context(format);

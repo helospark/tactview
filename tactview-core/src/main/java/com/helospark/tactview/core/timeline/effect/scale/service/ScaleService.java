@@ -16,12 +16,7 @@ public class ScaleService {
 
     public ClipImage createScaledImage(ScaleRequest request) {
         ReadOnlyClipImage currentFrame = request.getImage();
-        ClipImage result;
-        if (request.isPadImage()) {
-            result = ClipImage.fromSize(currentFrame.getWidth(), currentFrame.getHeight());
-        } else {
-            result = ClipImage.fromSize(request.getNewWidth(), request.getNewHeight());
-        }
+        ClipImage result = ClipImage.fromSize(request.getNewWidth(), request.getNewHeight());
 
         OpenCVScaleRequest nativeRequest = new OpenCVScaleRequest();
         nativeRequest.input = currentFrame.getBuffer();
