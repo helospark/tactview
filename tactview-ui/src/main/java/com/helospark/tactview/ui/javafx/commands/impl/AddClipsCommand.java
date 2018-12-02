@@ -22,7 +22,7 @@ public class AddClipsCommand implements UiCommand {
 
     @Override
     public void execute() {
-        TimelineClip result = timelineManager.addResource(request);
+        TimelineClip result = timelineManager.addClip(request);
         this.addedClipId = result.getId();
     }
 

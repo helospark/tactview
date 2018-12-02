@@ -1,4 +1,4 @@
-package com.helospark.tactview.core.timeline.clipfactory;
+package com.helospark.tactview.core.timeline.image;
 
 import java.io.File;
 import java.nio.ByteBuffer;

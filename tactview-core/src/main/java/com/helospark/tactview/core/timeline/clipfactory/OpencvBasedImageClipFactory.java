@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualMediaSource;
+import com.helospark.tactview.core.timeline.image.ImageClip;
 
 @Component
 public class OpencvBasedImageClipFactory implements ClipFactory {

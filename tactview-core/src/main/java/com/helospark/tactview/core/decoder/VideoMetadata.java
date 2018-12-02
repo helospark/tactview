@@ -35,6 +35,10 @@ public class VideoMetadata extends VisualMediaMetadata {
         return length.getSeconds().multiply(BigDecimal.valueOf(fps)).longValue();
     }
 
+    public boolean isValid() {
+        return width > 0 && height > 0 && fps > 0;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();

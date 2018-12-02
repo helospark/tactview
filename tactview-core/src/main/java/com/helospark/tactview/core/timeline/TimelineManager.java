@@ -79,21 +79,23 @@ public class TimelineManager implements Saveable {
         this.projectRepository = projectRepository;
     }
 
-    public boolean canAddClipAt(String channelId, TimelinePosition position, TimelineLength length) {
-        if (!findChannelForClipId(channelId).isPresent()) {
-            return false;
-        }
-        TimelineChannel channel = findChannelForClipId(channelId).get();
-        return channel.canAddResourceAt(position, length);
-    }
-
-    public TimelineClip addResource(AddClipRequest request) {
+    public TimelineClip addClip(AddClipRequest request) {
         String channelId = request.getChannelId();
-        TimelineClip clip = clipFactoryChain.createClip(request);
-        TimelineChannel channelToAddResourceTo = findChannelWithId(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
-        addClip(channelToAddResourceTo, clip);
+        List<TimelineClip> clips = clipFactoryChain.createClips(request);
 
-        return clip;
+        Integer channelIndex = findChannelIndex(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
+        for (var clip : clips) {
+            if (channelIndex >= channels.size()) {
+                createChannel(channelIndex);
+            }
+            if (!channels.get(channelIndex).canAddResourceAt(clip.getInterval().getStartPosition(), clip.getInterval().getLength())) {
+                createChannel(channelIndex);
+            }
+            TimelineChannel channelToAddResourceTo = channels.get(channelIndex);
+            addClip(channelToAddResourceTo, clip);
+            ++channelIndex;
+        }
+        return clips.get(0);
     }
 
     public void addClip(TimelineChannel channelToAddResourceTo, TimelineClip clip) {

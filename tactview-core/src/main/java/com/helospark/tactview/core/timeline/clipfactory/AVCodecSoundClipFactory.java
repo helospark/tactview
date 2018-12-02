@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.clipfactory;
 import java.io.File;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.ffmpeg.audio.AVCodecAudioMediaDecoderDecorator;
 import com.helospark.tactview.core.timeline.AddClipRequest;
@@ -13,6 +14,7 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 @Component
+@Order(value = Integer.MAX_VALUE)
 public class AVCodecSoundClipFactory implements ClipFactory {
     private AVCodecAudioMediaDecoderDecorator mediaDecoder;
 
@@ -22,13 +24,20 @@ public class AVCodecSoundClipFactory implements ClipFactory {
 
     @Override
     public boolean doesSupport(AddClipRequest request) {
-        // TODO: real
-        return request.containsFile() && request.getFile().getAbsolutePath().contains("_sound");
+        return request.containsFile() && hasAudioStream(request);
+    }
+
+    private boolean hasAudioStream(AddClipRequest request) {
+        return readMetadataFromFile(request.getFile()).isValid();
     }
 
     @Override
     public AudioMediaMetadata readMetadata(AddClipRequest request) {
-        return mediaDecoder.readMetadata(request.getFile());
+        return readMetadataFromFile(request.getFile());
+    }
+
+    private AudioMediaMetadata readMetadataFromFile(File file) {
+        return mediaDecoder.readMetadata(file);
     }
 
     @Override

@@ -18,10 +18,10 @@ extern "C" {
         long lengthInMicroseconds;
 
         AVCodecAudioMetadataResponse() {
-            this->channels = 0;
-            this->bytesPerSample = 0;
-            this->lengthInMicroseconds = 0;
-            this->sampleRate = 0;
+            this->channels = -1;
+            this->bytesPerSample = -1;
+            this->lengthInMicroseconds = -1;
+            this->sampleRate = -1;
         }
     };
 

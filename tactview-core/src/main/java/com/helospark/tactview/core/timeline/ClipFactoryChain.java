@@ -1,9 +1,9 @@
 package com.helospark.tactview.core.timeline;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.MediaMetadata;
 
 @Component
 public class ClipFactoryChain {
@@ -13,21 +13,19 @@ public class ClipFactoryChain {
         this.clipFactoryChain = clipFactoryChain;
     }
 
-    public TimelineClip createClip(AddClipRequest request) {
-        return findFactory(request)
-                .createClip(request);
+    public List<TimelineClip> createClips(AddClipRequest request) {
+        List<ClipFactory> factories = findFactory(request);
+        return factories
+                .stream()
+                .map(factory -> factory.createClip(request))
+                .collect(Collectors.toList());
     }
 
-    public MediaMetadata readMetadata(AddClipRequest request) {
-        return findFactory(request)
-                .readMetadata(request);
-    }
-
-    private ClipFactory findFactory(AddClipRequest request) {
-        return clipFactoryChain.stream()
+    private List<ClipFactory> findFactory(AddClipRequest request) {
+        return clipFactoryChain
+                .parallelStream()
                 .filter(factory -> factory.doesSupport(request))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No clip factory found for " + request));
+                .collect(Collectors.toList());
     }
 
 }

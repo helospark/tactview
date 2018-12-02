@@ -4,7 +4,7 @@ import java.util.Map;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.timeline.clipfactory.ImageClip;
+import com.helospark.tactview.core.timeline.image.ImageClip;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;

@@ -17,7 +17,6 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.scene.image.Image;
@@ -71,7 +70,7 @@ public class AudioImagePatternService {
         for (int i = 0; i < numberOfSamplesToCollect; ++i) {
             AudioRequest frameRequest = AudioRequest.builder()
                     .withApplyEffects(false)
-                    .withPosition(new TimelinePosition(timeJump.multiply(BigDecimal.valueOf(i))))
+                    .withPosition(audibleTimelineClip.getInterval().getStartPosition().add(timeJump.multiply(BigDecimal.valueOf(i))))
                     .withLength(TimelineLength.ofMillis(1))
                     .build();
             AudioFrameResult frame = audibleTimelineClip.requestAudioFrame(frameRequest);

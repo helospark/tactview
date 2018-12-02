@@ -1,3 +1,5 @@
+
+extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
@@ -18,12 +20,19 @@ void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* fra
 }
 
 
-typedef struct {
+struct MediaMetadata {
     double fps;
     int width;
     int height;
     long long lengthInMicroseconds;
-} MediaMetadata;
+
+    MediaMetadata() {
+      fps = -1;
+      width = -1;
+      height = -1;
+      lengthInMicroseconds = -1;
+    }
+};
 
 MediaMetadata readMediaMetadata(const char* path) {
   // Initalizing these to NULL prevents segfaults!
@@ -177,7 +186,7 @@ void readFrames(FFmpegImageRequest* request) {
   
   pFrameRGB=av_frame_alloc();
   if(pFrameRGB==NULL)
-    return -1;
+    return;
 
   numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, pCodecCtx->width,
 			      pCodecCtx->height);
@@ -237,6 +246,5 @@ void readFrames(FFmpegImageRequest* request) {
 
   // Close the video file
   avformat_close_input(&pFormatCtx);
-  
-  return 0;
+}
 }

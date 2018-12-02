@@ -69,4 +69,8 @@ public class AudioMediaMetadata extends MediaMetadata {
         }
     }
 
+    public boolean isValid() {
+        return sampleRate > 0;
+    }
+
 }
