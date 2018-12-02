@@ -4,67 +4,17 @@
 
 #include <stdio.h>
 
-/**
-void copyFrameData(char *pFrame, int width, int height, int iFrame, char* frames) {
-  FILE *pFile;
-  char szFilename[32];
-  int  y;
-  
-  // Open file
-  sprintf(szFilename, "/tmp/frame%d.ppm", iFrame);
-  pFile=fopen(szFilename, "wb");
-  if(pFile==NULL)
-    return;
-  
-  // Write header
-  fprintf(pFile, "P6\n%d %d\n255\n", width, height);
-  
-  // Write pixel data
-  for(y=0; y<height; y++) {
-    
-    fprintf(stderr, "Starting line: %d\n", y);
-    for (int i = 0; i < width; ++i) {
-        char* point = pFrame + (y * width * 4 + i * 4);
-        fwrite(point, 1, 3, pFile);
-        frames[y * width * 3 + i * 3 + 0] = point[0];
-        frames[y * width * 3 + i * 3 + 1] = point[1];
-        frames[y * width * 3 + i * 3 + 2] = point[2]; 
-        frames[y * width * 3 + i * 3 + 3] = point[3]; 
-    }
-    fprintf(stderr, "Line: %d\n", y);
-  }
-  // Close file
-  fclose(pFile);
-}*/
-
-
 void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames) {
-  /**
-  FILE *pFile;
-  char szFilename[32];
-  int  y;
-  
-  sprintf(szFilename, "/tmp/frame%d.ppm", iFrame);
-  pFile=fopen(szFilename, "wb");
-  if(pFile==NULL)
-    return;
-  
-  fprintf(pFile, "P6\n%d %d\n255\n", width, height);
-  */  
   for(int y=0; y<height; y++) {
     for (int i = 0; i < width; ++i) {
         int id = y*pFrame->linesize[0] + i * 4;
-      //  fwrite(pFrame->data[0] + id, 1, 3, pFile);
         frames[y * width * 4 + i * 4 + 0] = *(pFrame->data[0] + id + 2);
         frames[y * width * 4 + i * 4 + 1] = *(pFrame->data[0] + id + 1);
         frames[y * width * 4 + i * 4 + 2] = *(pFrame->data[0] + id + 0);
         frames[y * width * 4 + i * 4 + 3] = *(pFrame->data[0] + id + 3);
     }
   }
-  
 
-  // Close file
-  //fclose(pFile);
 }
 
 
@@ -233,7 +183,7 @@ void readFrames(FFmpegImageRequest* request) {
 			      pCodecCtx->height);
   buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
   
-  avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_RGB24,
+  avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
 		 pCodecCtx->width, pCodecCtx->height);
   
   sws_ctx = sws_getContext(pCodecCtx->width,
@@ -250,28 +200,24 @@ void readFrames(FFmpegImageRequest* request) {
 
   i=0;
 
-        fprintf(stderr, "Number of frames %d\n", numBytes);
+  fprintf(stderr, "Number of frames %d\n", numBytes);
 
 
-    int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rething
-        //fprintf(stderr, "target %llu %llu\n", seek_target, request->startMicroseconds);
+  int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rethink
 	seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
-        //fprintf(stderr, "Seeking to %llu\n", seek_target);
-    av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
+  av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
 
   while(av_read_frame(pFormatCtx, &packet)>=0 && i < request->numberOfFrames) {
     if(packet.stream_index==videoStream) {
       avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
         //fprintf(stderr, "Seeking %llu -> %llu %d\n", packet.pts, seek_target, i);
       if(frameFinished && packet.pts >= seek_target ) {
-	    sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
-		      pFrame->linesize, 0, pCodecCtx->height,
-		      pFrameRGB->data, pFrameRGB->linesize);
-        //int bytes = pCodecCtx->width * pCodecCtx->height * 4;
-        //memcpy(frames, pFrameRGB->data, bytes);
-        //fprintf(stderr, "Saving image\n");
-	    copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
-        ++i;
+	        sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
+		         pFrame->linesize, 0, pCodecCtx->height,
+		         pFrameRGB->data, pFrameRGB->linesize);
+
+	        copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
+          ++i;
 	    }
     }
     // Free the packet that was allocated by av_read_frame

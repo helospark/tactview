@@ -7,9 +7,11 @@ import com.sun.jna.Structure;
 
 public class FFmpegInitEncoderRequest extends Structure implements Structure.ByReference {
     public String fileName;
-    public int width;
-    public int height;
-    public double framerate;
+    public int actualWidth;
+    public int actualHeight;
+    public int renderWidth;
+    public int renderHeight;
+    public int fps;
 
     public int audioChannels;
     public int bytesPerSample;
@@ -17,6 +19,6 @@ public class FFmpegInitEncoderRequest extends Structure implements Structure.ByR
 
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("fileName", "width", "height", "framerate", "audioChannels", "bytesPerSample", "sampleRate");
+        return Arrays.asList("fileName", "actualWidth", "actualHeight", "renderWidth", "renderHeight", "fps", "audioChannels", "bytesPerSample", "sampleRate");
     }
 }

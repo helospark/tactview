@@ -36,9 +36,11 @@ extern "C" {
 
     struct FFmpegInitEncoderRequest {
         const char* fileName;
-        int width;
-        int height;
-        double framerate;
+        int actualWidth;
+        int actualHeight;
+        int renderWidth;
+        int renderHeight;
+        int fps;
 
         int audioChannels;
         int bytesPerSample;
@@ -82,6 +84,11 @@ extern "C" {
         int bytesPerSample;
         int numberOfSamplesPerAudioFrame;
         int audioChannels;
+
+        int actualWidth;
+        int actualHeight;
+        int renderWidth;
+        int renderHeight;        
     };
     RenderContext renderContext;
 
@@ -173,14 +180,15 @@ extern "C" {
 
             c->bit_rate = 400000*2;
             /* Resolution must be a multiple of two. */
-            c->width = request->width;
-            c->height = request->height;
+            c->width = request->renderWidth;
+            c->height = request->renderHeight;
 
             /* timebase: This is the fundamental unit of time (in seconds) in terms
              * of which frame timestamps are represented. For fixed-fps content,
              * timebase should be 1/framerate and timestamp increments should be
              * identical to 1. */
-            ost->st->time_base = av_d2q(request->framerate, 5);
+            std::cout << "FPS: " << request->fps << std::endl;
+            ost->st->time_base =  (AVRational){1, request->fps};
             c->time_base       = ost->st->time_base;
 
             c->pix_fmt       = AV_PIX_FMT_YUV420P;
@@ -463,12 +471,12 @@ extern "C" {
             exit(1);
 
 
-        SwsContext * ctx = sws_getContext(c->width, c->height,
+        SwsContext * ctx = sws_getContext(renderContext.actualWidth, renderContext.actualHeight,
                                   AV_PIX_FMT_BGR32, c->width, c->height,
                                   AV_PIX_FMT_YUV420P, 0, 0, 0, 0);
         uint8_t * inData[1] = { frame->imageData };
-        int inLinesize[1] = { 4*c->width };
-        sws_scale(ctx, inData, inLinesize, 0, c->height, ost->frame->data, ost->frame->linesize);
+        int inLinesize[1] = { 4*renderContext.actualWidth };
+        sws_scale(ctx, inData, inLinesize, 0, renderContext.actualHeight, ost->frame->data, ost->frame->linesize);
 
         ost->frame->pts = ost->next_pts++;
 
@@ -604,12 +612,16 @@ extern "C" {
         renderContext.encode_audio = encode_audio;
         renderContext.opt = opt;
         renderContext.bytesPerSample = audio_st->bytesPerSample;
-        renderContext.audioBuffer = new unsigned char[audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * 2];
+        renderContext.audioBuffer = new unsigned char[audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * request->audioChannels];
         renderContext.audioChannels = request->audioChannels;
+        renderContext.actualWidth = request->actualWidth;
+        renderContext.actualHeight = request->actualHeight;
+        renderContext.renderWidth = request->renderWidth;
+        renderContext.renderHeight = request->renderHeight;
     }
 
     void clearEncoder(FFmpegClearEncoderRequest* request) {
-        av_interleaved_write_frame(renderContext.oc, NULL);
+        //av_interleaved_write_frame(renderContext.oc, NULL);
         /* Write the trailer, if any. The trailer must be written before you
          * close the CodecContexts open when you wrote the header; otherwise
          * av_write_trailer() may try to use memory that was freed on

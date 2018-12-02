@@ -30,12 +30,14 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
-        initNativeRequest.framerate = 1 / 30.0;
-        initNativeRequest.width = renderRequest.getWidth();
-        initNativeRequest.height = renderRequest.getHeight();
+        initNativeRequest.fps = renderRequest.getFps();
+        initNativeRequest.renderWidth = renderRequest.getWidth();
+        initNativeRequest.renderHeight = renderRequest.getHeight();
 
         AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition);//tmp solution
 
+        initNativeRequest.actualWidth = tmpFrame.getVideoResult().getWidth();
+        initNativeRequest.actualHeight = tmpFrame.getVideoResult().getHeight();
         initNativeRequest.bytesPerSample = tmpFrame.getAudioResult().getBytesPerSample();
         initNativeRequest.audioChannels = tmpFrame.getAudioResult().getChannels().size();
         initNativeRequest.sampleRate = tmpFrame.getAudioResult().getSamplePerSecond();
@@ -46,12 +48,6 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         int frameIndex = 0;
         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())) {
             AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition);
-
-            System.out.println("====================================");
-            for (int i = 0; i < frame.getAudioResult().getNumberSamples(); ++i) {
-                System.out.print(frame.getAudioResult().getSampleAt(0, i) + " ");
-            }
-            System.out.println("\n====================================");
 
             FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
             nativeRequest.frame = new RenderFFMpegFrame();
