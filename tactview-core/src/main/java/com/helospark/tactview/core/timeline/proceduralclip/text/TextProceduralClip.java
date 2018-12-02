@@ -14,7 +14,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -30,6 +29,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 
@@ -56,7 +56,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
+    public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();
 
@@ -85,7 +85,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
             yPosition += fontMetrics.getHeight();
         }
 
-        ClipFrameResult frameResult = bufferedImageToClipFrameResultConverter.convertFromAbgr(bufferedImage);
+        ClipImage frameResult = bufferedImageToClipFrameResultConverter.convertFromAbgr(bufferedImage);
 
         return applyEffects(relativePosition, frameResult, request);
     }

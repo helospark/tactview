@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
@@ -12,6 +11,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.PercentAwareMultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
@@ -27,7 +27,7 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public ClipFrameResult applyTransition(ExternalStatelessVideoTransitionEffectRequest request) {
+    public ClipImage applyTransition(ExternalStatelessVideoTransitionEffectRequest request) {
         TimelinePosition effectPosition = request.getGlobalPosition().from(parentIntervalAware.getInterval().getStartPosition()).from(interval.getStartPosition());
         double progress = progressProvider.getValueAt(effectPosition).doubleValue();
         InternalStatelessVideoTransitionEffectRequest transitionRequest = InternalStatelessVideoTransitionEffectRequest.builder()
@@ -45,7 +45,7 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
             throw new IllegalArgumentException("Transition must be called with the images with the same dimension");
         }
 
-        ClipFrameResult result = applyTransitionInternal(transitionRequest);
+        ClipImage result = applyTransitionInternal(transitionRequest);
 
         if (result.getWidth() != request.getFirstFrame().getWidth() || result.getHeight() != request.getFirstFrame().getHeight()) {
             throw new IllegalStateException("Transition is not allowed to resize the image");
@@ -54,7 +54,7 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
         return result;
     }
 
-    protected abstract ClipFrameResult applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest);
+    protected abstract ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest);
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {

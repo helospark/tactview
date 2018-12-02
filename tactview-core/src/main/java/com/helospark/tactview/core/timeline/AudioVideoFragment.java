@@ -1,15 +1,17 @@
 package com.helospark.tactview.core.timeline;
 
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+
 public class AudioVideoFragment {
-    private ClipFrameResult videoResult;
+    private ReadOnlyClipImage videoResult;
     private AudioFrameResult audioResult;
 
-    public AudioVideoFragment(ClipFrameResult videoResult, AudioFrameResult audioResult) {
+    public AudioVideoFragment(ReadOnlyClipImage videoResult, AudioFrameResult audioResult) {
         this.videoResult = videoResult;
         this.audioResult = audioResult;
     }
 
-    public ClipFrameResult getVideoResult() {
+    public ReadOnlyClipImage getVideoResult() {
         return videoResult;
     }
 

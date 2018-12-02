@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -18,6 +17,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BlurEffect extends StatelessVideoEffect {
@@ -40,7 +40,7 @@ public class BlurEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+    public ClipImage createFrame(StatelessEffectRequest request) {
 
         BlurRequest blurRequest = BlurRequest.builder()
                 .withImage(request.getCurrentFrame())

@@ -10,19 +10,20 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class IndependentPixelOperation {
     private ExecutorService workerExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-    public ClipFrameResult createNewImageWithAppliedTransformation(ClipFrameResult currentFrame, SimplePixelTransformer pixelTransformer) {
+    public ClipImage createNewImageWithAppliedTransformation(ReadOnlyClipImage currentFrame, SimplePixelTransformer pixelTransformer) {
         return createNewImageWithAppliedTransformation(currentFrame, List.of(), pixelTransformer);
     }
 
-    public ClipFrameResult createNewImageWithAppliedTransformation(ClipFrameResult currentFrame, List<ThreadLocalProvider<?>> threadLocalProviders, SimplePixelTransformer pixelTransformer) {
-        ClipFrameResult resultFrame = ClipFrameResult.sameSizeAs(currentFrame);
+    public ClipImage createNewImageWithAppliedTransformation(ReadOnlyClipImage currentFrame, List<ThreadLocalProvider<?>> threadLocalProviders, SimplePixelTransformer pixelTransformer) {
+        ClipImage resultFrame = ClipImage.sameSizeAs(currentFrame);
 
         int taskSize = resultFrame.getHeight() / numberOfThreads;
         List<CompletableFuture<?>> futures = new ArrayList<>();

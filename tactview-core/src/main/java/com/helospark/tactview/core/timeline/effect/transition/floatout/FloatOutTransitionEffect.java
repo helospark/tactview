@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.transition.floatout;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -11,6 +10,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -29,12 +30,12 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    protected ClipFrameResult applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest request) {
+    protected ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest request) {
         double progress = request.getProgress();
-        ClipFrameResult firstFrame = request.getFirstFrame();
-        ClipFrameResult secondFrame = request.getSecondFrame();
+        ReadOnlyClipImage firstFrame = request.getFirstFrame();
+        ReadOnlyClipImage secondFrame = request.getSecondFrame();
 
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(request.getFirstFrame());
+        ClipImage result = ClipImage.sameSizeAs(request.getFirstFrame());
 
         int xPosition = 0;
         int yPosition = 0;
@@ -67,7 +68,7 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
         return result;
     }
 
-    private void copyColor(ClipFrameResult firstFrame, ClipFrameResult result, int fromX, int fromY, int toX, int toY) {
+    private void copyColor(ReadOnlyClipImage firstFrame, ClipImage result, int fromX, int fromY, int toX, int toY) {
         for (int imageChannel = 0; imageChannel < 4; ++imageChannel) {
             int color = firstFrame.getColorComponentWithOffset(fromX, fromY, imageChannel);
             result.setColorComponentByOffset(color, toX, toY, imageChannel);

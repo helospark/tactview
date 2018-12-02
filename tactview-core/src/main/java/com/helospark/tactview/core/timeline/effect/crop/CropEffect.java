@@ -5,7 +5,6 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 import java.util.Arrays;
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -17,6 +16,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -38,7 +38,7 @@ public class CropEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+    public ClipImage createFrame(StatelessEffectRequest request) {
         Point topLeft = topLeftPointProvider.getValueAt(request.getEffectPosition());
         Point bottomRight = bottomRightPointProvider.getValueAt(request.getEffectPosition());
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {

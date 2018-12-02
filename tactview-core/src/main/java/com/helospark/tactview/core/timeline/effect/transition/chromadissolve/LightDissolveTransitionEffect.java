@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.transition.chromadissolve;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -11,6 +10,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -33,11 +34,11 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
     }
 
     @Override
-    protected ClipFrameResult applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
+    protected ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
         double progress = transitionRequest.getProgress();
         ValueListElement direction = directionProvider.getValueAt(transitionRequest.getEffectPosition());
 
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(transitionRequest.getFirstFrame());
+        ClipImage result = ClipImage.sameSizeAs(transitionRequest.getFirstFrame());
 
         if (direction.getId().equals(DISSOLVE_DARK_FIRST)) {
             independentPixelOperation.executePixelTransformation(result.getWidth(), result.getHeight(), (x, y) -> {
@@ -62,14 +63,14 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
         return result;
     }
 
-    private void copyPixelFrom(ClipFrameResult copyFrom, ClipFrameResult result, Integer x, Integer y) {
+    private void copyPixelFrom(ReadOnlyClipImage copyFrom, ClipImage result, Integer x, Integer y) {
         for (int i = 0; i < 4; ++i) {
             int color = copyFrom.getColorComponentWithOffset(x, y, i);
             result.setColorComponentByOffset(color, x, y, i);
         }
     }
 
-    private int getLight(int x, int y, ClipFrameResult firstFrame) {
+    private int getLight(int x, int y, ReadOnlyClipImage firstFrame) {
         int result = 0;
         for (int i = 0; i < 3; ++i) {
             result += firstFrame.getColorComponentWithOffset(x, y, i);

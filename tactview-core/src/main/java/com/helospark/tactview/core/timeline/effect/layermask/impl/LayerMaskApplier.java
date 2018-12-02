@@ -2,9 +2,10 @@ package com.helospark.tactview.core.timeline.effect.layermask.impl;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Component
@@ -17,14 +18,14 @@ public class LayerMaskApplier {
         this.scaleImplementation = scaleImplementation;
     }
 
-    public ClipFrameResult createNewImageWithLayerMask(LayerMaskApplyRequest layerMaskRequest) {
-        ClipFrameResult mask = layerMaskRequest.getMask();
-        ClipFrameResult input = layerMaskRequest.getCurrentFrame();
+    public ClipImage createNewImageWithLayerMask(LayerMaskApplyRequest layerMaskRequest) {
+        ReadOnlyClipImage mask = layerMaskRequest.getMask();
+        ReadOnlyClipImage input = layerMaskRequest.getCurrentFrame();
         LayerMaskAlphaCalculator calculator = layerMaskRequest.getCalculator();
 
-        ClipFrameResult scaledMask = null;
+        ReadOnlyClipImage scaledMask = null;
         if (mask.getWidth() != input.getWidth() || mask.getHeight() != input.getHeight()) { // TODO: scale
-            scaledMask = ClipFrameResult.sameSizeAs(input);
+            scaledMask = ClipImage.sameSizeAs(input);
 
             OpenCVScaleRequest request = new OpenCVScaleRequest();
             request.input = mask.getBuffer();
@@ -37,9 +38,9 @@ public class LayerMaskApplier {
             scaleImplementation.scaleImage(request);
         }
 
-        ClipFrameResult maskToUse = (scaledMask == null ? mask : scaledMask);
+        ReadOnlyClipImage maskToUse = (scaledMask == null ? mask : scaledMask);
 
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(input);
+        ClipImage result = ClipImage.sameSizeAs(input);
 
         independentPixelOperation.executePixelTransformation(input.getWidth(), input.getHeight(), (x, y) -> {
             int intensity = calculator.calculateAlpha(maskToUse, x, y);

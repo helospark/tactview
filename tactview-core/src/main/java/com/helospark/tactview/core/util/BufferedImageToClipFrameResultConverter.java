@@ -7,7 +7,8 @@ import java.nio.ByteBuffer;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class BufferedImageToClipFrameResultConverter {
@@ -17,11 +18,11 @@ public class BufferedImageToClipFrameResultConverter {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public ClipFrameResult convertFromAbgr(BufferedImage bufferedImage) {
+    public ClipImage convertFromAbgr(BufferedImage bufferedImage) {
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
         ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4);
-        ClipFrameResult frameResult = new ClipFrameResult(buffer, width, height);
+        ClipImage frameResult = new ClipImage(buffer, width, height);
 
         byte[] pixels = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
 
@@ -50,11 +51,11 @@ public class BufferedImageToClipFrameResultConverter {
         return value;
     }
 
-    public ClipFrameResult convertFromIntArgb(BufferedImage bufferedImage) {
+    public ReadOnlyClipImage convertFromIntArgb(BufferedImage bufferedImage) {
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
         ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4);
-        ClipFrameResult frameResult = new ClipFrameResult(buffer, width, height);
+        ClipImage frameResult = new ClipImage(buffer, width, height);
 
         int[] pixels = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
 

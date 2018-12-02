@@ -11,11 +11,11 @@ import java.math.RoundingMode;
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
@@ -72,7 +72,7 @@ public class TimelineImagePatternService {
                     .withRelativePosition(new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i))))
                     .withScale(uiProjectRepository.getScaleFactor())
                     .build();
-            ClipFrameResult frame = videoClip.getFrame(frameRequest);
+            ReadOnlyClipImage frame = videoClip.getFrame(frameRequest);
             BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
             java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());

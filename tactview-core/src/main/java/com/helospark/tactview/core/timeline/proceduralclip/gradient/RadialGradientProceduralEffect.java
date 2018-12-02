@@ -5,7 +5,6 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 import java.util.List;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -19,6 +18,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorP
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -43,8 +43,8 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        ClipFrameResult result = ClipFrameResult.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
+    public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
+        ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
 
         InterpolationLine line = lineProvider.getValueAt(relativePosition);
 
@@ -75,7 +75,7 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
         return result;
     }
 
-    private void setColor(ClipFrameResult result, Integer x, Integer y, Color endColor) {
+    private void setColor(ClipImage result, Integer x, Integer y, Color endColor) {
         result.setRed((int) (endColor.red * 255), x, y);
         result.setGreen((int) (endColor.green * 255), x, y);
         result.setBlue((int) (endColor.blue * 255), x, y);

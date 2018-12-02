@@ -3,12 +3,12 @@ package com.helospark.tactview.core.timeline.proceduralclip;
 import java.nio.ByteBuffer;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 
 public abstract class ProceduralVisualClip extends VisualTimelineClip {
 
@@ -26,12 +26,12 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
         throw new IllegalStateException();
     }
 
-    public abstract ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition);
+    public abstract ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition);
 
     @Override
-    public ClipFrameResult getFrameInternal(GetFrameRequest request) {
+    public ClipImage getFrameInternal(GetFrameRequest request) {
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-        ClipFrameResult result = createProceduralFrame(request, relativePosition);
+        ClipImage result = createProceduralFrame(request, relativePosition);
         return applyEffects(relativePosition, result, request);
     }
 

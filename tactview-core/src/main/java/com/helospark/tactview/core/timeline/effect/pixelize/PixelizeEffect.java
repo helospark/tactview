@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.pixelize;
 import java.util.List;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -11,6 +10,8 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -31,8 +32,8 @@ public class PixelizeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ClipFrameResult currentFrame = request.getCurrentFrame();
+    public ClipImage createFrame(StatelessEffectRequest request) {
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         int pixelWidth = (int) (pixelWidthProvider.getValueAt(request.getEffectPosition()) * currentFrame.getWidth());
         int pixelHeight = (int) (pixelHeightProvider.getValueAt(request.getEffectPosition()) * currentFrame.getHeight());
 
@@ -45,7 +46,7 @@ public class PixelizeEffect extends StatelessVideoEffect {
         int tempImageWidth = (int) Math.ceil((double) currentFrame.getWidth() / pixelWidth);
         int tempImageHeight = (int) Math.ceil((double) currentFrame.getHeight() / pixelHeight);
 
-        ClipFrameResult tempBuffer = ClipFrameResult.fromSize(tempImageWidth, tempImageHeight);
+        ClipImage tempBuffer = ClipImage.fromSize(tempImageWidth, tempImageHeight);
 
         independentPixelOperation.executePixelTransformation(tempImageWidth, tempImageHeight, (x, y) -> {
             int originalPixelX = x * pixelWidth;
@@ -76,7 +77,7 @@ public class PixelizeEffect extends StatelessVideoEffect {
             tempBuffer.setAlpha(sumA / pixelCount, x, y);
         });
 
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(currentFrame);
+        ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
         independentPixelOperation.executePixelTransformation(currentFrame.getWidth(), currentFrame.getHeight(), (x, y) -> {
             int xInTmpImage = x / pixelWidth;

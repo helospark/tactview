@@ -13,8 +13,8 @@ import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.opencv.OpenCvImageDecorderDecorator;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.madgag.gif.fmsware.GifDecoder;
 
@@ -73,7 +73,7 @@ public class GifMediaDecoder implements VisualMediaDecoder {
     private MediaDataResponse getImageAt(GifDecoder gifDecoder, int i, VideoMediaDataRequest request) {
         BufferedImage bufferedImage = gifDecoder.getFrame(i);
         BufferedImage scaledImage = scaleImage(bufferedImage, request.getWidth(), request.getHeight());
-        ClipFrameResult image = imageConverter.convertFromAbgr(scaledImage);
+        ReadOnlyClipImage image = imageConverter.convertFromAbgr(scaledImage);
         return new MediaDataResponse(List.of(image.getBuffer()));
     }
 

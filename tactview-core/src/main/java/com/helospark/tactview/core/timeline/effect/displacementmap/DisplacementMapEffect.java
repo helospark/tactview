@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -18,6 +17,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Depend
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -41,20 +42,20 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        Optional<ClipFrameResult> optionalDisplacementMap = displacementMapProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
+    public ClipImage createFrame(StatelessEffectRequest request) {
+        Optional<ClipImage> optionalDisplacementMap = displacementMapProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
 
         if (optionalDisplacementMap.isPresent()) {
             return applyDisplacementMap(optionalDisplacementMap.get(), request);
         } else {
-            ClipFrameResult result = ClipFrameResult.sameSizeAs(request.getCurrentFrame());
+            ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
             result.copyFrom(request.getCurrentFrame());
             return result;
         }
     }
 
-    private ClipFrameResult applyDisplacementMap(ClipFrameResult displacementMap, StatelessEffectRequest request) {
-        ClipFrameResult currentFrame = request.getCurrentFrame();
+    private ClipImage applyDisplacementMap(ReadOnlyClipImage displacementMap, StatelessEffectRequest request) {
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
         if (!currentFrame.isSameSizeAs(displacementMap)) {
             ScaleRequest scaleRequest = ScaleRequest.builder()
@@ -62,8 +63,8 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
                     .withNewWidth(currentFrame.getWidth())
                     .withNewHeight(currentFrame.getHeight())
                     .build();
-            ClipFrameResult scaledImage = scaleService.createScaledImage(scaleRequest);
-            ClipFrameResult result = applyDisplacementMapOnSameDisplacementMapSize(currentFrame, scaledImage, request);
+            ReadOnlyClipImage scaledImage = scaleService.createScaledImage(scaleRequest);
+            ClipImage result = applyDisplacementMapOnSameDisplacementMapSize(currentFrame, scaledImage, request);
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(scaledImage.getBuffer());
             return result;
         } else {
@@ -72,8 +73,8 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
 
     }
 
-    private ClipFrameResult applyDisplacementMapOnSameDisplacementMapSize(ClipFrameResult currentFrame, ClipFrameResult displacementMap, StatelessEffectRequest request) {
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(currentFrame);
+    private ClipImage applyDisplacementMapOnSameDisplacementMapSize(ReadOnlyClipImage currentFrame, ReadOnlyClipImage displacementMap, StatelessEffectRequest request) {
+        ClipImage result = ClipImage.sameSizeAs(currentFrame);
         double verticalMultiplier = verticalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
         double horizontalMultiplier = horizontalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
 

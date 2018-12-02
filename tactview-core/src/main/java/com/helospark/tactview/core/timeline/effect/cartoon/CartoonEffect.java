@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.cartoon;
 import java.util.Collections;
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -11,6 +10,8 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class CartoonEffect extends StatelessVideoEffect {
@@ -27,9 +28,9 @@ public class CartoonEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ClipFrameResult currentFrame = request.getCurrentFrame();
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(currentFrame);
+    public ClipImage createFrame(StatelessEffectRequest request) {
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
+        ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
         OpenCVCartoonRequest nativeRequest = new OpenCVCartoonRequest();
         nativeRequest.input = currentFrame.getBuffer();

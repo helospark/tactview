@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 /**
  * Use only for debugging purposes by evaluate as expression.
@@ -28,7 +28,7 @@ public class DebugImageRenderer {
         }
     }
 
-    public static void render(ClipFrameResult result) {
+    public static void render(ReadOnlyClipImage result) {
         render(result.getBuffer(), result.getWidth(), result.getHeight());
     }
 

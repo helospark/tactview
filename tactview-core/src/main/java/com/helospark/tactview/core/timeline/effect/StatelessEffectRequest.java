@@ -5,15 +5,16 @@ import java.util.Map;
 
 import javax.annotation.Generated;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class StatelessEffectRequest {
-    private ClipFrameResult currentFrame;
+    private ReadOnlyClipImage currentFrame;
     private TimelinePosition clipPosition;
     private TimelinePosition effectPosition;
     private double scale;
-    private Map<String, ClipFrameResult> requestedClips;
+    private Map<String, ClipImage> requestedClips;
 
     @Generated("SparkTools")
     private StatelessEffectRequest(Builder builder) {
@@ -24,7 +25,7 @@ public class StatelessEffectRequest {
         this.requestedClips = builder.requestedClips;
     }
 
-    public ClipFrameResult getCurrentFrame() {
+    public ReadOnlyClipImage getCurrentFrame() {
         return currentFrame;
     }
 
@@ -40,7 +41,7 @@ public class StatelessEffectRequest {
         return scale;
     }
 
-    public Map<String, ClipFrameResult> getRequestedClips() {
+    public Map<String, ClipImage> getRequestedClips() {
         return requestedClips;
     }
 
@@ -51,16 +52,16 @@ public class StatelessEffectRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private ClipFrameResult currentFrame;
+        private ReadOnlyClipImage currentFrame;
         private TimelinePosition clipPosition;
         private TimelinePosition effectPosition;
         private double scale;
-        private Map<String, ClipFrameResult> requestedClips = Collections.emptyMap();
+        private Map<String, ClipImage> requestedClips = Collections.emptyMap();
 
         private Builder() {
         }
 
-        public Builder withCurrentFrame(ClipFrameResult currentFrame) {
+        public Builder withCurrentFrame(ReadOnlyClipImage currentFrame) {
             this.currentFrame = currentFrame;
             return this;
         }
@@ -80,7 +81,7 @@ public class StatelessEffectRequest {
             return this;
         }
 
-        public Builder withRequestedClips(Map<String, ClipFrameResult> requestedClips) {
+        public Builder withRequestedClips(Map<String, ClipImage> requestedClips) {
             this.requestedClips = requestedClips;
             return this;
         }

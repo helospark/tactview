@@ -2,11 +2,11 @@ package com.helospark.tactview.core.timeline.effect.layermask.impl;
 
 import javax.annotation.Generated;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class LayerMaskApplyRequest {
-    private ClipFrameResult currentFrame;
-    private ClipFrameResult mask;
+    private ReadOnlyClipImage currentFrame;
+    private ReadOnlyClipImage mask;
     private LayerMaskAlphaCalculator calculator;
     private boolean scaleLayerMask;
     private boolean invert;
@@ -24,11 +24,11 @@ public class LayerMaskApplyRequest {
         return invert;
     }
 
-    public ClipFrameResult getCurrentFrame() {
+    public ReadOnlyClipImage getCurrentFrame() {
         return currentFrame;
     }
 
-    public ClipFrameResult getMask() {
+    public ReadOnlyClipImage getMask() {
         return mask;
     }
 
@@ -52,8 +52,8 @@ public class LayerMaskApplyRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private ClipFrameResult currentFrame;
-        private ClipFrameResult mask;
+        private ReadOnlyClipImage currentFrame;
+        private ReadOnlyClipImage mask;
         private LayerMaskAlphaCalculator calculator;
         private boolean scaleLayerMask;
         private boolean invert;
@@ -61,12 +61,12 @@ public class LayerMaskApplyRequest {
         private Builder() {
         }
 
-        public Builder withCurrentFrame(ClipFrameResult currentFrame) {
+        public Builder withCurrentFrame(ReadOnlyClipImage currentFrame) {
             this.currentFrame = currentFrame;
             return this;
         }
 
-        public Builder withMask(ClipFrameResult mask) {
+        public Builder withMask(ReadOnlyClipImage mask) {
             this.mask = mask;
             return this;
         }

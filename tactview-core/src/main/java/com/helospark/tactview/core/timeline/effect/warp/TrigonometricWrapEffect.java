@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.warp;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -11,6 +10,8 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -34,9 +35,9 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ClipFrameResult currentFrame = request.getCurrentFrame();
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(currentFrame);
+    public ClipImage createFrame(StatelessEffectRequest request) {
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
+        ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
         double amplitudeX = amplitudeProviderX.getValueAt(request.getEffectPosition());
         double amplitudeY = amplitudeProviderY.getValueAt(request.getEffectPosition());

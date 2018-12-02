@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.scale;
 import java.util.Arrays;
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -13,6 +12,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class ScaleEffect extends StatelessVideoEffect {
@@ -32,8 +33,8 @@ public class ScaleEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ClipFrameResult currentFrame = request.getCurrentFrame();
+    public ClipImage createFrame(StatelessEffectRequest request) {
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         int newWidth = (int) (currentFrame.getWidth() * widthScale.getValueAt(request.getEffectPosition()));
         int newHeight = (int) (currentFrame.getHeight() * heightScale.getValueAt(request.getEffectPosition()));
 

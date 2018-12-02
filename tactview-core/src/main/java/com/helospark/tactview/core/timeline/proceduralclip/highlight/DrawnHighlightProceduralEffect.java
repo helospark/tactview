@@ -9,7 +9,6 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -26,6 +25,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.framemerge.AlphaBlitService;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -61,8 +61,8 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        ClipFrameResult result = ClipFrameResult.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
+    public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
+        ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
         double progress;
 
         double endSeconds = endPositionProvider.getValueAt(relativePosition);
@@ -98,7 +98,7 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
             brushFilePath = "classpath:/brushes/Oils-03.gbr";
         }
 
-        Optional<ClipFrameResult> brushImage = getBrush(brushFilePath, brushSize);
+        Optional<ClipImage> brushImage = getBrush(brushFilePath, brushSize);
         if (brushImage.isPresent() && width > 0 && height > 0) {
             List<Vector2D> pixels = bresenhemPixelProvider.ellipsePixels(centerX, centerY, width, height);
             int spacing = 1;
@@ -112,7 +112,7 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
         return result;
     }
 
-    private Optional<ClipFrameResult> getBrush(String brushFilePath, int brushSize) {
+    private Optional<ClipImage> getBrush(String brushFilePath, int brushSize) {
         try {
             GetBrushRequest brushRequest = GetBrushRequest.builder()
                     .withFilename(brushFilePath)

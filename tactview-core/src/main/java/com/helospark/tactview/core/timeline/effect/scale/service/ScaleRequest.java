@@ -2,10 +2,10 @@ package com.helospark.tactview.core.timeline.effect.scale.service;
 
 import javax.annotation.Generated;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class ScaleRequest {
-    private ClipFrameResult image;
+    private ReadOnlyClipImage image;
     private int newWidth;
     private int newHeight;
     private Boolean padImage;
@@ -18,7 +18,7 @@ public class ScaleRequest {
         this.padImage = builder.padImage;
     }
 
-    public ClipFrameResult getImage() {
+    public ReadOnlyClipImage getImage() {
         return image;
     }
 
@@ -41,7 +41,7 @@ public class ScaleRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private ClipFrameResult image;
+        private ReadOnlyClipImage image;
         private int newWidth;
         private int newHeight;
         private Boolean padImage;
@@ -49,7 +49,7 @@ public class ScaleRequest {
         private Builder() {
         }
 
-        public Builder withImage(ClipFrameResult image) {
+        public Builder withImage(ReadOnlyClipImage image) {
             this.image = image;
             return this;
         }

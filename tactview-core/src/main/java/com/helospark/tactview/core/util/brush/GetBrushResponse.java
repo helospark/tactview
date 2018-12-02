@@ -1,17 +1,17 @@
 package com.helospark.tactview.core.util.brush;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.cacheable.CacheCleanable;
 
 public class GetBrushResponse implements CacheCleanable {
-    private ClipFrameResult brush;
+    private ReadOnlyClipImage brush;
 
-    public GetBrushResponse(ClipFrameResult brush) {
+    public GetBrushResponse(ReadOnlyClipImage brush) {
         this.brush = brush;
     }
 
-    public ClipFrameResult getBrush() {
+    public ReadOnlyClipImage getBrush() {
         return brush;
     }
 

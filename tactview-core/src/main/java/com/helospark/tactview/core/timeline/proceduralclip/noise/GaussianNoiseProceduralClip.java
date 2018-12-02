@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -12,6 +11,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.RepeatableRandom;
@@ -34,8 +34,8 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        ClipFrameResult result = ClipFrameResult.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
+    public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
+        ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
         BigDecimal currentSecond = relativePosition.getSeconds();
 
         double noiseChance = noiseChanceProvider.getValueAt(relativePosition);

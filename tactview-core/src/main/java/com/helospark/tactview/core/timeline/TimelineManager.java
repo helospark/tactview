@@ -30,6 +30,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
 import com.helospark.tactview.core.timeline.framemerge.RenderFrameData;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -176,7 +178,7 @@ public class TimelineManager implements Saveable {
                     VisualTimelineClip visualClip = (VisualTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
-                        Map<String, ClipFrameResult> requiredClips = visualClip.getClipDependency(request.getPosition())
+                        Map<String, ClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
                                 .stream()
                                 .filter(a -> clipsToFrames.containsKey(a))
                                 .map(a -> clipsToFrames.get(a))
@@ -191,8 +193,8 @@ public class TimelineManager implements Saveable {
                                 .withRequestedClips(requiredClips)
                                 .build();
 
-                        ClipFrameResult frameResult = visualClip.getFrame(frameRequest);
-                        ClipFrameResult expandedFrame = expandFrame(frameResult, visualClip, request);
+                        ClipImage frameResult = visualClip.getFrame(frameRequest);
+                        ClipImage expandedFrame = expandFrame(frameResult, visualClip, request);
 
                         BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
                         double alpha = visualClip.getAlpha(request.getPosition());
@@ -230,7 +232,7 @@ public class TimelineManager implements Saveable {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
         }
 
-        ClipFrameResult finalImage = renderVideo(request, renderOrder, clipsToFrames);
+        ReadOnlyClipImage finalImage = renderVideo(request, renderOrder, clipsToFrames);
         AudioFrameResult audioBuffer = renderAudio(renderOrder, audioToFrames);
 
         clipsToFrames.values()
@@ -241,7 +243,7 @@ public class TimelineManager implements Saveable {
                 .flatMap(a -> a.getChannels().stream())
                 .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
 
-        ClipFrameResult finalResult = executeGlobalEffectsOn(finalImage);
+        ReadOnlyClipImage finalResult = executeGlobalEffectsOn(finalImage);
         // TODO: audio effects
 
         return new AudioVideoFragment(finalResult, audioBuffer);
@@ -257,13 +259,13 @@ public class TimelineManager implements Saveable {
         return audioBuffer;
     }
 
-    private ClipFrameResult renderVideo(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> clipsToFrames) {
+    private ReadOnlyClipImage renderVideo(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> clipsToFrames) {
         List<RenderFrameData> frames = renderOrder.stream()
                 .map(a -> clipsToFrames.get(a))
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
 
-        ClipFrameResult finalImage = frameBufferMerger.alphaMergeFrames(frames, request);
+        ReadOnlyClipImage finalImage = frameBufferMerger.alphaMergeFrames(frames, request);
         return finalImage;
     }
 
@@ -325,7 +327,7 @@ public class TimelineManager implements Saveable {
         }
     }
 
-    private ClipFrameResult expandFrame(ClipFrameResult frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
+    private ClipImage expandFrame(ReadOnlyClipImage frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
         int previewHeight = request.getPreviewHeight();
         int previewWidth = request.getPreviewWidth();
         TimelinePosition timelinePosition = request.getPosition();
@@ -358,10 +360,10 @@ public class TimelineManager implements Saveable {
             outputBuffer.position((destinationStartY + i) * previewWidth * 4 + destinationStartX * 4);
             outputBuffer.put(tmpBuffer, 0, numberOfBytesInARow);
         }
-        return new ClipFrameResult(outputBuffer, previewWidth, previewHeight);
+        return new ClipImage(outputBuffer, previewWidth, previewHeight);
     }
 
-    private ClipFrameResult executeGlobalEffectsOn(ClipFrameResult finalImage) {
+    private ReadOnlyClipImage executeGlobalEffectsOn(ReadOnlyClipImage finalImage) {
         return finalImage; // todo: do implementation
     }
 

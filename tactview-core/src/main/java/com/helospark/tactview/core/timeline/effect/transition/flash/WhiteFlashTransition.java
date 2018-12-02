@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.transition.flash;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -10,6 +9,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -28,17 +29,17 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    protected ClipFrameResult applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
+    protected ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
         double progress = transitionRequest.getProgress();
 
         double keepAtWhite = keepAtWhitePercentage.getValueAt(transitionRequest.getEffectPosition());
 
         double fadeTime = (1.0 - keepAtWhite) / 2.0;
 
-        ClipFrameResult firstFrame = transitionRequest.getFirstFrame();
-        ClipFrameResult secondFrame = transitionRequest.getSecondFrame();
+        ClipImage firstFrame = transitionRequest.getFirstFrame();
+        ReadOnlyClipImage secondFrame = transitionRequest.getSecondFrame();
 
-        ClipFrameResult currentImageShown;
+        ReadOnlyClipImage currentImageShown;
 
         double fadeProgress;
         if (progress < 0.5) {
@@ -51,7 +52,7 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
         fadeProgress = clamp(fadeProgress, 0.0, 1.0);
         int valueToAdd = (int) (fadeProgress * 255);
 
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(firstFrame);
+        ClipImage result = ClipImage.sameSizeAs(firstFrame);
 
         independentPixelOperation.executePixelTransformation(firstFrame.getWidth(), firstFrame.getHeight(), (x, y) -> {
             for (int i = 0; i < 3; ++i) {

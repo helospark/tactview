@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.vignette;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -12,6 +11,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -32,7 +32,7 @@ public class VignetteEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+    public ClipImage createFrame(StatelessEffectRequest request) {
         double strength = vignetteStrengthProvider.getValueAt(request.getEffectPosition());
         int power = vignettePowerFactorProvider.getValueAt(request.getEffectPosition());
         Point center = new Point((request.getCurrentFrame().getWidth() / 2), (request.getCurrentFrame().getHeight() / 2));

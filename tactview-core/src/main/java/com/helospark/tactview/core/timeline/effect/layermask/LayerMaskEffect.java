@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -22,6 +21,7 @@ import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAppli
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplyRequest;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskTypeListElement;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskGrayscaleToAlpha;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class LayerMaskEffect extends StatelessVideoEffect {
@@ -45,8 +45,8 @@ public class LayerMaskEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        Optional<ClipFrameResult> layerMask = layerMaskProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
+    public ClipImage createFrame(StatelessEffectRequest request) {
+        Optional<ClipImage> layerMask = layerMaskProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
         LayerMaskAlphaCalculator layerMaskType = layerMaskTypeProvider.getValueAt(request.getEffectPosition()).getLayerMaskAlphaCalculator();
         if (layerMask.isPresent()) {
             LayerMaskApplyRequest layerMaskRequest = LayerMaskApplyRequest.builder()
@@ -58,7 +58,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
 
             return layerMaskApplier.createNewImageWithLayerMask(layerMaskRequest);
         } else {
-            ClipFrameResult result = ClipFrameResult.sameSizeAs(request.getCurrentFrame());
+            ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
             result.copyFrom(request.getCurrentFrame());
             return result;
         }

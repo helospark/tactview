@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.contractbrightness;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -10,6 +9,8 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -30,11 +31,11 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest effectRequest) {
+    public ClipImage createFrame(StatelessEffectRequest effectRequest) {
         double contrast = contrastProvider.getValueAt(effectRequest.getEffectPosition());
         double brightness = brightnessProvider.getValueAt(effectRequest.getEffectPosition());
 
-        ClipFrameResult currentFrame = effectRequest.getCurrentFrame();
+        ReadOnlyClipImage currentFrame = effectRequest.getCurrentFrame();
 
         return independentPixelOperations.createNewImageWithAppliedTransformation(currentFrame, pixelRequest -> {
             pixelRequest.output[0] = (int) (contrast * pixelRequest.input[0] + brightness);

@@ -1,32 +1,36 @@
-package com.helospark.tactview.core.timeline;
+package com.helospark.tactview.core.timeline.image;
 
 import java.nio.ByteBuffer;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 
-public class ClipFrameResult {
+public class ClipImage implements ReadOnlyClipImage {
     private ByteBuffer buffer;
     private int width;
     private int height;
 
-    public ClipFrameResult(ByteBuffer buffer, int width, int height) {
+    public ClipImage(ByteBuffer buffer, int width, int height) {
         this.buffer = buffer;
         this.width = width;
         this.height = height;
     }
 
+    @Override
     public ByteBuffer getBuffer() {
         return buffer;
     }
 
+    @Override
     public int getWidth() {
         return width;
     }
 
+    @Override
     public int getHeight() {
         return height;
     }
 
+    @Override
     public void getPixelComponents(int[] result, int x, int y) {
         int r = getRed(x, y);
         int g = getGreen(x, y);
@@ -66,14 +70,14 @@ public class ClipFrameResult {
         }
     }
 
-    public static ClipFrameResult sameSizeAs(ClipFrameResult currentFrame) {
-        ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(currentFrame.width * currentFrame.height * 4);
-        return new ClipFrameResult(result, currentFrame.width, currentFrame.height);
+    public static ClipImage sameSizeAs(ReadOnlyClipImage currentFrame) {
+        ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(currentFrame.getWidth() * currentFrame.getHeight() * 4);
+        return new ClipImage(result, currentFrame.getWidth(), currentFrame.getHeight());
     }
 
-    public static ClipFrameResult fromSize(int tempImageWidth, int tempImageHeight) {
+    public static ClipImage fromSize(int tempImageWidth, int tempImageHeight) {
         ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(tempImageWidth * tempImageHeight * 4);
-        return new ClipFrameResult(result, tempImageWidth, tempImageHeight);
+        return new ClipImage(result, tempImageWidth, tempImageHeight);
     }
 
     public void setRed(int red, int x, int y) {
@@ -96,26 +100,32 @@ public class ClipFrameResult {
         buffer.put(y * width * 4 + x * 4 + 3, a);
     }
 
+    @Override
     public int getRed(int x, int y) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 0));
     }
 
+    @Override
     public int getGreen(int x, int y) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 1));
     }
 
+    @Override
     public int getBlue(int x, int y) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 2));
     }
 
+    @Override
     public int getColorComponentWithOffset(int x, int y, int index) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + index));
     }
 
+    @Override
     public int getAlpha(int x, int y) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + 3));
     }
 
+    @Override
     public boolean inBounds(int x, int y) {
         return x >= 0 && y >= 0 && x < width && y < height;
     }
@@ -125,17 +135,18 @@ public class ClipFrameResult {
         buffer.put(y * width * 4 + x * 4 + offset, value);
     }
 
-    public boolean isSameSizeAs(ClipFrameResult displacementMap) {
+    @Override
+    public boolean isSameSizeAs(ReadOnlyClipImage displacementMap) {
         return width == displacementMap.getWidth() && height == displacementMap.getHeight();
     }
 
-    public void copyFrom(ClipFrameResult currentFrame) {
+    public void copyFrom(ReadOnlyClipImage currentFrame) {
         if (!isSameSizeAs(currentFrame)) {
             throw new IllegalArgumentException("Copy requires images to be the same size");
         }
         this.buffer.position(0);
-        currentFrame.buffer.position(0);
-        this.buffer.put(currentFrame.buffer);
+        currentFrame.getBuffer().position(0); // is it really readonly?
+        this.buffer.put(currentFrame.getBuffer());
     }
 
 }

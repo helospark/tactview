@@ -3,10 +3,11 @@ package com.helospark.tactview.core.timeline.effect.blur;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVGaussianBlurRequest;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVRegion;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class BlurService {
@@ -16,9 +17,9 @@ public class BlurService {
         this.openCVBasedBlur = openCVBasedBlur;
     }
 
-    public ClipFrameResult createBlurredImage(BlurRequest request) {
-        ClipFrameResult buffer = ClipFrameResult.sameSizeAs(request.getImage());
-        ClipFrameResult currentFrame = request.getImage();
+    public ClipImage createBlurredImage(BlurRequest request) {
+        ClipImage buffer = ClipImage.sameSizeAs(request.getImage());
+        ReadOnlyClipImage currentFrame = request.getImage();
         OpenCVGaussianBlurRequest nativeRequest = new OpenCVGaussianBlurRequest();
         nativeRequest.input = currentFrame.getBuffer();
         nativeRequest.output = buffer.getBuffer();
@@ -32,7 +33,7 @@ public class BlurService {
         return buffer;
     }
 
-    private OpenCVRegion createBlurRegion(Optional<Region> optionalRegion, ClipFrameResult input) {
+    private OpenCVRegion createBlurRegion(Optional<Region> optionalRegion, ReadOnlyClipImage input) {
         OpenCVRegion result = new OpenCVRegion();
         if (optionalRegion.isPresent()) {
             Region region = optionalRegion.get();

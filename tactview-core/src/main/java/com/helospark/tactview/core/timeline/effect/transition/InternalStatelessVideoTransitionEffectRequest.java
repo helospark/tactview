@@ -2,12 +2,13 @@ package com.helospark.tactview.core.timeline.effect.transition;
 
 import javax.annotation.Generated;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class InternalStatelessVideoTransitionEffectRequest {
-    private ClipFrameResult firstFrame;
-    private ClipFrameResult secondFrame;
+    private ClipImage firstFrame;
+    private ReadOnlyClipImage secondFrame;
     private TimelinePosition globalPosition;
     private TimelinePosition clipPosition;
     private TimelinePosition effectPosition;
@@ -25,11 +26,11 @@ public class InternalStatelessVideoTransitionEffectRequest {
         this.progress = builder.progress;
     }
 
-    public ClipFrameResult getFirstFrame() {
+    public ClipImage getFirstFrame() {
         return firstFrame;
     }
 
-    public ClipFrameResult getSecondFrame() {
+    public ReadOnlyClipImage getSecondFrame() {
         return secondFrame;
     }
 
@@ -60,8 +61,8 @@ public class InternalStatelessVideoTransitionEffectRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private ClipFrameResult firstFrame;
-        private ClipFrameResult secondFrame;
+        private ClipImage firstFrame;
+        private ReadOnlyClipImage secondFrame;
         private TimelinePosition globalPosition;
         private TimelinePosition clipPosition;
         private TimelinePosition effectPosition;
@@ -71,12 +72,12 @@ public class InternalStatelessVideoTransitionEffectRequest {
         private Builder() {
         }
 
-        public Builder withFirstFrame(ClipFrameResult firstFrame) {
+        public Builder withFirstFrame(ClipImage firstFrame) {
             this.firstFrame = firstFrame;
             return this;
         }
 
-        public Builder withSecondFrame(ClipFrameResult secondFrame) {
+        public Builder withSecondFrame(ReadOnlyClipImage secondFrame) {
             this.secondFrame = secondFrame;
             return this;
         }

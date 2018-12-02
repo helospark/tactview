@@ -3,7 +3,6 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 import java.util.concurrent.CompletableFuture;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManager;
@@ -11,6 +10,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
@@ -120,7 +120,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                     .withPosition(position)
                     .withScale(uiProjectRepository.getScaleFactor() / ((double) uiProjectRepository.getPreviewWidth() / IMAGE_PREVIEW_SIZE))
                     .build();
-            ClipFrameResult result = ((VisualTimelineClip) clip).getFrame(frameRequest);
+            ReadOnlyClipImage result = ((VisualTimelineClip) clip).getFrame(frameRequest);
             return imageConverter.convertToJavafxImage(result.getBuffer(), result.getWidth(), result.getHeight());
         } else {
             throw new IllegalStateException("Other formats not supported");

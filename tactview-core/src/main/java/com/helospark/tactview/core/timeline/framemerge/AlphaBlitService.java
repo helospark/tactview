@@ -1,13 +1,14 @@
 package com.helospark.tactview.core.timeline.framemerge;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class AlphaBlitService {
 
-    public void alphaBlitFrame(ClipFrameResult result, ClipFrameResult clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
+    public void alphaBlitFrame(ClipImage result, ReadOnlyClipImage clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
         int[] forground = new int[4];
         int[] blendedForground = new int[4];
         int[] background = new int[4];
@@ -32,7 +33,7 @@ public class AlphaBlitService {
     }
 
     // TODO: avoid duplication
-    public void alphaBlitImageIntoResult(ClipFrameResult result, ClipFrameResult toBlit, int blitToX, int blitToY, BlendModeStrategy blendMode, double globalAlpha) {
+    public void alphaBlitImageIntoResult(ClipImage result, ReadOnlyClipImage toBlit, int blitToX, int blitToY, BlendModeStrategy blendMode, double globalAlpha) {
         int[] forground = new int[4];
         int[] blendedForground = new int[4];
         int[] background = new int[4];

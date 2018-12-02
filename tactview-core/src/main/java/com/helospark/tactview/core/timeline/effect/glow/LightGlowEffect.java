@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.glow;
 import java.util.List;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -16,6 +15,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -41,10 +42,10 @@ public class LightGlowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+    public ClipImage createFrame(StatelessEffectRequest request) {
         int threshold = thresholdProvider.getValueAt(request.getEffectPosition());
         double lightStrenghtMultiplier = lightStrengthMultiplierProvider.getValueAt(request.getEffectPosition());
-        ClipFrameResult lightParts = independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelReques -> {
+        ClipImage lightParts = independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelReques -> {
             int grayValue = (pixelReques.input[0] + pixelReques.input[1] + pixelReques.input[2]) / 3;
             if (grayValue > threshold) {
                 for (int i = 0; i < 4; ++i) {
@@ -56,7 +57,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
                 }
             }
         });
-        ClipFrameResult bluredLightParts = ClipFrameResult.sameSizeAs(lightParts);
+        ReadOnlyClipImage bluredLightParts = ClipImage.sameSizeAs(lightParts);
 
         OpenCVGaussianBlurRequest nativeRequest = new OpenCVGaussianBlurRequest();
         nativeRequest.input = lightParts.getBuffer();
@@ -91,7 +92,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
         }
     }
 
-    private OpenCVRegion createFullRegion(ClipFrameResult lightParts) {
+    private OpenCVRegion createFullRegion(ReadOnlyClipImage lightParts) {
         OpenCVRegion result = new OpenCVRegion();
         result.x = 0;
         result.y = 0;

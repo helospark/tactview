@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -16,6 +15,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
@@ -36,12 +36,12 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public ClipFrameResult createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
+    public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();
 
         ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4);
-        ClipFrameResult frameResult = new ClipFrameResult(buffer, width, height);
+        ClipImage frameResult = new ClipImage(buffer, width, height);
 
         Color color = colorProvider.getValueAt(relativePosition);
         int[] colorComponents = new int[]{

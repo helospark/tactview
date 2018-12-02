@@ -1,9 +1,10 @@
 package com.helospark.tactview.core.timeline.effect.scale.service;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class ScaleService {
@@ -13,13 +14,13 @@ public class ScaleService {
         this.implementation = implementation;
     }
 
-    public ClipFrameResult createScaledImage(ScaleRequest request) {
-        ClipFrameResult currentFrame = request.getImage();
-        ClipFrameResult result;
+    public ClipImage createScaledImage(ScaleRequest request) {
+        ReadOnlyClipImage currentFrame = request.getImage();
+        ClipImage result;
         if (request.isPadImage()) {
-            result = ClipFrameResult.fromSize(currentFrame.getWidth(), currentFrame.getHeight());
+            result = ClipImage.fromSize(currentFrame.getWidth(), currentFrame.getHeight());
         } else {
-            result = ClipFrameResult.fromSize(request.getNewWidth(), request.getNewHeight());
+            result = ClipImage.fromSize(request.getNewWidth(), request.getNewHeight());
         }
 
         OpenCVScaleRequest nativeRequest = new OpenCVScaleRequest();

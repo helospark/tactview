@@ -5,9 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
@@ -22,7 +23,7 @@ public class ScaledBrushProvider {
     }
 
     @Cacheable(cacheTimeInMilliseconds = 600000, size = 100)
-    public ClipFrameResult getBrushImage(GetBrushRequest brushRequest) {
+    public ClipImage getBrushImage(GetBrushRequest brushRequest) {
         logger.info("Loading brush ", brushRequest);
         rawBrushProvider.getBrush(brushRequest.getFilename());
 
@@ -31,8 +32,8 @@ public class ScaledBrushProvider {
         return createScaledBrush(brush, brushRequest);
     }
 
-    private ClipFrameResult createScaledBrush(GimpBrush brush, GetBrushRequest brushRequest) {
-        ClipFrameResult brushImage = createBrushImage(brush);
+    private ClipImage createScaledBrush(GimpBrush brush, GetBrushRequest brushRequest) {
+        ReadOnlyClipImage brushImage = createBrushImage(brush);
 
         ScaleRequest scaleRequest = ScaleRequest.builder()
                 .withImage(brushImage)
@@ -41,19 +42,19 @@ public class ScaledBrushProvider {
                 .withPadImage(false)
                 .build();
 
-        ClipFrameResult scaledBrush = scaleService.createScaledImage(scaleRequest);
+        ClipImage scaledBrush = scaleService.createScaledImage(scaleRequest);
 
         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(brushImage.getBuffer());
 
         return scaledBrush;
     }
 
-    private ClipFrameResult createBrushImage(GimpBrush brush) {
-        ClipFrameResult resultBrush = ClipFrameResult.fromSize(brush.width, brush.height);
+    private ReadOnlyClipImage createBrushImage(GimpBrush brush) {
+        ClipImage resultBrush = ClipImage.fromSize(brush.width, brush.height);
 
         for (int y = 0; y < brush.height; ++y) {
             for (int x = 0; x < brush.width; ++x) {
-                resultBrush.setAlpha(ClipFrameResult.signedToUnsignedByte(brush.data[y * brush.width + x]), x, y);
+                resultBrush.setAlpha(ClipImage.signedToUnsignedByte(brush.data[y * brush.width + x]), x, y);
             }
         }
 

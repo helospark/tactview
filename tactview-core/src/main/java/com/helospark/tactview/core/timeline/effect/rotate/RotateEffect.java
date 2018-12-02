@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -13,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RotateEffect extends StatelessVideoEffect {
@@ -31,7 +31,7 @@ public class RotateEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+    public ClipImage createFrame(StatelessEffectRequest request) {
         double degrees = angleProvider.getValueAt(request.getClipPosition());
 
         int originalWidth = request.getCurrentFrame().getWidth();
@@ -61,7 +61,7 @@ public class RotateEffect extends StatelessVideoEffect {
 
         implementation.rotateImage(nativeRequest);
 
-        return new ClipFrameResult(nativeRequest.output, newWidth, newHeight);
+        return new ClipImage(nativeRequest.output, newWidth, newHeight);
     }
 
     @Override

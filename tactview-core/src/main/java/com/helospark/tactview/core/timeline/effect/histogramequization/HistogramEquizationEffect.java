@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.histogramequization;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -13,6 +12,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class HistogramEquizationEffect extends StatelessVideoEffect {
@@ -36,9 +37,9 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
-        ClipFrameResult currentFrame = request.getCurrentFrame();
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(currentFrame);
+    public ClipImage createFrame(StatelessEffectRequest request) {
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
+        ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
         OpenCVHistogramEquizationRequest nativeRequest = new OpenCVHistogramEquizationRequest();
         nativeRequest.input = currentFrame.getBuffer();

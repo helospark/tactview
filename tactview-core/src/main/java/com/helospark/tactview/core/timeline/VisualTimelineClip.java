@@ -20,6 +20,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class VisualTimelineClip extends TimelineClip {
@@ -41,11 +42,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     }
 
-    public ClipFrameResult getFrame(GetFrameRequest request) {
+    public ClipImage getFrame(GetFrameRequest request) {
         return getFrameInternal(request);
     }
 
-    protected ClipFrameResult getFrameInternal(GetFrameRequest request) {
+    protected ClipImage getFrameInternal(GetFrameRequest request) {
         double scale = request.getScale();
         int width = (int) (mediaMetadata.getWidth() * scale);
         int height = (int) (mediaMetadata.getHeight() * scale);
@@ -53,12 +54,12 @@ public abstract class VisualTimelineClip extends TimelineClip {
         relativePosition = relativePosition.add(renderOffset);
 
         ByteBuffer frame = requestFrame(relativePosition, width, height);
-        ClipFrameResult frameResult = new ClipFrameResult(frame, width, height);
+        ClipImage frameResult = new ClipImage(frame, width, height);
 
         return applyEffects(relativePosition, frameResult, request);
     }
 
-    protected ClipFrameResult applyEffects(TimelinePosition relativePosition, ClipFrameResult frameResult, GetFrameRequest frameRequest) {
+    protected ClipImage applyEffects(TimelinePosition relativePosition, ClipImage frameResult, GetFrameRequest frameRequest) {
         if (frameRequest.isApplyEffects()) {
             List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition, StatelessVideoEffect.class);
 
@@ -71,7 +72,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                         .withRequestedClips(frameRequest.getRequestedClips())
                         .build();
 
-                ClipFrameResult appliedEffectsResult = effect.createFrame(request);
+                ClipImage appliedEffectsResult = effect.createFrame(request);
 
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 

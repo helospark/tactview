@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.transition.blurtransition;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
@@ -13,6 +12,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BlurTransition extends AbstractVideoTransitionEffect {
@@ -30,12 +31,12 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    protected ClipFrameResult applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
+    protected ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
         double progress = transitionRequest.getProgress();
 
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(transitionRequest.getFirstFrame());
+        ClipImage result = ClipImage.sameSizeAs(transitionRequest.getFirstFrame());
 
-        ClipFrameResult currentFrame;
+        ReadOnlyClipImage currentFrame;
         double maxValue = maxBlurProvider.getValueAt(transitionRequest.getEffectPosition()) / transitionRequest.getScale();
         int blurValue;
         if (progress < 0.5) {
@@ -50,7 +51,7 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
         return result;
     }
 
-    private void applyBlur(ClipFrameResult currentFrame, ClipFrameResult result, int blurValue) {
+    private void applyBlur(ReadOnlyClipImage currentFrame, ReadOnlyClipImage result, int blurValue) {
         OpenCVGaussianBlurRequest nativeRequest = new OpenCVGaussianBlurRequest();
         nativeRequest.input = currentFrame.getBuffer();
         nativeRequest.output = result.getBuffer();

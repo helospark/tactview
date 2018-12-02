@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.mirror;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -12,6 +11,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -32,15 +33,15 @@ public class MirrorEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+    public ClipImage createFrame(StatelessEffectRequest request) {
         boolean verticallyMirrorred = mirrorVerticallyProvider.getValueAt(request.getEffectPosition());
         boolean horizontallyMirrorred = mirrorHorizontalProvider.getValueAt(request.getEffectPosition());
 
-        ClipFrameResult currentFrame = request.getCurrentFrame();
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         int width = currentFrame.getWidth();
         int height = currentFrame.getHeight();
 
-        ClipFrameResult result = ClipFrameResult.sameSizeAs(currentFrame);
+        ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             int mirrorredX = horizontallyMirrorred ? width - x - 1 : x;

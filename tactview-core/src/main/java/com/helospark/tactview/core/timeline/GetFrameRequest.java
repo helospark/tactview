@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.image.ClipImage;
+
 public class GetFrameRequest {
     private TimelinePosition position;
     private TimelinePosition relativePosition;
@@ -12,7 +14,7 @@ public class GetFrameRequest {
     private int expectedWidth;
     private int expectedHeight;
     private boolean applyEffects;
-    private Map<String, ClipFrameResult> requestedClips;
+    private Map<String, ClipImage> requestedClips;
 
     @Generated("SparkTools")
     private GetFrameRequest(Builder builder) {
@@ -49,7 +51,7 @@ public class GetFrameRequest {
         return applyEffects;
     }
 
-    public Map<String, ClipFrameResult> getRequestedClips() {
+    public Map<String, ClipImage> getRequestedClips() {
         return requestedClips;
     }
 
@@ -74,7 +76,7 @@ public class GetFrameRequest {
         private int expectedWidth;
         private int expectedHeight;
         private boolean applyEffects;
-        private Map<String, ClipFrameResult> requestedClips = Collections.emptyMap();
+        private Map<String, ClipImage> requestedClips = Collections.emptyMap();
 
         private Builder() {
         }
@@ -109,7 +111,7 @@ public class GetFrameRequest {
             return this;
         }
 
-        public Builder withRequestedClips(Map<String, ClipFrameResult> requestedClips) {
+        public Builder withRequestedClips(Map<String, ClipImage> requestedClips) {
             this.requestedClips = requestedClips;
             return this;
         }

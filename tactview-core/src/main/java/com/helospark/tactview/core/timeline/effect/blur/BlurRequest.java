@@ -4,10 +4,10 @@ import java.util.Optional;
 
 import javax.annotation.Generated;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class BlurRequest {
-    private ClipFrameResult image;
+    private ReadOnlyClipImage image;
     private int kernelWidth;
     private int kernelHeight;
     private Optional<Region> region;
@@ -20,7 +20,7 @@ public class BlurRequest {
         this.region = builder.region;
     }
 
-    public ClipFrameResult getImage() {
+    public ReadOnlyClipImage getImage() {
         return image;
     }
 
@@ -43,7 +43,7 @@ public class BlurRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private ClipFrameResult image;
+        private ReadOnlyClipImage image;
         private int kernelWidth;
         private int kernelHeight;
         private Optional<Region> region = Optional.empty();
@@ -51,7 +51,7 @@ public class BlurRequest {
         private Builder() {
         }
 
-        public Builder withImage(ClipFrameResult image) {
+        public Builder withImage(ReadOnlyClipImage image) {
             this.image = image;
             return this;
         }

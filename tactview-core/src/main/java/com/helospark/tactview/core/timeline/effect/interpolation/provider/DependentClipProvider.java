@@ -3,10 +3,10 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Map;
 import java.util.Optional;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 
 public class DependentClipProvider extends KeyframeableEffect {
     private StringInterpolator stringInterpolator;
@@ -15,7 +15,7 @@ public class DependentClipProvider extends KeyframeableEffect {
         this.stringInterpolator = stringInterpolator;
     }
 
-    public Optional<ClipFrameResult> getValueAt(TimelinePosition position, Map<String, ClipFrameResult> clips) {
+    public Optional<ClipImage> getValueAt(TimelinePosition position, Map<String, ClipImage> clips) {
         return Optional.ofNullable(clips.get(stringInterpolator.valueAt(position)));
     }
 

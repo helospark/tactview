@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.helospark.tactview.core.timeline.ClipFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -14,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -36,7 +36,7 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ClipFrameResult createFrame(StatelessEffectRequest request) {
+    public ClipImage createFrame(StatelessEffectRequest request) {
         ColorElementOperation redChannelElement = redProvider.getValueAt(request.getEffectPosition()).getOperation();
         ColorElementOperation greenChannelElement = greenProvider.getValueAt(request.getEffectPosition()).getOperation();
         ColorElementOperation blueChannelElement = blueProvider.getValueAt(request.getEffectPosition()).getOperation();
