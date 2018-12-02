@@ -18,6 +18,7 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
     private IndependentPixelOperation independentPixelOperation;
     private ValueListProvider<ValueListElement> directionProvider;
+    private ValueListProvider<ValueListElement> floatOrWipeProvider;
 
     public FloatOutTransitionEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
@@ -52,17 +53,42 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
             yPosition = (int) (progress * firstFrame.getHeight() * -1);
         }
 
+        String type = floatOrWipeProvider.getValueAt(request.getEffectPosition()).getId();
+
         int xOffset = xPosition;
         int yOffset = yPosition;
 
         independentPixelOperation.executePixelTransformation(firstFrame.getWidth(), firstFrame.getHeight(), (x, y) -> {
-            int fromX = x + xOffset;
-            int fromY = y + yOffset;
 
-            if (fromX >= 0 && fromY >= 0 && fromX < firstFrame.getWidth() && fromY < firstFrame.getHeight()) {
-                copyColor(firstFrame, result, fromX, fromY, x, y);
-            } else {
-                copyColor(secondFrame, result, x, y, x, y);
+            if (type.equals("float")) {
+                int fromX = x + xOffset;
+                int fromY = y + yOffset;
+                if (fromX >= 0 && fromY >= 0 && fromX < firstFrame.getWidth() && fromY < firstFrame.getHeight()) {
+                    copyColor(firstFrame, result, fromX, fromY, x, y);
+                } else {
+                    copyColor(secondFrame, result, x, y, x, y);
+                }
+            } else if (type.equals("wipe")) {
+                ReadOnlyClipImage imageToUse = secondFrame;
+                if (direction.getId().equals("left")) {
+                    if (x < firstFrame.getWidth() - xOffset - 1) {
+                        imageToUse = firstFrame;
+                    }
+                } else if (direction.getId().equals("up")) {
+                    if (y < firstFrame.getHeight() - yOffset - 1) {
+                        imageToUse = firstFrame;
+                    }
+                } else if (direction.getId().equals("right")) {
+                    if (x > xOffset * -1) {
+                        imageToUse = firstFrame;
+                    }
+                } else if (direction.getId().equals("down")) {
+                    if (y > yOffset * -1) {
+                        imageToUse = firstFrame;
+                    }
+                }
+
+                copyColor(imageToUse, result, x, y, x, y);
             }
         });
         return result;
@@ -86,9 +112,22 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
                 .withName("direction")
                 .build();
 
+        floatOrWipeProvider = new ValueListProvider<>(createFloatOrWipe(), new StringInterpolator("float"));
+
+        ValueProviderDescriptor floatOrWipeProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(floatOrWipeProvider)
+                .withName("type")
+                .build();
+
         valueProviders.add(directionDescriptor);
+        valueProviders.add(floatOrWipeProviderDescriptor);
 
         return valueProviders;
+    }
+
+    private List<ValueListElement> createFloatOrWipe() {
+        return List.of(new ValueListElement("float", "float"),
+                new ValueListElement("wipe", "wipe"));
     }
 
     private List<ValueListElement> createDirections() {
