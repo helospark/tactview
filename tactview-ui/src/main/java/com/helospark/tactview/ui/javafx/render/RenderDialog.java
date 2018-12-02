@@ -78,7 +78,7 @@ public class RenderDialog {
             RenderRequest request = RenderRequest.builder()
                     .withWidth(Integer.parseInt(widthTextField.getText()))
                     .withHeight(Integer.parseInt(heightTextField.getText()))
-                    .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 3, RoundingMode.HALF_UP))
+                    .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
                     .withStartPosition(new TimelinePosition(new BigDecimal(startPositionTextField.getText())))
                     .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
                     .withFileName(textField.getText())

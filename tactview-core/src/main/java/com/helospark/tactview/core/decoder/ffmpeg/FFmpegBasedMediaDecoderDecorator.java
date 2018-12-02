@@ -211,7 +211,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     }
 
     private TimelineLength frameToTimestamp(int startFrame, double fps) {
-        return new TimelineLength(BigDecimal.valueOf(startFrame).divide(new BigDecimal(fps), 10, RoundingMode.HALF_DOWN));
+        return new TimelineLength(BigDecimal.valueOf(startFrame).divide(new BigDecimal(fps), 100, RoundingMode.HALF_DOWN));
     }
 
     private void copyToResult(List<ByteBuffer> result, Collection<ByteBuffer> collection) {

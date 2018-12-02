@@ -1,6 +1,18 @@
+/**
+* This is mostly the example from FFmpeg source: https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/muxing.c
+* Modified a bit to:
+* - separate the init, teardown and image render phases so it can be called by JNI
+* - convert the data coming from the video editor instead of generating it
+* - sound is buffered, since we need to fill the entire audio frame buffer and it's usually not the same size as we get from Java side
+* 
+* Note that synchronization is done on Java side by sending sound and image for every frame, so no need for the original pts synch here.
+* Note that this is single threaded due to global variables used
+*
+* More information about how this was developed can be found here: https://hips.hearstapps.com/ghk.h-cdn.co/assets/cm/15/11/54ffe5266025c-dog1.jpg
+*/
 
-
-    #define __STDC_CONSTANT_MACROS as
+// Causes compilation error if I don't define this
+#define __STDC_CONSTANT_MACROS whatisthis
 
 #include <iostream>
 
@@ -19,10 +31,6 @@ extern "C" {
     #include <libswscale/swscale.h>
     #include <libswresample/swresample.h>
 
-    #define STREAM_DURATION   10.0
-    #define STREAM_FRAME_RATE 25 /* 25 images/s */
-    #define STREAM_PIX_FMT    AV_PIX_FMT_YUV420P /* default pix_fmt */
-
     #define SCALE_FLAGS SWS_BICUBIC
 
 
@@ -39,7 +47,7 @@ extern "C" {
 
 
     // a wrapper around a single output AVStream
-    typedef struct OutputStream {
+    struct OutputStream {
         AVStream *st;
         AVCodecContext *enc;
 
@@ -50,12 +58,13 @@ extern "C" {
         AVFrame *frame;
         AVFrame *tmp_frame;
 
+        // data about sound may no belong here
         AVSampleFormat sampleFormat;
         int bytesPerSample;
 
         struct SwsContext *sws_ctx;
         struct SwrContext *swr_ctx;
-    } OutputStream;
+    };
 
     struct RenderContext {
         OutputStream* video_st = NULL;
@@ -156,7 +165,6 @@ extern "C" {
                 }
             }
             c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
-            std::cout << "timebase: " << c->sample_rate << std::endl;
             ost->st->time_base = (AVRational){ 1, c->sample_rate };
             break;
 
@@ -172,11 +180,10 @@ extern "C" {
              * of which frame timestamps are represented. For fixed-fps content,
              * timebase should be 1/framerate and timestamp increments should be
              * identical to 1. */
-            std::cout << "Framerate: " << request->framerate << std::endl;
             ost->st->time_base = av_d2q(request->framerate, 5);
             c->time_base       = ost->st->time_base;
 
-            c->pix_fmt       = STREAM_PIX_FMT;
+            c->pix_fmt       = AV_PIX_FMT_YUV420P;
             if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
                /* just for testing, we also add B frames */
                c->max_b_frames = 2;
@@ -252,8 +259,6 @@ extern "C" {
         else
             nb_samples = c->frame_size;
 
-        std::cout << "Number of samples: " << nb_samples << std::endl;
-
 
         if (request->bytesPerSample == 1) {
             ost->sampleFormat = AV_SAMPLE_FMT_U8;
@@ -312,14 +317,10 @@ extern "C" {
         for (j = 0; j <frame->nb_samples; j++) {
             for (i = 0; i < renderContext.audioChannels; i++) {
                 for (int k = 0; k < ost->bytesPerSample; ++k) {
-                    //std::cout << (int)dataStart[copySampleFromIndex] << ' ';
                     *q++ = dataStart[copySampleFromIndex++];
                 }
             }
         }
-        //std::cout << std::endl;
-
-        std::cout << "pts: " << ost->next_pts << std::endl;
 
         frame->pts = ost->next_pts;
         ost->next_pts  += frame->nb_samples;
@@ -368,7 +369,6 @@ extern "C" {
             }
             frame = ost->frame;
 
-            std::cout << "Sample rate:" << c->sample_rate << std::endl;
             frame->pts = av_rescale_q(ost->samples_count, (AVRational){1, c->sample_rate}, c->time_base);
             ost->samples_count += dst_nb_samples;
         }
@@ -466,11 +466,9 @@ extern "C" {
         SwsContext * ctx = sws_getContext(c->width, c->height,
                                   AV_PIX_FMT_BGR32, c->width, c->height,
                                   AV_PIX_FMT_YUV420P, 0, 0, 0, 0);
-        uint8_t * inData[1] = { frame->imageData }; // RGB24 have one plane
-        int inLinesize[1] = { 4*c->width }; // RGB stride
+        uint8_t * inData[1] = { frame->imageData };
+        int inLinesize[1] = { 4*c->width };
         sws_scale(ctx, inData, inLinesize, 0, c->height, ost->frame->data, ost->frame->linesize);
-
-        //fill_yuv_image(ost->frame,ost->next_pts, c->width, c->height);
 
         ost->frame->pts = ost->next_pts++;
 
@@ -636,16 +634,12 @@ extern "C" {
             OutputStream* video_st = renderContext.video_st;
             OutputStream* audio_st = renderContext.audio_st;
 
-            std::cout << "Audio samples: " << request->frame->numberOfAudioSamples << std::endl;
 
             int nbSamples = renderContext.numberOfSamplesPerAudioFrame;
-            std::cout << "pointer:  " << renderContext.audioBufferPointer << " " << request->frame->numberOfAudioSamples << std::endl;
-            std::cout << "asd:  " << nbSamples << " x " <<  renderContext.bytesPerSample << std::endl;
-            for (int i = 0; i < request->frame->numberOfAudioSamples * renderContext.bytesPerSample; ++i) {
-                //std::cout << "a = " << renderContext.audioBufferPointer << " " << i << " " << (int)request->frame->audioData[i] << std::endl;
+            for (int i = 0; i < request->frame->numberOfAudioSamples * renderContext.bytesPerSample * renderContext.audioChannels; ++i) {
                 renderContext.audioBuffer[renderContext.audioBufferPointer++] = request->frame->audioData[i];
 
-                if (renderContext.audioBufferPointer >= nbSamples * renderContext.bytesPerSample) {
+                if (renderContext.audioBufferPointer >= nbSamples * renderContext.bytesPerSample * renderContext.audioChannels) {
                     AVFrame *frame = get_audio_frame(audio_st, renderContext.audioBuffer);
                     renderContext.encode_audio = !write_audio_frame(renderContext.oc, audio_st, frame);
                     renderContext.audioBufferPointer = 0;
@@ -658,89 +652,5 @@ extern "C" {
             renderContext.encode_video = !write_video_frame(renderContext.oc, video_st, frame);
     }
 
-    unsigned char* createData(FFmpegInitEncoderRequest* initRequest) {
-        unsigned char* data = new unsigned char[3001 * initRequest->bytesPerSample * initRequest->audioChannels];
-
-        int index = 0;
-        double t = 0;
-
-        int tincr = 2 * M_PI * 110.0 / 44100;
-        int tincr2 = 2 * M_PI * 110.0 / 44100 / 44100;
-        int direction = 1;
-        for (int j = 0; j < 3000; j++) {
-           int v = direction * 128;
-           for (int i = 0; i < initRequest->audioChannels; i++) {
-               for (int k = 0; k < initRequest->bytesPerSample; ++k) {
-                data[index++] = v;
-               }
-           }
-           if (j % 50 == 0) {
-            direction = !direction;
-           }
-           t += 0.05;
-        }
-        return data;
-    }
-
-    unsigned char* createImageData(FFmpegInitEncoderRequest* initRequest) {
-        unsigned char* data = new unsigned char[initRequest->width * initRequest->height * 4];
-
-        static int color = 0;
-
-        int red = (color++) % 255;
-
-        for (int i = 0; i < initRequest->height; ++i) {
-            for (int j = 0; j < initRequest->width; ++j) {
-                data[i * initRequest->width*4 + j * 4 + 0] = red;
-                data[i * initRequest->width*4 + j * 4 + 1] = 0;
-                data[i * initRequest->width*4 + j * 4 + 2] = 0;
-                data[i * initRequest->width*4 + j * 4 + 3] = 255;
-            }
-        }
-
-        return data;
-    }
-/**
-    int main(int argc, char **argv)
-    {
-        FFmpegInitEncoderRequest* initRequest = new FFmpegInitEncoderRequest();
-        initRequest->width    = 352;
-        initRequest->height   = 288;
-        initRequest->audioChannels = 2;
-        initRequest->bytesPerSample = 2;
-        initRequest->sampleRate = 44100;
-        initRequest->framerate = 25;
-        initRequest->fileName = "/tmp/test.mp4";
-        initEncoder(initRequest);
-
-
-        int index = 0;
-        while (renderContext.encode_video || renderContext.encode_audio) {
-            if (index >= 500) {
-            break;
-            }
-            std::cout << index << std::endl;
-            FFmpegEncodeFrameRequest* r = new FFmpegEncodeFrameRequest();
-
-            r->startFrameIndex = index++;
-            r->encoderIndex = 0;
-            r->frame = new RenderFFMpegFrame();
-            r->frame->audioData = createData(initRequest);
-            r->frame->numberOfAudioSamples = 3001;
-            r->frame->imageData = createImageData(initRequest);
-
-            encodeFrames(r);
-
-            delete[] r->frame->audioData;
-            delete[] r->frame->imageData;
-
-            delete r;
-        }
-
-        clearEncoder(new FFmpegClearEncoderRequest());
-
-        return 0;
-    }
-    */
 }
 

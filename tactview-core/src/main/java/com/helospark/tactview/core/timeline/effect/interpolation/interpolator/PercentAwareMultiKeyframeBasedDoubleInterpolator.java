@@ -72,7 +72,7 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
     }
 
     public void resizeTo(TimelineLength length) {
-        BigDecimal changeInScale = length.getSeconds().divide(this.length.getSeconds(), 2, RoundingMode.HALF_UP);
+        BigDecimal changeInScale = length.getSeconds().divide(this.length.getSeconds(), 10, RoundingMode.HALF_UP);
         TreeMap<TimelinePosition, Double> newValues = new TreeMap<>();
         for (var entry : values.entrySet()) {
             newValues.put(entry.getKey().multiply(changeInScale), entry.getValue());

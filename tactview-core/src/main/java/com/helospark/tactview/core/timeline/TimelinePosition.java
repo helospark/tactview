@@ -36,7 +36,7 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
     }
 
     public static TimelinePosition fromFrameIndexWithFps(long frame, double fps) {
-        return new TimelinePosition(new BigDecimal(frame).divide(new BigDecimal(fps), 3, HALF_DOWN));
+        return new TimelinePosition(new BigDecimal(frame).divide(new BigDecimal(fps), 100, HALF_DOWN));
     }
 
     public TimelinePosition add(BigDecimal increment) {

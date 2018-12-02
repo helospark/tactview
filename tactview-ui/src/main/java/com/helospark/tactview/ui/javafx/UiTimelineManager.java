@@ -20,7 +20,7 @@ public class UiTimelineManager {
     private List<Consumer<TimelinePosition>> consumers = new ArrayList<>();
     private double fps = 30;
     private long sleepTime = (long) (1 / fps * 1000);
-    private BigDecimal increment = new BigDecimal(1).divide(new BigDecimal(fps), 3, RoundingMode.HALF_DOWN);
+    private BigDecimal increment = new BigDecimal(1).divide(new BigDecimal(fps), 100, RoundingMode.HALF_DOWN);
 
     private volatile TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
     private volatile boolean isPlaying;

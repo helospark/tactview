@@ -47,6 +47,12 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())) {
             AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition);
 
+            System.out.println("====================================");
+            for (int i = 0; i < frame.getAudioResult().getNumberSamples(); ++i) {
+                System.out.print(frame.getAudioResult().getSampleAt(0, i) + " ");
+            }
+            System.out.println("\n====================================");
+
             FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
             nativeRequest.frame = new RenderFFMpegFrame();
             RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);

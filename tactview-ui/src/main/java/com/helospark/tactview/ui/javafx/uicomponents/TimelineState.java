@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -53,7 +54,7 @@ public class TimelineState {
 
     public TimelinePosition pixelsToSeconds(double xCoordinate) {
         BigDecimal position = new BigDecimal(xCoordinate)
-                .divide(PIXEL_PER_SECOND);
+                .divide(PIXEL_PER_SECOND, 10, RoundingMode.HALF_UP);
         return new TimelinePosition(position);
     }
 
