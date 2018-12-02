@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
 import javafx.application.Platform;
@@ -23,20 +24,18 @@ public class EffectAddedListener {
     public static final int EFFECT_HEIGHT = 30;
     private MessagingService messagingService;
     private TimelineState timelineState;
-    private PropertyView effectPropertyView;
     private SelectedNodeRepository selectedNodeRepository;
     private DragRepository dragRepository;
-    private EffectDragAdder effectDragAdder;
+    private NameToIdRepository nameToIdRepository;
 
-    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, PropertyView effectPropertyView, SelectedNodeRepository selectedNodeRepository,
+    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, SelectedNodeRepository selectedNodeRepository,
             DragRepository dragRepository,
-            EffectDragAdder effectDragAdder) {
+            EffectDragAdder effectDragAdder, NameToIdRepository nameToIdRepository) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
-        this.effectPropertyView = effectPropertyView;
         this.selectedNodeRepository = selectedNodeRepository;
         this.dragRepository = dragRepository;
-        this.effectDragAdder = effectDragAdder;
+        this.nameToIdRepository = nameToIdRepository;
     }
 
     @PostConstruct
@@ -49,6 +48,7 @@ public class EffectAddedListener {
     }
 
     public Node createEffect(EffectAddedMessage effectAddedMessage) {
+        nameToIdRepository.generateAndAddNameForIdIfNotPresent(effectAddedMessage.getEffect().getClass().getSimpleName(), effectAddedMessage.getEffectId());
         Rectangle rectangle = new Rectangle();
         int width = timelineState.secondsToPixels(effectAddedMessage.getEffect().getInterval().getLength());
         rectangle.setWidth(width);

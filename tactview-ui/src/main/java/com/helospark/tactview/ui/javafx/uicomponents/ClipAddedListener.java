@@ -17,6 +17,7 @@ import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
@@ -38,13 +39,15 @@ public class ClipAddedListener {
     private UiProjectRepository uiProjectRepository;
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
+    private NameToIdRepository nameToIdRepository;
 
     @Slf4j
     private Logger logger;
 
     public ClipAddedListener(MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
             ProjectRepository projectRepository,
-            UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository) {
+            UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository,
+            NameToIdRepository nameToIdRepository) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectDragAdder = effectDragAdder;
@@ -52,6 +55,7 @@ public class ClipAddedListener {
         this.uiProjectRepository = uiProjectRepository;
         this.dragRepository = dragRepository;
         this.selectedNodeRepository = selectedNodeRepository;
+        this.nameToIdRepository = nameToIdRepository;
     }
 
     @PostConstruct
@@ -92,6 +96,7 @@ public class ClipAddedListener {
 
     public Pane createClip(ClipAddedMessage clipAddedMessage) {
         TimelineClip clip = clipAddedMessage.getClip();
+        nameToIdRepository.generateAndAddNameForIdIfNotPresent(clip.getClass().getSimpleName(), clip.getId());
         Pane parentPane = new Pane();
         Rectangle rectangle = new Rectangle();
         int width = timelineState.secondsToPixels(clip.getInterval().getLength());

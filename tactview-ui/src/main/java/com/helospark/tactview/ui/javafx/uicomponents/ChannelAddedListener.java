@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 
 import javafx.application.Platform;
 import javafx.scene.control.Label;
@@ -17,11 +18,13 @@ public class ChannelAddedListener {
     private MessagingService messagingService;
     private TimelineState timelineState;
     private TimelineDragAndDropHandler timelineDragAndDropHandler;
+    private NameToIdRepository nameToIdRepository;
 
-    public ChannelAddedListener(MessagingService messagingService, TimelineState timelineState, TimelineDragAndDropHandler timelineDragAndDropHandler) {
+    public ChannelAddedListener(MessagingService messagingService, TimelineState timelineState, TimelineDragAndDropHandler timelineDragAndDropHandler, NameToIdRepository nameToIdRepository) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.timelineDragAndDropHandler = timelineDragAndDropHandler;
+        this.nameToIdRepository = nameToIdRepository;
     }
 
     @PostConstruct
@@ -30,6 +33,10 @@ public class ChannelAddedListener {
     }
 
     private void addChannel(ChannelAddedMessage message) {
+        String generatedName = nameToIdRepository.generateAndAddNameForIdIfNotPresent("channel", message.getChannelId());
+
+        System.out.println("Generated channel " + generatedName);
+
         HBox timeline = new HBox();
         timeline.setMinHeight(50);
         timeline.getStyleClass().add("timelinerow");
@@ -37,7 +44,7 @@ public class ChannelAddedListener {
         timeline.setMinWidth(2000);
 
         VBox timelineTitle = new VBox();
-        timelineTitle.getChildren().add(new Label(message.getChannelId()));
+        timelineTitle.getChildren().add(new Label(generatedName));
         timelineTitle.setMaxWidth(200);
         timelineTitle.setMinWidth(150);
         timelineTitle.setPrefHeight(50);

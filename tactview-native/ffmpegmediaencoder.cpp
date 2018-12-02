@@ -187,7 +187,6 @@ extern "C" {
              * of which frame timestamps are represented. For fixed-fps content,
              * timebase should be 1/framerate and timestamp increments should be
              * identical to 1. */
-            std::cout << "FPS: " << request->fps << std::endl;
             ost->st->time_base =  (AVRational){1, request->fps};
             c->time_base       = ost->st->time_base;
 

@@ -88,7 +88,7 @@ public class JavaFXUiMain extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         JavaFXUiMain.STAGE = stage;
-        NotificationPane pane = new NotificationPane();
+        NotificationPane notificationPane = new NotificationPane();
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);
 
@@ -232,7 +232,7 @@ public class JavaFXUiMain extends Application {
         vbox.getChildren().addAll(upper, lower);
 
         root.setCenter(vbox);
-        pane.setContent(root);
+        notificationPane.setContent(root);
 
         inputModeRepository.registerInputModeChangeConsumerr(onClassChange(lower));
         inputModeRepository.registerInputModeChangeConsumerr(onClassChange(tabPane));

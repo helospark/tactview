@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
@@ -32,17 +33,20 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
     private TimelineManager timelineManager;
     private ByteBufferToJavaFxImageConverter imageConverter;
     private UiProjectRepository uiProjectRepository;
+    private NameToIdRepository nameToIdRepository;
 
     private Image noLayerMaskImage;
 
     public DependentClipProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
-            TimelineManager timelineManager, ByteBufferToJavaFxImageConverter imageConverter, UiProjectRepository uiProjectRepository) {
+            TimelineManager timelineManager, ByteBufferToJavaFxImageConverter imageConverter, UiProjectRepository uiProjectRepository,
+            NameToIdRepository nameToIdRepository) {
         super(DependentClipProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
         this.imageConverter = imageConverter;
         this.uiProjectRepository = uiProjectRepository;
+        this.nameToIdRepository = nameToIdRepository;
 
         noLayerMaskImage = new Image(getClass().getResourceAsStream("/noLayerMask.png"));
     }
@@ -60,9 +64,10 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
             timelineManager.getAllClipIds()
                     .stream()
                     .forEach(id -> {
-                        MenuItem menuItem = new MenuItem(id);
+                        String name = nameToIdRepository.getNameForId(id);
+                        MenuItem menuItem = new MenuItem(name);
                         menuItem.setOnAction(e -> {
-                            textArea.setText(id);
+                            textArea.setText(name);
                         });
                         contextMenu.getItems().addAll(menuItem);
                     });
@@ -79,10 +84,10 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         hbox.getChildren().add(browseButton);
 
         return PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> textArea.getText())
+                .withCurrentValueProvider(() -> nameToIdRepository.getIdForName(textArea.getText()))
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
-                    String currentValue = stringProvider.getValueAt(position);
+                    String currentValue = nameToIdRepository.getNameForId(stringProvider.getValueAt(position));
                     textArea.setText(currentValue);
                     renderFrameTo(imageView, currentValue, position);
                 })

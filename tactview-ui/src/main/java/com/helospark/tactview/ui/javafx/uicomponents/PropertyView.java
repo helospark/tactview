@@ -24,6 +24,8 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMe
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.notification.NotificationService;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyPage.Builder;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.DetailsGridChain;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.EffectLine;
@@ -31,12 +33,15 @@ import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PropertyValue
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 @Component
@@ -51,16 +56,20 @@ public class PropertyView {
     private EffectPropertyPage shownEntries;
     private PropertyValueSetterChain propertyValueSetterChain;
     private DetailsGridChain detailsGridChain;
+    private NameToIdRepository nameToIdRepository;
+    private NotificationService notificationService;
 
     @Slf4j
     private Logger logger;
 
     public PropertyView(MessagingService messagingService, UiTimelineManager uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain,
-            DetailsGridChain detailsGridChain) {
+            DetailsGridChain detailsGridChain, NameToIdRepository nameToIdRepository, NotificationService notificationService) {
         this.messagingService = messagingService;
         this.uiTimelineManager = uiTimelineManager;
         this.propertyValueSetterChain = propertyValueSetterChain;
         this.detailsGridChain = detailsGridChain;
+        this.nameToIdRepository = nameToIdRepository;
+        this.notificationService = notificationService;
     }
 
     @PostConstruct
@@ -112,10 +121,36 @@ public class PropertyView {
         Builder result = EffectPropertyPage.builder()
                 .withBox(grid)
                 .withComponentId(id);
+
+        addNameField(id, result);
+
         for (int i = 0; i < descriptors.size(); ++i) {
-            addElement(descriptors.get(i), result, i);
+            addElement(descriptors.get(i), result, i + 1);
         }
         return result.build();
+    }
+
+    private void addNameField(String id, Builder result) {
+        TextField nameField = new TextField();
+        Button button = new Button();
+        button.setText("update");
+        button.setOnAction(a -> {
+            if (!nameToIdRepository.containsName(nameField.getText())) {
+                nameToIdRepository.addNameForId(nameField.getText(), id);
+            } else {
+                notificationService.showWarning("Unable to update", "Name already used");
+            }
+        });
+        HBox hbox = new HBox();
+        hbox.getChildren().addAll(nameField, button);
+
+        result.getBox().add(new Label("name"), 0, 0);
+        result.getBox().add(hbox, 1, 0);
+        result.addUpdateFunctions(position -> {
+            if (nameToIdRepository.hasNameForId(id)) {
+                nameField.setText(nameToIdRepository.getNameForId(id));
+            }
+        });
     }
 
     private void addElement(ValueProviderDescriptor descriptor, Builder result, int line) {
