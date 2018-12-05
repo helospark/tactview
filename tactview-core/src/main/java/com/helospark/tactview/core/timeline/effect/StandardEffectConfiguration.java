@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussi
 import com.helospark.tactview.core.timeline.effect.cartoon.CartoonEffect;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.colorchannelchange.ColorChannelChangeEffect;
+import com.helospark.tactview.core.timeline.effect.colorize.ColorBalance;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
 import com.helospark.tactview.core.timeline.effect.crop.CropEffect;
@@ -320,6 +321,16 @@ public class StandardEffectConfiguration {
                 .withFactory(request -> new CropEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withName("Crop")
                 .withSupportedEffectId("cropeffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory colorBalanceEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ColorBalance(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withName("Color balance")
+                .withSupportedEffectId("colorbalance")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
