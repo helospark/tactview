@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
@@ -26,7 +27,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     }
 
     @Override
-    protected EffectLine handle(IntegerProvider integerProvider) {
+    protected EffectLine handle(IntegerProvider integerProvider, ValueProviderDescriptor descriptor) {
         TextField textField = new TextField();
         textField.getStyleClass().add("integer-property-field");
         HBox hbox = new HBox();

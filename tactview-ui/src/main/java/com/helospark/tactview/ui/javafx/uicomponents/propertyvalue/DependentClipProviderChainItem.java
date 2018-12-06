@@ -9,6 +9,7 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -52,7 +53,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
     }
 
     @Override
-    protected EffectLine handle(DependentClipProvider stringProvider) {
+    protected EffectLine handle(DependentClipProvider stringProvider, ValueProviderDescriptor descriptor) {
         TextField textArea = new TextField();
 
         Button browseButton = new Button("Browse");

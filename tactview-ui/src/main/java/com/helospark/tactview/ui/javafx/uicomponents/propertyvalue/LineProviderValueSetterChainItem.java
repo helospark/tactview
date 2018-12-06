@@ -7,6 +7,7 @@ import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -36,9 +37,9 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
     }
 
     @Override
-    protected EffectLine handle(LineProvider lineProvider) {
-        EffectLine startPointProvider = pointProviderValueSetterChainItem.create(lineProvider.getChildren().get(0));
-        EffectLine endPointProvider = pointProviderValueSetterChainItem.create(lineProvider.getChildren().get(1));
+    protected EffectLine handle(LineProvider lineProvider, ValueProviderDescriptor descriptor) {
+        EffectLine startPointProvider = pointProviderValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(0));
+        EffectLine endPointProvider = pointProviderValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(1));
         Button button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.SQUARE));
 
         VBox vbox = new VBox();

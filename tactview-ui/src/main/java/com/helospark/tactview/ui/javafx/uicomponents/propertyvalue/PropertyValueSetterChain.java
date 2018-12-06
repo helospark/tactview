@@ -3,7 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 @Component
 public class PropertyValueSetterChain {
@@ -13,11 +13,11 @@ public class PropertyValueSetterChain {
         this.items = items;
     }
 
-    public EffectLine create(KeyframeableEffect effect) {
+    public EffectLine create(ValueProviderDescriptor descriptor) {
         return items.stream()
-                .filter(e -> e.doesSupport(effect))
+                .filter(e -> e.doesSupport(descriptor.getKeyframeableEffect()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No chain item for " + effect))
-                .create(effect);
+                .orElseThrow(() -> new IllegalArgumentException("No chain item for " + descriptor))
+                .create(descriptor, descriptor.getKeyframeableEffect());
     }
 }

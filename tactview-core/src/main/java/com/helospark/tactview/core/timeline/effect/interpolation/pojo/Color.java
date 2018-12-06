@@ -135,6 +135,20 @@ public class Color {
         return res;
     }
 
+    public Color hsbToRgbColor() {
+        int hsbColor = java.awt.Color.HSBtoRGB((float) red, (float) green, (float) blue);
+        int blue = (hsbColor >> 0) & 0xFF;
+        int green = (hsbColor >> 8) & 0xFF;
+        int red = (hsbColor >> 16) & 0xFF;
+
+        return Color.of(red / 255.0, green / 255.0, blue / 255.0);
+    }
+
+    public Color rgbToHsbColor() {
+        float[] result = java.awt.Color.RGBtoHSB((int) (red * 255), (int) (green * 255), (int) (blue * 255), null);
+        return new Color(result[0], result[1], result[2]);
+    }
+
     //https://github.com/liovch/GPUImage/commit/fcc85db4fdafae1d4e41313c96bb1cac54dc93b4
     public Color hslToRgbColor() {
         Color hsl = this;

@@ -5,6 +5,7 @@ import java.io.File;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -31,7 +32,7 @@ public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSett
     }
 
     @Override
-    protected EffectLine handle(FileProvider fileProvider) {
+    protected EffectLine handle(FileProvider fileProvider, ValueProviderDescriptor descriptor) {
         TextField textArea = new TextField();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setSelectedExtensionFilter(new ExtensionFilter(fileProvider.getExtension(), new String[]{fileProvider.getExtension()}));

@@ -8,6 +8,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.DoubleInterpolatorFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
@@ -46,7 +47,7 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     }
 
     @Override
-    protected PrimitiveEffectLine handle(DoubleProvider doubleProvider) {
+    protected PrimitiveEffectLine handle(DoubleProvider doubleProvider, ValueProviderDescriptor descriptor) {
         TextField textField = new TextField();
         textField.getStyleClass().add("double-property-field");
 

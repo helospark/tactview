@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
@@ -20,7 +21,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     }
 
     @Override
-    protected EffectLine handle(StringProvider stringProvider) {
+    protected EffectLine handle(StringProvider stringProvider, ValueProviderDescriptor descriptor) {
         TextArea textArea = new TextArea();
         textArea.getStyleClass().add("string-property-field");
         return PrimitiveEffectLine.builder()

@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
@@ -21,7 +22,7 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     }
 
     @Override
-    protected EffectLine handle(BooleanProvider booleanProvider) {
+    protected EffectLine handle(BooleanProvider booleanProvider, ValueProviderDescriptor descriptor) {
         CheckBox checkbox = new CheckBox();
         checkbox.getStyleClass().add("boolean-property-field");
 

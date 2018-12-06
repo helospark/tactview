@@ -1,5 +1,9 @@
 package com.helospark.tactview.core.timeline.effect.colorize;
 
+import static com.helospark.tactview.core.timeline.effect.interpolation.ColorPickerType.CIRCLE;
+import static com.helospark.tactview.core.timeline.effect.interpolation.RenderTypeHint.TYPE;
+
+import java.util.Collections;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -63,7 +67,7 @@ public class ColorBalance extends StatelessVideoEffect {
             double a = 0.25;
             double b = 0.333;
             double scale = 0.7;
-            Color shadows = inputColor.subtractFromComponents(b).divideComponents(-a).addComponents(0.5).multiplyComponents(1.3).clamp(0.0, 1.0).multiplyComponents(scale).multiply(shadowsShift);
+            Color shadows = inputColor.subtractFromComponents(b).divideComponents(-a).addComponents(0.5).clamp(0.0, 1.0).multiplyComponents(scale).multiply(shadowsShift);
             Color midtones = inputColor.subtractFromComponents(b).divideComponents(a).addComponents(0.5).clamp(0.0, 1.0)
                     .multiply(inputColor.addComponents(b).subtractFromComponents(-1.0).clamp(0.0, 1.0).multiplyComponents(scale)).multiply(midtonesShift);
             Color highlights = inputColor.addComponents(b).subtractFromComponents(1.0).divideComponents(a).addComponents(0.5).clamp(0.0, 1.0).multiplyComponents(scale).multiply(highlightsShift);
@@ -97,16 +101,19 @@ public class ColorBalance extends StatelessVideoEffect {
         ValueProviderDescriptor shadowsShiftProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(shadowsShiftProvider)
                 .withName("Shadow")
+                .withRenderHints(Collections.singletonMap(TYPE, CIRCLE))
                 .build();
 
         ValueProviderDescriptor midtonesShiftProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(midtonesShiftProvider)
                 .withName("Midtone")
+                .withRenderHints(Collections.singletonMap(TYPE, CIRCLE))
                 .build();
 
         ValueProviderDescriptor highlightsShiftProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(highlightsShiftProvider)
                 .withName("Highlight")
+                .withRenderHints(Collections.singletonMap(TYPE, CIRCLE))
                 .build();
 
         return List.of(shadowsShiftProviderDescriptor, midtonesShiftProviderDescriptor, highlightsShiftProviderDescriptor);

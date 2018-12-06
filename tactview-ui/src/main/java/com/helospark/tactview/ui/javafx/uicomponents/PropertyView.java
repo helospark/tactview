@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
@@ -155,7 +154,7 @@ public class PropertyView {
 
     private void addElement(ValueProviderDescriptor descriptor, Builder result, int line) {
         Label label = new Label(descriptor.getName());
-        EffectLine keyframeChange = createKeyframeUi(descriptor.getKeyframeableEffect());
+        EffectLine keyframeChange = createKeyframeUi(descriptor);
 
         Node key = keyframeChange.getVisibleNode();
         key.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
@@ -172,8 +171,8 @@ public class PropertyView {
         result.addUpdateFunctions(keyframeChange::updateUi);
     }
 
-    private EffectLine createKeyframeUi(KeyframeableEffect keyframeableEffect) {
-        return propertyValueSetterChain.create(keyframeableEffect);
+    private EffectLine createKeyframeUi(ValueProviderDescriptor descriptor) {
+        return propertyValueSetterChain.create(descriptor);
     }
 
     public FlowPane getPropertyWindow() {

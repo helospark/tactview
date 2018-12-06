@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -32,7 +33,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
     }
 
     @Override
-    protected EffectLine handle(ValueListProvider valueProvider) {
+    protected EffectLine handle(ValueListProvider valueProvider, ValueProviderDescriptor descriptor) {
         ValueListProvider<ValueListElement> typeFixedValueProvider = valueProvider; // thanks Java
 
         if (typeFixedValueProvider.getElements().size() > COMBOBOX_THRESHOLD) {

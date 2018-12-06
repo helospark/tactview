@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Generated;
 
@@ -10,6 +11,7 @@ public class ValueProviderDescriptor {
     private KeyframeableEffect keyframeableEffect;
     private List<ActivePredicate> activePredicate;
     private List<ActivePredicate> showPredicate;
+    private Map<Object, Object> renderHints;
 
     @Generated("SparkTools")
     private ValueProviderDescriptor(Builder builder) {
@@ -17,6 +19,7 @@ public class ValueProviderDescriptor {
         this.keyframeableEffect = builder.keyframeableEffect;
         this.activePredicate = builder.activePredicate;
         this.showPredicate = builder.showPredicate;
+        this.renderHints = builder.renderHints;
     }
 
     public String getName() {
@@ -35,6 +38,10 @@ public class ValueProviderDescriptor {
         return showPredicate;
     }
 
+    public Map<Object, Object> getRenderHints() {
+        return renderHints;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -46,6 +53,7 @@ public class ValueProviderDescriptor {
         private KeyframeableEffect keyframeableEffect;
         private List<ActivePredicate> activePredicate = Collections.emptyList();
         private List<ActivePredicate> showPredicate = Collections.emptyList();
+        private Map<Object, Object> renderHints = Collections.emptyMap();
 
         private Builder() {
         }
@@ -67,6 +75,11 @@ public class ValueProviderDescriptor {
 
         public Builder withShowPredicate(List<ActivePredicate> showPredicate) {
             this.showPredicate = showPredicate;
+            return this;
+        }
+
+        public Builder withRenderHints(Map<Object, Object> renderHints) {
+            this.renderHints = renderHints;
             return this;
         }
 
