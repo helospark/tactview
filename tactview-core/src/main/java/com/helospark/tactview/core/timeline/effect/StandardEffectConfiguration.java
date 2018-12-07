@@ -37,6 +37,8 @@ import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlphaCalculator;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
+import com.helospark.tactview.core.timeline.effect.lut.LutEffect;
+import com.helospark.tactview.core.timeline.effect.lut.LutProviderService;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
@@ -334,6 +336,16 @@ public class StandardEffectConfiguration {
                         colorizeService))
                 .withName("Color balance")
                 .withSupportedEffectId("colorbalance")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory lutEffect(IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new LutEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, lutProviderService))
+                .withName("LUT")
+                .withSupportedEffectId("lut")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
