@@ -13,9 +13,11 @@ import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussi
 import com.helospark.tactview.core.timeline.effect.cartoon.CartoonEffect;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.colorchannelchange.ColorChannelChangeEffect;
-import com.helospark.tactview.core.timeline.effect.colorize.ColorBalance;
+import com.helospark.tactview.core.timeline.effect.colorize.ColorBalanceEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
+import com.helospark.tactview.core.timeline.effect.colorize.ColorizeService;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
+import com.helospark.tactview.core.timeline.effect.contractbrightness.BrignessContrastService;
 import com.helospark.tactview.core.timeline.effect.crop.CropEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
@@ -96,9 +98,9 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory brightnessContrastEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
+    public StandardEffectFactory brightnessContrastEffect(MessagingService messagingService, BrignessContrastService brignessContrastService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new BrightnessContrassEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
+                .withFactory(request -> new BrightnessContrassEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), brignessContrastService))
                 .withName("Brightness")
                 .withSupportedEffectId("brightesscontrast")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -166,9 +168,9 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory colorize(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory colorize(MessagingService messagingService, IndependentPixelOperation independentPixelOperation, ColorizeService colorizeService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new ColorizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withFactory(request -> new ColorizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), colorizeService))
                 .withName("Colorize")
                 .withSupportedEffectId("colorize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -326,9 +328,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory colorBalanceEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory colorBalanceEffect(IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new ColorBalance(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withFactory(request -> new ColorBalanceEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, brignessContrastService,
+                        colorizeService))
                 .withName("Color balance")
                 .withSupportedEffectId("colorbalance")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))

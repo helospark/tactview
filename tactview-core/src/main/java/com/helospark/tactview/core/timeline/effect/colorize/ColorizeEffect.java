@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline.effect.colorize;
 
-import java.awt.Color;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -11,20 +10,18 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
-import com.helospark.tactview.core.util.ThreadLocalProvider;
 
 public class ColorizeEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private ColorizeService colorizeService;
 
     private DoubleProvider hueChangeProvider;
     private DoubleProvider saturationChangeProvider;
     private DoubleProvider valueChangeProvider;
 
-    public ColorizeEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public ColorizeEffect(TimelineInterval interval, ColorizeService colorizeService) {
         super(interval);
-        this.independentPixelOperation = independentPixelOperation;
+        this.colorizeService = colorizeService;
     }
 
     public ColorizeEffect(ColorizeEffect cloneFrom) {
@@ -34,42 +31,17 @@ public class ColorizeEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        ThreadLocalProvider<float[]> floatArrayProvider = () -> new float[3];
-        List<ThreadLocalProvider<?>> threadLocalProviders = List.of(floatArrayProvider);
-
         double hueChange = hueChangeProvider.getValueAt(request.getEffectPosition());
         double saturationChange = saturationChangeProvider.getValueAt(request.getEffectPosition());
         double valueChange = valueChangeProvider.getValueAt(request.getEffectPosition());
 
-        return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), threadLocalProviders, pixelRequest -> {
-            float[] floatArray = pixelRequest.getThreadLocal(floatArrayProvider);
-            Color.RGBtoHSB(pixelRequest.input[0], pixelRequest.input[1], pixelRequest.input[2], floatArray);
+        ColorizeRequest colorizeRequest = ColorizeRequest.builder()
+                .withHueChange(hueChange)
+                .withSaturationChange(saturationChange)
+                .withValueChange(valueChange)
+                .build();
 
-            floatArray[0] = saturateBetweenInclusive(0.0f, 1.0f, (float) (floatArray[0] + hueChange));
-            floatArray[1] = saturateBetweenInclusive(0.0f, 1.0f, (float) (floatArray[1] + saturationChange));
-            floatArray[2] = saturateBetweenInclusive(0.0f, 1.0f, (float) (floatArray[2] + valueChange));
-
-            int pixel = Color.HSBtoRGB(floatArray[0], floatArray[1], floatArray[2]);
-
-            int newR = (pixel >> 16) & 0xFF;
-            int newG = (pixel >> 8) & 0xFF;
-            int newB = (pixel >> 0) & 0xFF;
-
-            pixelRequest.output[0] = newR;
-            pixelRequest.output[1] = newG;
-            pixelRequest.output[2] = newB;
-            pixelRequest.output[3] = pixelRequest.input[3];
-        });
-    }
-
-    private float saturateBetweenInclusive(float low, float high, float value) {
-        if (value < low) {
-            return low;
-        }
-        if (value > high) {
-            return high;
-        }
-        return value;
+        return colorizeService.colorize(request.getCurrentFrame(), colorizeRequest);
     }
 
     @Override

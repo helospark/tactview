@@ -180,4 +180,9 @@ public class Color {
         return (fmax + fmin) / 2.0;
     }
 
+    @Override
+    public String toString() {
+        return "Color [red=" + red + ", green=" + green + ", blue=" + blue + "]";
+    }
+
 }

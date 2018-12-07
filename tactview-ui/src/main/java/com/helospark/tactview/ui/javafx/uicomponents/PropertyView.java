@@ -96,12 +96,12 @@ public class PropertyView {
             EffectPropertyPage asd = createBox(message.getDescriptors(), message.getClipId());
             clipProperties.put(message.getClipId(), asd);
         }));
-        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> {
+        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> Platform.runLater(() -> {
             updateValuesAtCurrentPosition();
-        });
-        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> {
+        }));
+        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> Platform.runLater(() -> {
             updateValuesAtCurrentPosition();
-        });
+        }));
         messagingService.register(ClipRemovedMessage.class, message -> {
             getCurrentlyShownComponentId()
                     .filter(a -> a.equals(message.getElementId()))
@@ -168,7 +168,7 @@ public class PropertyView {
         result.getBox().add(label, 0, line);
         result.getBox().add(key, 1, line);
 
-        result.addUpdateFunctions(keyframeChange::updateUi);
+        result.addUpdateFunctions(currentTime -> Platform.runLater(() -> keyframeChange.updateUi(currentTime)));
     }
 
     private EffectLine createKeyframeUi(ValueProviderDescriptor descriptor) {

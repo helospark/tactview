@@ -17,8 +17,8 @@ public class ColorWheelPicker extends Control {
 
     public ObjectProperty<Color> colorProperty() {
         if (color == null) {
-            color = new SimpleObjectProperty<>(this, "color", new Color(1.0, 1.0, 1.0, 1.0));
-            color.set(new Color(1.0, 1.0, 1.0, 1.0));
+            color = new SimpleObjectProperty<>(this, "color", new Color(0.0, 0.0, 0.0, 1.0));
+            color.set(new Color(0.0, 0.0, 0.0, 1.0));
         }
         return color;
     }

@@ -8,6 +8,8 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.input.MouseEvent;
 
 public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
+    private static final int DEFAULT_SIZE = 150;
+
     private static final int SELECTION_MARKER_DIAMETER = 6;
 
     private ObjectProperty<javafx.scene.paint.Color> colorProperty;
@@ -16,17 +18,19 @@ public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
     private Canvas canvas;
     private int radius = 1;
     private int selectedX, selectedY;
+    private int currentSize;
 
     protected ColorWheelPickerSkin(ColorWheelPicker control) {
         super(control);
         colorProperty = control.colorProperty();
         onActionProvider = control.onActionProperty();
+        radius = DEFAULT_SIZE / 2;
 
-        createColorWheel(150);
         setSelectionPosition(toColor(colorProperty.get()));
-        drawMarker(canvas.getGraphicsContext2D());
+        createColorWheel(DEFAULT_SIZE);
 
         colorProperty.addListener((change, oldValue, newValue) -> {
+            System.out.println("Color changed " + Thread.currentThread().getName());
             setSelectionPosition(toColor(oldValue));
             updateCanvasPart(radius, canvas, selectedX - radius, selectedY - radius);
             setSelectionPosition(toColor(newValue));
@@ -41,9 +45,15 @@ public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
     private void createColorWheel(int size) {
         radius = size / 2;
 
+        System.out.println("New color wheel");
+
         canvas = new Canvas(size, size);
 
         canvas.setOnMouseDragged(e -> {
+            handleMouseEvent(e);
+        });
+
+        canvas.setOnMouseDragOver(e -> {
             handleMouseEvent(e);
         });
         canvas.setOnMouseClicked(e -> {
@@ -53,6 +63,8 @@ public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
         updateCanvas(radius, canvas);
 
         getChildren().setAll(canvas);
+
+        currentSize = size;
     }
 
     private void handleMouseEvent(MouseEvent e) {
@@ -129,7 +141,9 @@ public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
         int size = (int) Math.min(contentWidth, contentHeight);
-        createColorWheel(size);
+        if (currentSize != size) {
+            createColorWheel(size);
+        }
     }
 
 }

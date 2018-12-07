@@ -10,18 +10,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BrightnessContrassEffect extends StatelessVideoEffect {
     private DoubleProvider contrastProvider;
     private DoubleProvider brightnessProvider;
 
-    private IndependentPixelOperation independentPixelOperations;
+    private BrignessContrastService brignessContrastService;
 
-    public BrightnessContrassEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperations) {
+    public BrightnessContrassEffect(TimelineInterval interval, BrignessContrastService brignessContrastService) {
         super(interval);
-        this.independentPixelOperations = independentPixelOperations;
+        this.brignessContrastService = brignessContrastService;
     }
 
     public BrightnessContrassEffect(BrightnessContrassEffect cloneFrom) {
@@ -36,18 +35,18 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
 
         ReadOnlyClipImage currentFrame = effectRequest.getCurrentFrame();
 
-        return independentPixelOperations.createNewImageWithAppliedTransformation(currentFrame, pixelRequest -> {
-            pixelRequest.output[0] = (int) (contrast * pixelRequest.input[0] + brightness);
-            pixelRequest.output[1] = (int) (contrast * pixelRequest.input[1] + brightness);
-            pixelRequest.output[2] = (int) (contrast * pixelRequest.input[2] + brightness);
-            pixelRequest.output[3] = pixelRequest.input[3];
-        });
+        BrignessContrastServiceRequest brightnessContrastRequest = BrignessContrastServiceRequest.builder()
+                .withBrightness(brightness)
+                .withContrast(contrast)
+                .build();
+
+        return brignessContrastService.createImageWithBrighnessContrastChange(currentFrame, brightnessContrastRequest);
     }
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
         contrastProvider = new DoubleProvider(0, 10, new MultiKeyframeBasedDoubleInterpolator(1.0));
-        brightnessProvider = new DoubleProvider(0, 200, new MultiKeyframeBasedDoubleInterpolator(0.0));
+        brightnessProvider = new DoubleProvider(0, 10, new MultiKeyframeBasedDoubleInterpolator(0.0));
 
         ValueProviderDescriptor contrastDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(contrastProvider)
