@@ -55,7 +55,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
             frameResult.setPixel(colorComponents, x, y);
         });
 
-        return applyEffects(relativePosition, frameResult, request);
+        return frameResult;
     }
 
     @Override

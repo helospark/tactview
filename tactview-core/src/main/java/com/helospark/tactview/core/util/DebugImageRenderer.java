@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 /**
@@ -29,7 +30,13 @@ public class DebugImageRenderer {
     }
 
     public static void render(ReadOnlyClipImage result) {
-        render(result.getBuffer(), result.getWidth(), result.getHeight());
+        ClipImage image = ClipImage.sameSizeAs(result);
+        for (int i = 0; i < result.getHeight(); ++i) {
+            for (int j = 0; j < result.getHeight(); ++j) {
+                image.setRed(result.getAlpha(j, i), j, i);
+            }
+        }
+        render(image.getBuffer(), image.getWidth(), image.getHeight());
     }
 
 }
