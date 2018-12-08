@@ -5,7 +5,7 @@ import javax.annotation.Generated;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 
 public class CubeLut1d extends AbstractCubeLut {
-    protected rgbvec[] values;
+    protected LutColor[] values;
 
     @Generated("SparkTools")
     private CubeLut1d(Builder builder) {
@@ -56,7 +56,7 @@ public class CubeLut1d extends AbstractCubeLut {
         private float[] lowerBound;
         private float[] upperBound;
         private int size;
-        private rgbvec[] values;
+        private LutColor[] values;
 
         private Builder() {
         }
@@ -81,7 +81,7 @@ public class CubeLut1d extends AbstractCubeLut {
             return this;
         }
 
-        public Builder withValues(rgbvec[] values) {
+        public Builder withValues(LutColor[] values) {
             this.values = values;
             return this;
         }

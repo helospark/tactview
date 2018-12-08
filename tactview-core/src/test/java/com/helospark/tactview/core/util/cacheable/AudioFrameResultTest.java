@@ -79,20 +79,4 @@ public class AudioFrameResultTest {
         assertThat(value1, is(-5437));
     }
 
-    @Test
-    public void test6() {
-        java.nio.ByteBuffer buffer = ByteBuffer.wrap(new byte[]{-51, -52, 76, 63});
-        java.nio.ByteBuffer buffer2 = ByteBuffer.wrap(new byte[]{-51, -52, 76, -65});
-        AudioFrameResult result1 = new AudioFrameResult(List.of(buffer), 48000, 4);
-        AudioFrameResult result2 = new AudioFrameResult(List.of(buffer2), 48000, 4);
-
-        int value1 = result1.getRescaledSample(0, 1, 1, 0);
-        int value2 = result2.getRescaledSample(0, 1, 1, 0);
-
-        System.out.println(value1 + " " + value2);
-
-        assertThat(value1, is(-5437));
-        assertThat(value2, is(-5437));
-    }
-
 }

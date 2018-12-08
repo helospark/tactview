@@ -1,9 +1,9 @@
 package com.helospark.tactview.core.util.lut.cube;
 
-public class rgbvec {
-    float r, g, b;
+public class LutColor {
+    public float r, g, b;
 
-    public rgbvec(float r, float g, float b) {
+    public LutColor(float r, float g, float b) {
         this.r = r;
         this.g = g;
         this.b = b;

@@ -111,15 +111,15 @@ public class CubeLutLoader {
     }
 
     private AbstractCubeLut readThreeDimensionalTable(BufferedReader fos, CubeLutHeaderBuilder headerBuilder) throws IOException {
-        rgbvec[][][] values = new rgbvec[headerBuilder.size][headerBuilder.size][headerBuilder.size];
+        LutColor[][][] values = new LutColor[headerBuilder.size][headerBuilder.size][headerBuilder.size];
         for (int b = 0; b < headerBuilder.size; ++b) {
-            values[b] = new rgbvec[headerBuilder.size][headerBuilder.size];
+            values[b] = new LutColor[headerBuilder.size][headerBuilder.size];
             for (int g = 0; g < headerBuilder.size; ++g) {
-                values[b][g] = new rgbvec[headerBuilder.size];
+                values[b][g] = new LutColor[headerBuilder.size];
                 for (int r = 0; r < headerBuilder.size; ++r) {
                     String line = readLine(fos);
                     float[] triplet = parseTriplet(line);
-                    values[b][g][r] = new rgbvec(triplet[0], triplet[1], triplet[2]);
+                    values[b][g][r] = new LutColor(triplet[0], triplet[1], triplet[2]);
                 }
             }
         }
@@ -133,11 +133,11 @@ public class CubeLutLoader {
     }
 
     private AbstractCubeLut readOneDimensionalTable(BufferedReader fos, CubeLutHeaderBuilder headerBuilder) throws IOException {
-        rgbvec[] values = new rgbvec[headerBuilder.size];
+        LutColor[] values = new LutColor[headerBuilder.size];
         for (int i = 0; i < headerBuilder.size; ++i) {
             String line = readLine(fos);
             float[] triplet = parseTriplet(line);
-            values[i] = new rgbvec(triplet[0], triplet[1], triplet[2]);
+            values[i] = new LutColor(triplet[0], triplet[1], triplet[2]);
         }
         return CubeLut1d.builder()
                 .withLowerBound(headerBuilder.lowerBound)

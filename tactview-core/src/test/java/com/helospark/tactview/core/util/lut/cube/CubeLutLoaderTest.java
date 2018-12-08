@@ -1,10 +1,9 @@
 package com.helospark.tactview.core.util.lut.cube;
 
+import static com.helospark.tactview.core.util.TestUtil.assertTripletEquals;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -131,21 +130,7 @@ public class CubeLutLoaderTest {
         return Stream.of(
                 Arguments.of(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f}),
                 Arguments.of(new float[]{1.0f, 1.0f, 1.0f}, new float[]{1.0f, 1.0f, 1.0f}),
-                Arguments.of(new float[]{0.0f, 0.0f, 0.5f}, new float[]{0.5f, 0.0f, 0.0f}));
+                Arguments.of(new float[]{0.0f, 0.0f, 0.5f}, new float[]{0.0f, 0.125f, 0.5f}));
     }
 
-    private void assertTripletEquals(rgbvec actual, float[] expected) {
-        assertTripletEquals(new float[]{actual.r, actual.g, actual.b}, expected);
-    }
-
-    private void assertTripletEquals(Color result, float[] expected) {
-        assertTripletEquals(new float[]{(float) result.red, (float) result.green, (float) result.blue}, expected);
-    }
-
-    private void assertTripletEquals(float[] actual, float[] expected) {
-        assertEquals(actual.length, expected.length);
-        for (int i = 0; i < actual.length; ++i) {
-            assertThat((double) actual[i], closeTo(expected[i], 0.000001));
-        }
-    }
 }
