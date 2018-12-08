@@ -64,13 +64,20 @@ public abstract class VisualTimelineClip extends TimelineClip {
         if (frameRequest.isApplyEffects()) {
             List<StatelessVideoEffect> actualEffects = getEffectsAt(relativePosition, StatelessVideoEffect.class);
 
+            int effectChannelIndex = 0;
             for (StatelessVideoEffect effect : actualEffects) {
+                if (frameRequest.getApplyEffectsLessThanEffectChannel().isPresent() && effectChannelIndex >= frameRequest.getApplyEffectsLessThanEffectChannel().get()) {
+                    break;
+                }
+
                 StatelessEffectRequest request = StatelessEffectRequest.builder()
                         .withClipPosition(relativePosition)
                         .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
                         .withCurrentFrame(frameResult)
                         .withScale(frameRequest.getScale())
                         .withRequestedClips(frameRequest.getRequestedClips())
+                        .withCurrentTimelineClip(this)
+                        .withEffectChannel(effectChannelIndex)
                         .build();
 
                 ReadOnlyClipImage appliedEffectsResult = effect.createFrame(request);
@@ -78,6 +85,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 
                 frameResult = appliedEffectsResult;
+                ++effectChannelIndex;
             }
         }
         return frameResult;

@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Generated;
 
@@ -14,6 +15,7 @@ public class GetFrameRequest {
     private int expectedWidth;
     private int expectedHeight;
     private boolean applyEffects;
+    private Optional<Integer> applyEffectsLessThanEffectChannel;
     private Map<String, ReadOnlyClipImage> requestedClips;
 
     @Generated("SparkTools")
@@ -24,6 +26,7 @@ public class GetFrameRequest {
         this.expectedWidth = builder.expectedWidth;
         this.expectedHeight = builder.expectedHeight;
         this.applyEffects = builder.applyEffects;
+        this.applyEffectsLessThanEffectChannel = builder.applyEffectsLessThanEffectChannel;
         this.requestedClips = builder.requestedClips;
     }
 
@@ -55,6 +58,10 @@ public class GetFrameRequest {
         return requestedClips;
     }
 
+    public Optional<Integer> getApplyEffectsLessThanEffectChannel() {
+        return applyEffectsLessThanEffectChannel;
+    }
+
     public TimelinePosition calculateRelativePositionFrom(IntervalAware intervalAware) {
         if (relativePosition != null) {
             return relativePosition;
@@ -76,6 +83,7 @@ public class GetFrameRequest {
         private int expectedWidth;
         private int expectedHeight;
         private boolean applyEffects;
+        private Optional<Integer> applyEffectsLessThanEffectChannel = Optional.empty();
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
 
         private Builder() {
@@ -108,6 +116,11 @@ public class GetFrameRequest {
 
         public Builder withApplyEffects(boolean applyEffects) {
             this.applyEffects = applyEffects;
+            return this;
+        }
+
+        public Builder withApplyEffectsLessThanEffectChannel(Optional<Integer> applyEffectsLessThanEffectChannel) {
+            this.applyEffectsLessThanEffectChannel = applyEffectsLessThanEffectChannel;
             return this;
         }
 

@@ -40,6 +40,7 @@ import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAppli
 import com.helospark.tactview.core.timeline.effect.lut.LutEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutProviderService;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
+import com.helospark.tactview.core.timeline.effect.motionblur.GhostingEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
 import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
@@ -346,6 +347,16 @@ public class StandardEffectConfiguration {
                 .withFactory(request -> new LutEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, lutProviderService))
                 .withName("LUT")
                 .withSupportedEffectId("lut")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory ghostingEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new GhostingEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withName("ghosting")
+                .withSupportedEffectId("ghosting")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

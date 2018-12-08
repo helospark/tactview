@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class StatelessEffectRequest {
@@ -13,7 +14,9 @@ public class StatelessEffectRequest {
     private TimelinePosition clipPosition;
     private TimelinePosition effectPosition;
     private double scale;
+    private int effectChannel;
     private Map<String, ReadOnlyClipImage> requestedClips;
+    private VisualTimelineClip currentTimelineClip;
 
     @Generated("SparkTools")
     private StatelessEffectRequest(Builder builder) {
@@ -21,7 +24,9 @@ public class StatelessEffectRequest {
         this.clipPosition = builder.clipPosition;
         this.effectPosition = builder.effectPosition;
         this.scale = builder.scale;
+        this.effectChannel = builder.effectChannel;
         this.requestedClips = builder.requestedClips;
+        this.currentTimelineClip = builder.currentTimelineClip;
     }
 
     public ReadOnlyClipImage getCurrentFrame() {
@@ -40,8 +45,21 @@ public class StatelessEffectRequest {
         return scale;
     }
 
+    public int getEffectChannel() {
+        return effectChannel;
+    }
+
     public Map<String, ReadOnlyClipImage> getRequestedClips() {
         return requestedClips;
+    }
+
+    /**
+     * @deprecated Returning the entire clip is not a good idea, we should return a simplified view or bridge class here and/or move to the request base image request
+     * that are satisfied by the render engine, however for know this will work, and when the requirements clearer and the renderengine is cleaned up a bit it will move there.
+     */
+    @Deprecated
+    public VisualTimelineClip getCurrentTimelineClip() {
+        return currentTimelineClip;
     }
 
     @Generated("SparkTools")
@@ -55,7 +73,9 @@ public class StatelessEffectRequest {
         private TimelinePosition clipPosition;
         private TimelinePosition effectPosition;
         private double scale;
+        private int effectChannel;
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
+        private VisualTimelineClip currentTimelineClip;
 
         private Builder() {
         }
@@ -80,8 +100,23 @@ public class StatelessEffectRequest {
             return this;
         }
 
+        public Builder withEffectChannel(int effectChannel) {
+            this.effectChannel = effectChannel;
+            return this;
+        }
+
         public Builder withRequestedClips(Map<String, ReadOnlyClipImage> requestedClips) {
             this.requestedClips = requestedClips;
+            return this;
+        }
+
+        /**
+         * @deprecated Returning the entire clip is not a good idea, we should return a simplified view or bridge class here and/or move to the request base image request
+         * that are satisfied by the render engine, however for know this will work, and when the requirements clearer and the renderengine is cleaned up a bit it will move there.
+         */
+        @Deprecated
+        public Builder withCurrentTimelineClip(VisualTimelineClip currentTimelineClip) {
+            this.currentTimelineClip = currentTimelineClip;
             return this;
         }
 
