@@ -3,10 +3,14 @@ package com.helospark.tactview.core.timeline;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.decoder.AudioMediaDataRequest;
 import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
+import com.helospark.tactview.core.decoder.ffmpeg.audio.AVCodecAudioMediaDecoderDecorator;
+import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class SoundClip extends AudibleTimelineClip {
     private AudioMediaDecoder mediaDecoder;
@@ -19,6 +23,13 @@ public class SoundClip extends AudibleTimelineClip {
         this.mediaDecoder = mediaDecoder;
         this.backingSource = backingSource;
         this.startPosition = startPosition;
+    }
+
+    public SoundClip(AudioMediaMetadata metadata, AVCodecAudioMediaDecoderDecorator mediaDecoder, AudioMediaSource videoSource, JsonNode savedClip) {
+        super(metadata, savedClip);
+        this.mediaDecoder = mediaDecoder;
+        this.backingSource = videoSource;
+        this.startPosition = StaticObjectMapper.toValue(savedClip, "startPosition", TimelinePosition.class);
     }
 
     @Override
@@ -52,6 +63,11 @@ public class SoundClip extends AudibleTimelineClip {
     @Override
     public TimelineClip cloneClip() {
         return new SoundClip(mediaMetadata, mediaDecoder, backingSource, interval.getStartPosition(), interval.getLength());
+    }
+
+    @Override
+    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
+        savedContent.put("startPosition", savedContent);
     }
 
 }

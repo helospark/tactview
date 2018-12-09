@@ -18,14 +18,13 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.Saveable;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
-import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
@@ -49,7 +48,7 @@ import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMess
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
-public class TimelineManager implements Saveable {
+public class TimelineManager {
     private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     // state
     private List<StatelessVideoEffect> globalEffects;
@@ -59,16 +58,16 @@ public class TimelineManager implements Saveable {
     private Logger logger;
 
     // stateless
-    private List<EffectFactory> effectFactoryChain;
     private MessagingService messagingService;
     private ClipFactoryChain clipFactoryChain;
     private FrameBufferMerger frameBufferMerger;
     private ObjectMapper objectMapper;
     private AudioBufferMerger audioBufferMerger;
     private ProjectRepository projectRepository;
+    private EffectFactoryChain effectFactoryChain;
 
     public TimelineManager(FrameBufferMerger frameBufferMerger,
-            List<EffectFactory> effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
+            EffectFactoryChain effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
             ObjectMapper objectMapper, AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository) {
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
@@ -386,11 +385,7 @@ public class TimelineManager implements Saveable {
 
     private StatelessEffect createEffect(String effectId, TimelinePosition position, TimelineClip clipById) {
         CreateEffectRequest request = new CreateEffectRequest(position, effectId, clipById.getType());
-        return effectFactoryChain.stream()
-                .filter(effectFactory -> effectFactory.doesSupport(request))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No factory for " + effectId))
-                .createEffect(request);
+        return effectFactoryChain.createEffect(request);
     }
 
     public void removeResource(String clipId) {
@@ -419,13 +414,17 @@ public class TimelineManager implements Saveable {
 
     public TimelineChannel createChannel(int index) {
         TimelineChannel channelToInsert = new TimelineChannel();
+        createChannel(index, channelToInsert);
+        return channelToInsert;
+    }
+
+    private void createChannel(int index, TimelineChannel channelToInsert) {
         if (index >= 0 && index < channels.size()) {
             channels.add(index, channelToInsert);
         } else {
             channels.add(channelToInsert);
         }
         messagingService.sendAsyncMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert)));
-        return channelToInsert;
     }
 
     public void removeChannel(String channelId) {
@@ -576,16 +575,41 @@ public class TimelineManager implements Saveable {
         addClip(channel, cuttedParts.get(1));
     }
 
-    @Override
-    public String generateSavedContent() {
+    public void generateSavedContent(Map<String, Object> generatedContent) {
+        List<Object> channelContent = new ArrayList<>();
         for (TimelineChannel channel : channels) {
-            channel.generateSavedContent();
+            channelContent.add(channel.generateSavedContent());
         }
-        return null;
+        generatedContent.put("channels", channelContent);
     }
 
-    @Override
-    public void loadContent(String data, String id, String version) {
+    public void loadFrom(JsonNode tree) {
+        for (var channelToRemove : channels) {
+            removeChannel(channelToRemove.getId());
+        }
+        JsonNode savedChannels = tree.get("channels");
+
+        int i = 0;
+        for (var savedChannel : savedChannels) {
+            TimelineChannel createdChannel = new TimelineChannel(savedChannel);
+            createChannel(i++, createdChannel);
+
+            JsonNode clips = savedChannel.get("clips");
+            for (var savedClip : clips) {
+                TimelineClip restoredClip = clipFactoryChain.restoreClip(savedClip);
+
+                JsonNode savedEffectChannels = savedClip.get("effectChannels");
+                int channelId = 0;
+                for (var savedEffectChannel : savedEffectChannels) {
+                    for (var savedEffect : savedEffectChannel) {
+                        StatelessEffect restoredEffect = effectFactoryChain.restoreEffect(savedEffect);
+                        restoredClip.addEffectAtChannel(channelId, restoredEffect);
+                    }
+                    ++channelId;
+                }
+                addClip(createdChannel, restoredClip);
+            }
+        }
 
     }
 

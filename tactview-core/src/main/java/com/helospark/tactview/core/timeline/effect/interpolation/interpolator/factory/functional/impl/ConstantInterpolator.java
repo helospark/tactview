@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolator {
     private double value;
@@ -37,4 +39,10 @@ public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolato
     public ConstantInterpolator deepClone() {
         return new ConstantInterpolator(value);
     }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends EffectInterpolator>> generateSerializableContent() {
+        return ConstantInterpolatorFactory.class;
+    }
+
 }

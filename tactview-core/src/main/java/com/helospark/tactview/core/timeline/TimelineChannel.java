@@ -2,15 +2,38 @@ package com.helospark.tactview.core.timeline;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class TimelineChannel {
     private NonIntersectingIntervalList<TimelineClip> clips = new NonIntersectingIntervalList<>();
     private String id = UUID.randomUUID().toString();
+
+    public TimelineChannel(JsonNode savedChannel) {
+        this.id = savedChannel.get("id").asText();
+    }
+
+    public TimelineChannel() {
+
+    }
+
+    public Map<String, Object> generateSavedContent() {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("id", id);
+        List<Object> serializedClips = new ArrayList<>();
+        for (TimelineClip clip : clips) {
+            serializedClips.add(clip.generateSavedContent());
+        }
+        result.put("clips", serializedClips);
+        return result;
+    }
 
     public boolean canAddResourceAt(TimelinePosition position, TimelineLength length) {
         return clips.canAddInterval(new TimelineInterval(position, length));
@@ -95,12 +118,6 @@ public class TimelineChannel {
         TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(position) : originalInterval.butWithEndPosition(position);
 
         return clips.resize(clip, newInterval);
-    }
-
-    public void generateSavedContent() {
-        for (TimelineClip clip : clips) {
-            clip.generateSavedContent();
-        }
     }
 
     public List<TimelineInterval> findSpecialPositionsAround(TimelinePosition position, TimelineLength length, String excludeId) {

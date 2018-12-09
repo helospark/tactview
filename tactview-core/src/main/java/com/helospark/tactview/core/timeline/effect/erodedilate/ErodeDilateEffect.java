@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.erodedilate;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -34,6 +35,11 @@ public class ErodeDilateEffect extends StatelessVideoEffect {
     public ErodeDilateEffect(ErodeDilateEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public ErodeDilateEffect(JsonNode node, OpenCVErodeDilateImplementation openCVErodeDilateImplementation) {
+        super(node);
+        this.implementation = openCVErodeDilateImplementation;
     }
 
     @Override

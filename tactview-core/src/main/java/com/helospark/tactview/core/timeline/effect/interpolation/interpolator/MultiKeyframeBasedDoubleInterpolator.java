@@ -8,6 +8,7 @@ import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingDoubleInterpolator {
     protected TreeMap<TimelinePosition, Double> values;
@@ -109,6 +110,11 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
         result.values = newValues;
         result.interpolatorImplementation = newInterpolatorImplementation;
         return result;
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends EffectInterpolator>> generateSerializableContent() {
+        return MultiKeyframeBasedDoubleInterpolatorFactory.class;
     }
 
 }

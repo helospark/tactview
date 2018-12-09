@@ -4,9 +4,10 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class BooleanProvider extends KeyframeableEffect {
-    private DoubleInterpolator doubleInterpolator;
+    DoubleInterpolator doubleInterpolator;
 
     public BooleanProvider(DoubleInterpolator doubleInterpolator) {
         this.doubleInterpolator = doubleInterpolator;
@@ -40,6 +41,11 @@ public class BooleanProvider extends KeyframeableEffect {
     @Override
     public BooleanProvider deepClone() {
         return new BooleanProvider(doubleInterpolator.deepClone());
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+        return BooleanProviderFactory.class;
     }
 
 }

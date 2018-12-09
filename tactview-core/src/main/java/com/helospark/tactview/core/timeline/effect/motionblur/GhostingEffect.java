@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -37,6 +38,11 @@ public class GhostingEffect extends StatelessVideoEffect {
     public GhostingEffect(GhostingEffect ghostingEffect) {
         super(ghostingEffect);
         ReflectionUtil.copyOrCloneFieldFromTo(ghostingEffect, this);
+    }
+
+    public GhostingEffect(JsonNode node, IndependentPixelOperation independentPixelOperation2) {
+        super(node);
+        this.independentPixelOperation = independentPixelOperation2;
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -37,6 +38,11 @@ public class BlurEffect extends StatelessVideoEffect {
     public BlurEffect(BlurEffect blurEffect) {
         super(blurEffect);
         ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
+    }
+
+    public BlurEffect(JsonNode node, BlurService blurService2) {
+        super(node);
+        this.blurService = blurService2;
     }
 
     @Override

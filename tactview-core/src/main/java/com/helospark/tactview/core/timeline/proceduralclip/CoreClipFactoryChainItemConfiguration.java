@@ -20,18 +20,21 @@ import com.helospark.tactview.core.util.brush.ScaledBrushProvider;
 
 @Configuration
 public class CoreClipFactoryChainItemConfiguration {
+    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
+    ImageMetadata metadata = ImageMetadata.builder()
+            .withWidth(1920)
+            .withHeight(1080)
+            .withLength(defaultLength)
+            .build();
 
     @Bean
     public StandardProceduralClipFactoryChainItem singleColorProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("singlecolor", "Single color",
                 request -> {
-                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
-                    ImageMetadata metadata = ImageMetadata.builder()
-                            .withWidth(1920)
-                            .withHeight(1080)
-                            .withLength(defaultLength)
-                            .build();
                     return new SingleColorProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                node -> {
+                    return new SingleColorProceduralClip(metadata, node, independentPixelOperation);
                 });
     }
 
@@ -39,13 +42,10 @@ public class CoreClipFactoryChainItemConfiguration {
     public StandardProceduralClipFactoryChainItem textProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
         return new StandardProceduralClipFactoryChainItem("text", "Text",
                 request -> {
-                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
-                    ImageMetadata metadata = ImageMetadata.builder()
-                            .withWidth(1920)
-                            .withHeight(1080)
-                            .withLength(defaultLength)
-                            .build();
                     return new TextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter);
+                },
+                node -> {
+                    return new TextProceduralClip(metadata, node, bufferedImageToClipFrameResultConverter);
                 });
     }
 
@@ -53,13 +53,10 @@ public class CoreClipFactoryChainItemConfiguration {
     public StandardProceduralClipFactoryChainItem gradientProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("radialgradient", "Radial gradient",
                 request -> {
-                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
-                    ImageMetadata metadata = ImageMetadata.builder()
-                            .withWidth(1920)
-                            .withHeight(1080)
-                            .withLength(defaultLength)
-                            .build();
                     return new RadialGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                node -> {
+                    return new RadialGradientProceduralEffect(metadata, node, independentPixelOperation);
                 });
     }
 
@@ -67,13 +64,10 @@ public class CoreClipFactoryChainItemConfiguration {
     public StandardProceduralClipFactoryChainItem linearProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("lineargradient", "Linear gradient",
                 request -> {
-                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
-                    ImageMetadata metadata = ImageMetadata.builder()
-                            .withWidth(1920)
-                            .withHeight(1080)
-                            .withLength(defaultLength)
-                            .build();
                     return new LinearGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                node -> {
+                    return new LinearGradientProceduralEffect(metadata, node, independentPixelOperation);
                 });
     }
 
@@ -81,13 +75,10 @@ public class CoreClipFactoryChainItemConfiguration {
     public StandardProceduralClipFactoryChainItem gaussianNoiseProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("gaussianNoise", "Gaussian noise",
                 request -> {
-                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
-                    ImageMetadata metadata = ImageMetadata.builder()
-                            .withWidth(1920)
-                            .withHeight(1080)
-                            .withLength(defaultLength)
-                            .build();
                     return new GaussianNoiseProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                node -> {
+                    return new GaussianNoiseProceduralClip(metadata, node, independentPixelOperation);
                 });
     }
 
@@ -96,14 +87,11 @@ public class CoreClipFactoryChainItemConfiguration {
             AlphaBlitService alphaBlitService, NormalBlendModeStrategy normalBlendModeStrategy, ScaledBrushProvider scaledBrushProvider, BresenhemPixelProvider bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("drawnhighlight", "Drawn highlight",
                 request -> {
-                    TimelineLength defaultLength = TimelineLength.ofMillis(30000);
-                    ImageMetadata metadata = ImageMetadata.builder()
-                            .withWidth(1920)
-                            .withHeight(1080)
-                            .withLength(defaultLength)
-                            .build();
                     return new DrawnHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), scaledBrushProvider, normalBlendModeStrategy, alphaBlitService,
                             bresenhemPixelProvider);
+                },
+                node -> {
+                    return new DrawnHighlightProceduralEffect(metadata, node, scaledBrushProvider, normalBlendModeStrategy, alphaBlitService, bresenhemPixelProvider);
                 });
     }
 }

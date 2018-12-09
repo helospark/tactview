@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -16,6 +17,11 @@ public abstract class AudibleTimelineClip extends TimelineClip {
     public AudibleTimelineClip(TimelineInterval interval, AudioMediaMetadata mediaMetadata) {
         super(interval, TimelineClipType.AUDIO);
         this.mediaMetadata = mediaMetadata;
+    }
+
+    public AudibleTimelineClip(AudioMediaMetadata metadata, JsonNode savedClip) {
+        super(savedClip);
+        this.mediaMetadata = metadata;
     }
 
     @Override

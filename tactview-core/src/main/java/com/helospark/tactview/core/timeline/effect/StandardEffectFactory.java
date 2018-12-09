@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import javax.annotation.Generated;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 
@@ -15,6 +16,7 @@ public class StandardEffectFactory implements EffectFactory {
     private String supportedEffectId;
     private String name;
     private Function<CreateEffectRequest, StatelessEffect> factory;
+    private Function<JsonNode, StatelessEffect> restoreFactory;
 
     @Generated("SparkTools")
     private StandardEffectFactory(Builder builder) {
@@ -22,6 +24,7 @@ public class StandardEffectFactory implements EffectFactory {
         this.supportedEffectId = builder.supportedEffectId;
         this.name = builder.name;
         this.factory = builder.factory;
+        this.restoreFactory = builder.restoreFactory;
     }
 
     @Override
@@ -34,6 +37,11 @@ public class StandardEffectFactory implements EffectFactory {
         StatelessEffect result = factory.apply(request);
 
         return result;
+    }
+
+    @Override
+    public StatelessEffect restoreEffect(JsonNode node) {
+        return restoreFactory.apply(node);
     }
 
     @Override
@@ -57,6 +65,7 @@ public class StandardEffectFactory implements EffectFactory {
         private String supportedEffectId;
         private String name;
         private Function<CreateEffectRequest, StatelessEffect> factory;
+        private Function<JsonNode, StatelessEffect> restoreFactory;
 
         private Builder() {
         }
@@ -78,6 +87,11 @@ public class StandardEffectFactory implements EffectFactory {
 
         public Builder withFactory(Function<CreateEffectRequest, StatelessEffect> factory) {
             this.factory = factory;
+            return this;
+        }
+
+        public Builder withRestoreFactory(Function<JsonNode, StatelessEffect> restoreFactory) {
+            this.restoreFactory = restoreFactory;
             return this;
         }
 

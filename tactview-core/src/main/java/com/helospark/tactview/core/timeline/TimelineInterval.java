@@ -1,11 +1,15 @@
 package com.helospark.tactview.core.timeline;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class TimelineInterval {
     private TimelinePosition startPosition;
     private TimelineLength length;
+    @JsonIgnore
     private TimelinePosition endPosition;
 
-    public TimelineInterval(TimelinePosition startPosition, TimelineLength length) {
+    public TimelineInterval(@JsonProperty("startPosition") TimelinePosition startPosition, @JsonProperty("length") TimelineLength length) {
         this.startPosition = startPosition;
         this.length = length;
         this.endPosition = startPosition.add(length);

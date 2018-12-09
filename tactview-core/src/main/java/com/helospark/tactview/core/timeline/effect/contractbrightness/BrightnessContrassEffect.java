@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.contractbrightness;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -26,6 +27,11 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
     public BrightnessContrassEffect(BrightnessContrassEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public BrightnessContrassEffect(JsonNode node, BrignessContrastService brignessContrastService2) {
+        super(node);
+        this.brignessContrastService = brignessContrastService2;
     }
 
     @Override

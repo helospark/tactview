@@ -7,6 +7,8 @@ import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -43,6 +45,11 @@ public class LinearGradientProceduralEffect extends ProceduralVisualClip {
     public LinearGradientProceduralEffect(LinearGradientProceduralEffect linearProceduralEffect) {
         super(linearProceduralEffect);
         ReflectionUtil.copyOrCloneFieldFromTo(linearProceduralEffect, this);
+    }
+
+    public LinearGradientProceduralEffect(ImageMetadata metadata, JsonNode node, IndependentPixelOperation independentPixelOperation2) {
+        super(metadata, node);
+        this.independentPixelOperation = independentPixelOperation2;
     }
 
     @Override

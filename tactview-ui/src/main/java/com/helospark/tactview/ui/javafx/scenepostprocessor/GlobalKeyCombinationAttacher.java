@@ -8,12 +8,27 @@ import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
 import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
+import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.util.StaticObjectMapper;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -40,21 +55,24 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     private RemoveClipService removeClipService;
     private RemoveEffectService removeEffectService;
     private ClipCutService clipCutService;
-    private UiTimelineManager timelineManager;
+    private UiTimelineManager uiTimelineManager;
     private CopyPasteRepository copyPasteRepository;
     private LightDiContext context;
+    private TimelineManager timelineManager;
 
     public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository,
             RemoveClipService removeClipService,
             RemoveEffectService removeEffectService, ClipCutService clipCutService,
             CopyPasteRepository copyPasteRepository,
-            UiTimelineManager timelineManager) {
+            UiTimelineManager uiTimelineManager,
+            TimelineManager timelineManager) {
         this.commandInterpreter = commandInterpreter;
         this.keyCombinationRepository = keyCombinationRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.removeClipService = removeClipService;
         this.removeEffectService = removeEffectService;
         this.clipCutService = clipCutService;
+        this.uiTimelineManager = uiTimelineManager;
         this.timelineManager = timelineManager;
         this.copyPasteRepository = copyPasteRepository;
     }
@@ -76,6 +94,50 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
 
     private void setupDefaultKeyCombinations() {
         // TODO: this should be only done if the user has not changed them
+        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.S),
+                useHandler("Undo", event -> {
+                    try {
+                        Map<String, Object> result = new LinkedHashMap<>();
+
+                        timelineManager.generateSavedContent(result);
+
+                        //                        result = processMap(result);
+
+                        ObjectMapper mapper = StaticObjectMapper.objectMapper;
+                        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+                        String safdsg = mapper.writeValueAsString(result);
+                        File file = new File("/tmp/" + System.currentTimeMillis() + ".json");
+                        new FileOutputStream(file).write(safdsg.getBytes());
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }));
+        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.L),
+                useHandler("Undo", event -> {
+                    try {
+                        ObjectMapper mapper = StaticObjectMapper.objectMapper;
+
+                        TypeReference<LinkedHashMap<String, Object>> typeRef = new TypeReference<LinkedHashMap<String, Object>>() {
+                        };
+
+                        String content = new String(Files.readAllBytes(Paths.get("/tmp/1544386271370.json")), StandardCharsets.UTF_8);
+
+                        JsonNode tree = mapper.readTree(content);
+
+                        timelineManager.loadFrom(tree);
+
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }));
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, Z),
                 useHandler("Undo", event -> commandInterpreter.revertLast()));
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, SHIFT_DOWN, Z),
@@ -97,11 +159,11 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                 }));
         keyCombinationRepository.registerKeyCombination(on(LEFT),
                 useHandler("Back one frame", event -> {
-                    timelineManager.moveBackOneFrame();
+                    uiTimelineManager.moveBackOneFrame();
                 }));
         keyCombinationRepository.registerKeyCombination(on(KeyCode.RIGHT),
                 useHandler("Back one frame", event -> {
-                    timelineManager.moveForwardOneFrame();
+                    uiTimelineManager.moveForwardOneFrame();
                 }));
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.C),
                 useHandler("Copy", event -> {
@@ -126,6 +188,35 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                         copyPasteRepository.pasteOnExistingEffect(selectedClipIds.get(0));
                     }
                 }));
+    }
+
+    private Map<String, Object> processMap(Map<String, Object> result) {
+        try {
+            return whoMadeCheckedExceptionsssss(result);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<String, Object> whoMadeCheckedExceptionsssss(Map<String, Object> result) throws InstantiationException, IllegalAccessException {
+        int i = 0;
+        for (i = 0; i < 1000; ++i) {
+            boolean hasChange = false;
+            Map<String, Object> tempMap = new LinkedHashMap<>();
+            for (var entry : result.entrySet()) {
+
+            }
+            result.clear();
+            result.putAll(tempMap);
+            tempMap.clear();
+            if (!hasChange) {
+                break;
+            }
+        }
+        if (i >= 1000) {
+            throw new RuntimeException("Infinite loop?");
+        }
+        return result;
     }
 
     private KeyCodeCombination on(KeyCode code) {

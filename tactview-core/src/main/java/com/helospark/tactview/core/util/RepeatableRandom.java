@@ -3,11 +3,15 @@ package com.helospark.tactview.core.util;
 import java.math.BigDecimal;
 import java.util.Random;
 
-public class RepeatableRandom {
-    private int seed;
+public class RepeatableRandom implements SavedContentAddable<RepeatableRandom> {
+    int seed;
 
     public RepeatableRandom() {
         seed = new Random().nextInt();
+    }
+
+    public RepeatableRandom(int seed) {
+        this.seed = seed;
     }
 
     public int nextInt(BigDecimal position) {
@@ -49,6 +53,11 @@ public class RepeatableRandom {
         for (int i = 0; i < result.length; ++i) {
             result[i] = random.nextGaussian();
         }
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<RepeatableRandom>> generateSerializableContent() {
+        return RepeatableRandomFactory.class;
     }
 
 }

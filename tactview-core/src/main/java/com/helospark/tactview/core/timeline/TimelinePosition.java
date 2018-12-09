@@ -6,11 +6,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class TimelinePosition implements SecondsAware, Comparable<TimelinePosition> {
     private static final TimelinePosition ZERO_POSITION = new TimelinePosition(BigDecimal.ZERO);
     private BigDecimal seconds;
 
-    public TimelinePosition(BigDecimal seconds) {
+    public TimelinePosition(@JsonProperty("seconds") BigDecimal seconds) {
         this.seconds = seconds;
     }
 
@@ -74,8 +76,9 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
     }
 
     @Override
+    //    @JsonValue
     public String toString() {
-        return "TimelinePosition [seconds=" + seconds + "]";
+        return seconds.toString();
     }
 
     @Override

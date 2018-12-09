@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.television;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -27,6 +28,11 @@ public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
     public TelevisionRgbLinesEffect(TelevisionRgbLinesEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public TelevisionRgbLinesEffect(JsonNode node, IndependentPixelOperation independentPixelOperation2) {
+        super(node);
+        this.independentPixelOperation = independentPixelOperation2;
     }
 
     @Override

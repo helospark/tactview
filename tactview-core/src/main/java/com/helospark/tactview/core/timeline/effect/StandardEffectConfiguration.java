@@ -65,6 +65,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory blurEffect(BlurService blurService, MessagingService messagingService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new BlurEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), blurService))
+                .withRestoreFactory(node -> new BlurEffect(node, blurService))
                 .withName("Gaussian blur")
                 .withSupportedEffectId("gaussianblur")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -72,9 +73,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory desaturizeEffect(OpenCVBasedGaussianBlur gaussianBlur, MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
+    public StandardEffectFactory desaturizeEffect(OpenCVBasedGaussianBlur gaussianBlur, IndependentPixelOperation independentPixelOperations) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new DesaturizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
+                .withRestoreFactory(node -> new DesaturizeEffect(node, independentPixelOperations))
                 .withName("Desaturize")
                 .withSupportedEffectId("desaturize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -85,6 +87,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory scaleEffect(ScaleService scaleService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ScaleEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService))
+                .withRestoreFactory(node -> new ScaleEffect(node, scaleService))
                 .withName("Scale")
                 .withSupportedEffectId("scale")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -92,9 +95,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory rotateEffect(OpenCVRotateEffectImplementation implementation, MessagingService messagingService) {
+    public StandardEffectFactory rotateEffect(OpenCVRotateEffectImplementation implementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new RotateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withRestoreFactory(node -> new RotateEffect(node, implementation))
                 .withName("Rotate")
                 .withSupportedEffectId("rotate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -102,9 +106,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory brightnessContrastEffect(MessagingService messagingService, BrignessContrastService brignessContrastService) {
+    public StandardEffectFactory brightnessContrastEffect(BrignessContrastService brignessContrastService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new BrightnessContrassEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), brignessContrastService))
+                .withRestoreFactory(node -> new BrightnessContrassEffect(node, brignessContrastService))
                 .withName("Brightness")
                 .withSupportedEffectId("brightesscontrast")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -112,9 +117,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory gammaEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
+    public StandardEffectFactory gammaEffect(IndependentPixelOperation independentPixelOperations) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new GammaEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
+                .withRestoreFactory(node -> new GammaEffect(node, independentPixelOperations))
                 .withName("Gamma")
                 .withSupportedEffectId("gamma")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -122,9 +128,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory invertEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperations) {
+    public StandardEffectFactory invertEffect(IndependentPixelOperation independentPixelOperations) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new InvertEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
+                .withRestoreFactory(node -> new InvertEffect(node, independentPixelOperations))
                 .withName("Invert")
                 .withSupportedEffectId("invert")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -132,9 +139,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory denoiseEffect(MessagingService messagingService, OpenCVBasedDenoiseEffect openCVBasedDenoiseEffect) {
+    public StandardEffectFactory denoiseEffect(OpenCVBasedDenoiseEffect openCVBasedDenoiseEffect) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new DenoiseEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVBasedDenoiseEffect))
+                .withRestoreFactory(node -> new DenoiseEffect(node, openCVBasedDenoiseEffect))
                 .withName("Denoise")
                 .withSupportedEffectId("denoise")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -142,9 +150,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory adaptiveThresholdEffect(MessagingService messagingService, OpenCVThresholdImplementation openCVThresholdImplementation) {
+    public StandardEffectFactory adaptiveThresholdEffect(OpenCVThresholdImplementation openCVThresholdImplementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new AdaptiveThresholdEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVThresholdImplementation))
+                .withRestoreFactory(node -> new AdaptiveThresholdEffect(node, openCVThresholdImplementation))
                 .withName("Adaptive threshold")
                 .withSupportedEffectId("adaptivethreshold")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -152,9 +161,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory thresholdEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory thresholdEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new SimpleThresholdEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new SimpleThresholdEffect(node, independentPixelOperation))
                 .withName("Threshold")
                 .withSupportedEffectId("threshold")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -162,9 +172,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory mirrorEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory mirrorEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new MirrorEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new MirrorEffect(node, independentPixelOperation))
                 .withName("Mirror")
                 .withSupportedEffectId("mirror")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -172,9 +183,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory colorize(MessagingService messagingService, IndependentPixelOperation independentPixelOperation, ColorizeService colorizeService) {
+    public StandardEffectFactory colorize(ColorizeService colorizeService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ColorizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), colorizeService))
+                .withRestoreFactory(node -> new ColorizeEffect(node, colorizeService))
                 .withName("Colorize")
                 .withSupportedEffectId("colorize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -182,9 +194,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory pixelize(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory pixelize(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new PixelizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new PixelizeEffect(node, independentPixelOperation))
                 .withName("Pixelize")
                 .withSupportedEffectId("pixelize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -192,9 +205,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory erodeDilate(MessagingService messagingService, OpenCVErodeDilateImplementation openCVErodeDilateImplementation) {
+    public StandardEffectFactory erodeDilate(OpenCVErodeDilateImplementation openCVErodeDilateImplementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ErodeDilateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVErodeDilateImplementation))
+                .withRestoreFactory(node -> new ErodeDilateEffect(node, openCVErodeDilateImplementation))
                 .withName("Erode/Dilate")
                 .withSupportedEffectId("erodedilate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -202,9 +216,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory edgeDetect(MessagingService messagingService, OpenCVEdgeDetectImplementation openCVEdgeDetectImplementation) {
+    public StandardEffectFactory edgeDetect(OpenCVEdgeDetectImplementation openCVEdgeDetectImplementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new EdgeDetectEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVEdgeDetectImplementation))
+                .withRestoreFactory(node -> new EdgeDetectEffect(node, openCVEdgeDetectImplementation))
                 .withName("Edge detect")
                 .withSupportedEffectId("edgedetect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -212,9 +227,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory greenScreen(MessagingService messagingService, OpenCVGreenScreenImplementation openCVGreenScreenImplementation) {
+    public StandardEffectFactory greenScreen(OpenCVGreenScreenImplementation openCVGreenScreenImplementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new GreenScreenEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVGreenScreenImplementation))
+                .withRestoreFactory(node -> new GreenScreenEffect(node, openCVGreenScreenImplementation))
                 .withName("Green screen")
                 .withSupportedEffectId("greenscreen")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -222,9 +238,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory equizeHistogram(MessagingService messagingService, OpenCVHistogramEquizerImplementation implementation) {
+    public StandardEffectFactory equizeHistogram(OpenCVHistogramEquizerImplementation implementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new HistogramEquizationEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withRestoreFactory(node -> new HistogramEquizationEffect(node, implementation))
                 .withName("Equize histogram")
                 .withSupportedEffectId("equize histogram")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -232,9 +249,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory cartoonEffect(MessagingService messagingService, OpenCVCartoonEffectImplementation implementation) {
+    public StandardEffectFactory cartoonEffect(OpenCVCartoonEffectImplementation implementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new CartoonEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withRestoreFactory(node -> new CartoonEffect(node, implementation))
                 .withName("Cartoon")
                 .withSupportedEffectId("cartoon")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -242,9 +260,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory pencilSketch(MessagingService messagingService, OpenCVPencilSketchImplementation implementation) {
+    public StandardEffectFactory pencilSketch(OpenCVPencilSketchImplementation implementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new PencilSketchEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withRestoreFactory(node -> new PencilSketchEffect(node, implementation))
                 .withName("Pencil")
                 .withSupportedEffectId("pencil")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -252,9 +271,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory warpEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory warpEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new TrigonometricWrapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new TrigonometricWrapEffect(node, independentPixelOperation))
                 .withName("Warp")
                 .withSupportedEffectId("warp")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -262,9 +282,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory televisionRgbLinesEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory televisionRgbLinesEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new TelevisionRgbLinesEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new TelevisionRgbLinesEffect(node, independentPixelOperation))
                 .withName("Television RGB")
                 .withSupportedEffectId("televisionrgb")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -272,9 +293,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory lightGlowEffect(MessagingService messagingService, IndependentPixelOperation independentPixelOperation, OpenCVBasedGaussianBlur blueImplementation) {
+    public StandardEffectFactory lightGlowEffect(IndependentPixelOperation independentPixelOperation, OpenCVBasedGaussianBlur blueImplementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LightGlowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), blueImplementation, independentPixelOperation))
+                .withRestoreFactory(node -> new LightGlowEffect(node, blueImplementation, independentPixelOperation))
                 .withName("Light glow")
                 .withSupportedEffectId("lightglow")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -285,6 +307,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory vignetteEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new VignetteEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new VignetteEffect(node, independentPixelOperation))
                 .withName("Vignette")
                 .withSupportedEffectId("vignette")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -295,6 +318,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory colorChannelChangeEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ColorChannelChangeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new ColorChannelChangeEffect(node, independentPixelOperation))
                 .withName("Colorchannel change")
                 .withSupportedEffectId("colorchannelchange")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -305,6 +329,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory displacementMapEffect(ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new DisplacementMapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService, independentPixelOperation))
+                .withRestoreFactory(node -> new DisplacementMapEffect(node, scaleService, independentPixelOperation))
                 .withName("Displacement map")
                 .withSupportedEffectId("displacementmap")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -312,9 +337,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory layerMaskEffect(ScaleService scaleService, LayerMaskApplier layerMaskApplier, List<LayerMaskAlphaCalculator> calculators) {
+    public StandardEffectFactory layerMaskEffect(LayerMaskApplier layerMaskApplier, List<LayerMaskAlphaCalculator> calculators) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LayerMaskEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), layerMaskApplier, calculators))
+                .withRestoreFactory(node -> new LayerMaskEffect(node, layerMaskApplier, calculators))
                 .withName("Layer mask")
                 .withSupportedEffectId("layermaskeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -325,6 +351,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory cropEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new CropEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new CropEffect(node, independentPixelOperation))
                 .withName("Crop")
                 .withSupportedEffectId("cropeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -336,6 +363,7 @@ public class StandardEffectConfiguration {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ColorBalanceEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, brignessContrastService,
                         colorizeService))
+                .withRestoreFactory(node -> new ColorBalanceEffect(node, independentPixelOperation, brignessContrastService, colorizeService))
                 .withName("Color balance")
                 .withSupportedEffectId("colorbalance")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -346,6 +374,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory lutEffect(IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LutEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, lutProviderService))
+                .withRestoreFactory(node -> new LutEffect(node, independentPixelOperation, lutProviderService))
                 .withName("LUT")
                 .withSupportedEffectId("lut")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -356,6 +385,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory ghostingEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new GhostingEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory(node -> new GhostingEffect(node, independentPixelOperation))
                 .withName("ghosting")
                 .withSupportedEffectId("ghosting")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -366,6 +396,7 @@ public class StandardEffectConfiguration {
     public StandardEffectFactory dropShadowEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new DropShadowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, blurService))
+                .withRestoreFactory(node -> new DropShadowEffect(node, independentPixelOperation, blurService))
                 .withName("Drop Shadow")
                 .withSupportedEffectId("dropshadow")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))

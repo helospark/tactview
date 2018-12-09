@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class StringInterpolator implements EffectInterpolator {
     private String defaultValue;
@@ -63,4 +64,10 @@ public class StringInterpolator implements EffectInterpolator {
 
         return result;
     }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends EffectInterpolator>> generateSerializableContent() {
+        return StringInterpolatorFactory.class;
+    }
+
 }

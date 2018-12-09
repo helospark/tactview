@@ -3,23 +3,26 @@ package com.helospark.tactview.core.timeline.proceduralclip;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.AddClipRequest;
-import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.TimelineClip;
 
 public class StandardProceduralClipFactoryChainItem implements ProceduralClipFactoryChainItem {
     private String proceduralEffectId;
     private String name;
-    private Function<AddClipRequest, VisualTimelineClip> creator;
+    private Function<AddClipRequest, ProceduralVisualClip> creator;
+    private Function<JsonNode, ProceduralVisualClip> restore;
 
-    public StandardProceduralClipFactoryChainItem(String proceduralEffectId, String name, Function<AddClipRequest, VisualTimelineClip> creator) {
+    public StandardProceduralClipFactoryChainItem(String proceduralEffectId, String name, Function<AddClipRequest, ProceduralVisualClip> creator, Function<JsonNode, ProceduralVisualClip> restore) {
         this.proceduralEffectId = proceduralEffectId;
         this.creator = creator;
         this.name = name;
+        this.restore = restore;
     }
 
     @Override
-    public VisualTimelineClip create(AddClipRequest request) {
-        VisualTimelineClip result = creator.apply(request);
+    public ProceduralVisualClip create(AddClipRequest request) {
+        ProceduralVisualClip result = creator.apply(request);
         return result;
     }
 
@@ -35,6 +38,16 @@ public class StandardProceduralClipFactoryChainItem implements ProceduralClipFac
 
     @Override
     public String getProceduralClipId() {
+        return proceduralEffectId;
+    }
+
+    @Override
+    public TimelineClip restoreClip(JsonNode node) {
+        return restore.apply(node);
+    }
+
+    @Override
+    public String getId() {
         return proceduralEffectId;
     }
 

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
 
 @Component
@@ -26,6 +27,16 @@ public class ClipFactoryChain {
                 .parallelStream()
                 .filter(factory -> factory.doesSupport(request))
                 .collect(Collectors.toList());
+    }
+
+    public TimelineClip restoreClip(JsonNode savedClip) {
+        String factoryId = savedClip.get("creatorFactoryId").asText();
+        ClipFactory foundFactory = clipFactoryChain.stream()
+                .filter(factory -> factory.getId().equals(factoryId))
+                .findFirst()
+                .orElseThrow();
+        TimelineClip result = foundFactory.restoreClip(savedClip);
+        return result;
     }
 
 }

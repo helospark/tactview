@@ -2,12 +2,14 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class TimelineLength implements SecondsAware {
     private static final BigDecimal MICROSECONDS = BigDecimal.valueOf(1000000L);
 
     private BigDecimal seconds;
 
-    public TimelineLength(BigDecimal seconds) {
+    public TimelineLength(@JsonProperty("seconds") BigDecimal seconds) {
         this.seconds = seconds;
     }
 

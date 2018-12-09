@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.lut;
 import java.io.File;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -32,6 +33,12 @@ public class LutEffect extends StatelessVideoEffect {
     public LutEffect(LutEffect lutEffect) {
         super(lutEffect);
         ReflectionUtil.copyOrCloneFieldFromTo(lutEffect, this);
+    }
+
+    public LutEffect(JsonNode node, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
+        super(node);
+        this.independentPixelOperation = independentPixelOperation;
+        this.lutProviderService = lutProviderService;
     }
 
     @Override

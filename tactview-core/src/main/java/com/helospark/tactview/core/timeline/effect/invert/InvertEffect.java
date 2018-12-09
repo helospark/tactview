@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.invert;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -24,6 +25,11 @@ public class InvertEffect extends StatelessVideoEffect {
     public InvertEffect(InvertEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public InvertEffect(JsonNode node, IndependentPixelOperation independentPixelOperations) {
+        super(node);
+        this.independentPixelOperation = independentPixelOperations;
     }
 
     @Override

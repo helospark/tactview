@@ -23,6 +23,7 @@ public class StandardTransitionEffectConfiguration {
     public StandardEffectFactory alphaTransitionEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new AlphaTransitionEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
+                .withRestoreFactory(node -> new AlphaTransitionEffect(node, independentPixelOperation))
                 .withName("Alpha transition")
                 .withSupportedEffectId("alphatransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -33,6 +34,7 @@ public class StandardTransitionEffectConfiguration {
     public StandardEffectFactory floatOutTransitionEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new FloatOutTransitionEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
+                .withRestoreFactory(node -> new FloatOutTransitionEffect(node, independentPixelOperation))
                 .withName("Float out")
                 .withSupportedEffectId("floatout")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -43,6 +45,7 @@ public class StandardTransitionEffectConfiguration {
     public StandardEffectFactory blurTransitionEffect(OpenCVBasedGaussianBlur blurImplementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new BlurTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), blurImplementation))
+                .withRestoreFactory(node -> new BlurTransition(node, blurImplementation))
                 .withName("Blur transition")
                 .withSupportedEffectId("blurtransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -53,6 +56,7 @@ public class StandardTransitionEffectConfiguration {
     public StandardEffectFactory lightDossolveTransitionEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LightDissolveTransitionEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
+                .withRestoreFactory(node -> new LightDissolveTransitionEffect(node, independentPixelOperation))
                 .withName("Light dissolve transition")
                 .withSupportedEffectId("lightdissolvetransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -63,6 +67,7 @@ public class StandardTransitionEffectConfiguration {
     public StandardEffectFactory whiteFlashTransitionEffect(IndependentPixelOperation independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new WhiteFlashTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
+                .withRestoreFactory(node -> new WhiteFlashTransition(node, independentPixelOperation))
                 .withName("White flash")
                 .withSupportedEffectId("whiteflashtransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))

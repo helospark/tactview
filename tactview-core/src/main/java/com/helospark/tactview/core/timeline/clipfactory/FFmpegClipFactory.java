@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.clipfactory;
 
 import java.io.File;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -28,6 +29,7 @@ public class FFmpegClipFactory implements ClipFactory {
         VideoMetadata metadata = readMetadataFromFile(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, mediaDecoder);
         VideoClip result = new VideoClip(metadata, videoSource, position, metadata.getLength());
+        result.setCreatorFactoryId(getId());
         return result;
     }
 
@@ -47,6 +49,20 @@ public class FFmpegClipFactory implements ClipFactory {
 
     private VideoMetadata readMetadataFromFile(File file) {
         return mediaDecoder.readMetadata(file);
+    }
+
+    @Override
+    public String getId() {
+        return "ffmpegClipFactory";
+    }
+
+    @Override
+    public TimelineClip restoreClip(JsonNode savedClip) {
+        File file = new File(savedClip.get("backingFile").asText());
+        VideoMetadata metadata = mediaDecoder.readMetadata(file);
+        VisualMediaSource videoSource = new VisualMediaSource(file, mediaDecoder);
+
+        return new VideoClip(metadata, videoSource, savedClip);
     }
 
 }

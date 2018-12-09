@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
@@ -25,6 +26,10 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
     public AbstractVideoTransitionEffect(AbstractVideoTransitionEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public AbstractVideoTransitionEffect(JsonNode node) {
+        super(node);
     }
 
     public ClipImage applyTransition(ExternalStatelessVideoTransitionEffectRequest request) {

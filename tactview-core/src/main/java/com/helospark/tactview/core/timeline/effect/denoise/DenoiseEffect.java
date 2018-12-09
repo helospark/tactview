@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.denoise;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -31,6 +32,11 @@ public class DenoiseEffect extends StatelessVideoEffect {
     public DenoiseEffect(DenoiseEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public DenoiseEffect(JsonNode node, OpenCVBasedDenoiseEffect openCVBasedDenoiseEffect2) {
+        super(node);
+        this.openCVBasedDenoiseEffect = openCVBasedDenoiseEffect2;
     }
 
     @Override

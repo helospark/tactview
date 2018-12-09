@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.clipfactory;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -10,6 +11,7 @@ import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
+import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 
 @Component
 public class ProceduralClipFactory implements ClipFactory {
@@ -38,11 +40,31 @@ public class ProceduralClipFactory implements ClipFactory {
 
     @Override
     public TimelineClip createClip(AddClipRequest request) {
-        return factories.stream()
+        ProceduralClipFactoryChainItem proceduralFactory = factories.stream()
                 .filter(factory -> factory.doesSupport(request))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Nothing can handle " + request))
+                .orElseThrow(() -> new IllegalArgumentException("Nothing can handle " + request));
+        ProceduralVisualClip proceduralTimelineClip = proceduralFactory
                 .create(request);
+        proceduralTimelineClip.setProceduralFactoryId(proceduralFactory.getId());
+        proceduralTimelineClip.setCreatorFactoryId(getId());
+        return proceduralTimelineClip;
+    }
+
+    @Override
+    public String getId() {
+        return "proceduralClipFactory";
+    }
+
+    @Override
+    public TimelineClip restoreClip(JsonNode savedClip) {
+        String proceduralFactoryId = savedClip.get("proceduralFactoryId").asText();
+        ProceduralClipFactoryChainItem proceduralFactory = factories.stream()
+                .filter(factory -> factory.getProceduralClipId().equals(proceduralFactoryId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Nothing can handle " + proceduralFactoryId));
+        TimelineClip result = proceduralFactory.restoreClip(savedClip);
+        return result;
     }
 
 }

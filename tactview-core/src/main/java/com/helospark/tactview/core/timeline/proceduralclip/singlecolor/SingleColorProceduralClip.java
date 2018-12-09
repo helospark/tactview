@@ -3,6 +3,8 @@ package com.helospark.tactview.core.timeline.proceduralclip.singlecolor;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
@@ -34,6 +36,11 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
     public SingleColorProceduralClip(SingleColorProceduralClip singleColorProceduralClip) {
         super(singleColorProceduralClip);
         this.independentPixelOperation = singleColorProceduralClip.independentPixelOperation;
+    }
+
+    public SingleColorProceduralClip(ImageMetadata metadata, JsonNode node, IndependentPixelOperation independentPixelOperation) {
+        super(metadata, node);
+        this.independentPixelOperation = independentPixelOperation;
     }
 
     @Override

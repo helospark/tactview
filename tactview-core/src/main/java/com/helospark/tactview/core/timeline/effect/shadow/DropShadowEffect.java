@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.shadow;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -41,6 +42,12 @@ public class DropShadowEffect extends StatelessVideoEffect {
     public DropShadowEffect(DropShadowEffect dropShadowEffect) {
         super(dropShadowEffect);
         ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this);
+    }
+
+    public DropShadowEffect(JsonNode node, IndependentPixelOperation independentPixelOperation2, BlurService blurService2) {
+        super(node);
+        this.independentPixelOperation = independentPixelOperation2;
+        this.blurService = blurService2;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.cartoon;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -25,6 +26,11 @@ public class CartoonEffect extends StatelessVideoEffect {
     public CartoonEffect(CartoonEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public CartoonEffect(JsonNode node, OpenCVCartoonEffectImplementation implementation2) {
+        super(node);
+        this.implementation = implementation2;
     }
 
     @Override

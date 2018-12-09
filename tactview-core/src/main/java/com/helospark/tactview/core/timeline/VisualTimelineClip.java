@@ -3,8 +3,10 @@ package com.helospark.tactview.core.timeline;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
@@ -30,6 +32,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected PointProvider translatePointProvider;
     protected DoubleProvider globalClipAlphaProvider;
     protected BooleanProvider enabledProvider;
+    protected VisualMediaSource backingSource;
     private ValueListProvider<BlendModeValueListElement> blendModeProvider;
 
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
@@ -41,6 +44,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
         super(clip);
         ReflectionUtil.copyOrCloneFieldFromTo(clip, this);
 
+    }
+
+    public VisualTimelineClip(VisualMediaMetadata metadata, JsonNode savedClip) {
+        super(savedClip);
+        this.mediaMetadata = metadata;
     }
 
     public ReadOnlyClipImage getFrame(GetFrameRequest request) {
@@ -170,4 +178,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return blendModeProvider.getValueAt(relativePosition).getBlendMode();
     }
 
+    @Override
+    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
+        savedContent.put("backingFile", backingSource.getBackingFile());
+    }
 }

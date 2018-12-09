@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.clipfactory;
 
 import java.io.File;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
@@ -47,7 +48,22 @@ public class AVCodecSoundClipFactory implements ClipFactory {
         AudioMediaMetadata metadata = mediaDecoder.readMetadata(file);
         AudioMediaSource videoSource = new AudioMediaSource(file, mediaDecoder);
         SoundClip result = new SoundClip(metadata, mediaDecoder, videoSource, position, metadata.getLength());
+        result.setCreatorFactoryId(this.getId());
         return result;
+    }
+
+    @Override
+    public String getId() {
+        return "soundClipFactory";
+    }
+
+    @Override
+    public TimelineClip restoreClip(JsonNode savedClip) {
+        File file = new File(savedClip.get("backingFile").asText());
+        AudioMediaMetadata metadata = mediaDecoder.readMetadata(file);
+        AudioMediaSource videoSource = new AudioMediaSource(file, mediaDecoder);
+
+        return new SoundClip(metadata, mediaDecoder, videoSource, savedClip);
     }
 
 }

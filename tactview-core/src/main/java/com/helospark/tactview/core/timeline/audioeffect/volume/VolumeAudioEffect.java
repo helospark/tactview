@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.audioeffect.volume;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -22,6 +23,10 @@ public class VolumeAudioEffect extends StatelessAudioEffect {
     public VolumeAudioEffect(VolumeAudioEffect volumeAudioEffect) {
         super(volumeAudioEffect);
         ReflectionUtil.copyOrCloneFieldFromTo(volumeAudioEffect, this);
+    }
+
+    public VolumeAudioEffect(JsonNode node) {
+        super(node);
     }
 
     @Override

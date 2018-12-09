@@ -9,11 +9,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Do
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class IntegerProvider extends KeyframeableEffect {
-    private Integer min = 0;
-    private Integer max = Integer.MAX_VALUE;
-    private DoubleInterpolator interpolator;
+    Integer min = 0;
+    Integer max = Integer.MAX_VALUE;
+    DoubleInterpolator interpolator;
 
     public IntegerProvider(Integer min, Integer max, DoubleInterpolator interpolator) {
         this.min = min;
@@ -81,4 +82,8 @@ public class IntegerProvider extends KeyframeableEffect {
         return result;
     }
 
+    @Override
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+        return IntegerProviderFactory.class;
+    }
 }

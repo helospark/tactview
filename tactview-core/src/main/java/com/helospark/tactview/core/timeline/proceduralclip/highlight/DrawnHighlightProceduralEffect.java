@@ -8,6 +8,8 @@ import java.util.Optional;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -58,6 +60,15 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
     public DrawnHighlightProceduralEffect(DrawnHighlightProceduralEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public DrawnHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, ScaledBrushProvider scaledBrushProvider2, NormalBlendModeStrategy normalBlendModeStrategy2,
+            AlphaBlitService alphaBlitService2, BresenhemPixelProvider bresenhemPixelProvider2) {
+        super(metadata, node);
+        this.scaledBrushProvider = scaledBrushProvider2;
+        this.alphaBlitService = alphaBlitService2;
+        this.normalBlendModeStrategy = normalBlendModeStrategy2;
+        this.bresenhemPixelProvider = bresenhemPixelProvider2;
     }
 
     @Override

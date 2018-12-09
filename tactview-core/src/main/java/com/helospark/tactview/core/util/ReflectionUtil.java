@@ -3,6 +3,7 @@ package com.helospark.tactview.core.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Map;
 
 public class ReflectionUtil {
 
@@ -29,6 +30,30 @@ public class ReflectionUtil {
             }
         } catch (Exception e) {
             throw new RuntimeException("Unable to clone", e);
+        }
+    }
+
+    public static void collectSaveableFields(Object instance, Map<String, Object> saveableFields) {
+        collectSaveableFieldsRecursively(instance, instance.getClass(), saveableFields);
+    }
+
+    private static void collectSaveableFieldsRecursively(Object instance, Class<? extends Object> clazz, Map<String, Object> saveableFields) {
+        Arrays.stream(clazz.getDeclaredFields())
+                .filter(field -> SavedContentAddable.class.isAssignableFrom(field.getType()))
+                .forEach(field -> handleField(instance, saveableFields, field));
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass != null) {
+            collectSaveableFieldsRecursively(instance, superClass, saveableFields);
+        }
+    }
+
+    private static void handleField(Object instance, Map<String, Object> saveableFields, Field field) {
+        try {
+            field.setAccessible(true);
+            SavedContentAddable<Object> value = (SavedContentAddable<Object>) field.get(instance);
+            saveableFields.put(field.getName(), value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

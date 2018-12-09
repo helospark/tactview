@@ -3,6 +3,8 @@ package com.helospark.tactview.core.timeline.proceduralclip.noise;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -31,6 +33,11 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
 
     public GaussianNoiseProceduralClip(GaussianNoiseProceduralClip gaussianNoiseProceduralClip) {
         super(gaussianNoiseProceduralClip);
+    }
+
+    public GaussianNoiseProceduralClip(ImageMetadata metadata, JsonNode node, IndependentPixelOperation independentPixelOperation2) {
+        super(metadata, node);
+        this.independentPixelOperation = independentPixelOperation2;
     }
 
     @Override

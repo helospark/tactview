@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.scale;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -29,6 +30,11 @@ public class ScaleEffect extends StatelessVideoEffect {
     public ScaleEffect(ScaleEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public ScaleEffect(JsonNode node, ScaleService scaleService2) {
+        super(node);
+        this.scaleService = scaleService2;
     }
 
     @Override

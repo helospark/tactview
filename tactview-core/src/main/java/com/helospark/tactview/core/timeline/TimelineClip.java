@@ -1,19 +1,26 @@
 package com.helospark.tactview.core.timeline;
 
+import static com.helospark.tactview.core.util.StaticObjectMapper.toValue;
+
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class TimelineClip implements IntervalAware, IntervalSettable {
     protected String id;
     protected TimelineInterval interval;
     protected TimelineClipType type;
     protected TimelineLength renderOffset = TimelineLength.ofZero();
+    protected String creatorFactoryId;
 
     protected List<NonIntersectingIntervalList<StatelessEffect>> effectChannels = new ArrayList<>();
 
@@ -35,6 +42,48 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         for (int i = 0; i < clip.effectChannels.size(); ++i) {
             this.effectChannels.add(cloneEffectList(clip.effectChannels.get(i)));
         }
+    }
+
+    public TimelineClip(JsonNode savedClip) {
+        this.id = savedClip.get("id").asText();
+        this.interval = toValue(savedClip, "interval", TimelineInterval.class);
+        this.type = toValue(savedClip, "type", TimelineClipType.class);
+        this.renderOffset = toValue(savedClip, "renderOffset", TimelineLength.class);
+        this.creatorFactoryId = savedClip.get("creatorFactoryId").asText();
+
+        // saved fields
+    }
+
+    public Object generateSavedContent() {
+        Map<String, Object> savedContent = new LinkedHashMap<>();
+
+        savedContent.put("id", id);
+        savedContent.put("interval", interval);
+        savedContent.put("type", type);
+        savedContent.put("renderOffset", renderOffset);
+        savedContent.put("creatorFactoryId", creatorFactoryId);
+
+        List<Object> generatedEffectChannels = new ArrayList<>();
+
+        for (var effectChannel : effectChannels) {
+            List<Object> generatedEffects = new ArrayList<>();
+
+            for (var effect : effectChannel) {
+                generatedEffects.add(effect.generateSavedContent());
+            }
+
+            generatedEffectChannels.add(generatedEffects);
+        }
+
+        savedContent.put("effectChannels", generatedEffectChannels);
+
+        Map<String, Object> saveableFields = new LinkedHashMap<>();
+        ReflectionUtil.collectSaveableFields(this, saveableFields);
+        savedContent.put("savedFields", saveableFields);
+
+        generateSavedContentInternal(savedContent);
+
+        return savedContent;
     }
 
     private NonIntersectingIntervalList<StatelessEffect> cloneEffectList(NonIntersectingIntervalList<StatelessEffect> nonIntersectingIntervalList) {
@@ -114,9 +163,16 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     public int addEffectAtAnyChannel(StatelessEffect effect) {
         int i = findOrCreateFirstChannelWhichEffectCanBeAdded(effect);
-        effectChannels.get(i).addInterval(effect);
+        return addEffectAtChannel(i, effect);
+    }
+
+    public int addEffectAtChannel(int channelId, StatelessEffect effect) {
+        while (effectChannels.size() <= channelId) {
+            effectChannels.add(new NonIntersectingIntervalList<>());
+        }
+        effectChannels.get(channelId).addInterval(effect);
         effect.setParentIntervalAware(this);
-        return i;
+        return channelId;
     }
 
     private int findOrCreateFirstChannelWhichEffectCanBeAdded(StatelessEffect effect) {
@@ -247,9 +303,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         return channel.resize(effect, newInterval);
     }
 
-    public void generateSavedContent() {
-
-    }
+    protected abstract void generateSavedContentInternal(Map<String, Object> savedContent);
 
     protected List<String> getClipDependency(TimelinePosition position) {
         ArrayList<String> result = new ArrayList<>();
@@ -278,4 +332,13 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
     public boolean isEnabled(TimelinePosition position) {
         return true;
     }
+
+    public String getCreatorFactoryId() {
+        return creatorFactoryId;
+    }
+
+    public void setCreatorFactoryId(String creatorFactoryId) {
+        this.creatorFactoryId = creatorFactoryId;
+    }
+
 }

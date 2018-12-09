@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class RectangleProvider extends KeyframeableEffect {
     private List<PointProvider> pointProviders;
@@ -39,5 +40,10 @@ public class RectangleProvider extends KeyframeableEffect {
                 .map(a -> a.deepClone())
                 .collect(Collectors.toList());
         return new RectangleProvider(clonedList);
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+        return RectangleProviderFactory.class;
     }
 }

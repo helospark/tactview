@@ -6,6 +6,8 @@ import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class RandomDoubleInterpolator implements DoubleInterpolator {
@@ -45,4 +47,10 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
         result.repeatableRandom = repeatableRandom;
         return result;
     }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends EffectInterpolator>> generateSerializableContent() {
+        return RandomDoubleInterpolatorFactory.class;
+    }
+
 }

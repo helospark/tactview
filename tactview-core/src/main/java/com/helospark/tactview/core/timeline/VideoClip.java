@@ -4,13 +4,15 @@ import static com.helospark.tactview.core.timeline.TimelineClipType.VIDEO;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class VideoClip extends VisualTimelineClip {
     private VisualMediaMetadata mediaMetadata;
-    private VisualMediaSource backingSource;
     private TimelinePosition startPosition;
 
     public VideoClip(VisualMediaMetadata mediaMetadata, VisualMediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
@@ -25,6 +27,19 @@ public class VideoClip extends VisualTimelineClip {
         this.mediaMetadata = clip.mediaMetadata;
         this.backingSource = clip.backingSource;
         this.startPosition = clip.startPosition;
+    }
+
+    public VideoClip(VisualMediaMetadata metadata, VisualMediaSource videoSource, JsonNode savedClip) {
+        super(metadata, savedClip);
+        this.mediaMetadata = metadata;
+        this.backingSource = videoSource;
+        this.startPosition = StaticObjectMapper.toValue(savedClip, "startPosition", TimelinePosition.class);
+    }
+
+    @Override
+    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
+        super.generateSavedContentInternal(savedContent);
+        savedContent.put("startPosition", startPosition);
     }
 
     @Override
@@ -62,4 +77,5 @@ public class VideoClip extends VisualTimelineClip {
     public TimelineClip cloneClip() {
         return new VideoClip(this);
     }
+
 }

@@ -4,6 +4,8 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -40,6 +42,11 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
     public RadialGradientProceduralEffect(RadialGradientProceduralEffect gradientProceduralEffect) {
         super(gradientProceduralEffect);
         this.independentPixelOperation = gradientProceduralEffect.independentPixelOperation;
+    }
+
+    public RadialGradientProceduralEffect(ImageMetadata metadata, JsonNode node, IndependentPixelOperation independentPixelOperation2) {
+        super(metadata, node);
+        this.independentPixelOperation = independentPixelOperation2;
     }
 
     @Override

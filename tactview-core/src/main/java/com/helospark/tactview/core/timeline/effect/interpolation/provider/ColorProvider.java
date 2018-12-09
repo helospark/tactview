@@ -6,11 +6,12 @@ import java.util.List;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class ColorProvider extends KeyframeableEffect {
-    private DoubleProvider redProvider;
-    private DoubleProvider greenProvider;
-    private DoubleProvider blueProvider;
+    DoubleProvider redProvider;
+    DoubleProvider greenProvider;
+    DoubleProvider blueProvider;
 
     public ColorProvider(DoubleProvider redProvider, DoubleProvider greenProvider, DoubleProvider blueProvider) {
         this.redProvider = redProvider;
@@ -36,6 +37,11 @@ public class ColorProvider extends KeyframeableEffect {
     @Override
     public KeyframeableEffect deepClone() {
         return new ColorProvider(redProvider.deepClone(), greenProvider.deepClone(), blueProvider.deepClone());
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+        return ColorProviderFactory.class;
     }
 
 }

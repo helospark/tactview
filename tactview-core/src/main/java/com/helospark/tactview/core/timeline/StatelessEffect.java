@@ -1,13 +1,19 @@
 package com.helospark.tactview.core.timeline;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public abstract class StatelessEffect implements IntervalAware, IntervalSettable {
     protected String id;
+    protected String factoryId;
     protected TimelineInterval interval;
     protected IntervalAware parentIntervalAware;
 
@@ -21,9 +27,35 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
         this.interval = effect.interval;
     }
 
+    public StatelessEffect(JsonNode node) {
+        this.id = node.get("id").asText();
+        this.interval = StaticObjectMapper.toValue(node, "interval", TimelineInterval.class);
+        this.factoryId = node.get("factoryId").asText();
+    }
+
+    protected Object generateSavedContent() {
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        result.put("id", id);
+        result.put("interval", interval);
+        result.put("factoryId", factoryId);
+
+        Map<String, Object> saveableFields = new LinkedHashMap<>();
+        ReflectionUtil.collectSaveableFields(this, saveableFields);
+        result.put("savedFields", saveableFields);
+
+        generateSavedContentInternal(result);
+
+        return result;
+    }
+
     @Override
     public TimelineInterval getInterval() {
         return interval;
+    }
+
+    public void setFactoryId(String factoryId) {
+        this.factoryId = factoryId;
     }
 
     public String getId() {
@@ -58,5 +90,9 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
     }
 
     public abstract StatelessEffect cloneEffect();
+
+    protected void generateSavedContentInternal(Map<String, Object> result) {
+        // clients can optionally override if necessary
+    }
 
 }

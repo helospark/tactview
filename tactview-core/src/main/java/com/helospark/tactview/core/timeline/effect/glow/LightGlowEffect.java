@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.glow;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -39,6 +40,12 @@ public class LightGlowEffect extends StatelessVideoEffect {
     public LightGlowEffect(LightGlowEffect cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public LightGlowEffect(JsonNode node, OpenCVBasedGaussianBlur blurImplementation, IndependentPixelOperation independentPixelOperation) {
+        super(node);
+        this.blurImplementation = blurImplementation;
+        this.independentPixelOperation = independentPixelOperation;
     }
 
     @Override

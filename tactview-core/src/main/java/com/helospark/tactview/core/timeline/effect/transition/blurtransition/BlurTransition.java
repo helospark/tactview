@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.transition.blurtransition;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
@@ -28,6 +29,11 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
     public BlurTransition(BlurTransition cloneFrom) {
         super(cloneFrom);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+    }
+
+    public BlurTransition(JsonNode node, OpenCVBasedGaussianBlur blurImplementation) {
+        super(node);
+        this.gaussianBlur = blurImplementation;
     }
 
     @Override

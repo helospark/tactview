@@ -26,4 +26,9 @@ public class CreateEffectRequest {
         return timelineClipType;
     }
 
+    @Override
+    public String toString() {
+        return "CreateEffectRequest [position=" + position + ", effectId=" + effectId + ", timelineClipType=" + timelineClipType + "]";
+    }
+
 }

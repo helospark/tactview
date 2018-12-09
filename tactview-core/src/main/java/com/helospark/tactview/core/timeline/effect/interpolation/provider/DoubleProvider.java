@@ -9,12 +9,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Do
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class DoubleProvider extends KeyframeableEffect {
-    private SizeFunction sizeFunction;
-    private double min;
-    private double max;
-    private DoubleInterpolator interpolator;
+    SizeFunction sizeFunction;
+    double min;
+    double max;
+    DoubleInterpolator interpolator;
 
     public DoubleProvider(double min, double max, DoubleInterpolator doubleInterpolator) {
         this.min = min;
@@ -109,10 +110,16 @@ public class DoubleProvider extends KeyframeableEffect {
         this.interpolator = (DoubleInterpolator) previousInterpolator;
     }
 
+    @Override
     public DoubleProvider deepClone() {
         DoubleProvider result = new DoubleProvider(min, max, interpolator.deepClone());
         result.sizeFunction = sizeFunction;
         return result;
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+        return DoubleProviderFactory.class;
     }
 
 }

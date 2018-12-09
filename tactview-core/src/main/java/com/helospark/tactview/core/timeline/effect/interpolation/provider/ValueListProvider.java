@@ -8,10 +8,11 @@ import java.util.stream.Collectors;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class ValueListProvider<T extends ValueListElement> extends KeyframeableEffect {
-    private Map<String, T> elements;
-    private StringInterpolator stringInterpolator;
+    Map<String, T> elements;
+    StringInterpolator stringInterpolator;
 
     public ValueListProvider(List<T> elements, StringInterpolator stringInterpolator) {
         this.elements = elements.stream()
@@ -52,6 +53,11 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
     @Override
     public ValueListProvider<T> deepClone() {
         return new ValueListProvider<T>(new ArrayList<T>(elements.values()), stringInterpolator.deepClone());
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+        return ValueListProviderFactory.class;
     }
 
 }

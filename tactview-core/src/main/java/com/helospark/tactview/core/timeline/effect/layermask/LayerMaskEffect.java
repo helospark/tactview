@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -43,6 +44,12 @@ public class LayerMaskEffect extends StatelessVideoEffect {
     public LayerMaskEffect(LayerMaskEffect layerMaskEffect) {
         super(layerMaskEffect);
         ReflectionUtil.copyOrCloneFieldFromTo(layerMaskEffect, this);
+    }
+
+    public LayerMaskEffect(JsonNode node, LayerMaskApplier layerMaskApplier2, List<LayerMaskAlphaCalculator> calculators2) {
+        super(node);
+        this.layerMaskApplier = layerMaskApplier2;
+        this.calculators = calculators2;
     }
 
     @Override
