@@ -67,9 +67,13 @@ public class MirrorEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         mirrorVerticallyProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
         mirrorHorizontalProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor mirrorVerticallyDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(mirrorVerticallyProvider)

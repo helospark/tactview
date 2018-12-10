@@ -50,9 +50,13 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         contrastProvider = new DoubleProvider(0, 10, new MultiKeyframeBasedDoubleInterpolator(1.0));
         brightnessProvider = new DoubleProvider(0, 10, new MultiKeyframeBasedDoubleInterpolator(0.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor contrastDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(contrastProvider)

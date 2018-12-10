@@ -3,8 +3,10 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.f
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class ConstantInterpolatorFactory implements DesSerFactory<ConstantInterpolator> {
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -19,9 +21,9 @@ public class ConstantInterpolatorFactory implements DesSerFactory<ConstantInterp
     }
 
     @Override
-    public ConstantInterpolator deserialize(Map<String, Object> data) {
+    public ConstantInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
         try {
-            return objectMapper.readValue((String) data.get("instance"), ConstantInterpolator.class);
+            return objectMapper.readValue(data.get("instance").textValue(), ConstantInterpolator.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

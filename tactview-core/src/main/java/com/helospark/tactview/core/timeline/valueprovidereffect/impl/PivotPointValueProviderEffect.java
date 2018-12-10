@@ -41,9 +41,6 @@ public class PivotPointValueProviderEffect extends StatelessValueProviderEffect 
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        pointProvider = new PointProvider(
-                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.0)),
-                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.0)));
 
         ValueProviderDescriptor pointDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(pointProvider)
@@ -56,6 +53,13 @@ public class PivotPointValueProviderEffect extends StatelessValueProviderEffect 
     @Override
     public StatelessEffect cloneEffect() {
         return new PivotPointValueProviderEffect(this);
+    }
+
+    @Override
+    public void initializeValueProvider() {
+        pointProvider = new PointProvider(
+                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.0)),
+                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.0)));
     }
 
 }

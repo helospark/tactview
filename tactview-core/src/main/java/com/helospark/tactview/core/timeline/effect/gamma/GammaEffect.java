@@ -48,8 +48,12 @@ public class GammaEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         gammaProvider = new DoubleProvider(0, 3, new MultiKeyframeBasedDoubleInterpolator(1.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor gammaDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(gammaProvider)

@@ -65,8 +65,12 @@ public class LutEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         lutFileProvider = new FileProvider("cube", new StringInterpolator(""));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor lutFileProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lutFileProvider)

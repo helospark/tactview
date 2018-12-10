@@ -2,8 +2,11 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class DoubleProviderFactory implements DesSerFactory<DoubleProvider> {
 
@@ -16,10 +19,10 @@ public class DoubleProviderFactory implements DesSerFactory<DoubleProvider> {
     }
 
     @Override
-    public DoubleProvider deserialize(Map<String, Object> data) {
-        DoubleProvider result = new DoubleProvider((Double) data.get("min"), (Double) data.get("max"),
-                (DoubleInterpolator) data.get("interpolator"));
-        result.sizeFunction = SizeFunction.valueOf((String) data.get("sizeFunction"));
+    public DoubleProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+        DoubleProvider result = new DoubleProvider(data.get("min").asDouble(), data.get("max").asDouble(),
+                ReflectionUtil.deserialize(data.get("interpolator"), DoubleInterpolator.class));
+        result.sizeFunction = SizeFunction.valueOf(data.get("sizeFunction").asText());
         return result;
     }
 

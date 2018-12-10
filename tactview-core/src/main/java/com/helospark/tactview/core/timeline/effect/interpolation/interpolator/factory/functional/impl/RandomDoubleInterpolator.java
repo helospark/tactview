@@ -11,11 +11,11 @@ import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class RandomDoubleInterpolator implements DoubleInterpolator {
-    private int min;
-    private int max;
-    private RepeatableRandom repeatableRandom;
-    private BigDecimal changeScale;
-    private LinearInterpolator linearInterpolator = new LinearInterpolator();
+    int min;
+    int max;
+    RepeatableRandom repeatableRandom;
+    BigDecimal changeScale;
+    LinearInterpolator linearInterpolator = new LinearInterpolator();
 
     public RandomDoubleInterpolator(int min, int max, BigDecimal changeScale) {
         this.min = min;

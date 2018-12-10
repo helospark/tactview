@@ -2,7 +2,10 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class PointProviderFactory implements DesSerFactory<PointProvider> {
 
@@ -13,8 +16,9 @@ public class PointProviderFactory implements DesSerFactory<PointProvider> {
     }
 
     @Override
-    public PointProvider deserialize(Map<String, Object> data) {
-        return new PointProvider((DoubleProvider) data.get("xProvider"), (DoubleProvider) data.get("yProvider"));
+    public PointProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+        return new PointProvider(ReflectionUtil.deserialize(data.get("xProvider"), DoubleProvider.class),
+                ReflectionUtil.deserialize(data.get("yProvider"), DoubleProvider.class));
     }
 
 }

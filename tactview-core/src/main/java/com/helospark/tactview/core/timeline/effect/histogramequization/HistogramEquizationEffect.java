@@ -64,13 +64,17 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         greyscaleProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
         adaptiveProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0));
 
         adaptiveClipLimitProvider = new IntegerProvider(1, 100, new MultiKeyframeBasedDoubleInterpolator(10.0));
         adaptiveKernelWidthProvider = new IntegerProvider(1, 20, new MultiKeyframeBasedDoubleInterpolator(8.0));
         adaptiveKernelHeightProvider = new IntegerProvider(1, 20, new MultiKeyframeBasedDoubleInterpolator(8.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor grayscaleDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(greyscaleProvider)

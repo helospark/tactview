@@ -109,7 +109,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         kernelWidthProvider = new IntegerProvider(1, 300, new MultiKeyframeBasedDoubleInterpolator(50.0));
         kernelHeightProvider = new IntegerProvider(1, 300, new MultiKeyframeBasedDoubleInterpolator(50.0));
         kernelHeightProvider.setScaleDependent();
@@ -118,7 +118,10 @@ public class LightGlowEffect extends StatelessVideoEffect {
         thresholdProvider = new IntegerProvider(1, 255, new MultiKeyframeBasedDoubleInterpolator(200.0));
         lightStrengthMultiplierProvider = new DoubleProvider(1.0, 20.0, new MultiKeyframeBasedDoubleInterpolator(1.3));
         blurMultiplierProvider = new DoubleProvider(1.0, 20.0, new MultiKeyframeBasedDoubleInterpolator(3.0));
+    }
 
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
         ValueProviderDescriptor thresholdDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(thresholdProvider)
                 .withName("threshold")

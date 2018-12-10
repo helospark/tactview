@@ -75,10 +75,15 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> result = super.getValueProviders();
+    public void initializeValueProvider() {
+        super.initializeValueProvider();
 
         maxBlurProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(50.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
+        List<ValueProviderDescriptor> result = super.getValueProviders();
 
         ValueProviderDescriptor sizeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(maxBlurProvider)

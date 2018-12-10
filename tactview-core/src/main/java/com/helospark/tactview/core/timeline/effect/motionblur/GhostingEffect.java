@@ -102,10 +102,14 @@ public class GhostingEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         numberOfGhostProvider = new IntegerProvider(1, 10, new MultiKeyframeBasedDoubleInterpolator(3.0));
         ghostTimeProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(0.4));
         alphaProvider = new DoubleProvider(0.1, 0.95, new MultiKeyframeBasedDoubleInterpolator(0.5));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor numberOfGhostProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(numberOfGhostProvider)

@@ -2,8 +2,11 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class DependentClipProviderFactory implements DesSerFactory<DependentClipProvider> {
 
@@ -13,8 +16,8 @@ public class DependentClipProviderFactory implements DesSerFactory<DependentClip
     }
 
     @Override
-    public DependentClipProvider deserialize(Map<String, Object> data) {
-        return new DependentClipProvider((StringInterpolator) data.get("stringInterpolator"));
+    public DependentClipProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+        return new DependentClipProvider(ReflectionUtil.deserialize(data.get("stringInterpolator"), StringInterpolator.class));
     }
 
 }

@@ -52,4 +52,9 @@ public class InvertEffect extends StatelessVideoEffect {
         return new InvertEffect(this);
     }
 
+    @Override
+    public void initializeValueProvider() {
+
+    }
+
 }

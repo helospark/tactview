@@ -50,6 +50,11 @@ public class CartoonEffect extends StatelessVideoEffect {
     }
 
     @Override
+    public void initializeValueProvider() {
+
+    }
+
+    @Override
     public List<ValueProviderDescriptor> getValueProviders() {
         return Collections.emptyList();
     }

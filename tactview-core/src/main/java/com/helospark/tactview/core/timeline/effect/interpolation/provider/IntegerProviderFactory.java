@@ -2,8 +2,11 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class IntegerProviderFactory implements DesSerFactory<IntegerProvider> {
 
@@ -15,8 +18,10 @@ public class IntegerProviderFactory implements DesSerFactory<IntegerProvider> {
     }
 
     @Override
-    public IntegerProvider deserialize(Map<String, Object> data) {
-        return new IntegerProvider((Integer) data.get("min"), (Integer) data.get("max"), (DoubleInterpolator) data.get("interpolator"));
+    public IntegerProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+        IntegerProvider result = new IntegerProvider(data.get("min").asInt(), data.get("max").asInt(),
+                ReflectionUtil.deserialize(data.get("interpolator"), DoubleInterpolator.class));
+        return result;
     }
 
 }

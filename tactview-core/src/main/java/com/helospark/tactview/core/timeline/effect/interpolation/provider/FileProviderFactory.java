@@ -2,8 +2,11 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class FileProviderFactory implements DesSerFactory<FileProvider> {
 
@@ -14,8 +17,8 @@ public class FileProviderFactory implements DesSerFactory<FileProvider> {
     }
 
     @Override
-    public FileProvider deserialize(Map<String, Object> data) {
-        return new FileProvider((String) data.get("extension"), (StringInterpolator) data.get("stringInterpolator"));
+    public FileProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+        return new FileProvider(data.get("extension").asText(), ReflectionUtil.deserialize(data.get("stringInterpolator"), StringInterpolator.class));
     }
 
 }

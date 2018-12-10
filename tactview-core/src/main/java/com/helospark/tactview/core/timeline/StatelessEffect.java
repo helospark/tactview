@@ -20,6 +20,7 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
     public StatelessEffect(TimelineInterval interval) {
         id = UUID.randomUUID().toString();
         this.interval = interval;
+        initializeValueProvider();
     }
 
     public StatelessEffect(StatelessEffect effect) {
@@ -31,6 +32,8 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
         this.id = node.get("id").asText();
         this.interval = StaticObjectMapper.toValue(node, "interval", TimelineInterval.class);
         this.factoryId = node.get("factoryId").asText();
+        initializeValueProvider(); // initialize defaults
+        ReflectionUtil.realoadSavedFields(node.get("savedFields"), this);
     }
 
     protected Object generateSavedContent() {
@@ -61,6 +64,8 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
     public String getId() {
         return id;
     }
+
+    public abstract void initializeValueProvider();
 
     public abstract List<ValueProviderDescriptor> getValueProviders();
 

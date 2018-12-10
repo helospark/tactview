@@ -61,11 +61,15 @@ public class PencilSketchEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         sigmaSProvider = new DoubleProvider(0, 200, new MultiKeyframeBasedDoubleInterpolator(60.0));
         sigmaRProvider = new DoubleProvider(0, 1, new MultiKeyframeBasedDoubleInterpolator(0.07));
         shadeFactorProvider = new DoubleProvider(0, 0.1, new MultiKeyframeBasedDoubleInterpolator(0.02));
         colorProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor sigmaSProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(sigmaSProvider)
@@ -94,5 +98,4 @@ public class PencilSketchEffect extends StatelessVideoEffect {
     public StatelessEffect cloneEffect() {
         return new PencilSketchEffect(this);
     }
-
 }

@@ -87,7 +87,7 @@ public class BlurEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         kernelWidthProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(20.0));
         kernelHeightProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(20.0));
         kernelHeightProvider.setScaleDependent();
@@ -95,7 +95,10 @@ public class BlurEffect extends StatelessVideoEffect {
 
         topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.0), doubleProviderWithDefaultValue(0.0));
         bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(1.0), doubleProviderWithDefaultValue(1.0));
+    }
 
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
         LineProvider lineProvider = new LineProvider(topLeftPointProvider, bottomRightPointProvider);
 
         ValueProviderDescriptor sizeDescriptor = ValueProviderDescriptor.builder()

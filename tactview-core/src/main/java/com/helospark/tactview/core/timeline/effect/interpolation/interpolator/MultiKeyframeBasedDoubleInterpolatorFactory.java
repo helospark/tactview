@@ -1,16 +1,19 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
+import static com.helospark.tactview.core.util.StaticObjectMapper.objectMapper;
+
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class MultiKeyframeBasedDoubleInterpolatorFactory implements DesSerFactory<MultiKeyframeBasedDoubleInterpolator> {
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void addDataForDeserialize(MultiKeyframeBasedDoubleInterpolator instance, Map<String, Object> data) {
@@ -20,12 +23,16 @@ public class MultiKeyframeBasedDoubleInterpolatorFactory implements DesSerFactor
     }
 
     @Override
-    public MultiKeyframeBasedDoubleInterpolator deserialize(Map<String, Object> data) {
+    public MultiKeyframeBasedDoubleInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
         try {
-            Double defaultValue = (Double) data.get("defaultValue");
-            TreeMap<TimelinePosition, Double> values = new TreeMap<>((Map) data.get("values"));
+            Double defaultValue = data.get("defaultValue").asDouble();
+            TreeMap<TimelinePosition, Double> values = objectMapper.readValue(
+                    objectMapper.treeAsTokens(data.get("values")),
+                    objectMapper.getTypeFactory().constructType(new TypeReference<TreeMap<TimelinePosition, Double>>() {
+                    }));
+
             UnivariateInterpolator interpolator;
-            interpolator = (UnivariateInterpolator) Class.forName((String) data.get("interpolatorImplementation")).newInstance();
+            interpolator = (UnivariateInterpolator) Class.forName(data.get("interpolatorImplementation").asText()).newInstance();
             MultiKeyframeBasedDoubleInterpolator result = new MultiKeyframeBasedDoubleInterpolator(defaultValue, interpolator);
             result.values = new TreeMap<>(values);
             return result;

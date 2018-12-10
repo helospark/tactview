@@ -73,12 +73,15 @@ public class LayerMaskEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> result = new ArrayList<>();
-
+    public void initializeValueProvider() {
         layerMaskProvider = new DependentClipProvider(new StringInterpolator());
         layerMaskTypeProvider = new ValueListProvider<>(getList(calculators), new StringInterpolator(getDefault(calculators)));
         invertProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
+        List<ValueProviderDescriptor> result = new ArrayList<>();
 
         ValueProviderDescriptor layerMaskProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(layerMaskProvider)
@@ -129,4 +132,5 @@ public class LayerMaskEffect extends StatelessVideoEffect {
         }
         return result;
     }
+
 }

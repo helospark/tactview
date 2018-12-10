@@ -53,4 +53,9 @@ public class DesaturizeEffect extends StatelessVideoEffect {
         return new DesaturizeEffect(this);
     }
 
+    @Override
+    public void initializeValueProvider() {
+
+    }
+
 }

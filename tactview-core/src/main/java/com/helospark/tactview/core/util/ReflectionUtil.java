@@ -5,7 +5,13 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class ReflectionUtil {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtil.class);
 
     public static <T> void copyOrCloneFieldFromTo(T from, T to) {
         Arrays.stream(from.getClass().getDeclaredFields())
@@ -52,6 +58,53 @@ public class ReflectionUtil {
             field.setAccessible(true);
             SavedContentAddable<Object> value = (SavedContentAddable<Object>) field.get(instance);
             saveableFields.put(field.getName(), value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void realoadSavedFields(JsonNode jsonNode, Object instance) {
+        realoadSaveableFieldsRecursively(instance, instance.getClass(), jsonNode);
+    }
+
+    private static void realoadSaveableFieldsRecursively(Object instance, Class<? extends Object> clazz, JsonNode jsonNode) {
+        Arrays.stream(clazz.getDeclaredFields())
+                .filter(field -> SavedContentAddable.class.isAssignableFrom(field.getType()))
+                .forEach(field -> reloadField(instance, jsonNode, field));
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass != null) {
+            realoadSaveableFieldsRecursively(instance, superClass, jsonNode);
+        }
+    }
+
+    private static void reloadField(Object instance, JsonNode jsonNode, Field field) {
+        try {
+            String fieldName = field.getName();
+            JsonNode nodeValue = jsonNode.get(fieldName);
+            if (nodeValue == null) {
+                LOGGER.warn("Unable to load field {}, using default value", fieldName);
+            } else {
+                field.setAccessible(true);
+                Object newValue = deserializeWithValue(nodeValue, Object.class, (SavedContentAddable<?>) field.get(instance));
+                field.set(instance, newValue);
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Unable to load field {}", field.getName(), e);
+        }
+    }
+
+    public static <T> T deserialize(JsonNode nodeValue, Class<T> toClass) {
+        return deserializeWithValue(nodeValue, toClass, null);
+    }
+
+    private static <T> T deserializeWithValue(JsonNode nodeValue, Class<T> toClass, SavedContentAddable<?> currentValue) {
+        try {
+            String deserializer = nodeValue.get("deserializer").textValue();
+
+            DesSerFactory<Object> factory = (DesSerFactory<Object>) Class.forName(deserializer).newInstance(); // we could also get from field
+
+            Object newValue = factory.deserialize(nodeValue, currentValue);
+            return toClass.cast(newValue);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

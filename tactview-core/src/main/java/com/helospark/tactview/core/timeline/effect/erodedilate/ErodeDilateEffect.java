@@ -67,11 +67,15 @@ public class ErodeDilateEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    public void initializeValueProvider() {
         kernelWidthProvider = new DoubleProvider(1 / 4000.0, 0.1, new MultiKeyframeBasedDoubleInterpolator(10.0 / 1920));
         kernelHeightProvider = new DoubleProvider(1 / 4000.0, 0.1, new MultiKeyframeBasedDoubleInterpolator(10.0 / 1080));
         erodeOrDelodeProvider = new ValueListProvider<>(createErodeOrDilate(), new StringInterpolator("dilate"));
         shapeProvider = new ValueListProvider<>(createShape(), new StringInterpolator("ellipse"));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getValueProviders() {
 
         ValueProviderDescriptor kernelWidthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(kernelWidthProvider)

@@ -2,6 +2,8 @@ package com.helospark.tactview.core.util;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class RepeatableRandomFactory implements DesSerFactory<RepeatableRandom> {
 
     @Override
@@ -10,8 +12,8 @@ public class RepeatableRandomFactory implements DesSerFactory<RepeatableRandom> 
     }
 
     @Override
-    public RepeatableRandom deserialize(Map<String, Object> data) {
-        Integer seed = (Integer) data.get("seed");
+    public RepeatableRandom deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+        Integer seed = data.get("seed").asInt();
         return new RepeatableRandom(seed);
     }
 

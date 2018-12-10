@@ -60,4 +60,9 @@ public class AlphaTransitionEffect extends AbstractVideoTransitionEffect {
         return new AlphaTransitionEffect(this);
     }
 
+    @Override
+    public void initializeValueProvider() {
+        super.initializeValueProvider();
+    }
+
 }

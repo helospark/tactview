@@ -108,10 +108,14 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
     }
 
     @Override
+    public void initializeValueProvider() {
+        super.initializeValueProvider();
+        directionProvider = new ValueListProvider<>(createDirections(), new StringInterpolator("right"));
+    }
+
+    @Override
     public List<ValueProviderDescriptor> getValueProviders() {
         List<ValueProviderDescriptor> valueProviders = super.getValueProviders();
-
-        directionProvider = new ValueListProvider<>(createDirections(), new StringInterpolator("right"));
 
         ValueProviderDescriptor directionDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(directionProvider)
