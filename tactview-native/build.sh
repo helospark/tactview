@@ -1,3 +1,9 @@
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvsharpen.so -o libopencvsharpen.so opencvsharpen.cpp `pkg-config --libs opencv`
+cp libopencvsharpen.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libgenericconvolutionmatrix.so -o libgenericconvolutionmatrix.so genericconvolutionmatrix.cpp `pkg-config --libs opencv`
+cp libgenericconvolutionmatrix.so ../tactview-core/src/main/resources/linux-x86-64/.
+
 gcc -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  -lavcodec -lavformat -lavutil -lswscale
 cp libffmpegmediadecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 

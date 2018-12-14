@@ -49,10 +49,14 @@ import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.effect.shadow.DropShadowEffect;
+import com.helospark.tactview.core.timeline.effect.sharpen.SharpenEffect;
+import com.helospark.tactview.core.timeline.effect.sharpen.implementation.OpenCVSharpenImplementation;
 import com.helospark.tactview.core.timeline.effect.television.TelevisionRgbLinesEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.AdaptiveThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.SimpleThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdImplementation;
+import com.helospark.tactview.core.timeline.effect.transform.SepiaEffect;
+import com.helospark.tactview.core.timeline.effect.transform.service.GenericMatrixTransformationService;
 import com.helospark.tactview.core.timeline.effect.vignette.VignetteEffect;
 import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -403,4 +407,25 @@ public class StandardEffectConfiguration {
                 .build();
     }
 
+    @Bean
+    public StandardEffectFactory sepiaEffect(GenericMatrixTransformationService genericMatrixTransformationService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new SepiaEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), genericMatrixTransformationService))
+                .withRestoreFactory((node, loadMetadata) -> new SepiaEffect(node, loadMetadata, genericMatrixTransformationService))
+                .withName("Sepia")
+                .withSupportedEffectId("sepia")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory sharpenEffect(OpenCVSharpenImplementation implementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new SharpenEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
+                .withRestoreFactory((node, loadMetadata) -> new SharpenEffect(node, loadMetadata, implementation))
+                .withName("Sharpen")
+                .withSupportedEffectId("sharpen")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
 }
