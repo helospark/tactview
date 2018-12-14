@@ -20,10 +20,10 @@ import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.api.LoadMetadata;
-import com.helospark.tactview.core.api.SaveLoadContributor;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;

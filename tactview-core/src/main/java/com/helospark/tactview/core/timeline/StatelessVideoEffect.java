@@ -1,7 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.api.LoadMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 

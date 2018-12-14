@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class VideoClip extends VisualTimelineClip {

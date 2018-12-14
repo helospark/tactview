@@ -75,7 +75,11 @@
       <artifactId>commons-math3</artifactId>
       <version>3.6.1</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.zeroturnaround</groupId>
+      <artifactId>zt-zip</artifactId>
+      <version>1.13</version>
+    </dependency>
     <!-- Test -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>

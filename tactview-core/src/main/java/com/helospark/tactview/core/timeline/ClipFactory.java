@@ -1,8 +1,8 @@
 package com.helospark.tactview.core.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.MediaMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 
 public interface ClipFactory {
 

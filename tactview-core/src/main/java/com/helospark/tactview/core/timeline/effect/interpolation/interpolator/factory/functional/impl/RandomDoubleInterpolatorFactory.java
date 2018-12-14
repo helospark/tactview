@@ -3,7 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.f
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.api.LoadMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.RepeatableRandom;

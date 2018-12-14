@@ -3,7 +3,7 @@ package com.helospark.tactview.core.util;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.api.LoadMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 
 public interface DesSerFactory<T> {
 

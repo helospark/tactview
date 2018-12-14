@@ -8,28 +8,14 @@ import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
 import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
-import com.helospark.tactview.core.api.LoadMetadata;
-import com.helospark.tactview.core.api.SaveLoadContributor;
-import com.helospark.tactview.core.timeline.TimelineManager;
-import com.helospark.tactview.core.util.StaticObjectMapper;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -40,6 +26,7 @@ import com.helospark.tactview.ui.javafx.key.StandardGlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
+import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
 
 import javafx.scene.Scene;
@@ -59,14 +46,14 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     private UiTimelineManager uiTimelineManager;
     private CopyPasteRepository copyPasteRepository;
     private LightDiContext context;
-    private TimelineManager timelineManager;
+    private UiSaveHandler uiSaveHandler;
 
     public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository,
             RemoveClipService removeClipService,
             RemoveEffectService removeEffectService, ClipCutService clipCutService,
             CopyPasteRepository copyPasteRepository,
             UiTimelineManager uiTimelineManager,
-            TimelineManager timelineManager) {
+            UiSaveHandler uiSaveHandler) {
         this.commandInterpreter = commandInterpreter;
         this.keyCombinationRepository = keyCombinationRepository;
         this.selectedNodeRepository = selectedNodeRepository;
@@ -74,7 +61,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         this.removeEffectService = removeEffectService;
         this.clipCutService = clipCutService;
         this.uiTimelineManager = uiTimelineManager;
-        this.timelineManager = timelineManager;
+        this.uiSaveHandler = uiSaveHandler;
         this.copyPasteRepository = copyPasteRepository;
     }
 
@@ -97,47 +84,9 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         // TODO: this should be only done if the user has not changed them
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.S),
                 useHandler("Save", event -> {
-                    try {
-                        Map<String, Object> result = new LinkedHashMap<>();
-
-                        context.getListOfBeans(SaveLoadContributor.class)
-                                .forEach(a -> a.generateSavedContent(result));
-
-                        ObjectMapper mapper = StaticObjectMapper.objectMapper;
-                        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-                        String safdsg = mapper.writeValueAsString(result);
-                        File file = new File("/tmp/" + System.currentTimeMillis() + ".json");
-                        new FileOutputStream(file).write(safdsg.getBytes());
-                    } catch (FileNotFoundException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    uiSaveHandler.save();
                 }));
-        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.L),
-                useHandler("Load", event -> {
-                    try {
-                        ObjectMapper mapper = StaticObjectMapper.objectMapper;
 
-                        String fileName = "/tmp/1544802085137.json";
-                        String content = new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
-
-                        JsonNode tree = mapper.readTree(content);
-
-                        LoadMetadata loadMetadata = new LoadMetadata(fileName);
-                        context.getListOfBeans(SaveLoadContributor.class)
-                                .forEach(a -> a.loadFrom(tree, loadMetadata));
-
-                    } catch (FileNotFoundException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }));
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, Z),
                 useHandler("Undo", event -> commandInterpreter.revertLast()));
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, SHIFT_DOWN, Z),

@@ -23,6 +23,8 @@ import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
+import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
@@ -106,6 +108,18 @@ public class JavaFXUiMain extends Application {
             Platform.exit();
             System.exit(0);
         });
+        MenuItem loadItem = new MenuItem("_Load");
+        loadItem.setOnAction(a -> {
+            lightDi.getBean(UiLoadHandler.class).load();
+        });
+        MenuItem saveItem = new MenuItem("_Save");
+        saveItem.setOnAction(a -> {
+            lightDi.getBean(UiSaveHandler.class).save();
+        });
+        MenuItem saveAsItem = new MenuItem("_Save as");
+        saveAsItem.setOnAction(a -> {
+            lightDi.getBean(UiSaveHandler.class).saveAs();
+        });
 
         MenuItem render = new MenuItem("Render");
         render.setOnAction(e -> {
@@ -114,7 +128,11 @@ public class JavaFXUiMain extends Application {
 
         project.getItems().add(render);
 
+        fileMenu.getItems().add(loadItem);
+        fileMenu.getItems().add(saveItem);
+        fileMenu.getItems().add(saveAsItem);
         fileMenu.getItems().add(exitItem);
+
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(project);
 

@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
-import com.helospark.tactview.core.api.LoadMetadata;
-import com.helospark.tactview.core.api.SaveLoadContributor;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 import javafx.application.Platform;
