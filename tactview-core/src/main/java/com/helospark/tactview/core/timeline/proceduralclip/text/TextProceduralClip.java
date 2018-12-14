@@ -138,8 +138,8 @@ public class TextProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
 
         textProvider = new StringProvider(new StringInterpolator());
         sizeProvider = new IntegerProvider(0, 500, new MultiKeyframeBasedDoubleInterpolator(100.0));
@@ -151,6 +151,11 @@ public class TextProceduralClip extends ProceduralVisualClip {
         alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StringInterpolator("left"));
         italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
         boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         ValueProviderDescriptor textDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(textProvider)

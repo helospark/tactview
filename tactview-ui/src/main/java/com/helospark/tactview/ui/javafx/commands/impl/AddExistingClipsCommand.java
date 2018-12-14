@@ -21,7 +21,7 @@ public class AddExistingClipsCommand implements UiCommand {
 
     @Override
     public void revert() {
-        timelineManager.removeResource(request.getClipToAdd().getId());
+        timelineManager.removeClip(request.getClipToAdd().getId());
     }
 
 }

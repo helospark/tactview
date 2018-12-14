@@ -12,29 +12,14 @@ import com.helospark.tactview.core.util.SavedContentAddable;
 import com.helospark.tactview.core.util.StatefulCloneable;
 
 public abstract class KeyframeableEffect implements StatefulCloneable<KeyframeableEffect>, SavedContentAddable<KeyframeableEffect> {
-    protected String id = UUID.randomUUID().toString();
-    protected boolean scaleDependent;
+    String id = UUID.randomUUID().toString();
+    boolean scaleDependent;
 
     public abstract Object getValueAt(TimelinePosition position);
 
     public String getId() {
         return id;
     }
-
-    //    @Override
-    //    public Object generateSerializableContent() {
-    //        Map<String, Object> result = new LinkedHashMap<>();
-    //        result.put("id", id);
-    //        result.put("scaleDependent", scaleDependent);
-    //
-    //        Map<String, Object> data = new HashMap<>();
-    //        abstractGenerateSerializableContent(data);
-    //        result.put("customData", data);
-    //
-    //        return result;
-    //    }
-
-    //    protected abstract void abstractGenerateSerializableContent(Map<String, Object> data);
 
     public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
 

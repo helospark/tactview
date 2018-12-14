@@ -102,11 +102,16 @@ public class LinearGradientProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
 
         startColorProvider = createColorProvider(0.0, 0.0, 0.0);
         endColorProvider = createColorProvider(1.0, 1.0, 1.0);
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         PointProvider topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.0), doubleProviderWithDefaultValue(0.0));
         PointProvider bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(1.0), doubleProviderWithDefaultValue(0.0));

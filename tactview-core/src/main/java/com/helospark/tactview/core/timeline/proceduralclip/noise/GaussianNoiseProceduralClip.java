@@ -68,11 +68,15 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
-
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
         noiseChanceProvider = new DoubleProvider(0, 1, new MultiKeyframeBasedDoubleInterpolator(0.5));
         alphaMultiplierProvider = new DoubleProvider(0, 1, new MultiKeyframeBasedDoubleInterpolator(0.05));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         ValueProviderDescriptor noiseChangeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(noiseChanceProvider)

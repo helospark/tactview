@@ -139,8 +139,8 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
 
         topLeftProvider = new PointProvider(doubleProviderWithDefaultValue(0.3), doubleProviderWithDefaultValue(0.4));
         bottomRightProvider = new PointProvider(doubleProviderWithDefaultValue(0.7), doubleProviderWithDefaultValue(0.6));
@@ -148,7 +148,11 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
         brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
         endPositionProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(2.0));
         brushFileProvider = new FileProvider("gbr", new StringInterpolator());
+    }
 
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
         LineProvider lineProvider = new LineProvider(topLeftProvider, bottomRightProvider);
 
         ValueProviderDescriptor areaProvider = ValueProviderDescriptor.builder()

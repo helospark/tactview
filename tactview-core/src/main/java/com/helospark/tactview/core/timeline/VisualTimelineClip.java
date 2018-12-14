@@ -116,8 +116,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = new ArrayList<>();
+    protected void initializeValueProvider() {
         DoubleProvider translateXProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new MultiKeyframeBasedDoubleInterpolator(0.0));
         DoubleProvider translateYProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new MultiKeyframeBasedDoubleInterpolator(0.0));
         translateXProvider.setScaleDependent();
@@ -127,6 +126,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
         globalClipAlphaProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
         enabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0, new StepInterpolator()));
         blendModeProvider = new ValueListProvider<>(createBlendModes(), new StringInterpolator("normal"));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = new ArrayList<>();
 
         ValueProviderDescriptor translateDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translatePointProvider)

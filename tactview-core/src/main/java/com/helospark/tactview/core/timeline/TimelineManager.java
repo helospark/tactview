@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -61,19 +60,17 @@ public class TimelineManager {
     private MessagingService messagingService;
     private ClipFactoryChain clipFactoryChain;
     private FrameBufferMerger frameBufferMerger;
-    private ObjectMapper objectMapper;
     private AudioBufferMerger audioBufferMerger;
     private ProjectRepository projectRepository;
     private EffectFactoryChain effectFactoryChain;
 
     public TimelineManager(FrameBufferMerger frameBufferMerger,
             EffectFactoryChain effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
-            ObjectMapper objectMapper, AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository) {
+            AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository) {
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
         this.frameBufferMerger = frameBufferMerger;
-        this.objectMapper = objectMapper;
         this.audioBufferMerger = audioBufferMerger;
         this.projectRepository = projectRepository;
     }
@@ -388,8 +385,14 @@ public class TimelineManager {
         return effectFactoryChain.createEffect(request);
     }
 
-    public void removeResource(String clipId) {
-        TimelineInterval originalInterval = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No such clip")).getGlobalInterval();
+    public void removeClip(String clipId) {
+        TimelineClip originalClip = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No such clip"));
+        TimelineInterval originalInterval = originalClip.getGlobalInterval();
+
+        originalClip.getEffects()
+                .stream()
+                .forEach(effect -> removeEffect(originalClip, effect.getId()));
+
         TimelineChannel channel = findChannelForClipId(clipId)
                 .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
         channel.removeClip(clipId);
@@ -428,12 +431,17 @@ public class TimelineManager {
     }
 
     public void removeChannel(String channelId) {
-        boolean success = findChannelForClipId(channelId)
-                .map(channelToRemove -> channels.remove(channelToRemove))
-                .orElse(false);
-        if (success) {
-            messagingService.sendAsyncMessage(new ChannelRemovedMessage(channelId));
-        }
+        TimelineChannel channel = findChannelWithId(channelId).orElseThrow();
+
+        channel.getAllClipId()
+                .stream()
+                .forEach(clipId -> removeClip(clipId));
+
+        findChannelIndex(channelId)
+                .ifPresent(index -> {
+                    channels.remove(index);
+                    messagingService.sendAsyncMessage(new ChannelRemovedMessage(channelId));
+                });
     }
 
     public Optional<TimelineClip> findClipForEffect(String effectId) {
@@ -523,9 +531,13 @@ public class TimelineManager {
     public void removeEffect(String effectId) {
         findClipForEffect(effectId)
                 .ifPresent(clip -> {
-                    StatelessEffect removedElement = clip.removeEffectById(effectId);
-                    messagingService.sendAsyncMessage(new EffectRemovedMessage(removedElement.getId(), clip.getId(), removedElement.getGlobalInterval()));
+                    removeEffect(clip, effectId);
                 });
+    }
+
+    private void removeEffect(TimelineClip clip, String effectId) {
+        StatelessEffect removedElement = clip.removeEffectById(effectId);
+        messagingService.sendAsyncMessage(new EffectRemovedMessage(removedElement.getId(), clip.getId(), removedElement.getGlobalInterval()));
     }
 
     public Optional<StatelessEffect> findEffectById(String effectId) {
@@ -570,7 +582,7 @@ public class TimelineManager {
 
         List<TimelineClip> cuttedParts = clip.createCutClipParts(globalTimelinePosition);
 
-        removeResource(clipId);
+        removeClip(clipId);
         addClip(channel, cuttedParts.get(0));
         addClip(channel, cuttedParts.get(1));
     }

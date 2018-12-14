@@ -22,7 +22,7 @@ public class RemoveClipCommand implements UiCommand {
     public void execute() {
         removedFromChannel = timelineManager.findChannelForClipId(clipId).orElseThrow();
         removedClip = timelineManager.findClipById(clipId).orElseThrow();
-        timelineManager.removeResource(clipId);
+        timelineManager.removeClip(clipId);
     }
 
     @Override

@@ -101,8 +101,6 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
 
                         timelineManager.generateSavedContent(result);
 
-                        //                        result = processMap(result);
-
                         ObjectMapper mapper = StaticObjectMapper.objectMapper;
                         mapper.enable(SerializationFeature.INDENT_OUTPUT);
                         String safdsg = mapper.writeValueAsString(result);
@@ -124,7 +122,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                         TypeReference<LinkedHashMap<String, Object>> typeRef = new TypeReference<LinkedHashMap<String, Object>>() {
                         };
 
-                        String content = new String(Files.readAllBytes(Paths.get("/tmp/1544474612859.json")), StandardCharsets.UTF_8);
+                        String content = new String(Files.readAllBytes(Paths.get("/tmp/1544795549407.json")), StandardCharsets.UTF_8);
 
                         JsonNode tree = mapper.readTree(content);
 

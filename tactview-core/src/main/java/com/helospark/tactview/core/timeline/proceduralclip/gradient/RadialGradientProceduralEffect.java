@@ -90,17 +90,22 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
 
         startColorProvider = createColorProvider(0.0, 0.0, 0.0);
         endColorProvider = createColorProvider(1.0, 1.0, 1.0);
+        innerSaturationDiameterProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
 
         PointProvider topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.3), doubleProviderWithDefaultValue(0.3));
         PointProvider bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.6), doubleProviderWithDefaultValue(0.6));
-        innerSaturationDiameterProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
-
         lineProvider = new LineProvider(topLeftPointProvider, bottomRightPointProvider);
+
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         ValueProviderDescriptor startColorDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(startColorProvider)

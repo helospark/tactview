@@ -5,7 +5,6 @@ import java.util.function.Function;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.timeline.AddClipRequest;
-import com.helospark.tactview.core.timeline.TimelineClip;
 
 public class StandardProceduralClipFactoryChainItem implements ProceduralClipFactoryChainItem {
     private String proceduralEffectId;
@@ -42,7 +41,7 @@ public class StandardProceduralClipFactoryChainItem implements ProceduralClipFac
     }
 
     @Override
-    public TimelineClip restoreClip(JsonNode node) {
+    public ProceduralVisualClip restoreClip(JsonNode node) {
         return restore.apply(node);
     }
 

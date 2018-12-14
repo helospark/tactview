@@ -51,7 +51,8 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         this.renderOffset = toValue(savedClip, "renderOffset", TimelineLength.class);
         this.creatorFactoryId = savedClip.get("creatorFactoryId").asText();
 
-        // saved fields
+        initializeValueProvider();
+        ReflectionUtil.realoadSavedFields(savedClip.get("savedFields"), this);
     }
 
     public Object generateSavedContent() {
@@ -115,6 +116,8 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         }
         return valueDescriptors;
     };
+
+    protected abstract void initializeValueProvider();
 
     protected abstract List<ValueProviderDescriptor> getDescriptorsInternal();
 

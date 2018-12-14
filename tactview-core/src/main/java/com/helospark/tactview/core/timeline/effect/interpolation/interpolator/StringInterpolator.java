@@ -8,8 +8,8 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class StringInterpolator implements EffectInterpolator {
-    private String defaultValue;
-    private TreeMap<TimelinePosition, String> values;
+    String defaultValue;
+    TreeMap<TimelinePosition, String> values;
 
     public StringInterpolator() {
         this.values = new TreeMap<>();

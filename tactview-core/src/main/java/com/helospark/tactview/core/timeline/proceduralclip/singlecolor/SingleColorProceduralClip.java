@@ -66,14 +66,19 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
 
         colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)));
 
         alphaProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 255.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         ValueProviderDescriptor colorDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(colorProvider)

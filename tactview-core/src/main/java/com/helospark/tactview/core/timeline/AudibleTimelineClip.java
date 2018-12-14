@@ -30,6 +30,10 @@ public abstract class AudibleTimelineClip extends TimelineClip {
     }
 
     @Override
+    protected void initializeValueProvider() {
+    }
+
+    @Override
     protected List<ValueProviderDescriptor> getDescriptorsInternal() {
         return new ArrayList<>();
     }

@@ -63,7 +63,8 @@ public class ProceduralClipFactory implements ClipFactory {
                 .filter(factory -> factory.getProceduralClipId().equals(proceduralFactoryId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Nothing can handle " + proceduralFactoryId));
-        TimelineClip result = proceduralFactory.restoreClip(savedClip);
+        ProceduralVisualClip result = proceduralFactory.restoreClip(savedClip);
+        result.setProceduralFactoryId(proceduralFactoryId);
         return result;
     }
 

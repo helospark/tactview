@@ -101,6 +101,15 @@ public class TimelineState {
         return (ObservableList<Node>) (Object) channels;
     }
 
+    public Optional<Integer> findChannelIndex(String channelId) {
+        for (int i = 0; i < channels.size(); ++i) {
+            if (Objects.equals(channels.get(i).getUserData(), channelId)) {
+                return Optional.ofNullable(i);
+            }
+        }
+        return Optional.empty();
+    }
+
     public Optional<HBox> findChannelById(String channelId) {
         return channels.stream()
                 .filter(channel -> Objects.equals(channel.getUserData(), channelId))
@@ -168,9 +177,10 @@ public class TimelineState {
     }
 
     public void removeChannel(String channelId) {
-        Optional<HBox> channel = findChannelById(channelId);
-        if (channel.isPresent()) {
-            channels.remove(channel.get());
+        Optional<Integer> channelIndex = findChannelIndex(channelId);
+        if (channelIndex.isPresent()) {
+            channels.remove(channelIndex.get().intValue());
+            channelHeaders.remove(channelIndex.get().intValue());
         }
         channelToClips.remove(channelId);
     }

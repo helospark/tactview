@@ -21,7 +21,7 @@ public class AddExistingEffectCommand implements UiCommand {
 
     @Override
     public void revert() {
-        timelineManager.removeResource(request.getClipToAdd().getId());
+        timelineManager.removeClip(request.getClipToAdd().getId());
     }
 
 }

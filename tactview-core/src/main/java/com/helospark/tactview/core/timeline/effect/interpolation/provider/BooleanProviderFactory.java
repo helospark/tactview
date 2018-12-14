@@ -3,21 +3,21 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.timeline.effect.interpolation.AbstractKeyframeableEffectDesSerFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.ReflectionUtil;
-import com.helospark.tactview.core.util.SavedContentAddable;
 
-public class BooleanProviderFactory implements DesSerFactory<BooleanProvider> {
+public class BooleanProviderFactory extends AbstractKeyframeableEffectDesSerFactory<BooleanProvider> {
 
     @Override
-    public void addDataForDeserialize(BooleanProvider instance, Map<String, Object> data) {
+    public void addDataForDeserializeInternal(BooleanProvider instance, Map<String, Object> data) {
         data.put("interpolator", instance.doubleInterpolator);
     }
 
     @Override
-    public BooleanProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
-        return new BooleanProvider(ReflectionUtil.deserialize(data.get("interpolator"), DoubleInterpolator.class));
+    public BooleanProvider deserializeInternal(JsonNode data, BooleanProvider currentFieldValue) {
+        BooleanProvider result = new BooleanProvider(ReflectionUtil.deserialize(data.get("interpolator"), DoubleInterpolator.class, currentFieldValue.doubleInterpolator));
+        return result;
     }
 
 }

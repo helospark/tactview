@@ -10,7 +10,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class RectangleProvider extends KeyframeableEffect {
-    private List<PointProvider> pointProviders;
+    List<PointProvider> pointProviders;
 
     public RectangleProvider(List<PointProvider> pointProviders) {
         this.pointProviders = pointProviders;

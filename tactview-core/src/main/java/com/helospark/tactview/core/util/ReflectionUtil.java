@@ -85,7 +85,7 @@ public class ReflectionUtil {
                 LOGGER.warn("Unable to load field {}, using default value", fieldName);
             } else {
                 field.setAccessible(true);
-                Object newValue = deserializeWithValue(nodeValue, Object.class, (SavedContentAddable<?>) field.get(instance));
+                Object newValue = deserialize(nodeValue, Object.class, (SavedContentAddable<?>) field.get(instance));
                 field.set(instance, newValue);
             }
         } catch (Exception e) {
@@ -93,11 +93,7 @@ public class ReflectionUtil {
         }
     }
 
-    public static <T> T deserialize(JsonNode nodeValue, Class<T> toClass) {
-        return deserializeWithValue(nodeValue, toClass, null);
-    }
-
-    private static <T> T deserializeWithValue(JsonNode nodeValue, Class<T> toClass, SavedContentAddable<?> currentValue) {
+    public static <T> T deserialize(JsonNode nodeValue, Class<T> toClass, SavedContentAddable<?> currentValue) {
         try {
             String deserializer = nodeValue.get("deserializer").textValue();
 

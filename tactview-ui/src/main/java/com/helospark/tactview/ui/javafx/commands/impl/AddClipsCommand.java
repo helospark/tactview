@@ -28,7 +28,7 @@ public class AddClipsCommand implements UiCommand {
 
     @Override
     public void revert() {
-        timelineManager.removeResource(addedClipId);
+        timelineManager.removeClip(addedClipId);
     }
 
     public String getAddedClipId() {
