@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.api.SaveLoadContributor;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
@@ -47,7 +48,7 @@ import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMess
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
-public class TimelineManager {
+public class TimelineManager implements SaveLoadContributor {
     private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     // state
     private List<StatelessVideoEffect> globalEffects;
@@ -439,8 +440,8 @@ public class TimelineManager {
 
         findChannelIndex(channelId)
                 .ifPresent(index -> {
-                    channels.remove(index);
-                    messagingService.sendAsyncMessage(new ChannelRemovedMessage(channelId));
+                    channels.remove(index.intValue());
+                    messagingService.sendMessage(new ChannelRemovedMessage(channelId));
                 });
     }
 
@@ -587,6 +588,7 @@ public class TimelineManager {
         addClip(channel, cuttedParts.get(1));
     }
 
+    @Override
     public void generateSavedContent(Map<String, Object> generatedContent) {
         List<Object> channelContent = new ArrayList<>();
         for (TimelineChannel channel : channels) {
@@ -595,6 +597,7 @@ public class TimelineManager {
         generatedContent.put("channels", channelContent);
     }
 
+    @Override
     public void loadFrom(JsonNode tree) {
         for (var channelToRemove : channels) {
             removeChannel(channelToRemove.getId());

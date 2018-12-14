@@ -3,10 +3,20 @@ package com.helospark.tactview.ui.javafx.repository;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Order;
+import com.helospark.tactview.core.api.SaveLoadContributor;
+import com.helospark.tactview.core.util.StaticObjectMapper;
+
+import javafx.application.Platform;
 
 @Component
-public class NameToIdRepository {
+@Order(value = 1)
+public class NameToIdRepository implements SaveLoadContributor {
     private Map<String, String> nameToId = new HashMap<>();
     private Map<String, String> idToName = new HashMap<>();
 
@@ -33,6 +43,8 @@ public class NameToIdRepository {
     }
 
     public void addNameForId(String name, String id) {
+        String originalName = idToName.get(id);
+        nameToId.remove(originalName);
         nameToId.put(name, id);
         idToName.put(id, name);
     }
@@ -61,5 +73,35 @@ public class NameToIdRepository {
 
     public boolean containsName(String text) {
         return nameToId.get(text) != null;
+    }
+
+    @Override
+    public void generateSavedContent(Map<String, Object> generatedContent) {
+        generatedContent.put("nameToIdMap", nameToId);
+    }
+
+    @Override
+    public void loadFrom(JsonNode tree) {
+        ObjectMapper mapper = StaticObjectMapper.objectMapper;
+
+        try {
+            JsonNode mapNode = tree.get("nameToIdMap");
+
+            TypeReference<HashMap<String, String>> typeRef = new TypeReference<HashMap<String, String>>() {
+            };
+
+            JavaType jt = mapper.getTypeFactory().constructType(typeRef);
+            Map<String, String> newNameToId = new HashMap<>(mapper.readValue(mapper.treeAsTokens(mapNode), jt));
+            Map<String, String> newIdToName = new HashMap<>();
+            for (var entry : newNameToId.entrySet()) {
+                newIdToName.put(entry.getValue(), entry.getKey());
+            }
+            Platform.runLater(() -> {
+                this.nameToId = newNameToId;
+                this.idToName = newIdToName;
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

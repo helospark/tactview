@@ -30,6 +30,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         this.id = UUID.randomUUID().toString();
         this.interval = interval;
         this.type = type;
+        initializeValueProvider();
     }
 
     public TimelineClip(TimelineClip clip) {

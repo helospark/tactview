@@ -20,13 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
+import com.helospark.tactview.core.api.SaveLoadContributor;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
@@ -95,11 +95,12 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     private void setupDefaultKeyCombinations() {
         // TODO: this should be only done if the user has not changed them
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.S),
-                useHandler("Undo", event -> {
+                useHandler("Save", event -> {
                     try {
                         Map<String, Object> result = new LinkedHashMap<>();
 
-                        timelineManager.generateSavedContent(result);
+                        context.getListOfBeans(SaveLoadContributor.class)
+                                .forEach(a -> a.generateSavedContent(result));
 
                         ObjectMapper mapper = StaticObjectMapper.objectMapper;
                         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -115,18 +116,16 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     }
                 }));
         keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.L),
-                useHandler("Undo", event -> {
+                useHandler("Load", event -> {
                     try {
                         ObjectMapper mapper = StaticObjectMapper.objectMapper;
 
-                        TypeReference<LinkedHashMap<String, Object>> typeRef = new TypeReference<LinkedHashMap<String, Object>>() {
-                        };
-
-                        String content = new String(Files.readAllBytes(Paths.get("/tmp/1544795549407.json")), StandardCharsets.UTF_8);
+                        String content = new String(Files.readAllBytes(Paths.get("/tmp/1544802085137.json")), StandardCharsets.UTF_8);
 
                         JsonNode tree = mapper.readTree(content);
 
-                        timelineManager.loadFrom(tree);
+                        context.getListOfBeans(SaveLoadContributor.class)
+                                .forEach(a -> a.loadFrom(tree));
 
                     } catch (FileNotFoundException e) {
                         // TODO Auto-generated catch block
