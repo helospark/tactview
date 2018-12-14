@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -35,8 +36,8 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public TrigonometricWrapEffect(JsonNode node, IndependentPixelOperation independentPixelOperation2) {
-        super(node);
+    public TrigonometricWrapEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+        super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }
 

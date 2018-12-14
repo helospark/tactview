@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.f
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.RepeatableRandom;
@@ -16,10 +17,10 @@ public class RandomDoubleInterpolatorFactory implements DesSerFactory<RandomDoub
     }
 
     @Override
-    public RandomDoubleInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+    public RandomDoubleInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         RandomDoubleInterpolator currentValue = (RandomDoubleInterpolator) currentFieldValue;
         RandomDoubleInterpolator result = new RandomDoubleInterpolator(currentValue.min, currentValue.max, currentValue.changeScale);
-        result.repeatableRandom = ReflectionUtil.deserialize(data.get("repeatableRandom"), RepeatableRandom.class, currentValue.repeatableRandom);
+        result.repeatableRandom = ReflectionUtil.deserialize(data.get("repeatableRandom"), RepeatableRandom.class, currentValue.repeatableRandom, loadMetadata);
         return result;
     }
 

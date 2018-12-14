@@ -8,6 +8,6 @@ public interface SaveLoadContributor {
 
     public void generateSavedContent(Map<String, Object> generatedContent);
 
-    public void loadFrom(JsonNode tree);
+    public void loadFrom(JsonNode tree, LoadMetadata metadata);
 
 }

@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.api.SaveLoadContributor;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -598,7 +599,7 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     @Override
-    public void loadFrom(JsonNode tree) {
+    public void loadFrom(JsonNode tree, LoadMetadata loadMetadata) {
         for (var channelToRemove : channels) {
             removeChannel(channelToRemove.getId());
         }
@@ -611,13 +612,13 @@ public class TimelineManager implements SaveLoadContributor {
 
             JsonNode clips = savedChannel.get("clips");
             for (var savedClip : clips) {
-                TimelineClip restoredClip = clipFactoryChain.restoreClip(savedClip);
+                TimelineClip restoredClip = clipFactoryChain.restoreClip(savedClip, loadMetadata);
 
                 JsonNode savedEffectChannels = savedClip.get("effectChannels");
                 int channelId = 0;
                 for (var savedEffectChannel : savedEffectChannels) {
                     for (var savedEffect : savedEffectChannel) {
-                        StatelessEffect restoredEffect = effectFactoryChain.restoreEffect(savedEffect);
+                        StatelessEffect restoredEffect = effectFactoryChain.restoreEffect(savedEffect, loadMetadata);
                         restoredClip.addEffectAtChannel(channelId, restoredEffect);
                     }
                     ++channelId;

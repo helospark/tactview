@@ -6,6 +6,7 @@ import java.nio.file.Files;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.opencv.OpenCvImageDecorderDecorator;
 import com.helospark.tactview.core.timeline.AddClipRequest;
@@ -46,12 +47,12 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
     }
 
     @Override
-    public TimelineClip restoreClip(JsonNode savedClip) {
+    public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
         File file = new File(savedClip.get("backingFile").asText());
         ImageMetadata metadata = readMetadata(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, mediaDecoder);
 
-        return new ImageClip(metadata, videoSource, savedClip);
+        return new ImageClip(metadata, videoSource, savedClip, loadMetadata);
     }
 
     @Override

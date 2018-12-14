@@ -33,8 +33,8 @@ public class CoreClipFactoryChainItemConfiguration {
                 request -> {
                     return new SingleColorProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 },
-                node -> {
-                    return new SingleColorProceduralClip(metadata, node, independentPixelOperation);
+                (node, loadMetadata) -> {
+                    return new SingleColorProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 
@@ -44,8 +44,8 @@ public class CoreClipFactoryChainItemConfiguration {
                 request -> {
                     return new TextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter);
                 },
-                node -> {
-                    return new TextProceduralClip(metadata, node, bufferedImageToClipFrameResultConverter);
+                (node, loadMetadata) -> {
+                    return new TextProceduralClip(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter);
                 });
     }
 
@@ -55,8 +55,8 @@ public class CoreClipFactoryChainItemConfiguration {
                 request -> {
                     return new RadialGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 },
-                node -> {
-                    return new RadialGradientProceduralEffect(metadata, node, independentPixelOperation);
+                (node, loadMetadata) -> {
+                    return new RadialGradientProceduralEffect(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 
@@ -66,8 +66,8 @@ public class CoreClipFactoryChainItemConfiguration {
                 request -> {
                     return new LinearGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 },
-                node -> {
-                    return new LinearGradientProceduralEffect(metadata, node, independentPixelOperation);
+                (node, loadMetadata) -> {
+                    return new LinearGradientProceduralEffect(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 
@@ -77,8 +77,8 @@ public class CoreClipFactoryChainItemConfiguration {
                 request -> {
                     return new GaussianNoiseProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 },
-                node -> {
-                    return new GaussianNoiseProceduralClip(metadata, node, independentPixelOperation);
+                (node, loadMetadata) -> {
+                    return new GaussianNoiseProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 
@@ -90,8 +90,8 @@ public class CoreClipFactoryChainItemConfiguration {
                     return new DrawnHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), scaledBrushProvider, normalBlendModeStrategy, alphaBlitService,
                             bresenhemPixelProvider);
                 },
-                node -> {
-                    return new DrawnHighlightProceduralEffect(metadata, node, scaledBrushProvider, normalBlendModeStrategy, alphaBlitService, bresenhemPixelProvider);
+                (node, loadMetadata) -> {
+                    return new DrawnHighlightProceduralEffect(metadata, node, loadMetadata, scaledBrushProvider, normalBlendModeStrategy, alphaBlitService, bresenhemPixelProvider);
                 });
     }
 }

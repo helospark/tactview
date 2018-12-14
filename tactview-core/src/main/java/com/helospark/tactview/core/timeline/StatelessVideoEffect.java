@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
@@ -14,8 +15,8 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
         super(effect);
     }
 
-    public StatelessVideoEffect(JsonNode node) {
-        super(node);
+    public StatelessVideoEffect(JsonNode node, LoadMetadata loadMetadata) {
+        super(node, loadMetadata);
     }
 
     public abstract ReadOnlyClipImage createFrame(StatelessEffectRequest request);

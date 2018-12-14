@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.AbstractKeyframeableEffectDesSerFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -16,9 +17,9 @@ public class ValueListProviderFactory extends AbstractKeyframeableEffectDesSerFa
     }
 
     @Override
-    public ValueListProvider<?> deserializeInternal(JsonNode data, ValueListProvider<?> currentFieldValue) {
+    public ValueListProvider<?> deserializeInternal(JsonNode data, ValueListProvider<?> currentFieldValue, LoadMetadata loadMetadata) {
         ValueListProvider currentValueProvider = currentFieldValue;
-        StringInterpolator interpolator = ReflectionUtil.deserialize(data.get("stringInterpolator"), StringInterpolator.class, currentFieldValue.stringInterpolator);
+        StringInterpolator interpolator = ReflectionUtil.deserialize(data.get("stringInterpolator"), StringInterpolator.class, currentFieldValue.stringInterpolator, loadMetadata);
         return new ValueListProvider<ValueListElement>(new ArrayList<>(currentValueProvider.elements.values()), interpolator);
     }
 

@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.MediaMetadata;
 import com.helospark.tactview.core.decoder.gif.GifMediaDecoder;
 import com.helospark.tactview.core.decoder.gif.GifVideoMetadata;
@@ -47,12 +48,12 @@ public class GifClipFactory implements ClipFactory {
     }
 
     @Override
-    public TimelineClip restoreClip(JsonNode savedClip) {
+    public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
         File file = new File(savedClip.get("backingFile").asText());
         GifVideoMetadata metadata = gifMediaDecoder.readMetadata(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, gifMediaDecoder);
 
-        return new VideoClip(metadata, videoSource, savedClip);
+        return new VideoClip(metadata, videoSource, savedClip, loadMetadata);
     }
 
     @Override

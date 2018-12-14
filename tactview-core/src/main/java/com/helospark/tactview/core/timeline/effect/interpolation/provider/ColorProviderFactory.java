@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.AbstractKeyframeableEffectDesSerFactory;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -16,10 +17,10 @@ public class ColorProviderFactory extends AbstractKeyframeableEffectDesSerFactor
     }
 
     @Override
-    public ColorProvider deserializeInternal(JsonNode data, ColorProvider currentFieldValue) {
-        return new ColorProvider(ReflectionUtil.deserialize(data.get("redProvider"), DoubleProvider.class, currentFieldValue.redProvider),
-                ReflectionUtil.deserialize(data.get("greenProvider"), DoubleProvider.class, currentFieldValue.greenProvider),
-                ReflectionUtil.deserialize(data.get("blueProvider"), DoubleProvider.class, currentFieldValue.blueProvider));
+    public ColorProvider deserializeInternal(JsonNode data, ColorProvider currentFieldValue, LoadMetadata loadMetadata) {
+        return new ColorProvider(ReflectionUtil.deserialize(data.get("redProvider"), DoubleProvider.class, currentFieldValue.redProvider, loadMetadata),
+                ReflectionUtil.deserialize(data.get("greenProvider"), DoubleProvider.class, currentFieldValue.greenProvider, loadMetadata),
+                ReflectionUtil.deserialize(data.get("blueProvider"), DoubleProvider.class, currentFieldValue.blueProvider, loadMetadata));
     }
 
 }

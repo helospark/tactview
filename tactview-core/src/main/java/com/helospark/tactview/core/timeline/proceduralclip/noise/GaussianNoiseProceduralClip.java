@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
@@ -35,8 +36,8 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
         super(gaussianNoiseProceduralClip);
     }
 
-    public GaussianNoiseProceduralClip(ImageMetadata metadata, JsonNode node, IndependentPixelOperation independentPixelOperation2) {
-        super(metadata, node);
+    public GaussianNoiseProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+        super(metadata, node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }
 

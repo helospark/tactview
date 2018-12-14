@@ -9,6 +9,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
@@ -23,7 +24,7 @@ public class MultiKeyframeBasedDoubleInterpolatorFactory implements DesSerFactor
     }
 
     @Override
-    public MultiKeyframeBasedDoubleInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+    public MultiKeyframeBasedDoubleInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
             Double defaultValue = data.get("defaultValue").asDouble();
             TreeMap<TimelinePosition, Double> values = objectMapper.readValue(

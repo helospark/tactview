@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -26,8 +27,8 @@ public class DesaturizeEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DesaturizeEffect(JsonNode node, IndependentPixelOperation independentPixelOperations2) {
-        super(node);
+    public DesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations2) {
+        super(node, loadMetadata);
         this.independentPixelOperations = independentPixelOperations2;
     }
 

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.AbstractKeyframeableEffectDesSerFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -15,11 +16,11 @@ public class IntegerProviderFactory extends AbstractKeyframeableEffectDesSerFact
     }
 
     @Override
-    public IntegerProvider deserializeInternal(JsonNode data, IntegerProvider currentFieldValue) {
+    public IntegerProvider deserializeInternal(JsonNode data, IntegerProvider currentFieldValue, LoadMetadata loadMetadata) {
         IntegerProvider current = currentFieldValue;
 
         IntegerProvider result = new IntegerProvider(current.getMin(), current.getMax(),
-                ReflectionUtil.deserialize(data.get("interpolator"), DoubleInterpolator.class, currentFieldValue.interpolator));
+                ReflectionUtil.deserialize(data.get("interpolator"), DoubleInterpolator.class, currentFieldValue.interpolator, loadMetadata));
 
         return result;
     }

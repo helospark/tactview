@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -45,15 +46,15 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         }
     }
 
-    public TimelineClip(JsonNode savedClip) {
+    public TimelineClip(JsonNode savedClip, LoadMetadata loadMetadata) {
         this.id = savedClip.get("id").asText();
-        this.interval = toValue(savedClip, "interval", TimelineInterval.class);
-        this.type = toValue(savedClip, "type", TimelineClipType.class);
-        this.renderOffset = toValue(savedClip, "renderOffset", TimelineLength.class);
+        this.interval = toValue(savedClip, loadMetadata, "interval", TimelineInterval.class);
+        this.type = toValue(savedClip, loadMetadata, "type", TimelineClipType.class);
+        this.renderOffset = toValue(savedClip, loadMetadata, "renderOffset", TimelineLength.class);
         this.creatorFactoryId = savedClip.get("creatorFactoryId").asText();
 
         initializeValueProvider();
-        ReflectionUtil.realoadSavedFields(savedClip.get("savedFields"), this);
+        ReflectionUtil.realoadSavedFields(savedClip.get("savedFields"), this, loadMetadata);
     }
 
     public Object generateSavedContent() {

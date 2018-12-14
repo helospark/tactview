@@ -19,7 +19,7 @@ public class AudioStandardEffectConfiguration {
     public StandardEffectFactory volumeEffect(OpenCVBasedGaussianBlur gaussianBlur, MessagingService messagingService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new VolumeAudioEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000))))
-                .withRestoreFactory(node -> new VolumeAudioEffect(node))
+                .withRestoreFactory((node, loadMetadata) -> new VolumeAudioEffect(node, loadMetadata))
                 .withName("Volume")
                 .withSupportedEffectId("volume")
                 .withSupportedClipTypes(List.of(TimelineClipType.AUDIO))

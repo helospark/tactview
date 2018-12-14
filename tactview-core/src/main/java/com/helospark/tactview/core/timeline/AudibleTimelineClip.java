@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -19,8 +20,8 @@ public abstract class AudibleTimelineClip extends TimelineClip {
         this.mediaMetadata = mediaMetadata;
     }
 
-    public AudibleTimelineClip(AudioMediaMetadata metadata, JsonNode savedClip) {
-        super(savedClip);
+    public AudibleTimelineClip(AudioMediaMetadata metadata, JsonNode savedClip, LoadMetadata loadMetadata) {
+        super(savedClip, loadMetadata);
         this.mediaMetadata = metadata;
     }
 

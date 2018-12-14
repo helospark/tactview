@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
@@ -57,8 +58,8 @@ public class TextProceduralClip extends ProceduralVisualClip {
         this.bufferedImageToClipFrameResultConverter = textProceduralClip.bufferedImageToClipFrameResultConverter;
     }
 
-    public TextProceduralClip(ImageMetadata metadata, JsonNode node, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {
-        super(metadata, node);
+    public TextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {
+        super(metadata, node, loadMetadata);
         this.bufferedImageToClipFrameResultConverter = bufferedImageToClipFrameResultConverter2;
     }
 

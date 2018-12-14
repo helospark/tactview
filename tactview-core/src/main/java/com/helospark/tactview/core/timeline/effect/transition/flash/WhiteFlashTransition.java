@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.transition.flash;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -29,8 +30,8 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this);
     }
 
-    public WhiteFlashTransition(JsonNode node, IndependentPixelOperation independentPixelOperation2) {
-        super(node);
+    public WhiteFlashTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+        super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }
 

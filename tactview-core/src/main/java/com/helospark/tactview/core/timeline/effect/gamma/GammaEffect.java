@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.gamma;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -29,8 +30,8 @@ public class GammaEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public GammaEffect(JsonNode node, IndependentPixelOperation independentPixelOperations) {
-        super(node);
+    public GammaEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations) {
+        super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperations;
     }
 

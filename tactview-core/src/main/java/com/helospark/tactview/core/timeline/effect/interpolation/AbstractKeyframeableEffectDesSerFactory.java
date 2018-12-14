@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
 
@@ -15,8 +16,8 @@ public abstract class AbstractKeyframeableEffectDesSerFactory<T extends Keyframe
     }
 
     @Override
-    public T deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
-        T result = deserializeInternal(data, (T) currentFieldValue);
+    public T deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
+        T result = deserializeInternal(data, (T) currentFieldValue, loadMetadata);
         KeyframeableEffect current = (KeyframeableEffect) currentFieldValue;
         result.id = data.get("id").asText();
         return result;
@@ -24,5 +25,5 @@ public abstract class AbstractKeyframeableEffectDesSerFactory<T extends Keyframe
 
     protected abstract void addDataForDeserializeInternal(T instance, Map<String, Object> data);
 
-    protected abstract T deserializeInternal(JsonNode data, T currentFieldValue);
+    protected abstract T deserializeInternal(JsonNode data, T currentFieldValue, LoadMetadata loadMetadata);
 }

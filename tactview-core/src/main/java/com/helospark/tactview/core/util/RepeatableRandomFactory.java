@@ -3,6 +3,7 @@ package com.helospark.tactview.core.util;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 
 public class RepeatableRandomFactory implements DesSerFactory<RepeatableRandom> {
 
@@ -12,7 +13,7 @@ public class RepeatableRandomFactory implements DesSerFactory<RepeatableRandom> 
     }
 
     @Override
-    public RepeatableRandom deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+    public RepeatableRandom deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         Integer seed = data.get("seed").asInt();
         return new RepeatableRandom(seed);
     }

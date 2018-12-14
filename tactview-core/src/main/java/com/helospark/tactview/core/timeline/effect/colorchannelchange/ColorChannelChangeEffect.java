@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -36,8 +37,8 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public ColorChannelChangeEffect(JsonNode node, IndependentPixelOperation independentPixelOperation2) {
-        super(node);
+    public ColorChannelChangeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+        super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }
 

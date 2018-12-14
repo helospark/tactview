@@ -2,11 +2,13 @@ package com.helospark.tactview.core.timeline.effect;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.annotation.Generated;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 
@@ -16,7 +18,7 @@ public class StandardEffectFactory implements EffectFactory {
     private String supportedEffectId;
     private String name;
     private Function<CreateEffectRequest, StatelessEffect> factory;
-    private Function<JsonNode, StatelessEffect> restoreFactory;
+    private BiFunction<JsonNode, LoadMetadata, StatelessEffect> restoreFactory;
 
     @Generated("SparkTools")
     private StandardEffectFactory(Builder builder) {
@@ -40,8 +42,8 @@ public class StandardEffectFactory implements EffectFactory {
     }
 
     @Override
-    public StatelessEffect restoreEffect(JsonNode node) {
-        return restoreFactory.apply(node);
+    public StatelessEffect restoreEffect(JsonNode node, LoadMetadata loadMetadata) {
+        return restoreFactory.apply(node, loadMetadata);
     }
 
     @Override
@@ -65,7 +67,7 @@ public class StandardEffectFactory implements EffectFactory {
         private String supportedEffectId;
         private String name;
         private Function<CreateEffectRequest, StatelessEffect> factory;
-        private Function<JsonNode, StatelessEffect> restoreFactory;
+        private BiFunction<JsonNode, LoadMetadata, StatelessEffect> restoreFactory;
 
         private Builder() {
         }
@@ -90,7 +92,7 @@ public class StandardEffectFactory implements EffectFactory {
             return this;
         }
 
-        public Builder withRestoreFactory(Function<JsonNode, StatelessEffect> restoreFactory) {
+        public Builder withRestoreFactory(BiFunction<JsonNode, LoadMetadata, StatelessEffect> restoreFactory) {
             this.restoreFactory = restoreFactory;
             return this;
         }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -42,8 +43,8 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DisplacementMapEffect(JsonNode node, ScaleService scaleService2, IndependentPixelOperation independentPixelOperation2) {
-        super(node);
+    public DisplacementMapEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2, IndependentPixelOperation independentPixelOperation2) {
+        super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -31,8 +32,8 @@ public class ImageClip extends VisualTimelineClip {
         this.mediaMetadata = imageClip.mediaMetadata;
     }
 
-    public ImageClip(VisualMediaMetadata metadata, VisualMediaSource videoSource, JsonNode savedClip) {
-        super(metadata, savedClip);
+    public ImageClip(VisualMediaMetadata metadata, VisualMediaSource videoSource, JsonNode savedClip, LoadMetadata loadMetadata) {
+        super(metadata, savedClip, loadMetadata);
         this.backingSource = videoSource;
         this.mediaMetadata = metadata;
     }

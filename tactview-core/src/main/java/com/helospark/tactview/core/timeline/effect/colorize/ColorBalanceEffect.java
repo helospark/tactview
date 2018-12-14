@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.math.DoubleMath;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -62,8 +63,8 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(colorBalance, this);
     }
 
-    public ColorBalanceEffect(JsonNode node, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2, ColorizeService colorizeService2) {
-        super(node);
+    public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2, ColorizeService colorizeService2) {
+        super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
         this.brignessContrastService = brignessContrastService2;
         this.colorizeService = colorizeService2;

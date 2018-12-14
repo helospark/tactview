@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.StaticObjectMapper;
@@ -28,12 +29,12 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
         this.interval = effect.interval;
     }
 
-    public StatelessEffect(JsonNode node) {
+    public StatelessEffect(JsonNode node, LoadMetadata loadMetadata) {
         this.id = node.get("id").asText();
-        this.interval = StaticObjectMapper.toValue(node, "interval", TimelineInterval.class);
+        this.interval = StaticObjectMapper.toValue(node, loadMetadata, "interval", TimelineInterval.class);
         this.factoryId = node.get("factoryId").asText();
         initializeValueProvider(); // initialize defaults
-        ReflectionUtil.realoadSavedFields(node.get("savedFields"), this);
+        ReflectionUtil.realoadSavedFields(node.get("savedFields"), this, loadMetadata);
     }
 
     protected Object generateSavedContent() {

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.threshold;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -31,8 +32,8 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
         this.thresholdImplementation = adaptiveThresholdEffect.thresholdImplementation;
     }
 
-    public AdaptiveThresholdEffect(JsonNode node, OpenCVThresholdImplementation openCVThresholdImplementation) {
-        super(node);
+    public AdaptiveThresholdEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVThresholdImplementation openCVThresholdImplementation) {
+        super(node, loadMetadata);
         this.thresholdImplementation = openCVThresholdImplementation;
     }
 

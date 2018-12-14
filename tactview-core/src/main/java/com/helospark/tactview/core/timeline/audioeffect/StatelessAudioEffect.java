@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.audioeffect;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -16,8 +17,8 @@ public abstract class StatelessAudioEffect extends StatelessEffect {
         super(volumeAudioEffect);
     }
 
-    public StatelessAudioEffect(JsonNode node) {
-        super(node);
+    public StatelessAudioEffect(JsonNode node, LoadMetadata loadMetadata) {
+        super(node, loadMetadata);
     }
 
     public AudioFrameResult applyEffect(AudioEffectRequest request) {

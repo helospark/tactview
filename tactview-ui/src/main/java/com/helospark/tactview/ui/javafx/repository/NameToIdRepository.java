@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.api.SaveLoadContributor;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
@@ -81,7 +82,7 @@ public class NameToIdRepository implements SaveLoadContributor {
     }
 
     @Override
-    public void loadFrom(JsonNode tree) {
+    public void loadFrom(JsonNode tree, LoadMetadata metadata) {
         ObjectMapper mapper = StaticObjectMapper.objectMapper;
 
         try {

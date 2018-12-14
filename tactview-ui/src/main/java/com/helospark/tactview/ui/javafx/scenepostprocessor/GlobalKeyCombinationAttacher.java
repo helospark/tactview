@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.api.SaveLoadContributor;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.util.StaticObjectMapper;
@@ -120,12 +121,14 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     try {
                         ObjectMapper mapper = StaticObjectMapper.objectMapper;
 
-                        String content = new String(Files.readAllBytes(Paths.get("/tmp/1544802085137.json")), StandardCharsets.UTF_8);
+                        String fileName = "/tmp/1544802085137.json";
+                        String content = new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
 
                         JsonNode tree = mapper.readTree(content);
 
+                        LoadMetadata loadMetadata = new LoadMetadata(fileName);
                         context.getListOfBeans(SaveLoadContributor.class)
-                                .forEach(a -> a.loadFrom(tree));
+                                .forEach(a -> a.loadFrom(tree, loadMetadata));
 
                     } catch (FileNotFoundException e) {
                         // TODO Auto-generated catch block

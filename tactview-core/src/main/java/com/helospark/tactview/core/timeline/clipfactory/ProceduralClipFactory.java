@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
@@ -57,13 +58,13 @@ public class ProceduralClipFactory implements ClipFactory {
     }
 
     @Override
-    public TimelineClip restoreClip(JsonNode savedClip) {
+    public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata metadata) {
         String proceduralFactoryId = savedClip.get("proceduralFactoryId").asText();
         ProceduralClipFactoryChainItem proceduralFactory = factories.stream()
                 .filter(factory -> factory.getProceduralClipId().equals(proceduralFactoryId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Nothing can handle " + proceduralFactoryId));
-        ProceduralVisualClip result = proceduralFactory.restoreClip(savedClip);
+        ProceduralVisualClip result = proceduralFactory.restoreClip(savedClip, metadata);
         result.setProceduralFactoryId(proceduralFactoryId);
         return result;
     }

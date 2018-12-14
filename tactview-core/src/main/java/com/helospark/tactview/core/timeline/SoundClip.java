@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaDataRequest;
 import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
@@ -25,11 +26,11 @@ public class SoundClip extends AudibleTimelineClip {
         this.startPosition = startPosition;
     }
 
-    public SoundClip(AudioMediaMetadata metadata, AVCodecAudioMediaDecoderDecorator mediaDecoder, AudioMediaSource videoSource, JsonNode savedClip) {
-        super(metadata, savedClip);
+    public SoundClip(AudioMediaMetadata metadata, AVCodecAudioMediaDecoderDecorator mediaDecoder, AudioMediaSource videoSource, JsonNode savedClip, LoadMetadata loadMetadata) {
+        super(metadata, savedClip, loadMetadata);
         this.mediaDecoder = mediaDecoder;
         this.backingSource = videoSource;
-        this.startPosition = StaticObjectMapper.toValue(savedClip, "startPosition", TimelinePosition.class);
+        this.startPosition = StaticObjectMapper.toValue(savedClip, loadMetadata, "startPosition", TimelinePosition.class);
     }
 
     @Override

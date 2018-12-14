@@ -5,6 +5,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
 
@@ -21,7 +22,7 @@ public class ConstantInterpolatorFactory implements DesSerFactory<ConstantInterp
     }
 
     @Override
-    public ConstantInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue) {
+    public ConstantInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
             return objectMapper.readValue(data.get("instance").textValue(), ConstantInterpolator.class);
         } catch (Exception e) {

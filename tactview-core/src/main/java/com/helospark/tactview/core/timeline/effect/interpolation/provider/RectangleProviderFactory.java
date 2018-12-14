@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.AbstractKeyframeableEffectDesSerFactory;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -16,11 +17,11 @@ public class RectangleProviderFactory extends AbstractKeyframeableEffectDesSerFa
     }
 
     @Override
-    public RectangleProvider deserializeInternal(JsonNode data, RectangleProvider currentFieldValue) {
+    public RectangleProvider deserializeInternal(JsonNode data, RectangleProvider currentFieldValue, LoadMetadata loadMetadata) {
         List<PointProvider> points = new ArrayList<>();
 
         for (int i = 0; i < 6; ++i) {
-            PointProvider point = ReflectionUtil.deserialize(data.get(i), PointProvider.class, currentFieldValue.pointProviders.get(i));
+            PointProvider point = ReflectionUtil.deserialize(data.get(i), PointProvider.class, currentFieldValue.pointProviders.get(i), loadMetadata);
             points.add(point);
         }
 

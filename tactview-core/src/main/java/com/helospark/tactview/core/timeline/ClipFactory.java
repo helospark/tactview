@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.MediaMetadata;
 
 public interface ClipFactory {
@@ -13,6 +14,6 @@ public interface ClipFactory {
 
     public String getId();
 
-    TimelineClip restoreClip(JsonNode savedClip);
+    TimelineClip restoreClip(JsonNode savedClip, LoadMetadata metadata);
 
 }

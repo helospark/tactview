@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
@@ -24,8 +25,8 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
         super(proceduralVisualClip);
     }
 
-    public ProceduralVisualClip(ImageMetadata metadata, JsonNode node) {
-        super(metadata, node);
+    public ProceduralVisualClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata) {
+        super(metadata, node, loadMetadata);
     }
 
     @Override

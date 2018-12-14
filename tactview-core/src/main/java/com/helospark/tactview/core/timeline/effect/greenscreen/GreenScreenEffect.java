@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -28,8 +29,8 @@ public class GreenScreenEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public GreenScreenEffect(JsonNode node, OpenCVGreenScreenImplementation openCVGreenScreenImplementation) {
-        super(node);
+    public GreenScreenEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVGreenScreenImplementation openCVGreenScreenImplementation) {
+        super(node, loadMetadata);
         this.implementation = openCVGreenScreenImplementation;
     }
 

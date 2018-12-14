@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
@@ -46,8 +47,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     }
 
-    public VisualTimelineClip(VisualMediaMetadata metadata, JsonNode savedClip) {
-        super(savedClip);
+    public VisualTimelineClip(VisualMediaMetadata metadata, JsonNode savedClip, LoadMetadata loadMetadata) {
+        super(savedClip, loadMetadata);
         this.mediaMetadata = metadata;
     }
 

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.api.LoadMetadata;
 
 @Component
 public class ClipFactoryChain {
@@ -29,13 +30,13 @@ public class ClipFactoryChain {
                 .collect(Collectors.toList());
     }
 
-    public TimelineClip restoreClip(JsonNode savedClip) {
+    public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata metadata) {
         String factoryId = savedClip.get("creatorFactoryId").asText();
         ClipFactory foundFactory = clipFactoryChain.stream()
                 .filter(factory -> factory.getId().equals(factoryId))
                 .findFirst()
                 .orElseThrow();
-        TimelineClip result = foundFactory.restoreClip(savedClip);
+        TimelineClip result = foundFactory.restoreClip(savedClip, metadata);
         return result;
     }
 

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.api.LoadMetadata;
 
 public class ReflectionUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtil.class);
@@ -63,21 +64,21 @@ public class ReflectionUtil {
         }
     }
 
-    public static void realoadSavedFields(JsonNode jsonNode, Object instance) {
-        realoadSaveableFieldsRecursively(instance, instance.getClass(), jsonNode);
+    public static void realoadSavedFields(JsonNode jsonNode, Object instance, LoadMetadata loadMetadata) {
+        realoadSaveableFieldsRecursively(instance, instance.getClass(), jsonNode, loadMetadata);
     }
 
-    private static void realoadSaveableFieldsRecursively(Object instance, Class<? extends Object> clazz, JsonNode jsonNode) {
+    private static void realoadSaveableFieldsRecursively(Object instance, Class<? extends Object> clazz, JsonNode jsonNode, LoadMetadata loadMetadata) {
         Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> SavedContentAddable.class.isAssignableFrom(field.getType()))
-                .forEach(field -> reloadField(instance, jsonNode, field));
+                .forEach(field -> reloadField(instance, jsonNode, field, loadMetadata));
         Class<?> superClass = clazz.getSuperclass();
         if (superClass != null) {
-            realoadSaveableFieldsRecursively(instance, superClass, jsonNode);
+            realoadSaveableFieldsRecursively(instance, superClass, jsonNode, loadMetadata);
         }
     }
 
-    private static void reloadField(Object instance, JsonNode jsonNode, Field field) {
+    private static void reloadField(Object instance, JsonNode jsonNode, Field field, LoadMetadata loadMetadata) {
         try {
             String fieldName = field.getName();
             JsonNode nodeValue = jsonNode.get(fieldName);
@@ -85,7 +86,7 @@ public class ReflectionUtil {
                 LOGGER.warn("Unable to load field {}, using default value", fieldName);
             } else {
                 field.setAccessible(true);
-                Object newValue = deserialize(nodeValue, Object.class, (SavedContentAddable<?>) field.get(instance));
+                Object newValue = deserialize(nodeValue, Object.class, (SavedContentAddable<?>) field.get(instance), loadMetadata);
                 field.set(instance, newValue);
             }
         } catch (Exception e) {
@@ -93,13 +94,13 @@ public class ReflectionUtil {
         }
     }
 
-    public static <T> T deserialize(JsonNode nodeValue, Class<T> toClass, SavedContentAddable<?> currentValue) {
+    public static <T> T deserialize(JsonNode nodeValue, Class<T> toClass, SavedContentAddable<?> currentValue, LoadMetadata loadMetadata) {
         try {
             String deserializer = nodeValue.get("deserializer").textValue();
 
             DesSerFactory<Object> factory = (DesSerFactory<Object>) Class.forName(deserializer).newInstance(); // we could also get from field
 
-            Object newValue = factory.deserialize(nodeValue, currentValue);
+            Object newValue = factory.deserialize(nodeValue, currentValue, loadMetadata);
             return toClass.cast(newValue);
         } catch (Exception e) {
             throw new RuntimeException(e);

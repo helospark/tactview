@@ -3,6 +3,7 @@ package com.helospark.tactview.core.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.helospark.tactview.core.api.LoadMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.deserializer.TimelinePositionMapDeserializer;
 
@@ -17,7 +18,7 @@ public class StaticObjectMapper {
         objectMapper.registerModule(module);
     }
 
-    public static <T> T toValue(JsonNode node, String name, Class<T> type) {
+    public static <T> T toValue(JsonNode node, LoadMetadata loadMetadata, String name, Class<T> type) {
         try {
             return objectMapper.treeToValue(node.get(name), type);
         } catch (Exception e) {
