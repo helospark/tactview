@@ -9,7 +9,6 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
@@ -74,7 +73,7 @@ public class RotateEffect extends StatelessVideoEffect {
 
     @Override
     public void initializeValueProvider() {
-        angleProvider = new DoubleProvider(0, 360, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0));
+        angleProvider = new DoubleProvider(0, 360, new MultiKeyframeBasedDoubleInterpolator(0.0));
     }
 
     @Override

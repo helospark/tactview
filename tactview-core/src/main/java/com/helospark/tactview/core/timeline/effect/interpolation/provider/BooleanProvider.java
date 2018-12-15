@@ -4,6 +4,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class BooleanProvider extends KeyframeableEffect {
@@ -48,4 +49,18 @@ public class BooleanProvider extends KeyframeableEffect {
         return BooleanProviderFactory.class;
     }
 
+    @Override
+    public boolean supportsKeyframes() {
+        return doubleInterpolator instanceof KeyframeSupportingInterpolator;
+    }
+
+    @Override
+    public boolean keyframesEnabled() {
+        return ((KeyframeSupportingInterpolator) doubleInterpolator).isUsingKeyframes();
+    }
+
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        ((KeyframeSupportingInterpolator) doubleInterpolator).setUseKeyframes(useKeyframes);
+    }
 }

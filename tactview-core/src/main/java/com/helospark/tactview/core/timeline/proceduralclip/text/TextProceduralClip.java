@@ -150,8 +150,8 @@ public class TextProceduralClip extends ProceduralVisualClip {
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)));
         fontProvider = new ValueListProvider<>(createFontList(), new StringInterpolator("Serif.plain"));
         alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StringInterpolator("left"));
-        italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
-        boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 0.0, new StepInterpolator()));
+        italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
+        boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
     }
 
     @Override

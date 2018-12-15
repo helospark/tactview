@@ -10,10 +10,11 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingDoubleInterpolator {
+public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingDoubleInterpolator, KeyframeSupportingInterpolator {
     protected TreeMap<TimelinePosition, Double> values;
     protected UnivariateInterpolator interpolatorImplementation = new LinearInterpolator();
     protected double defaultValue;
+    protected boolean useKeyframes;
 
     public MultiKeyframeBasedDoubleInterpolator(Double singleDefaultValue) {
         this.values = new TreeMap<>();
@@ -26,17 +27,6 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
         this.interpolatorImplementation = interpolatorImplementation;
     }
 
-    public MultiKeyframeBasedDoubleInterpolator(TimelinePosition singleDefaultKey, Double singleDefaultValue) {
-        this.values = new TreeMap<>();
-        values.put(singleDefaultKey, singleDefaultValue);
-    }
-
-    public MultiKeyframeBasedDoubleInterpolator(TimelinePosition singleDefaultKey, Double singleDefaultValue, UnivariateInterpolator interpolatorImplementation) {
-        this.values = new TreeMap<>();
-        values.put(singleDefaultKey, singleDefaultValue);
-        this.interpolatorImplementation = interpolatorImplementation;
-    }
-
     public MultiKeyframeBasedDoubleInterpolator(TreeMap<TimelinePosition, Double> values) {
         this.values = values;
     }
@@ -45,7 +35,7 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
     public Double valueAt(TimelinePosition position) {
         Entry<TimelinePosition, Double> lastEntry = values.lastEntry();
         Entry<TimelinePosition, Double> firstEntry = values.firstEntry();
-        if (values.isEmpty()) {
+        if (values.isEmpty() || !useKeyframes) {
             return defaultValue;
         } else if (values.size() == 1) {
             return values.firstEntry().getValue();
@@ -81,7 +71,12 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
 
     @Override
     public void valueAdded(TimelinePosition globalTimelinePosition, String value) {
-        values.put(globalTimelinePosition, Double.valueOf(value));
+        Double valueToSet = Double.valueOf(value);
+        if (!useKeyframes) {
+            defaultValue = valueToSet;
+        } else {
+            values.put(globalTimelinePosition, valueToSet);
+        }
     }
 
     @Override
@@ -115,6 +110,16 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
     @Override
     public Class<? extends DesSerFactory<? extends EffectInterpolator>> generateSerializableContent() {
         return MultiKeyframeBasedDoubleInterpolatorFactory.class;
+    }
+
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        this.useKeyframes = useKeyframes;
+    }
+
+    @Override
+    public boolean isUsingKeyframes() {
+        return useKeyframes;
     }
 
 }

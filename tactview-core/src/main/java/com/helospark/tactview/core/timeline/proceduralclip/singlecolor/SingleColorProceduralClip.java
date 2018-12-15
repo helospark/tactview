@@ -74,7 +74,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(1.0)));
 
-        alphaProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 255.0));
+        alphaProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(255.0));
     }
 
     @Override

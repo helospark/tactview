@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
@@ -36,6 +37,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
@@ -45,6 +48,9 @@ import javafx.scene.layout.VBox;
 
 @Component
 public class PropertyView {
+    private final Image keyframesOn;
+    private final Image keyframesOff;
+
     private FlowPane propertyWindow;
     private Map<String, GridPane> details = new HashMap<>();
     private Map<String, EffectPropertyPage> effectProperties = new HashMap<>();
@@ -69,6 +75,9 @@ public class PropertyView {
         this.detailsGridChain = detailsGridChain;
         this.nameToIdRepository = nameToIdRepository;
         this.notificationService = notificationService;
+
+        keyframesOn = new Image(getClass().getResourceAsStream("/clock_on.png"));
+        keyframesOff = new Image(getClass().getResourceAsStream("/clock_off.png"));
     }
 
     @PostConstruct
@@ -153,7 +162,17 @@ public class PropertyView {
     }
 
     private void addElement(ValueProviderDescriptor descriptor, Builder result, int line) {
+        HBox labelBox = new HBox(10);
         Label label = new Label(descriptor.getName());
+        labelBox.getChildren().add(label);
+
+        KeyframeableEffect keyframeableEffect = descriptor.getKeyframeableEffect();
+        boolean supportsKeyframes = keyframeableEffect.supportsKeyframes();
+        if (supportsKeyframes) {
+            ImageView imageView = createKeyframeSupportImageNode(keyframeableEffect);
+            labelBox.getChildren().add(imageView);
+        }
+
         EffectLine keyframeChange = createKeyframeUi(descriptor);
 
         Node key = keyframeChange.getVisibleNode();
@@ -165,10 +184,29 @@ public class PropertyView {
             }
         });
 
-        result.getBox().add(label, 0, line);
+        result.getBox().add(labelBox, 0, line);
         result.getBox().add(key, 1, line);
 
         result.addUpdateFunctions(currentTime -> Platform.runLater(() -> keyframeChange.updateUi(currentTime)));
+    }
+
+    private ImageView createKeyframeSupportImageNode(KeyframeableEffect keyframeableEffect) {
+        boolean keyframesEnabled = keyframeableEffect.keyframesEnabled();
+        ImageView imageView = new ImageView();
+        changeImage(keyframesEnabled, imageView);
+
+        imageView.setOnMouseClicked(e -> {
+            boolean currentStatus = keyframeableEffect.keyframesEnabled();
+            keyframeableEffect.setUseKeyframes(!currentStatus); // TODO: command pattern and message
+            changeImage(keyframeableEffect.keyframesEnabled(), imageView);
+        });
+
+        return imageView;
+    }
+
+    private void changeImage(boolean keyframesEnabled, ImageView imageView) {
+        Image imageToUse = keyframesEnabled ? keyframesOn : keyframesOff;
+        imageView.setImage(imageToUse);
     }
 
     private EffectLine createKeyframeUi(ValueProviderDescriptor descriptor) {

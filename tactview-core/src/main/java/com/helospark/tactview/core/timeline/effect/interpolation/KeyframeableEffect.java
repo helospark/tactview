@@ -69,4 +69,16 @@ public abstract class KeyframeableEffect implements StatefulCloneable<Keyframeab
 
     @Override
     public abstract KeyframeableEffect deepClone();
+
+    public boolean supportsKeyframes() {
+        return false;
+    }
+
+    public void setUseKeyframes(boolean useKeyframes) {
+
+    }
+
+    public boolean keyframesEnabled() {
+        return false;
+    }
 }

@@ -125,7 +125,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
         translatePointProvider = new PointProvider(translateXProvider, translateYProvider);
         globalClipAlphaProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
-        enabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(TimelinePosition.ofZero(), 1.0, new StepInterpolator()));
+        enabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0, new StepInterpolator()));
         blendModeProvider = new ValueListProvider<>(createBlendModes(), new StringInterpolator("normal"));
     }
 

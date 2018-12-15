@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
@@ -85,5 +86,20 @@ public class IntegerProvider extends KeyframeableEffect {
     @Override
     public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
         return IntegerProviderFactory.class;
+    }
+
+    @Override
+    public boolean supportsKeyframes() {
+        return interpolator instanceof KeyframeSupportingInterpolator;
+    }
+
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        ((KeyframeSupportingInterpolator) interpolator).setUseKeyframes(useKeyframes);
+    }
+
+    @Override
+    public boolean keyframesEnabled() {
+        return ((KeyframeSupportingInterpolator) interpolator).isUsingKeyframes();
     }
 }

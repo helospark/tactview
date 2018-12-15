@@ -32,6 +32,9 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
     public PercentAwareMultiKeyframeBasedDoubleInterpolator(TreeMap<TimelinePosition, Double> values, TimelineLength width) {
         super(values);
         this.length = width;
+        if (values.size() > 1) {
+            setUseKeyframes(true);
+        }
     }
 
     @Override
@@ -40,7 +43,7 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
         Entry<TimelinePosition, Double> firstEntry = values.firstEntry();
         double[] keys = getKeys(values);
         TimelinePosition position = nonScaledPosition.divide(length);
-        if (values.isEmpty()) {
+        if (values.isEmpty() || !useKeyframes) {
             return defaultValue;
         } else if (values.size() == 1) {
             return values.firstEntry().getValue();

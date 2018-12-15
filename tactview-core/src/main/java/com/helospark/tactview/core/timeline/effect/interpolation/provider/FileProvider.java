@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
@@ -54,6 +55,21 @@ public class FileProvider extends KeyframeableEffect {
     @Override
     public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
         return FileProviderFactory.class;
+    }
+
+    @Override
+    public boolean supportsKeyframes() {
+        return stringInterpolator instanceof KeyframeSupportingInterpolator;
+    }
+
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        ((KeyframeSupportingInterpolator) stringInterpolator).setUseKeyframes(useKeyframes);
+    }
+
+    @Override
+    public boolean keyframesEnabled() {
+        return ((KeyframeSupportingInterpolator) stringInterpolator).isUsingKeyframes();
     }
 
 }

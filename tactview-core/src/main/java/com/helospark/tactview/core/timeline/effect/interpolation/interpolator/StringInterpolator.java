@@ -7,9 +7,10 @@ import java.util.TreeMap;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class StringInterpolator implements EffectInterpolator {
+public class StringInterpolator implements EffectInterpolator, KeyframeSupportingInterpolator {
     String defaultValue;
     TreeMap<TimelinePosition, String> values;
+    boolean useKeyframes;
 
     public StringInterpolator() {
         this.values = new TreeMap<>();
@@ -28,16 +29,24 @@ public class StringInterpolator implements EffectInterpolator {
 
     @Override
     public String valueAt(TimelinePosition position) {
-        Entry<TimelinePosition, String> floorEntry = values.floorEntry(position);
-        if (floorEntry == null) {
+        if (!useKeyframes) {
             return defaultValue;
         } else {
-            return floorEntry.getValue();
+            Entry<TimelinePosition, String> floorEntry = values.floorEntry(position);
+            if (floorEntry == null) {
+                return defaultValue;
+            } else {
+                return floorEntry.getValue();
+            }
         }
     }
 
     public void valueAdded(TimelinePosition globalTimelinePosition, String value) {
-        values.put(globalTimelinePosition, value);
+        if (!useKeyframes) {
+            this.defaultValue = value;
+        } else {
+            values.put(globalTimelinePosition, value);
+        }
     }
 
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
@@ -68,6 +77,20 @@ public class StringInterpolator implements EffectInterpolator {
     @Override
     public Class<? extends DesSerFactory<? extends EffectInterpolator>> generateSerializableContent() {
         return StringInterpolatorFactory.class;
+    }
+
+    public boolean useKeyframes() {
+        return useKeyframes;
+    }
+
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        this.useKeyframes = useKeyframes;
+    }
+
+    @Override
+    public boolean isUsingKeyframes() {
+        return useKeyframes;
     }
 
 }

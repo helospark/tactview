@@ -8,11 +8,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class PointProvider extends KeyframeableEffect {
+public class PointProvider extends CompositeKeyframeableEffect {
     DoubleProvider xProvider;
     DoubleProvider yProvider;
 
     public PointProvider(DoubleProvider xProvider, DoubleProvider yProvider) {
+        super(List.of(xProvider, yProvider));
         this.xProvider = xProvider;
         this.yProvider = yProvider;
     }
