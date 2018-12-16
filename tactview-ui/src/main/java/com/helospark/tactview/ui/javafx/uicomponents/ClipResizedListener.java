@@ -5,17 +5,16 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 
-import javafx.application.Platform;
 import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipResizedListener {
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
     private TimelineState timelineState;
 
-    public ClipResizedListener(MessagingService messagingService, TimelineState timelineState) {
+    public ClipResizedListener(UiMessagingService messagingService, TimelineState timelineState) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
     }
@@ -25,13 +24,11 @@ public class ClipResizedListener {
         messagingService.register(ClipResizedMessage.class, message -> {
             timelineState.findClipById(message.getClipId())
                     .ifPresent(clipGroup -> {
-                        Platform.runLater(() -> {
-                            TimelineInterval interval = message.getNewInterval();
-                            double startPosition = timelineState.secondsToPixels(interval.getStartPosition());
-                            double width = timelineState.secondsToPixels(interval.getLength());
-                            clipGroup.setLayoutX(startPosition);
-                            ((Rectangle) clipGroup.getChildren().get(0)).setWidth(width);
-                        });
+                        TimelineInterval interval = message.getNewInterval();
+                        double startPosition = timelineState.secondsToPixels(interval.getStartPosition());
+                        double width = timelineState.secondsToPixels(interval.getLength());
+                        clipGroup.setLayoutX(startPosition);
+                        ((Rectangle) clipGroup.getChildren().get(0)).setWidth(width);
                     });
         });
     }

@@ -5,28 +5,27 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.ClosesIntervalChannel;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 
-import javafx.application.Platform;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
 @Component
 public class ClipMovedMessageListener {
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
     private TimelineState timelineState;
 
-    public ClipMovedMessageListener(MessagingService messagingService, TimelineState timelineState) {
+    public ClipMovedMessageListener(UiMessagingService messagingService, TimelineState timelineState) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
     }
 
     @PostConstruct
     public void init() {
-        messagingService.register(ClipMovedMessage.class, message -> Platform.runLater(() -> {
+        messagingService.register(ClipMovedMessage.class, message -> {
             timelineState.findClipById(message.getClipId())
                     .ifPresent(group -> move(message, group));
-        }));
+        });
     }
 
     private void move(ClipMovedMessage message, Pane group) {

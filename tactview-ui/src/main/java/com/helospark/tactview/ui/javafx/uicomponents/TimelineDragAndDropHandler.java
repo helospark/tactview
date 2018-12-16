@@ -20,7 +20,6 @@ import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
-import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -58,31 +57,23 @@ public class TimelineDragAndDropHandler {
 
             if (!isLoadingInprogress && dragRepository.currentlyDraggedClip() == null && ((dbFiles != null && !dbFiles.isEmpty()) || isStringClip(db))) {
                 isLoadingInprogress = true;
-                commandInterpreter.sendWithResult(new AddClipsCommand(addClipRequest, timelineManager))
-                        .exceptionally(e -> {
-                            logger.warn("Error while adding clip", e);
-                            isLoadingInprogress = false;
-                            return null;
-                        })
-                        .thenAccept(res -> {
-                            Platform.runLater(() -> {
-                                try {
-                                    String addedClipId = res.getAddedClipId();
-                                    logger.debug("Clip added " + addedClipId);
-                                    Pane addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
-                                    ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, res.getRequestedPosition(), addedClipId, channelId, 0);
-                                    dragRepository.onClipDragged(clipDragInformation);
-                                } catch (Exception e1) {
-                                    logger.warn("Error while adding clip", e1);
-                                } finally {
-                                    isLoadingInprogress = false;
-                                }
-                            });
-                        });
+                try {
+                    AddClipsCommand result = commandInterpreter.synchronousSend(new AddClipsCommand(addClipRequest, timelineManager));
+                    String addedClipId = result.getAddedClipId();
+                    logger.debug("Clip added " + addedClipId);
+                    Pane addedClip = timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
+                    ClipDragInformation clipDragInformation = new ClipDragInformation(addedClip, result.getRequestedPosition(), addedClipId, channelId, 0);
+                    dragRepository.onClipDragged(clipDragInformation);
+                } catch (Exception e1) {
+                    logger.warn("Error while adding clip", e1);
+                } finally {
+                    isLoadingInprogress = false;
+                }
             }
         });
-
         timeline.setOnDragOver(event -> {
+
+            System.out.println("#### dragOver " + dragRepository.currentlyDraggedClip());
             if (dragRepository.currentlyDraggedClip() != null) {
                 event.acceptTransferModes(TransferMode.MOVE);
                 if (dragRepository.isResizing()) {
@@ -102,6 +93,7 @@ public class TimelineDragAndDropHandler {
         });
 
         timeline.setOnDragDropped(event -> {
+            System.out.println("#### dragDropped");
             if (dragRepository.currentlyDraggedClip() != null) {
                 if (dragRepository.isResizing()) {
                     resizeClip(event, true);

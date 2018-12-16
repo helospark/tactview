@@ -39,4 +39,9 @@ public class AddClipsCommand implements UiCommand {
         return request.getPosition();
     }
 
+    @Override
+    public String toString() {
+        return "AddClipsCommand [request=" + request + ", timelineManager=" + timelineManager + ", addedClipId=" + addedClipId + "]";
+    }
+
 }

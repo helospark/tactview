@@ -5,16 +5,16 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 
 import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectResizedListener {
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
     private TimelineState timelineState;
 
-    public EffectResizedListener(MessagingService messagingService, TimelineState timelineState) {
+    public EffectResizedListener(UiMessagingService messagingService, TimelineState timelineState) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
     }

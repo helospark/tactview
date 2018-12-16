@@ -4,10 +4,9 @@ import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 
-import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -15,12 +14,12 @@ import javafx.scene.layout.VBox;
 
 @Component
 public class ChannelAddedListener {
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
     private TimelineState timelineState;
     private TimelineDragAndDropHandler timelineDragAndDropHandler;
     private NameToIdRepository nameToIdRepository;
 
-    public ChannelAddedListener(MessagingService messagingService, TimelineState timelineState, TimelineDragAndDropHandler timelineDragAndDropHandler, NameToIdRepository nameToIdRepository) {
+    public ChannelAddedListener(UiMessagingService messagingService, TimelineState timelineState, TimelineDragAndDropHandler timelineDragAndDropHandler, NameToIdRepository nameToIdRepository) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.timelineDragAndDropHandler = timelineDragAndDropHandler;
@@ -29,7 +28,7 @@ public class ChannelAddedListener {
 
     @PostConstruct
     public void setup() {
-        messagingService.register(ChannelAddedMessage.class, message -> Platform.runLater(() -> addChannel(message)));
+        messagingService.register(ChannelAddedMessage.class, message -> addChannel(message));
     }
 
     private void addChannel(ChannelAddedMessage message) {

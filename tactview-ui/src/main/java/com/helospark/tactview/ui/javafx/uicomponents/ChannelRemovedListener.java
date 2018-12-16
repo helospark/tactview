@@ -4,18 +4,16 @@ import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
-
-import javafx.application.Platform;
 
 @Component
 public class ChannelRemovedListener {
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
     private TimelineState timelineState;
     private NameToIdRepository nameToIdRepository;
 
-    public ChannelRemovedListener(MessagingService messagingService, TimelineState timelineState, NameToIdRepository nameToIdRepository) {
+    public ChannelRemovedListener(UiMessagingService messagingService, TimelineState timelineState, NameToIdRepository nameToIdRepository) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.nameToIdRepository = nameToIdRepository;
@@ -23,7 +21,7 @@ public class ChannelRemovedListener {
 
     @PostConstruct
     public void setup() {
-        messagingService.register(ChannelRemovedMessage.class, message -> Platform.runLater(() -> onChannelRemoved(message)));
+        messagingService.register(ChannelRemovedMessage.class, message -> onChannelRemoved(message));
     }
 
     private void onChannelRemoved(ChannelRemovedMessage message) {

@@ -8,24 +8,23 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.ClosesIntervalChannel;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 
-import javafx.application.Platform;
 import javafx.scene.layout.HBox;
 
 @Component
 public class EffectMovedListener {
     private TimelineState timelineState;
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
 
-    public EffectMovedListener(TimelineState timelineState, MessagingService messagingService) {
+    public EffectMovedListener(TimelineState timelineState, UiMessagingService messagingService) {
         this.timelineState = timelineState;
         this.messagingService = messagingService;
     }
 
     @PostConstruct
     public void init() {
-        this.messagingService.register(EffectMovedMessage.class, message -> Platform.runLater(() -> {
+        this.messagingService.register(EffectMovedMessage.class, message -> {
             int position = timelineState.secondsToPixels(message.getNewPosition());
             timelineState.findEffectById(message.getEffectId())
                     .ifPresent(effect -> {
@@ -37,7 +36,7 @@ public class EffectMovedListener {
                             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
                         }
                     });
-        }));
+        });
     }
 
     private void drawSpecialPositionLine(EffectMovedMessage message) {

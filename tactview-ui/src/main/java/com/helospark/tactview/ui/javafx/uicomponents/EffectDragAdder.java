@@ -17,7 +17,6 @@ public class EffectDragAdder {
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private DragRepository dragRepository;
-    private UiTimeline uiTimeline;
 
     public EffectDragAdder(TimelineManager timelineManager, TimelineState timelineState, UiCommandInterpreterService commandInterpreter, DragRepository dragRepository) {
         this.timelineManager = timelineManager;

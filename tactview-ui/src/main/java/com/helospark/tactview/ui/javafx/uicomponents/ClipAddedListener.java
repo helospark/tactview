@@ -15,7 +15,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.clip.ClipContextMenuFactory;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
@@ -23,7 +23,6 @@ import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
-import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ClipboardContent;
@@ -34,7 +33,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipAddedListener {
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
     private TimelineState timelineState;
     private EffectDragAdder effectDragAdder;
     private ProjectRepository projectRepository;
@@ -47,7 +46,7 @@ public class ClipAddedListener {
     @Slf4j
     private Logger logger;
 
-    public ClipAddedListener(MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
+    public ClipAddedListener(UiMessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
             ProjectRepository projectRepository,
             UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository,
             NameToIdRepository nameToIdRepository, ClipContextMenuFactory clipContextMenuAdder) {
@@ -64,7 +63,7 @@ public class ClipAddedListener {
 
     @PostConstruct
     public void setUp() {
-        messagingService.register(ClipAddedMessage.class, message -> Platform.runLater(() -> addClip(message)));
+        messagingService.register(ClipAddedMessage.class, message -> addClip(message));
     }
 
     private void addClip(ClipAddedMessage message) {

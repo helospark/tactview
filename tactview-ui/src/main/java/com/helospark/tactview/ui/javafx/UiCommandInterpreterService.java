@@ -18,16 +18,20 @@ public class UiCommandInterpreterService {
     private Deque<UiCommand> commandHistory = new ConcurrentLinkedDeque<>();
     private Deque<UiCommand> redoHistory = new ConcurrentLinkedDeque<>();
 
+    public <T extends UiCommand> T synchronousSend(T uiCommand) {
+        logger.info("Executing " + uiCommand);
+        redoHistory.clear();
+        uiCommand.execute();
+        if (uiCommand.isRevertable()) {
+            commandHistory.push(uiCommand);
+        }
+        return uiCommand;
+    }
+
     public <T extends UiCommand> CompletableFuture<T> sendWithResult(T uiCommand) {
         System.out.println("Adding " + uiCommand);
         return CompletableFuture.supplyAsync(() -> {
-            logger.info("Executing " + uiCommand);
-            redoHistory.clear();
-            uiCommand.execute();
-            if (uiCommand.isRevertable()) {
-                commandHistory.push(uiCommand);
-            }
-            return uiCommand;
+            return synchronousSend(uiCommand);
         }).exceptionally(e -> {
             e.printStackTrace();
             return null;

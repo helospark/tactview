@@ -4,13 +4,12 @@ import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
-import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.input.ClipboardContent;
@@ -22,13 +21,13 @@ import javafx.scene.shape.Rectangle;
 public class EffectAddedListener {
     public static final int EFFECTS_OFFSET = 50;
     public static final int EFFECT_HEIGHT = 30;
-    private MessagingService messagingService;
+    private UiMessagingService messagingService;
     private TimelineState timelineState;
     private SelectedNodeRepository selectedNodeRepository;
     private DragRepository dragRepository;
     private NameToIdRepository nameToIdRepository;
 
-    public EffectAddedListener(MessagingService messagingService, TimelineState timelineState, SelectedNodeRepository selectedNodeRepository,
+    public EffectAddedListener(UiMessagingService messagingService, TimelineState timelineState, SelectedNodeRepository selectedNodeRepository,
             DragRepository dragRepository,
             EffectDragAdder effectDragAdder, NameToIdRepository nameToIdRepository) {
         this.messagingService = messagingService;
@@ -40,7 +39,7 @@ public class EffectAddedListener {
 
     @PostConstruct
     public void setUp() {
-        messagingService.register(EffectAddedMessage.class, message -> Platform.runLater(() -> addEffectClip(message)));
+        messagingService.register(EffectAddedMessage.class, message -> addEffectClip(message));
     }
 
     private void addEffectClip(EffectAddedMessage message) {
