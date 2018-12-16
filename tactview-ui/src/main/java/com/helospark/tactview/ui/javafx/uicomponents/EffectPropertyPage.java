@@ -1,7 +1,9 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import javax.annotation.Generated;
@@ -14,12 +16,14 @@ public class EffectPropertyPage {
     private String componentId;
     private GridPane box;
     private List<Consumer<TimelinePosition>> updateFunctions;
+    private Map<String, Consumer<Boolean>> keyframeEnabledConsumer;
 
     @Generated("SparkTools")
     private EffectPropertyPage(Builder builder) {
         this.box = builder.box;
         this.updateFunctions = builder.updateFunctions;
         this.componentId = builder.componentId;
+        this.keyframeEnabledConsumer = builder.keyframeEnabledConsumer;
     }
 
     public EffectPropertyPage(GridPane box, List<Consumer<TimelinePosition>> updateFunctions) {
@@ -39,6 +43,10 @@ public class EffectPropertyPage {
         return componentId;
     }
 
+    public Map<String, Consumer<Boolean>> getKeyframeEnabledConsumer() {
+        return keyframeEnabledConsumer;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -49,6 +57,7 @@ public class EffectPropertyPage {
         private String componentId;
         private GridPane box;
         private List<Consumer<TimelinePosition>> updateFunctions = new ArrayList<>();
+        private Map<String, Consumer<Boolean>> keyframeEnabledConsumer = new HashMap<>();
 
         private Builder() {
         }
@@ -64,6 +73,11 @@ public class EffectPropertyPage {
 
         public Builder withComponentId(String componentId) {
             this.componentId = componentId;
+            return this;
+        }
+
+        public Builder addKeyframeEnabledConsumer(String id, Consumer<Boolean> keyframeEnabledConsumer) {
+            this.keyframeEnabledConsumer.put(id, keyframeEnabledConsumer);
             return this;
         }
 

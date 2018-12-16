@@ -18,6 +18,7 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
+import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.ThreadSleep;
@@ -76,6 +77,11 @@ public class ClipPatternDrawerListener {
         messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> {
             if (clipsToUpdate.containsKey(message.getContainingElementId())) {
                 updateRequests.add(new ClipPatternUpdateRequest(message.getContainingElementId()));
+            }
+        });
+        messagingService.register(KeyframeEnabledWasChangedMessage.class, message -> {
+            if (clipsToUpdate.containsKey(message.getContainerId())) {
+                updateRequests.add(new ClipPatternUpdateRequest(message.getContainerId()));
             }
         });
     }

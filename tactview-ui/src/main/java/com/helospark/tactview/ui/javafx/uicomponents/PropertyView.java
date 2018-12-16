@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -19,11 +21,14 @@ import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
+import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
 import com.helospark.tactview.ui.javafx.notification.NotificationService;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyPage.Builder;
@@ -63,18 +68,23 @@ public class PropertyView {
     private DetailsGridChain detailsGridChain;
     private NameToIdRepository nameToIdRepository;
     private NotificationService notificationService;
+    private UiCommandInterpreterService commandInterpreter;
+    private EffectParametersRepository effectParametersRepository;
 
     @Slf4j
     private Logger logger;
 
     public PropertyView(MessagingService messagingService, UiTimelineManager uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain,
-            DetailsGridChain detailsGridChain, NameToIdRepository nameToIdRepository, NotificationService notificationService) {
+            DetailsGridChain detailsGridChain, NameToIdRepository nameToIdRepository, NotificationService notificationService, UiCommandInterpreterService commandInterpreter,
+            EffectParametersRepository effectParametersRepository) {
         this.messagingService = messagingService;
         this.uiTimelineManager = uiTimelineManager;
         this.propertyValueSetterChain = propertyValueSetterChain;
         this.detailsGridChain = detailsGridChain;
         this.nameToIdRepository = nameToIdRepository;
         this.notificationService = notificationService;
+        this.commandInterpreter = commandInterpreter;
+        this.effectParametersRepository = effectParametersRepository;
 
         keyframesOn = new Image(getClass().getResourceAsStream("/clock_on.png"));
         keyframesOff = new Image(getClass().getResourceAsStream("/clock_off.png"));
@@ -121,6 +131,20 @@ public class PropertyView {
                     .filter(a -> a.equals(message.getEffectId()))
                     .ifPresent(a -> closeCurrentPage());
         });
+        messagingService.register(KeyframeEnabledWasChangedMessage.class, message -> {
+            getEffectPropertyPageForId(message.getContainerId(), message.getKeyframeableEffectId())
+                    .ifPresent(a -> {
+                        Platform.runLater(() -> {
+                            a.accept(message.isUseKeyframes());
+                        });
+                    });
+        });
+    }
+
+    private Optional<Consumer<Boolean>> getEffectPropertyPageForId(String containerId, String effectId) {
+        return Optional.ofNullable(effectProperties.get(containerId))
+                .or(() -> Optional.ofNullable(clipProperties.get(containerId)))
+                .map(a -> a.getKeyframeEnabledConsumer().get(effectId));
     }
 
     private EffectPropertyPage createBox(List<ValueProviderDescriptor> descriptors, String id) {
@@ -169,7 +193,7 @@ public class PropertyView {
         KeyframeableEffect keyframeableEffect = descriptor.getKeyframeableEffect();
         boolean supportsKeyframes = keyframeableEffect.supportsKeyframes();
         if (supportsKeyframes) {
-            ImageView imageView = createKeyframeSupportImageNode(keyframeableEffect);
+            ImageView imageView = createKeyframeSupportImageNode(result, keyframeableEffect);
             labelBox.getChildren().add(imageView);
         }
 
@@ -190,15 +214,18 @@ public class PropertyView {
         result.addUpdateFunctions(currentTime -> Platform.runLater(() -> keyframeChange.updateUi(currentTime)));
     }
 
-    private ImageView createKeyframeSupportImageNode(KeyframeableEffect keyframeableEffect) {
+    private ImageView createKeyframeSupportImageNode(Builder builder, KeyframeableEffect keyframeableEffect) {
         boolean keyframesEnabled = keyframeableEffect.keyframesEnabled();
         ImageView imageView = new ImageView();
-        changeImage(keyframesEnabled, imageView);
+        imageView.setPickOnBounds(true);
 
-        imageView.setOnMouseClicked(e -> {
-            boolean currentStatus = keyframeableEffect.keyframesEnabled();
-            keyframeableEffect.setUseKeyframes(!currentStatus); // TODO: command pattern and message
-            changeImage(keyframeableEffect.keyframesEnabled(), imageView);
+        changeImage(keyframesEnabled, imageView);
+        builder.addKeyframeEnabledConsumer(keyframeableEffect.getId(), enabled -> changeImage(enabled, imageView));
+
+        imageView.setOnMouseReleased(e -> {
+            UseKeyframeStatusToggleCommand command = new UseKeyframeStatusToggleCommand(effectParametersRepository, keyframeableEffect.getId());
+
+            commandInterpreter.sendWithResult(command);
         });
 
         return imageView;
