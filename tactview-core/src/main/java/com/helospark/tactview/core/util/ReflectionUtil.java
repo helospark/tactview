@@ -14,17 +14,21 @@ import com.helospark.tactview.core.save.LoadMetadata;
 public class ReflectionUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtil.class);
 
-    public static <T> void copyOrCloneFieldFromTo(T from, T to) {
-        Arrays.stream(from.getClass().getDeclaredFields())
+    public static <T> void copyOrCloneFieldFromTo(T from, T to, Class<? super T> inputClass) {
+        Arrays.stream(inputClass.getDeclaredFields())
                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
                 .filter(field -> !Modifier.isFinal(field.getModifiers()))
-                .forEach(field -> copyField(to, from, field));
+                .forEach(field -> copyField(to, from, inputClass, field));
+    }
+
+    public static <T> void copyOrCloneFieldFromTo(T from, T to) {
+        copyOrCloneFieldFromTo(from, to, (Class<? super T>) to.getClass());
     }
 
     @SuppressWarnings("rawtypes")
-    private static void copyField(Object to, Object from, Field fromField) {
+    private static void copyField(Object to, Object from, Class<?> inputClass, Field fromField) {
         try {
-            Field toField = to.getClass().getDeclaredField(fromField.getName());
+            Field toField = inputClass.getDeclaredField(fromField.getName());
             toField.setAccessible(true);
             fromField.setAccessible(true);
 

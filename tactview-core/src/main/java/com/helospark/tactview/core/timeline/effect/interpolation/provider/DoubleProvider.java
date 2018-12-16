@@ -138,4 +138,8 @@ public class DoubleProvider extends KeyframeableEffect {
         ((KeyframeSupportingInterpolator) interpolator).setUseKeyframes(useKeyframes);
     }
 
+    public void setDefaultValue(double defaultValue) {
+        ((KeyframeSupportingDoubleInterpolator) interpolator).setDefaultValue(defaultValue);
+    }
+
 }

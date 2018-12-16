@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.clip.ClipContextMenuFactory;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
@@ -24,6 +25,7 @@ import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.application.Platform;
 import javafx.scene.Cursor;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -40,6 +42,7 @@ public class ClipAddedListener {
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
     private NameToIdRepository nameToIdRepository;
+    private ClipContextMenuFactory clipContextMenuFactory;
 
     @Slf4j
     private Logger logger;
@@ -47,7 +50,7 @@ public class ClipAddedListener {
     public ClipAddedListener(MessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
             ProjectRepository projectRepository,
             UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository,
-            NameToIdRepository nameToIdRepository) {
+            NameToIdRepository nameToIdRepository, ClipContextMenuFactory clipContextMenuAdder) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectDragAdder = effectDragAdder;
@@ -56,6 +59,7 @@ public class ClipAddedListener {
         this.dragRepository = dragRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.nameToIdRepository = nameToIdRepository;
+        this.clipContextMenuFactory = clipContextMenuAdder;
     }
 
     @PostConstruct
@@ -144,6 +148,11 @@ public class ClipAddedListener {
             } else {
                 rectangle.setCursor(Cursor.HAND);
             }
+        });
+
+        ContextMenu contextMenu = clipContextMenuFactory.createContextMenuForClip(clip);
+        rectangle.setOnContextMenuRequested(e -> {
+            contextMenu.show(rectangle.getScene().getWindow(), e.getScreenX(), e.getScreenY());
         });
 
         return parentPane;

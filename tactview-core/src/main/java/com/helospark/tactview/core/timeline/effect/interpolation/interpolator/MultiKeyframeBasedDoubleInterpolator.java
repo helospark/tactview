@@ -122,4 +122,9 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
         return useKeyframes;
     }
 
+    @Override
+    public void setDefaultValue(double defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
 }

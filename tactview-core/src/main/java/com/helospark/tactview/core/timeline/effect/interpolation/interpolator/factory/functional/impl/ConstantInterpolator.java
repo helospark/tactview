@@ -45,4 +45,9 @@ public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolato
         return ConstantInterpolatorFactory.class;
     }
 
+    @Override
+    public void setDefaultValue(double defaultValue) {
+        this.value = defaultValue;
+    }
+
 }

@@ -24,6 +24,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointP
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RadialGradientProceduralEffect extends ProceduralVisualClip {
 
@@ -42,7 +43,7 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
 
     public RadialGradientProceduralEffect(RadialGradientProceduralEffect gradientProceduralEffect) {
         super(gradientProceduralEffect);
-        this.independentPixelOperation = gradientProceduralEffect.independentPixelOperation;
+        ReflectionUtil.copyOrCloneFieldFromTo(gradientProceduralEffect, this);
     }
 
     public RadialGradientProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {

@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
+import javafx.application.Platform;
 import javafx.scene.shape.Rectangle;
 
 @Component
@@ -24,11 +25,13 @@ public class ClipResizedListener {
         messagingService.register(ClipResizedMessage.class, message -> {
             timelineState.findClipById(message.getClipId())
                     .ifPresent(clipGroup -> {
-                        TimelineInterval interval = message.getNewInterval();
-                        double startPosition = timelineState.secondsToPixels(interval.getStartPosition());
-                        double width = timelineState.secondsToPixels(interval.getLength());
-                        clipGroup.setLayoutX(startPosition);
-                        ((Rectangle) clipGroup.getChildren().get(0)).setWidth(width);
+                        Platform.runLater(() -> {
+                            TimelineInterval interval = message.getNewInterval();
+                            double startPosition = timelineState.secondsToPixels(interval.getStartPosition());
+                            double width = timelineState.secondsToPixels(interval.getLength());
+                            clipGroup.setLayoutX(startPosition);
+                            ((Rectangle) clipGroup.getChildren().get(0)).setWidth(width);
+                        });
                     });
         });
     }

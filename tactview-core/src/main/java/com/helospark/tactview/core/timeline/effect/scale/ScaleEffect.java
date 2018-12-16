@@ -80,4 +80,9 @@ public class ScaleEffect extends StatelessVideoEffect {
         return new ScaleEffect(this);
     }
 
+    public void setScale(double scaleX, double scaleY) {
+        this.widthScale.setDefaultValue(scaleX);
+        this.heightScale.setDefaultValue(scaleY);
+    }
+
 }

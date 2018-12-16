@@ -12,4 +12,6 @@ public interface KeyframeSupportingDoubleInterpolator extends DoubleInterpolator
 
     public Map<TimelinePosition, Object> getValues();
 
+    public void setDefaultValue(double defaultValue);
+
 }
