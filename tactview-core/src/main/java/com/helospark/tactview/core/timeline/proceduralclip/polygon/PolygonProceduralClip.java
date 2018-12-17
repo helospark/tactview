@@ -13,8 +13,12 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PolygonProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
@@ -22,6 +26,8 @@ import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 
 public class PolygonProceduralClip extends ProceduralVisualClip {
     private PolygonProvider polygonProvider;
+    private DoubleProvider fuzzyEdgeProvider;
+    private ColorProvider colorProvider;
 
     public PolygonProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval) {
         super(visualMediaMetadata, interval);
@@ -35,7 +41,11 @@ public class PolygonProceduralClip extends ProceduralVisualClip {
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
 
+        int fuzzyEdge = (int) (fuzzyEdgeProvider.getValueAt(relativePosition) * request.getExpectedWidth());
+
         Polygon polygon = polygonProvider.getValueAt(relativePosition);
+
+        Color color = colorProvider.getValueAt(relativePosition);
 
         //  Loop through the rows of the image.
         Point expectedSizePoint = new Point(request.getExpectedWidth(), request.getExpectedHeight());
@@ -71,13 +81,66 @@ public class PolygonProceduralClip extends ProceduralVisualClip {
                     // maybe this cannot happen?
                     nextValue = IMAGE_RIGHT;
                 }
-                for (int pixelX = currentValue; pixelX < nextValue; pixelX++) {
-                    result.setRed(255, pixelX, pixelY);
-                    result.setAlpha(255, pixelX, pixelY);
+                for (int pixelX = currentValue; pixelX <= nextValue; pixelX++) {
+                    result.setRed((int) (color.red * 255.0), pixelX, pixelY);
+                    result.setGreen((int) (color.green * 255.0), pixelX, pixelY);
+                    result.setBlue((int) (color.blue * 255.0), pixelX, pixelY);
+
+                    int minDistance = Math.min(pixelX - currentValue, nextValue - pixelX);
+                    int alpha = (int) ((double) minDistance / fuzzyEdge * 255);
+                    if (alpha > 255) {
+                        alpha = 255;
+                    }
+
+                    result.setAlpha(alpha, pixelX, pixelY);
                 }
             }
         }
 
+        if (fuzzyEdge > 0) {
+            // below code is almost the same as the above one, except all x and y are reversed and only the alpha is modifed
+            for (int pixelX = 0; pixelX < request.getExpectedWidth(); pixelX++) {
+                List<Integer> nodeY = new ArrayList<>();
+                int polyCorners = polygon.getPoints().size();
+                int j = polyCorners - 1;
+                for (int i = 0; i < polyCorners; i++) {
+                    Point polyI = polygon.getPoints().get(i).multiply(expectedSizePoint);
+                    Point polyJ = polygon.getPoints().get(j).multiply(expectedSizePoint);
+
+                    if (polyI.x < pixelX && polyJ.x >= pixelX || polyJ.x < pixelX && polyI.x >= pixelX) {
+                        nodeY.add((int) (polyI.y + (pixelX - polyI.x) / (polyJ.x - polyI.x) * (polyJ.y - polyI.y)));
+                    }
+                    j = i;
+                }
+                Collections.sort(nodeY);
+
+                int IMAGE_BOTTOM = request.getExpectedHeight();
+                for (int i = 0; i < nodeY.size(); i += 2) {
+                    int currentValue = nodeY.get(i);
+                    if (currentValue >= IMAGE_BOTTOM)
+                        break;
+                    int nextValue;
+                    if (i + 1 < nodeY.size()) {
+                        nextValue = nodeY.get(i + 1);
+                    } else {
+                        // maybe this cannot happen?
+                        nextValue = IMAGE_BOTTOM;
+                    }
+                    for (int pixelY = currentValue; pixelY <= nextValue; pixelY++) {
+                        int minDistance = Math.min(pixelY - currentValue, nextValue - pixelY);
+                        double verticalAlpha = ((double) minDistance / fuzzyEdge);
+                        if (verticalAlpha > 1.0) {
+                            verticalAlpha = 1.0;
+                        }
+                        double horizontalAlpha = result.getAlpha(pixelX, pixelY) / 255.0;
+
+                        double newAlpha = Math.min(horizontalAlpha, verticalAlpha);
+
+                        result.setAlpha((int) (newAlpha * 255.0), pixelX, pixelY);
+                    }
+                }
+            }
+        }
         return result;
     }
 
@@ -85,6 +148,14 @@ public class PolygonProceduralClip extends ProceduralVisualClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
         this.polygonProvider = new PolygonProvider(List.of());
+        this.fuzzyEdgeProvider = new DoubleProvider(0.0, 0.3, new MultiKeyframeBasedDoubleInterpolator(0.0));
+        this.colorProvider = new ColorProvider(createColorComponentProvider(1.0),
+                createColorComponentProvider(1.0),
+                createColorComponentProvider(1.0));
+    }
+
+    private DoubleProvider createColorComponentProvider(double defaultValue) {
+        return new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(defaultValue));
     }
 
     @Override
@@ -95,8 +166,18 @@ public class PolygonProceduralClip extends ProceduralVisualClip {
                 .withKeyframeableEffect(polygonProvider)
                 .withName("polygon")
                 .build();
+        ValueProviderDescriptor fuzzyEdgeDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(fuzzyEdgeProvider)
+                .withName("Fuzzy edge")
+                .build();
+        ValueProviderDescriptor colorProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(colorProvider)
+                .withName("Color")
+                .build();
 
         result.add(polygonProviderDescriptor);
+        result.add(fuzzyEdgeDescriptor);
+        result.add(colorProviderDescriptor);
 
         return result;
     }

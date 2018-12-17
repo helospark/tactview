@@ -85,7 +85,9 @@ public class InputModeRepository {
                     graphics.setStroke(Color.RED);
                     graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
                     graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
-                    inputModeInput.currentStrategy.draw(graphics);
+                    if (inputModeInput != null) {
+                        inputModeInput.currentStrategy.draw(graphics);
+                    }
                 });
             }
         });

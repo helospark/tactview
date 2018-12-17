@@ -71,6 +71,13 @@ public class ClipMovedCommand implements UiCommand {
         return new Builder();
     }
 
+    @Override
+    public String toString() {
+        return "ClipMovedCommand [isRevertable=" + isRevertable + ", clipId=" + clipId + ", originalChannelId=" + originalChannelId + ", newChannelId=" + newChannelId + ", newPosition=" + newPosition
+                + ", previousPosition=" + previousPosition + ", timelineManager=" + timelineManager + ", enableJumpingToSpecialPosition=" + enableJumpingToSpecialPosition + ", maximumJumpLength="
+                + maximumJumpLength + "]";
+    }
+
     @Generated("SparkTools")
     public static final class Builder {
         private boolean isRevertable;
