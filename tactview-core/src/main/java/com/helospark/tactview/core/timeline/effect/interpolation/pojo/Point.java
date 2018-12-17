@@ -37,4 +37,12 @@ public class Point {
         return new Point(x * scale, y * scale);
     }
 
+    public Point scalarDivide(double scale) {
+        return new Point(x / scale, y / scale);
+    }
+
+    public Point multiply(Point rhs) {
+        return new Point(x * rhs.x, y * rhs.y);
+    }
+
 }

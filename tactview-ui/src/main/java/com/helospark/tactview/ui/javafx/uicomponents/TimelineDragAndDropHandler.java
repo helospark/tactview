@@ -73,7 +73,6 @@ public class TimelineDragAndDropHandler {
         });
         timeline.setOnDragOver(event -> {
 
-            System.out.println("#### dragOver " + dragRepository.currentlyDraggedClip());
             if (dragRepository.currentlyDraggedClip() != null) {
                 event.acceptTransferModes(TransferMode.MOVE);
                 if (dragRepository.isResizing()) {
@@ -93,7 +92,6 @@ public class TimelineDragAndDropHandler {
         });
 
         timeline.setOnDragDropped(event -> {
-            System.out.println("#### dragDropped");
             if (dragRepository.currentlyDraggedClip() != null) {
                 if (dragRepository.isResizing()) {
                     resizeClip(event, true);

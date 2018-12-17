@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradie
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
@@ -92,6 +93,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new DrawnHighlightProceduralEffect(metadata, node, loadMetadata, scaledBrushProvider, normalBlendModeStrategy, alphaBlitService, bresenhemPixelProvider);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem polygonProceduralClip() {
+        return new StandardProceduralClipFactoryChainItem("polygon", "Drawn polygon",
+                request -> {
+                    return new PolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                },
+                (node, loadMetadata) -> {
+                    return new PolygonProceduralClip(metadata, node, loadMetadata);
                 });
     }
 }

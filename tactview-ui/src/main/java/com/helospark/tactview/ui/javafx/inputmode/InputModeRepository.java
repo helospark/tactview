@@ -7,13 +7,16 @@ import java.util.function.Consumer;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
 import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.InputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.PolygonInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyInput;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
 import javafx.application.Platform;
@@ -61,27 +64,49 @@ public class InputModeRepository {
         inputModeChanged(true);
     }
 
+    public void requestPolygon(Consumer<Polygon> consumer, SizeFunction sizeFunction) {
+        InputTypeStrategy<Polygon> currentStrategy = new PolygonInputTypeStrategy();
+        this.inputModeInput = new InputModeInput<>(Polygon.class, consumer, currentStrategy, sizeFunction);
+        inputModeChanged(true);
+    }
+
     private void processStrategy() {
-        canvas.setOnMousePressed(createHandler((x, y, e) -> inputModeInput.currentStrategy.onMouseDownEvent(x, y, e)));
-        canvas.setOnMouseReleased(createHandler((x, y, e) -> inputModeInput.currentStrategy.onMouseUpEvent(x, y, e)));
-        canvas.setOnMouseDragged(createHandler((x, y, e) -> inputModeInput.currentStrategy.onMouseDraggedEvent(x, y, e)));
-        EventHandler<? super MouseEvent> mouseMoveHandler = createHandler((x, y, e) -> inputModeInput.currentStrategy.onMouseMovedEvent(x, y, e));
+        canvas.setOnMousePressed(createHandler(input -> inputModeInput.currentStrategy.onMouseDownEvent(input)));
+        canvas.setOnMouseReleased(createHandler(input -> inputModeInput.currentStrategy.onMouseUpEvent(input)));
+        canvas.setOnMouseDragged(createHandler(input -> inputModeInput.currentStrategy.onMouseDraggedEvent(input)));
+        EventHandler<? super MouseEvent> mouseMoveHandler = createHandler(input -> inputModeInput.currentStrategy.onMouseMovedEvent(input));
         canvas.setOnMouseMoved(e -> {
             mouseMoveHandler.handle(e);
             GraphicsContext graphics = canvas.getGraphicsContext2D();
             if (inputModeInput != null) {
-                Platform.runLater(() -> inputModeInput.currentStrategy.draw(graphics));
+                // TODO: should not be here
+                displayUpdaterService.updateCurrentPosition();
+                Platform.runLater(() -> {
+                    graphics.setStroke(Color.RED);
+                    graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
+                    graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
+                    inputModeInput.currentStrategy.draw(graphics);
+                });
             }
         });
         canvas.setOnMouseExited(e -> displayUpdaterService.updateCurrentPosition());
     }
 
-    private EventHandler<? super MouseEvent> createHandler(TriFunction<Double, Double, MouseEvent> function) {
+    private EventHandler<? super MouseEvent> createHandler(Consumer<StrategyInput> function) {
         return e -> {
             if (inputModeInput != null) {
                 double x = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getX(), inputModeInput.sizeFunction, projectRepository.getPreviewWidth()));
                 double y = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getY(), inputModeInput.sizeFunction, projectRepository.getPreviewHeight()));
-                function.apply(x, y, e);
+
+                StrategyInput strategyInput = StrategyInput.builder()
+                        .withx(x)
+                        .withy(y)
+                        .withMouseEvent(e)
+                        .withUnscaledX(e.getX())
+                        .withUnscaledY(e.getY())
+                        .build();
+
+                function.accept(strategyInput);
                 if (inputModeInput.currentStrategy.getResultType() == ResultType.PARTIAL) {
                     handleStrategyHasResult();
                 }
@@ -90,14 +115,6 @@ public class InputModeRepository {
                     reset();
                 }
             }
-            // TODO: should not be here
-            displayUpdaterService.updateCurrentPosition();
-            Platform.runLater(() -> {
-                GraphicsContext graphics = canvas.getGraphicsContext2D();
-                graphics.setStroke(Color.RED);
-                graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
-                graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
-            });
         };
     }
 
@@ -109,11 +126,6 @@ public class InputModeRepository {
     private void inputModeChanged(boolean b) {
         inputModeConsumer.stream()
                 .forEach(consumer -> consumer.accept(b));
-    }
-
-    @FunctionalInterface
-    private interface TriFunction<A, B, C> {
-        void apply(A a, B b, C c);
     }
 
     public void reset() {

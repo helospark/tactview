@@ -4,7 +4,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Interpolat
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.MouseEvent;
 
 public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLine> {
     private InterpolationLine result = new InterpolationLine(new Point(0, 0), new Point(0, 0));
@@ -12,7 +11,9 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     private boolean hasStartPosition;
 
     @Override
-    public void onMouseDownEvent(double x, double y, MouseEvent mouseEvent) {
+    public void onMouseDownEvent(StrategyInput input) {
+        double x = input.x;
+        double y = input.y;
         if (!hasStartPosition) {
             result.start = new Point(x, y);
             result.end = new Point(x, y);
@@ -21,12 +22,16 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     }
 
     @Override
-    public void onMouseDraggedEvent(double x, double y, MouseEvent e) {
+    public void onMouseDraggedEvent(StrategyInput input) {
+        double x = input.x;
+        double y = input.y;
         result.end = new Point(x, y);
     }
 
     @Override
-    public void onMouseUpEvent(double x, double y, MouseEvent mouseEvent) {
+    public void onMouseUpEvent(StrategyInput input) {
+        double x = input.x;
+        double y = input.y;
         result.end = new Point(x, y);
         hasEndPosition = true;
     }
