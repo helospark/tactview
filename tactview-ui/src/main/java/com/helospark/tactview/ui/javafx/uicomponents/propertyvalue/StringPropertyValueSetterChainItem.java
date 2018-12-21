@@ -1,10 +1,12 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 
 import javafx.scene.control.TextArea;
 
@@ -12,26 +14,43 @@ import javafx.scene.control.TextArea;
 public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<StringProvider> {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
+    private UiTimelineManager timelineManager;
 
     public StringPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
         super(StringProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
+        this.timelineManager = timelineManager;
     }
 
     @Override
     protected EffectLine handle(StringProvider stringProvider, ValueProviderDescriptor descriptor) {
         TextArea textArea = new TextArea();
         textArea.getStyleClass().add("string-property-field");
-        return PrimitiveEffectLine.builder()
+        PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> textArea.getText())
                 .withDescriptorId(stringProvider.getId())
-                .withUpdateFunction(position -> textArea.setText(stringProvider.getValueAt(position)))
+                .withUpdateFunction(position -> {
+                    String currentValue = stringProvider.getValueAt(position);
+                    if (!textArea.getText().equals(currentValue)) {
+                        textArea.setText(currentValue);
+                    }
+                })
                 .withVisibleNode(textArea)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
+
+        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+            TimelinePosition position = timelineManager.getCurrentPosition();
+            String currentValue = stringProvider.getValueAt(position);
+            if (!textArea.getText().equals(currentValue)) {
+                result.sendKeyframe(position);
+            }
+        });
+
+        return result;
     }
 
 }

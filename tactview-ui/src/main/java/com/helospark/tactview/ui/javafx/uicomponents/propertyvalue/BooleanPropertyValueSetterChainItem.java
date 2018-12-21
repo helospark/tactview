@@ -6,6 +6,7 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 
 import javafx.scene.control.CheckBox;
 
@@ -13,12 +14,14 @@ import javafx.scene.control.CheckBox;
 public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<BooleanProvider> {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
+    private UiTimelineManager timelineManager;
 
     public BooleanPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
         super(BooleanProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
+        this.timelineManager = timelineManager;
     }
 
     @Override
@@ -26,7 +29,7 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         CheckBox checkbox = new CheckBox();
         checkbox.getStyleClass().add("boolean-property-field");
 
-        return PrimitiveEffectLine.builder()
+        PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> checkbox.isSelected() ? "true" : "false")
                 .withDescriptorId(booleanProvider.getId())
                 .withUpdateFunction(position -> checkbox.setSelected(providerValueToString(booleanProvider.getId(), position)))
@@ -34,6 +37,12 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
                 .build();
+
+        checkbox.selectedProperty().addListener((a, b, c) -> {
+            result.sendKeyframe(timelineManager.getCurrentPosition());
+        });
+
+        return result;
 
     }
 

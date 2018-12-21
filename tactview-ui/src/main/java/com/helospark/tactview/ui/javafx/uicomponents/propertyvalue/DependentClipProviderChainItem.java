@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
@@ -35,12 +36,13 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
     private ByteBufferToJavaFxImageConverter imageConverter;
     private UiProjectRepository uiProjectRepository;
     private NameToIdRepository nameToIdRepository;
+    private UiTimelineManager uiTimelineManager;
 
     private Image noLayerMaskImage;
 
     public DependentClipProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
             TimelineManager timelineManager, ByteBufferToJavaFxImageConverter imageConverter, UiProjectRepository uiProjectRepository,
-            NameToIdRepository nameToIdRepository) {
+            NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager) {
         super(DependentClipProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
@@ -48,6 +50,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         this.imageConverter = imageConverter;
         this.uiProjectRepository = uiProjectRepository;
         this.nameToIdRepository = nameToIdRepository;
+        this.uiTimelineManager = uiTimelineManager;
 
         noLayerMaskImage = new Image(getClass().getResourceAsStream("/noLayerMask.png"));
     }
@@ -84,7 +87,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         hbox.getChildren().add(textArea);
         hbox.getChildren().add(browseButton);
 
-        return PrimitiveEffectLine.builder()
+        PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> nameToIdRepository.getIdForName(textArea.getText()))
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
@@ -96,6 +99,12 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
+
+        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+            result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+        });
+
+        return result;
     }
 
     private void renderFrameTo(ImageView imageView, String currentValue, TimelinePosition position) {

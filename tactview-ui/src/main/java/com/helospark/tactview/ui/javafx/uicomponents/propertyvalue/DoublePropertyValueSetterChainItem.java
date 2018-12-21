@@ -82,6 +82,10 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
 
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            result.sendKeyframe(timelineManager.getCurrentPosition());
+        });
+
         MenuItem addKeyframeMenuItem = new MenuItem("Add keyframe");
         addKeyframeMenuItem.setOnAction(e -> result.sendKeyframe(timelineManager.getCurrentPosition()));
         MenuItem removeKeyframeMenuItem = new MenuItem("Remove keyframe");

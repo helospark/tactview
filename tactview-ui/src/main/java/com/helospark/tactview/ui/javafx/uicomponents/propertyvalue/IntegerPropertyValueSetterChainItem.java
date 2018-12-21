@@ -6,6 +6,7 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Slider;
@@ -18,12 +19,14 @@ import javafx.util.converter.NumberStringConverter;
 public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<IntegerProvider> {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
+    private UiTimelineManager timelineManager;
 
     public IntegerPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
         super(IntegerProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
+        this.timelineManager = timelineManager;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         hbox.getChildren().add(textField);
         hbox.getChildren().add(slider);
 
-        return PrimitiveEffectLine.builder()
+        PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> textField.getText())
                 .withDescriptorId(integerProvider.getId())
                 .withUpdateFunction(position -> textField.setText(integerProviderValueToString(integerProvider, position)))
@@ -52,6 +55,12 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
                 .build();
+
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            result.sendKeyframe(timelineManager.getCurrentPosition());
+        });
+
+        return result;
 
     }
 

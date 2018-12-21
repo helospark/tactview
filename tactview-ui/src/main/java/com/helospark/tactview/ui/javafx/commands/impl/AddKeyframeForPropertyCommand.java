@@ -12,6 +12,7 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
     private KeyframeAddedRequest request;
     private Optional<Object> previousValue;
     private boolean hadPreviousKeyframe;
+    private boolean hadKeyframingEnabled;
 
     public AddKeyframeForPropertyCommand(EffectParametersRepository effectParametersRepository, KeyframeAddedRequest request) {
         this.effectParametersRepository = effectParametersRepository;
@@ -20,8 +21,9 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
 
     @Override
     public void execute() {
+        hadKeyframingEnabled = effectParametersRepository.isUsingKeyframes(request.getDescriptorId());
         hadPreviousKeyframe = effectParametersRepository.isKeyframeAt(request.getDescriptorId(), request.getGlobalTimelinePosition());
-        if (hadPreviousKeyframe) {
+        if (!hadKeyframingEnabled || hadPreviousKeyframe) {
             previousValue = effectParametersRepository.getKeyframeableEffectValue(request.getDescriptorId(), request.getGlobalTimelinePosition());
         }
         effectParametersRepository.keyframeAdded(request);
@@ -29,7 +31,7 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
 
     @Override
     public void revert() {
-        if (hadPreviousKeyframe) {
+        if (!hadKeyframingEnabled || hadPreviousKeyframe) {
             KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
                     .withDescriptorId(request.getDescriptorId())
                     .withGlobalTimelinePosition(request.getGlobalTimelinePosition())
@@ -44,6 +46,11 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
             effectParametersRepository.removeKeyframe(keyframeRemoveRequest);
         }
     }
+
+    //    @Override
+    //    public boolean isRevertable() {
+    //        
+    //    }
 
     @Override
     public String toString() {
