@@ -40,6 +40,7 @@ import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAppli
 import com.helospark.tactview.core.timeline.effect.lut.LutEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutProviderService;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
+import com.helospark.tactview.core.timeline.effect.mirror.MirrorLineEffect;
 import com.helospark.tactview.core.timeline.effect.motionblur.GhostingEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
@@ -425,6 +426,17 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new SharpenEffect(node, loadMetadata, implementation))
                 .withName("Sharpen")
                 .withSupportedEffectId("sharpen")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory mirrorLine(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new MirrorLineEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new MirrorLineEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Mirror line")
+                .withSupportedEffectId("mirrorline")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

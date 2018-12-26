@@ -28,4 +28,9 @@ public class EffectDescriptorsAdded {
         return effect;
     }
 
+    @Override
+    public String toString() {
+        return "EffectDescriptorsAdded [effectId=" + effectId + ", descriptors=" + descriptors + ", effect=" + effect + "]";
+    }
+
 }

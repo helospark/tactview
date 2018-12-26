@@ -28,4 +28,9 @@ public class ClipDescriptorsAdded {
         return clip;
     }
 
+    @Override
+    public String toString() {
+        return "ClipDescriptorsAdded [clipId=" + clipId + ", descriptors=" + descriptors + ", clip=" + clip + "]";
+    }
+
 }

@@ -81,4 +81,10 @@ public abstract class KeyframeableEffect implements StatefulCloneable<Keyframeab
     public boolean keyframesEnabled() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "KeyframeableEffect [id=" + id + ", scaleDependent=" + scaleDependent + ", getClass()=" + getClass() + "]";
+    }
+
 }

@@ -130,7 +130,7 @@ public class ClipImage implements ReadOnlyClipImage {
         return x >= 0 && y >= 0 && x < width && y < height;
     }
 
-    public void setColorComponentByOffset(int color, Integer x, Integer y, int offset) {
+    public void setColorComponentByOffset(int color, int x, int y, int offset) {
         byte value = (byte) (saturateIfNeeded(color) & 0xFF);
         buffer.put(y * width * 4 + x * 4 + offset, value);
     }

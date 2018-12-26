@@ -42,6 +42,12 @@ public class ValueProviderDescriptor {
         return renderHints;
     }
 
+    @Override
+    public String toString() {
+        return "ValueProviderDescriptor [name=" + name + ", keyframeableEffect=" + keyframeableEffect + ", activePredicate=" + activePredicate + ", showPredicate=" + showPredicate + ", renderHints="
+                + renderHints + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();

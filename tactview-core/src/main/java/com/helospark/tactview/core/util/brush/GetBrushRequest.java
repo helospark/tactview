@@ -4,16 +4,20 @@ import java.util.Objects;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
+
 public class GetBrushRequest {
     private String filename;
     private int width;
     private int height;
+    private Color color;
 
     @Generated("SparkTools")
     private GetBrushRequest(Builder builder) {
         this.filename = builder.filename;
         this.width = builder.width;
         this.height = builder.height;
+        this.color = builder.color;
     }
 
     public String getFilename() {
@@ -28,9 +32,13 @@ public class GetBrushRequest {
         return height;
     }
 
+    public Color getColor() {
+        return color;
+    }
+
     @Override
     public String toString() {
-        return "GetBrushRequest [filename=" + filename + ", width=" + width + ", height=" + height + "]";
+        return "GetBrushRequest [filename=" + filename + ", width=" + width + ", height=" + height + ", color=" + color + "]";
     }
 
     @Override
@@ -39,12 +47,12 @@ public class GetBrushRequest {
             return false;
         }
         GetBrushRequest castOther = (GetBrushRequest) other;
-        return Objects.equals(filename, castOther.filename) && Objects.equals(width, castOther.width) && Objects.equals(height, castOther.height);
+        return Objects.equals(filename, castOther.filename) && Objects.equals(width, castOther.width) && Objects.equals(height, castOther.height) && Objects.equals(color, castOther.color);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filename, width, height);
+        return Objects.hash(filename, width, height, color);
     }
 
     @Generated("SparkTools")
@@ -57,6 +65,7 @@ public class GetBrushRequest {
         private String filename;
         private int width;
         private int height;
+        private Color color;
 
         private Builder() {
         }
@@ -73,6 +82,11 @@ public class GetBrushRequest {
 
         public Builder withHeight(int height) {
             this.height = height;
+            return this;
+        }
+
+        public Builder withColor(Color color) {
+            this.color = color;
             return this;
         }
 

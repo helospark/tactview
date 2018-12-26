@@ -9,6 +9,7 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
@@ -16,10 +17,12 @@ public class ScaledBrushProvider {
     private static final Logger logger = LoggerFactory.getLogger(ScaledBrushProvider.class);
     private RawBrushProvider rawBrushProvider;
     private ScaleService scaleService;
+    private IndependentPixelOperation independentPixelOperation;
 
-    public ScaledBrushProvider(RawBrushProvider rawBrushProvider, ScaleService scaleService) {
+    public ScaledBrushProvider(RawBrushProvider rawBrushProvider, ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
         this.rawBrushProvider = rawBrushProvider;
         this.scaleService = scaleService;
+        this.independentPixelOperation = independentPixelOperation;
     }
 
     @Cacheable(cacheTimeInMilliseconds = 600000, size = 100)
@@ -43,9 +46,17 @@ public class ScaledBrushProvider {
 
         ClipImage scaledBrush = scaleService.createScaledImage(scaleRequest);
 
-        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(brushImage.getBuffer());
+        ClipImage coloredResult = independentPixelOperation.createNewImageWithAppliedTransformation(scaledBrush, pixelRequest -> {
+            pixelRequest.output[0] = (int) (brushRequest.getColor().red * 255);
+            pixelRequest.output[1] = (int) (brushRequest.getColor().green * 255);
+            pixelRequest.output[2] = (int) (brushRequest.getColor().blue * 255);
+            pixelRequest.output[3] = pixelRequest.input[3];
+        });
 
-        return scaledBrush;
+        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(brushImage.getBuffer());
+        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(scaledBrush.getBuffer());
+
+        return coloredResult;
     }
 
     private ReadOnlyClipImage createBrushImage(GimpBrush brush) {

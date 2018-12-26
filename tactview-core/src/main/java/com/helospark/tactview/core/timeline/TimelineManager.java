@@ -51,6 +51,8 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class TimelineManager implements SaveLoadContributor {
     private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private Object fullLock = new Object();
+
     // state
     private List<StatelessVideoEffect> globalEffects;
     private CopyOnWriteArrayList<TimelineChannel> channels = new CopyOnWriteArrayList<>();
@@ -97,10 +99,12 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     public void addClip(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
-        if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
-            channelToAddResourceTo.addResource(clip);
-        } else {
-            throw new IllegalArgumentException("Cannot add clip");
+        synchronized (channelToAddResourceTo.getFullChannelLock()) {
+            if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
+                channelToAddResourceTo.addResource(clip);
+            } else {
+                throw new IllegalArgumentException("Cannot add clip");
+            }
         }
         List<ValueProviderDescriptor> descriptors = clip.getDescriptors(); // must call before sending clip added message to initialize descriptors
         messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
@@ -112,6 +116,7 @@ public class TimelineManager implements SaveLoadContributor {
             int channelIndex = clip.getEffectWithIndex(effect);
             messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clip.getId(), effect.interval.getStartPosition(), effect, channelIndex, effect.getGlobalInterval()));
         }
+
     }
 
     private Optional<TimelineChannel> findChannelWithId(String channelId) {
@@ -391,13 +396,15 @@ public class TimelineManager implements SaveLoadContributor {
         TimelineClip originalClip = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No such clip"));
         TimelineInterval originalInterval = originalClip.getGlobalInterval();
 
-        originalClip.getEffects()
-                .stream()
-                .forEach(effect -> removeEffect(originalClip, effect.getId()));
+        synchronized (originalClip.getFullClipLock()) {
+            originalClip.getEffects()
+                    .stream()
+                    .forEach(effect -> removeEffect(originalClip, effect.getId()));
 
-        TimelineChannel channel = findChannelForClipId(clipId)
-                .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
-        channel.removeClip(clipId);
+            TimelineChannel channel = findChannelForClipId(clipId)
+                    .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
+            channel.removeClip(clipId);
+        }
         messagingService.sendMessage(new ClipRemovedMessage(clipId, originalInterval));
     }
 
@@ -424,26 +431,30 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     private void createChannel(int index, TimelineChannel channelToInsert) {
-        if (index >= 0 && index < channels.size()) {
-            channels.add(index, channelToInsert);
-        } else {
-            channels.add(channelToInsert);
+        synchronized (fullLock) {
+            if (index >= 0 && index < channels.size()) {
+                channels.add(index, channelToInsert);
+            } else {
+                channels.add(channelToInsert);
+            }
         }
         messagingService.sendAsyncMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert)));
     }
 
     public void removeChannel(String channelId) {
-        TimelineChannel channel = findChannelWithId(channelId).orElseThrow();
+        synchronized (fullLock) {
+            TimelineChannel channel = findChannelWithId(channelId).orElseThrow();
 
-        channel.getAllClipId()
-                .stream()
-                .forEach(clipId -> removeClip(clipId));
+            channel.getAllClipId()
+                    .stream()
+                    .forEach(clipId -> removeClip(clipId));
 
-        findChannelIndex(channelId)
-                .ifPresent(index -> {
-                    channels.remove(index.intValue());
-                    messagingService.sendMessage(new ChannelRemovedMessage(channelId));
-                });
+            findChannelIndex(channelId)
+                    .ifPresent(index -> {
+                        channels.remove(index.intValue());
+                        messagingService.sendMessage(new ChannelRemovedMessage(channelId));
+                    });
+        }
     }
 
     public Optional<TimelineClip> findClipForEffect(String effectId) {
@@ -464,6 +475,7 @@ public class TimelineManager implements SaveLoadContributor {
 
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
         TimelineInterval originalInterval = clipToMove.getGlobalInterval();
+        TimelineInterval newInterval = new TimelineInterval(newPosition, clipToMove.getInterval().getLength());
 
         Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
 
@@ -482,12 +494,14 @@ public class TimelineManager implements SaveLoadContributor {
         }
 
         if (!originalChannel.equals(newChannel)) {
-            // todo: some atomity would be nice here
-            if (newChannel.canAddResourceAt(clipToMove.getInterval())) {
-                originalChannel.removeClip(clipId);
-                newChannel.addResource(clipToMove);
+            synchronized (fullLock) {
+                if (newChannel.canAddResourceAt(clipToMove.getInterval()) && newChannel.canAddResourceAt(newInterval)) {
+                    originalChannel.removeClip(clipId);
+                    clipToMove.setInterval(newInterval);
+                    newChannel.addResource(clipToMove);
 
-                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed, originalInterval, clipToMove.getGlobalInterval()));
+                    messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed, originalInterval, clipToMove.getGlobalInterval()));
+                }
             }
         } else {
             boolean success = originalChannel.moveClip(clipId, newPosition);
@@ -582,11 +596,13 @@ public class TimelineManager implements SaveLoadContributor {
         TimelineChannel channel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("No such channel"));
         TimelineClip clip = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
 
-        List<TimelineClip> cuttedParts = clip.createCutClipParts(globalTimelinePosition);
+        synchronized (channel.getFullChannelLock()) {
+            List<TimelineClip> cuttedParts = clip.createCutClipParts(globalTimelinePosition);
 
-        removeClip(clipId);
-        addClip(channel, cuttedParts.get(0));
-        addClip(channel, cuttedParts.get(1));
+            removeClip(clipId);
+            addClip(channel, cuttedParts.get(0));
+            addClip(channel, cuttedParts.get(1));
+        }
     }
 
     @Override
@@ -689,19 +705,21 @@ public class TimelineManager implements SaveLoadContributor {
     public void changeClipForEffect(StatelessEffect originalEffect, String newClipId, TimelinePosition newPosition) {
         TimelineClip originalClip = findClipForEffect(originalEffect.getId()).orElseThrow();
         TimelineClip newClip = findClipById(newClipId).orElseThrow();
-        originalClip.removeEffectById(originalEffect.getId());
-        newClip.addEffectAtAnyChannel(originalEffect);
+        synchronized (fullLock) {
+            originalClip.removeEffectById(originalEffect.getId());
+            newClip.addEffectAtAnyChannel(originalEffect);
 
-        EffectMovedToDifferentClipMessage message = EffectMovedToDifferentClipMessage.builder()
-                .withEffectId(originalEffect.getId())
-                .withModifiedInterval(originalEffect.getInterval())
-                .withNewClipId(newClipId)
-                .withOriginalClipId(originalClip.getId())
-                .build();
+            EffectMovedToDifferentClipMessage message = EffectMovedToDifferentClipMessage.builder()
+                    .withEffectId(originalEffect.getId())
+                    .withModifiedInterval(originalEffect.getInterval())
+                    .withNewClipId(newClipId)
+                    .withOriginalClipId(originalClip.getId())
+                    .build();
 
-        messagingService.sendAsyncMessage(message);
+            messagingService.sendAsyncMessage(message);
 
-        moveEffect(originalEffect.getId(), newPosition.add(newClip.getInterval().getStartPosition()), Optional.empty());
+            moveEffect(originalEffect.getId(), newPosition.add(newClip.getInterval().getStartPosition()), Optional.empty());
+        }
     }
 
     public Optional<Integer> findChannelIndexForClipId(String clipId) {

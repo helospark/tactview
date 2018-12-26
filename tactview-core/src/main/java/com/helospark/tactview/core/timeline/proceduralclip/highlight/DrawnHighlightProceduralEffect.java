@@ -20,6 +20,7 @@ import com.helospark.tactview.core.timeline.blendmode.impl.NormalBlendModeStrate
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
@@ -110,7 +111,9 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
             brushFilePath = "classpath:/brushes/Oils-03.gbr";
         }
 
-        Optional<ClipImage> brushImage = getBrush(brushFilePath, brushSize);
+        Color color = colorProvider.getValueAt(relativePosition);
+
+        Optional<ClipImage> brushImage = getBrush(brushFilePath, brushSize, color);
         if (brushImage.isPresent() && width > 0 && height > 0) {
             List<Vector2D> pixels = bresenhemPixelProvider.ellipsePixels(centerX, centerY, width, height);
             int spacing = 1;
@@ -124,12 +127,13 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
         return result;
     }
 
-    private Optional<ClipImage> getBrush(String brushFilePath, int brushSize) {
+    private Optional<ClipImage> getBrush(String brushFilePath, int brushSize, Color color) {
         try {
             GetBrushRequest brushRequest = GetBrushRequest.builder()
                     .withFilename(brushFilePath)
                     .withWidth(brushSize)
                     .withHeight(brushSize)
+                    .withColor(color)
                     .build();
 
             return Optional.of(scaledBrushProvider.getBrushImage(brushRequest));

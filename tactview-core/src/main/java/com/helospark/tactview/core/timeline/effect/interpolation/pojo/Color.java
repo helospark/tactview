@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.pojo;
 
+import java.util.Objects;
+
 public class Color {
     public double red;
     public double green;
@@ -183,6 +185,20 @@ public class Color {
     @Override
     public String toString() {
         return "Color [red=" + red + ", green=" + green + ", blue=" + blue + "]";
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof Color)) {
+            return false;
+        }
+        Color castOther = (Color) other;
+        return Objects.equals(red, castOther.red) && Objects.equals(green, castOther.green) && Objects.equals(blue, castOther.blue);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(red, green, blue);
     }
 
 }

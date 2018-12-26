@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class TimelineChannel {
     private NonIntersectingIntervalList<TimelineClip> clips = new NonIntersectingIntervalList<>();
     private String id = UUID.randomUUID().toString();
+    private Object fullChannelLock = new Object();
 
     public TimelineChannel(JsonNode savedChannel) {
         this.id = savedChannel.get("id").asText();
@@ -48,7 +49,9 @@ public class TimelineChannel {
     }
 
     public void addResource(TimelineClip clip) {
-        clips.addInterval(clip);
+        synchronized (fullChannelLock) {
+            clips.addInterval(clip);
+        }
     }
 
     public Optional<TimelineClip> findClipById(String id) {
@@ -61,9 +64,11 @@ public class TimelineChannel {
     }
 
     public void removeClip(String addedClipId) {
-        TimelineClip clip = findClipById(addedClipId)
-                .orElseThrow(() -> new IllegalArgumentException("Channel does not contain " + addedClipId));
-        clips.remove(clip);
+        synchronized (fullChannelLock) {
+            TimelineClip clip = findClipById(addedClipId)
+                    .orElseThrow(() -> new IllegalArgumentException("Channel does not contain " + addedClipId));
+            clips.remove(clip);
+        }
     }
 
     public String getId() {
@@ -89,18 +94,21 @@ public class TimelineChannel {
         TimelineInterval originalInterval = clipToMove.getInterval();
         TimelineInterval newInterval = new TimelineInterval(newPosition, originalInterval.getLength());
 
-        clips.remove(clipToMove);
+        synchronized (fullChannelLock) {
 
-        boolean success = false;
+            clips.remove(clipToMove);
 
-        if (canAddResourceAt(newInterval)) {
-            clipToMove.setInterval(newInterval);
-            success = true;
-        } else {
-            success = false;
+            boolean success = false;
+
+            if (canAddResourceAt(newInterval)) {
+                clipToMove.setInterval(newInterval);
+                success = true;
+            } else {
+                success = false;
+            }
+            clips.addInterval(clipToMove);
+            return success;
         }
-        clips.addInterval(clipToMove);
-        return success;
     }
 
     public Optional<TimelineClip> findClipContainingEffect(String effectId) {
@@ -117,7 +125,9 @@ public class TimelineChannel {
         TimelineInterval originalInterval = clip.getInterval();
         TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(position) : originalInterval.butWithEndPosition(position);
 
-        return clips.resize(clip, newInterval);
+        synchronized (fullChannelLock) {
+            return clips.resize(clip, newInterval);
+        }
     }
 
     public List<TimelineInterval> findSpecialPositionsAround(TimelinePosition position, TimelineLength length, String excludeId) {
@@ -165,6 +175,10 @@ public class TimelineChannel {
 
     public TimelinePosition findPositionWhereIntervalWithLengthCanBeInserted(TimelineLength length) {
         return clips.get(clips.size() - 1).getInterval().getEndPosition(); // tmp implementation
+    }
+
+    public Object getFullChannelLock() {
+        return fullChannelLock;
     }
 
 }

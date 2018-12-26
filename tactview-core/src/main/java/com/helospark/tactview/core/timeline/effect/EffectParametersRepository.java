@@ -66,7 +66,10 @@ public class EffectParametersRepository {
         list.stream()
                 .map(a -> a.getKeyframeableEffect())
                 .flatMap(a -> getPrimitiveKeyframeableEffects(a))
-                .forEach(a -> primitiveEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware)));
+                .forEach(a -> {
+                    primitiveEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
+                    allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
+                });
     }
 
     private Stream<KeyframeableEffect> getPrimitiveKeyframeableEffects(KeyframeableEffect a) {

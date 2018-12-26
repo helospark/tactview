@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ColorPickerType;
 import com.helospark.tactview.core.timeline.effect.interpolation.RenderTypeHint;
@@ -107,14 +106,6 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
 
             return result;
         }
-    }
-
-    private javafx.scene.paint.Color queryCurrentColor(ColorProvider lineProvider) {
-        TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
-        double red = Double.parseDouble(effectParametersRepository.getValueAt(lineProvider.getChildren().get(0).getId(), currentPosition));
-        double green = Double.parseDouble(effectParametersRepository.getValueAt(lineProvider.getChildren().get(1).getId(), currentPosition));
-        double blue = Double.parseDouble(effectParametersRepository.getValueAt(lineProvider.getChildren().get(2).getId(), currentPosition));
-        return new javafx.scene.paint.Color(red, green, blue, 1.0);
     }
 
     private double effectLineToDouble(PrimitiveEffectLine provider) {
