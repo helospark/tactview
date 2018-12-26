@@ -69,11 +69,13 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withCurrentValueProvider(() -> textField.getText())
                 .withDescriptorId(doubleProvider.getId())
                 .withUpdateFunction(position -> {
-                    textField.setText(doubleProviderValueToString(doubleProvider.getId(), position));
-                    if (effectParametersRepository.isKeyframeAt(doubleProvider.getId(), position)) {
-                        textField.getStyleClass().add("on-keyframe");
-                    } else {
-                        textField.getStyleClass().remove("on-keyframe");
+                    if (!textField.isFocused()) { // otherwise user may want to type
+                        textField.setText(doubleProviderValueToString(doubleProvider.getId(), position));
+                        if (effectParametersRepository.isKeyframeAt(doubleProvider.getId(), position)) {
+                            textField.getStyleClass().add("on-keyframe");
+                        } else {
+                            textField.getStyleClass().remove("on-keyframe");
+                        }
                     }
                 })
                 .withUpdateFromValue(value -> textField.setText(String.valueOf(value)))

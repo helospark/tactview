@@ -46,7 +46,7 @@ public class ChannelAddedListener {
         timelineTitle.getChildren().add(new Label(generatedName));
         timelineTitle.setMaxWidth(200);
         timelineTitle.setMinWidth(150);
-        timelineTitle.setPrefHeight(50);
+        //        timelineTitle.setPrefHeight(50);
         timelineTitle.getStyleClass().add("timeline-title");
 
         Pane timelineRow = new Pane();
@@ -55,7 +55,7 @@ public class ChannelAddedListener {
         timelineRow.getStyleClass().add("timeline-clips");
         timeline.getChildren().add(timelineRow);
 
-        timelineTitle.prefHeightProperty().bind(timelineRow.heightProperty());
+        timelineTitle.prefHeightProperty().bind(timelineRow.heightProperty().add(12));
 
         timelineDragAndDropHandler.addDragAndDrop(timeline, timelineRow, message.getChannelId());
 

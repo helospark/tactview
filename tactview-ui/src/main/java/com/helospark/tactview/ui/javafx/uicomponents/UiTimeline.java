@@ -2,10 +2,13 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
 
+import java.math.BigDecimal;
+
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -13,10 +16,14 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ScrollEvent;
@@ -24,6 +31,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
 @Component
@@ -39,6 +47,7 @@ public class UiTimeline {
 
     private ScrollPane timeLineScrollPane;
     private BorderPane borderPane;
+    private Canvas timelineLabelCanvas;
 
     public UiTimeline(TimeLineZoomCallback timeLineZoomCallback, MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
@@ -50,7 +59,7 @@ public class UiTimeline {
         this.uiTimelineManager = uiTimelineManager;
     }
 
-    public Node createTimeline() {
+    public Node createTimeline(VBox lower) {
         borderPane = new BorderPane();
 
         Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
@@ -61,7 +70,22 @@ public class UiTimeline {
         HBox titleBarTop = new HBox();
         titleBarTop.getChildren().add(addChannelButton);
 
-        borderPane.setTop(titleBarTop);
+        HBox timelineTimeLabels = new HBox();
+
+        timelineLabelCanvas = new Canvas(200, 20);
+        timelineLabelCanvas.widthProperty().bind(lower.widthProperty());
+        timelineLabelCanvas.widthProperty().addListener(newValue -> updateTimelineLabels());
+        timelineTimeLabels.prefWidthProperty().bind(lower.widthProperty());
+
+        timelineTimeLabels.getChildren().add(timelineLabelCanvas);
+
+        timelineState.onShownLocationChange(() -> updateTimelineLabels());
+
+        VBox timelineTopRow = new VBox();
+        timelineTopRow.getChildren().add(titleBarTop);
+        timelineTopRow.getChildren().add(timelineTimeLabels);
+
+        borderPane.setTop(timelineTopRow);
 
         timeLineScrollPane = new ScrollPane();
         GridPane gridPane = new GridPane();
@@ -76,7 +100,7 @@ public class UiTimeline {
         positionIndicatorLine = new Line();
         //        positionIndicatorLine.setTranslateX(6.0); // TODO: Layout need to be fixed
         positionIndicatorLine.setStartY(0);
-        positionIndicatorLine.endYProperty().bind(timelineBoxes.heightProperty());
+        positionIndicatorLine.endYProperty().bind(lower.heightProperty());
         positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.endXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.setId("timeline-position-line");
@@ -102,28 +126,78 @@ public class UiTimeline {
             timeLineZoomCallback.onScroll(e, timeLineScrollPane);
             e.consume();
         });
+        timeLineScrollPane.hvalueProperty().addListener((o, oldValue, newValue) -> {
+            Bounds viewportBounds = timeLineScrollPane.getViewportBounds();
+            Bounds contentBounds = timeLineScrollPane.getContent().getBoundsInLocal();
 
-        titleBarTop.setOnMouseClicked(e -> {
+            double hRel = timeLineScrollPane.getHvalue() / timeLineScrollPane.getHmax();
+            double translate = Math.max(0, (contentBounds.getWidth() - viewportBounds.getWidth()) * hRel);
+            timelineState.setTranslate(translate);
+        });
+
+        timelineTimeLabels.setOnMouseClicked(e -> {
             double xPosition = e.getX() - timelineTitles.getWidth();
             jumpTo(xPosition);
         });
-        titleBarTop.setOnMouseDragged(e -> {
+        timelineTimeLabels.setOnMouseDragged(e -> {
             double xPosition = e.getX() - timelineTitles.getWidth();
             jumpTo(xPosition);
         });
 
         timeLineScrollPane.setContent(timelineGroup);
+        timeLineScrollPane.prefHeightProperty().bind(borderPane.heightProperty());
 
         gridPane.add(timelineTitles, 0, 0);
         gridPane.add(timeLineScrollPane, 1, 0);
+        //        gridPane.setPrefHeight(500);
 
         borderPane.setCenter(gridPane);
 
         return borderPane;
     }
 
+    private void updateTimelineLabels() {
+        Platform.runLater(() -> {
+            GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
+            int width = (int) timelineLabelCanvas.getWidth();
+            int height = (int) timelineLabelCanvas.getHeight();
+            g.clearRect(0, 0, width, height);
+            drawLines(0.1, 17, 1.0);
+            drawLines(0.5, 12, 0.5);
+            drawLines(1.0, 7, 0.8);
+            drawLines(10.0, 3, 1.5);
+            drawLines(60.0, 0, 3.0);
+        });
+    }
+
+    private void drawLines(double distance, int lineStart, double lineWidth) {
+        int startPosition = (int) timelineState.getChannelTitlesWidth() + 4;
+        if (startPosition < 0) {
+            startPosition = 0;
+        }
+        int width = (int) timelineLabelCanvas.getWidth();
+        int height = (int) timelineLabelCanvas.getHeight();
+        GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
+        double secondLength = timelineState.secondsToPixelsWithZoom(new TimelineLength(BigDecimal.valueOf(distance)));
+
+        TimelinePosition startTime = timelineState.getTimeAtLeftSide();
+        if (secondLength > 3) {
+            double firstSecond = secondLength - (startTime.divide(BigDecimal.valueOf(distance)).decimalPart()
+                    .multiply(TimelineState.PIXEL_PER_SECOND)
+                    .multiply(BigDecimal.valueOf(distance))
+                    .getSeconds()
+                    .doubleValue());
+
+            g.setStroke(Color.BLACK);
+            g.setLineWidth(lineWidth);
+            for (double i = startPosition + firstSecond; i <= width; i += secondLength) {
+                g.strokeLine(i, lineStart, i, height);
+            }
+        }
+    }
+
     private void jumpTo(double xPosition) {
-        TimelinePosition position = timelineState.pixelsToSeconds(xPosition);
+        TimelinePosition position = timelineState.pixelsToSeconds(xPosition).divide(BigDecimal.valueOf(timelineState.getZoom())).add(timelineState.getTimeAtLeftSide());
         uiTimelineManager.jumpAbsolute(position.getSeconds());
     }
 

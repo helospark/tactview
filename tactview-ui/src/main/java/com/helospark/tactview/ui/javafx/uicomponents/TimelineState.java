@@ -43,7 +43,7 @@ public class TimelineState {
     private MessagingService messagingService;
 
     private ObservableList<HBox> channels = FXCollections.observableArrayList();
-    private ObservableList<Node> channelHeaders = FXCollections.observableArrayList();
+    private ObservableList<Pane> channelHeaders = FXCollections.observableArrayList();
     private Map<String, ObservableList<Pane>> channelToClips = new HashMap<>();
     private Map<String, ObservableList<Node>> clipsToEffects = new HashMap<>();
 
@@ -60,7 +60,23 @@ public class TimelineState {
 
     public int secondsToPixels(SecondsAware length) {
         return length.getSeconds()
+                .multiply(PIXEL_PER_SECOND)
+                .intValue();
+    }
+
+    public double secondsToPixelsWithZoom(SecondsAware length) {
+        return length.getSeconds()
                 .multiply(PIXEL_PER_SECOND) // todo: zoom and scroll
+                .multiply(BigDecimal.valueOf(zoomValue.get()))
+                .doubleValue();
+    }
+
+    public int secondsToPixelsWidthZoomAndTranslate(SecondsAware length) {
+        System.out.println(translate.get());
+        return length.getSeconds()
+                .multiply(PIXEL_PER_SECOND) // todo: zoom and scroll
+                .multiply(BigDecimal.valueOf(zoomValue.get()))
+                .subtract(BigDecimal.valueOf(translate.get()))
                 .intValue();
     }
 
@@ -164,6 +180,7 @@ public class TimelineState {
 
     public void setLinePosition(TimelinePosition position) {
         int pixels = secondsToPixels(position);
+        System.out.println("Moving line to " + pixels + " " + position + " " + zoomValue.get());
         linePosition.set(pixels);
     }
 
@@ -241,7 +258,30 @@ public class TimelineState {
     }
 
     public ObservableList<Node> getChannelTitlesAsNodes() {
-        return channelHeaders;
+        return (ObservableList<Node>) (Object) channelHeaders;
+    }
+
+    public void onShownLocationChange(Runnable runnable) {
+        translate.addListener(newValue -> runnable.run());
+        zoomValue.addListener(newValue -> runnable.run());
+        runnable.run();
+    }
+
+    public double getChannelTitlesWidth() {
+        if (channelHeaders.isEmpty()) {
+            return 150;
+        } else {
+            return channelHeaders.get(0).getWidth();
+        }
+    }
+
+    public TimelinePosition getTimeAtLeftSide() {
+        double translatedCurrentValue = translate.get();
+        double zoomedCurrentValue = zoomValue.get();
+
+        System.out.println("Translated X : " + translatedCurrentValue);
+
+        return pixelsToSeconds(translatedCurrentValue);
     }
 
 }

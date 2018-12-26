@@ -33,7 +33,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
                     String currentValue = stringProvider.getValueAt(position);
-                    if (!textArea.getText().equals(currentValue)) {
+                    if (!textArea.isFocused()) { // otherwise user may want to type
                         textArea.setText(currentValue);
                     }
                 })
