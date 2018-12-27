@@ -33,6 +33,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -41,9 +42,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -246,7 +249,7 @@ public class JavaFXUiMain extends Application {
         lower.setPrefHeight(300);
         lower.setId("timeline-view");
 
-        Node timeline = uiTimeline.createTimeline(lower);
+        Node timeline = uiTimeline.createTimeline(lower, root);
         lower.getChildren().add(timeline);
         VBox.setVgrow(timeline, Priority.ALWAYS);
 
@@ -283,12 +286,18 @@ public class JavaFXUiMain extends Application {
         image.setPreserveRatio(true);
         image.setFitWidth(50);
         Label text = new Label();
+        text.setTextOverrun(OverrunStyle.ELLIPSIS);
+        text.setEllipsisString("...");
         text.setText(name);
 
         VBox vbox = new VBox();
         vbox.getStyleClass().add("icon");
         vbox.getChildren().addAll(image, text);
         vbox.setPadding(new Insets(10));
+        vbox.setAlignment(Pos.CENTER);
+
+        Tooltip tooltip = new Tooltip(name);
+        Tooltip.install(vbox, tooltip);
 
         vbox.setOnDragDetected(event -> {
             /* drag was detected, start drag-and-drop gesture */

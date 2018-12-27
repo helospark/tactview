@@ -59,7 +59,7 @@ public class UiTimeline {
         this.uiTimelineManager = uiTimelineManager;
     }
 
-    public Node createTimeline(VBox lower) {
+    public Node createTimeline(VBox lower, BorderPane root) {
         borderPane = new BorderPane();
 
         Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
@@ -73,7 +73,7 @@ public class UiTimeline {
         HBox timelineTimeLabels = new HBox();
 
         timelineLabelCanvas = new Canvas(200, 20);
-        timelineLabelCanvas.widthProperty().bind(lower.widthProperty());
+        timelineLabelCanvas.widthProperty().bind(root.widthProperty());
         timelineLabelCanvas.widthProperty().addListener(newValue -> updateTimelineLabels());
         timelineTimeLabels.prefWidthProperty().bind(lower.widthProperty());
 

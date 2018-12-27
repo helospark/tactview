@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.effect.EffectContextMenuFactory;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
@@ -12,6 +13,7 @@ import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -26,15 +28,18 @@ public class EffectAddedListener {
     private SelectedNodeRepository selectedNodeRepository;
     private DragRepository dragRepository;
     private NameToIdRepository nameToIdRepository;
+    private EffectContextMenuFactory effectContextMenuFactory;
 
     public EffectAddedListener(UiMessagingService messagingService, TimelineState timelineState, SelectedNodeRepository selectedNodeRepository,
             DragRepository dragRepository,
-            EffectDragAdder effectDragAdder, NameToIdRepository nameToIdRepository) {
+            EffectDragAdder effectDragAdder, NameToIdRepository nameToIdRepository,
+            EffectContextMenuFactory effectContextMenuFactory) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.selectedNodeRepository = selectedNodeRepository;
         this.dragRepository = dragRepository;
         this.nameToIdRepository = nameToIdRepository;
+        this.effectContextMenuFactory = effectContextMenuFactory;
     }
 
     @PostConstruct
@@ -84,6 +89,11 @@ public class EffectAddedListener {
             } else {
                 rectangle.setCursor(Cursor.HAND);
             }
+        });
+
+        ContextMenu contextMenu = effectContextMenuFactory.createContextMenuForEffect(effectAddedMessage.getEffect());
+        rectangle.setOnContextMenuRequested(e -> {
+            contextMenu.show(rectangle.getScene().getWindow(), e.getScreenX(), e.getScreenY());
         });
 
         return rectangle;

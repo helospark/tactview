@@ -48,6 +48,7 @@
 .icon {
 	-fx-opacity: 0.8;
     -fx-background-radius: 10;
+    -fx-pref-width: 100px;
 }
 
 .icon:hover {
@@ -83,7 +84,7 @@
 }
 
 .timeline-title {
-    -fx-border-color: rgba(150,0,0,0.4);
+    -fx-border-color: rgba(150,150,150,0.4);
     -fx-background-color: #444444;
     -fx-border-insets: 5;
     -fx-border-width: 1;
