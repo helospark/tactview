@@ -13,6 +13,8 @@ import com.helospark.tactview.core.timeline.SecondsAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -264,6 +266,13 @@ public class TimelineState {
     public void onShownLocationChange(Runnable runnable) {
         translate.addListener(newValue -> runnable.run());
         zoomValue.addListener(newValue -> runnable.run());
+        channelHeaders.addListener(new InvalidationListener() {
+
+            @Override
+            public void invalidated(Observable observable) {
+                runnable.run();
+            }
+        });
         runnable.run();
     }
 
@@ -278,8 +287,6 @@ public class TimelineState {
     public TimelinePosition getTimeAtLeftSide() {
         double translatedCurrentValue = translate.get();
         double zoomedCurrentValue = zoomValue.get();
-
-        System.out.println("Translated X : " + translatedCurrentValue);
 
         return pixelsToSeconds(translatedCurrentValue);
     }

@@ -39,6 +39,7 @@ import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlpha
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
 import com.helospark.tactview.core.timeline.effect.lut.LutEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutProviderService;
+import com.helospark.tactview.core.timeline.effect.median.MedianEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorLineEffect;
 import com.helospark.tactview.core.timeline.effect.motionblur.GhostingEffect;
@@ -437,6 +438,17 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new MirrorLineEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Mirror line")
                 .withSupportedEffectId("mirrorline")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory medianEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new MedianEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new MedianEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Median effect")
+                .withSupportedEffectId("medianeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
