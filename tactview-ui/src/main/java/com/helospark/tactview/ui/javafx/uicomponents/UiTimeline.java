@@ -26,6 +26,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -46,6 +47,7 @@ public class UiTimeline {
     private Line positionIndicatorLine;
 
     private ScrollPane timeLineScrollPane;
+    private VBox timelineTitlesPane;
     private BorderPane borderPane;
     private Canvas timelineLabelCanvas;
 
@@ -79,8 +81,6 @@ public class UiTimeline {
 
         timelineTimeLabels.getChildren().add(timelineLabelCanvas);
 
-        timelineState.onShownLocationChange(() -> updateTimelineLabels());
-
         VBox timelineTopRow = new VBox();
         timelineTopRow.getChildren().add(titleBarTop);
         timelineTopRow.getChildren().add(timelineTimeLabels);
@@ -100,7 +100,7 @@ public class UiTimeline {
         positionIndicatorLine = new Line();
         //        positionIndicatorLine.setTranslateX(6.0); // TODO: Layout need to be fixed
         positionIndicatorLine.setStartY(0);
-        positionIndicatorLine.endYProperty().bind(lower.heightProperty());
+        positionIndicatorLine.endYProperty().bind(timelineBoxes.heightProperty());
         positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.endXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.setId("timeline-position-line");
@@ -117,10 +117,20 @@ public class UiTimeline {
 
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
+        timelineTitlesPane = new VBox();
+        timelineTitlesPane.getStyleClass().add("timeline-titles-pane");
+        ScrollPane timelineTitlesScrollPane = new ScrollPane();
+        timelineTitlesScrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
+        timelineTitlesScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
+        timelineTitlesScrollPane.vvalueProperty().bind(timeLineScrollPane.vvalueProperty());
         VBox timelineTitles = new VBox();
         Bindings.bindContentBidirectional(timelineState.getChannelTitlesAsNodes(), timelineTitles.getChildren());
+        timelineTitlesScrollPane.setContent(timelineTitles);
+        timelineTitlesPane.getChildren().add(timelineTitlesScrollPane);
 
         timelineGroup.getChildren().add(zoomGroup);
+
+        timelineState.onShownLocationChange(() -> updateTimelineLabels());
 
         zoomGroup.addEventFilter(ScrollEvent.SCROLL, e -> {
             timeLineZoomCallback.onScroll(e, timeLineScrollPane);
@@ -147,7 +157,7 @@ public class UiTimeline {
         timeLineScrollPane.setContent(timelineGroup);
         timeLineScrollPane.prefHeightProperty().bind(borderPane.heightProperty());
 
-        gridPane.add(timelineTitles, 0, 0);
+        gridPane.add(timelineTitlesPane, 0, 0);
         gridPane.add(timeLineScrollPane, 1, 0);
         //        gridPane.setPrefHeight(500);
 
@@ -171,7 +181,7 @@ public class UiTimeline {
     }
 
     private void drawLines(double distance, int lineStart, double lineWidth) {
-        int startPosition = (int) timelineState.getChannelTitlesWidth() + 4;
+        int startPosition = (int) timelineTitlesPane.getWidth() + 4;
         if (startPosition < 0) {
             startPosition = 0;
         }

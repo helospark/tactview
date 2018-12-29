@@ -91,6 +91,11 @@
     -fx-border-style: hidden hidden dashed hidden;
 }
 
+.timeline-titles-pane {
+    -fx-pref-width: 150;
+    -fx-min-width: 150;
+}
+
 #video-status-bar {
     -fx-alignment: center ;
 }

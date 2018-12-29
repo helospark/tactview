@@ -18,7 +18,7 @@ public class UiInitializer {
 
     public void initialize() {
         try {
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 8; ++i) {
                 commandInterpreter.sendWithResult(new CreateChannelCommand(timelineManager, LAST_INDEX)).get();
             }
         } catch (Exception e) {
