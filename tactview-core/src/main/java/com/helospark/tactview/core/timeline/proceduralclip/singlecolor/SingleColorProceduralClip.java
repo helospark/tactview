@@ -83,7 +83,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
 
         ValueProviderDescriptor colorDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(colorProvider)
-                .withName("red")
+                .withName("color")
                 .build();
         ValueProviderDescriptor alphaDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(alphaProvider)

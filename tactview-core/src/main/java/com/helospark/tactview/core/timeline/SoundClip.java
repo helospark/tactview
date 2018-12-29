@@ -68,7 +68,8 @@ public class SoundClip extends AudibleTimelineClip {
 
     @Override
     protected void generateSavedContentInternal(Map<String, Object> savedContent) {
-        savedContent.put("startPosition", savedContent);
+        savedContent.put("startPosition", startPosition);
+        savedContent.put("backingFile", backingSource.getBackingFile());
     }
 
 }

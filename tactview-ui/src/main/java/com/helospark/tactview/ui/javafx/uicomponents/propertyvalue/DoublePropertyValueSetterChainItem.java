@@ -38,9 +38,6 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     private UiTimelineManager timelineManager;
     private LightDiContext context;
 
-    // required because setting the value during playback also triggers keyframe setting
-    private CustomObservableObject userChangedValueObservable = new CustomObservableObject();
-
     public DoublePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
             UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
         super(DoubleProvider.class);
@@ -54,6 +51,9 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         TextField textField = new TextField();
         textField.getStyleClass().add("double-property-field");
 
+        // required because setting the value during playback also triggers keyframe setting
+        CustomObservableObject userChangedValueObservable = new CustomObservableObject();
+
         HBox hbox = new HBox();
         hbox.getChildren().add(textField);
 
@@ -64,12 +64,12 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
             slider.setShowTickLabels(true);
             slider.setShowTickMarks(true);
             StringConverter<Number> converter = new NumberStringConverter();
+            Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
             slider.valueProperty().addListener((o, old, newValue) -> {
                 if (slider.isValueChanging()) {
                     userChangedValueObservable.setValue(String.valueOf(newValue));
                 }
             });
-            Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
             hbox.getChildren().add(slider);
         }
 
@@ -78,7 +78,9 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withDescriptorId(doubleProvider.getId())
                 .withUpdateFunction(position -> {
                     if (!textField.isFocused()) { // otherwise user may want to type
-                        textField.setText(doubleProviderValueToString(doubleProvider.getId(), position));
+                        String current = doubleProviderValueToString(doubleProvider.getId(), position);
+                        System.out.println("Updating " + doubleProvider.getId() + " to " + current);
+                        textField.setText(current);
                         if (effectParametersRepository.isKeyframeAt(doubleProvider.getId(), position)) {
                             textField.getStyleClass().add("on-keyframe");
                         } else {
@@ -97,7 +99,7 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         });
 
         userChangedValueObservable.registerListener(newValue -> {
-            result.sendKeyframe(timelineManager.getCurrentPosition());
+            result.sendKeyframeWithValue(timelineManager.getCurrentPosition(), newValue);
         });
 
         MenuItem addKeyframeMenuItem = new MenuItem("Add keyframe");

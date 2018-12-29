@@ -38,6 +38,16 @@ public class PrimitiveEffectLine extends EffectLine {
         commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
     }
 
+    public void sendKeyframeWithValue(TimelinePosition position, String value) {
+        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                .withDescriptorId(descriptorId)
+                .withGlobalTimelinePosition(position)
+                .withValue(value)
+                .build();
+
+        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+    }
+
     @Override
     public void updateUi(TimelinePosition position) {
         updateFunction.accept(position);

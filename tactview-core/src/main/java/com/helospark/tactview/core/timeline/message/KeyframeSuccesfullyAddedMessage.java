@@ -33,4 +33,9 @@ public class KeyframeSuccesfullyAddedMessage implements AffectedModifiedInterval
         return List.of(interval);
     }
 
+    @Override
+    public String toString() {
+        return "KeyframeSuccesfullyAddedMessage [descriptorId=" + descriptorId + ", interval=" + interval + ", containingElementId=" + containingElementId + "]";
+    }
+
 }

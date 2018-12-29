@@ -35,7 +35,6 @@ public class StringInterpolatorFactory implements DesSerFactory<StringInterpolat
     public StringInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
             StringInterpolator result = StaticObjectMapper.getterIgnoringOjectMapper.readValue(data.get("instance").asText(), StringInterpolator.class);
-            result.defaultValue = ((StringInterpolator) currentFieldValue).defaultValue;
             return result;
         } catch (IOException e) {
             throw new RuntimeException(e);

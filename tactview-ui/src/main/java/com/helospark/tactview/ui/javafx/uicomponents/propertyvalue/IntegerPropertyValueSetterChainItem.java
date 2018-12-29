@@ -21,9 +21,6 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
 
-    // required because setting the value during playback also triggers keyframe setting
-    private CustomObservableObject userChangedValueObservable = new CustomObservableObject();
-
     public IntegerPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
             UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
         super(IntegerProvider.class);
@@ -34,6 +31,9 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
 
     @Override
     protected EffectLine handle(IntegerProvider integerProvider, ValueProviderDescriptor descriptor) {
+        // required because setting the value during playback also triggers keyframe setting
+        CustomObservableObject userChangedValueObservable = new CustomObservableObject();
+
         TextField textField = new TextField();
         textField.getStyleClass().add("integer-property-field");
         HBox hbox = new HBox();
@@ -74,7 +74,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .build();
 
         userChangedValueObservable.registerListener(value -> {
-            result.sendKeyframe(timelineManager.getCurrentPosition());
+            result.sendKeyframeWithValue(timelineManager.getCurrentPosition(), value);
         });
 
         return result;

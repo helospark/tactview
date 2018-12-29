@@ -186,6 +186,7 @@ public class PropertyView {
     }
 
     private void addElement(ValueProviderDescriptor descriptor, Builder result, int line) {
+        System.out.println("Adding " + descriptor);
         HBox labelBox = new HBox(10);
         Label label = new Label(descriptor.getName());
         labelBox.getChildren().add(label);

@@ -68,7 +68,7 @@ public class EffectParametersRepository {
                 .flatMap(a -> getPrimitiveKeyframeableEffects(a))
                 .forEach(a -> {
                     primitiveEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
-                    allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
+                    //                    allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
                 });
     }
 
@@ -185,6 +185,9 @@ public class EffectParametersRepository {
 
     public Boolean isUsingKeyframes(String keyframeableEffectId) {
         EffectStore value = allEffectIdToEffectMap.get(keyframeableEffectId);
+        if (value == null) {
+            return false;
+        }
         return value.effect.keyframesEnabled();
     }
 

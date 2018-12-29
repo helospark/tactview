@@ -61,6 +61,9 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         List<ByteBuffer> buffers = new ArrayList<>();
         int to = Math.min(endSample, foindInCache.get(0).capacity());
         int size = to - startSample;
+        if (size <= 0) {
+            return new MediaDataResponse(List.of()); // TODO: This should not happen, but it does sometimes :(
+        }
         for (int channel = 0; channel < request.getExpectedChannels(); ++channel) {
             ByteBuffer channelBuffer = memoryManager.requestBuffer(size);
             buffers.add(channelBuffer);
