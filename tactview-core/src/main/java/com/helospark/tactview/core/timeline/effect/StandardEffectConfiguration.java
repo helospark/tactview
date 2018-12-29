@@ -22,6 +22,7 @@ import com.helospark.tactview.core.timeline.effect.crop.CropEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.DenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDenoiseEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
+import com.helospark.tactview.core.timeline.effect.desaturize.ExclusiveDesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementMapEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeDetectImplementation;
@@ -449,6 +450,17 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new MedianEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Median effect")
                 .withSupportedEffectId("medianeffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory exclusiveDesaturizeEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ExclusiveDesaturizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new ExclusiveDesaturizeEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Exclusive desaturize")
+                .withSupportedEffectId("exclusivedesaturize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
