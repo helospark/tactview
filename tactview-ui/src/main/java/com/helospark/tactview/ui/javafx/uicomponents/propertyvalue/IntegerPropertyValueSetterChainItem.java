@@ -21,6 +21,9 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
 
+    // required because setting the value during playback also triggers keyframe setting
+    private CustomObservableObject userChangedValueObservable = new CustomObservableObject();
+
     public IntegerPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
             UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
         super(IntegerProvider.class);
@@ -40,7 +43,17 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         slider.setMax(integerProvider.getMax());
         slider.setShowTickLabels(true);
         slider.setMinorTickCount(3);
-        slider.valueProperty().addListener((obs, oldval, newVal) -> slider.setValue(newVal.intValue()));
+        slider.valueProperty().addListener((obs, oldval, newVal) -> {
+            if (slider.isValueChanging()) {
+                userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
+            }
+            slider.setValue(newVal.intValue());
+        });
+
+        textField.setOnKeyReleased(newValue -> {
+            userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
+        });
+
         StringConverter<Number> converter = new NumberStringConverter();
         Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
 
@@ -50,13 +63,17 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> textField.getText())
                 .withDescriptorId(integerProvider.getId())
-                .withUpdateFunction(position -> textField.setText(integerProviderValueToString(integerProvider, position)))
+                .withUpdateFunction(position -> {
+                    if (!textField.isFocused()) {
+                        textField.setText(integerProviderValueToString(integerProvider, position));
+                    }
+                })
                 .withVisibleNode(hbox)
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
                 .build();
 
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+        userChangedValueObservable.registerListener(value -> {
             result.sendKeyframe(timelineManager.getCurrentPosition());
         });
 

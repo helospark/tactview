@@ -438,7 +438,7 @@ public class TimelineManager implements SaveLoadContributor {
                 channels.add(channelToInsert);
             }
         }
-        messagingService.sendAsyncMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert)));
+        messagingService.sendMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert)));
     }
 
     public void removeChannel(String channelId) {

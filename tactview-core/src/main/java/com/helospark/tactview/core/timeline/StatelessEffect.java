@@ -27,6 +27,7 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
     public StatelessEffect(StatelessEffect effect) {
         id = UUID.randomUUID().toString();
         this.interval = effect.interval;
+        this.factoryId = effect.factoryId;
     }
 
     public StatelessEffect(JsonNode node, LoadMetadata loadMetadata) {

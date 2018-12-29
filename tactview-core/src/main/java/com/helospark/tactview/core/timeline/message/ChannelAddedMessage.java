@@ -17,4 +17,9 @@ public class ChannelAddedMessage {
         return index;
     }
 
+    @Override
+    public String toString() {
+        return "ChannelAddedMessage [channelId=" + channelId + ", index=" + index + "]";
+    }
+
 }

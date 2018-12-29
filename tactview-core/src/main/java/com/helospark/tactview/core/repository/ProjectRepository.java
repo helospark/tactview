@@ -2,16 +2,21 @@ package com.helospark.tactview.core.repository;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Map;
 
 import javax.annotation.Generated;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.Saveable;
+import com.helospark.lightdi.annotation.Qualifier;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveLoadContributor;
 
 @Component
-public class ProjectRepository implements Saveable {
+public class ProjectRepository implements SaveLoadContributor {
+    @JsonIgnore
     private ObjectMapper objectMapper;
 
     private boolean isInitialized = false;
@@ -19,7 +24,7 @@ public class ProjectRepository implements Saveable {
     private int height = 0;
     private BigDecimal fps = BigDecimal.valueOf(24);
 
-    public ProjectRepository(ObjectMapper objectMapper) {
+    public ProjectRepository(@Qualifier("getterIgnoringObjectMapper") ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -88,18 +93,14 @@ public class ProjectRepository implements Saveable {
     }
 
     @Override
-    public String generateSavedContent() {
-        try {
-            return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Unable to load", e);
-        }
+    public void generateSavedContent(Map<String, Object> generatedContent) {
+        generatedContent.put("projectRepository", objectMapper.valueToTree(this));
     }
 
     @Override
-    public void loadContent(String data, String id, String version) {
+    public void loadFrom(JsonNode tree, LoadMetadata metadata) {
         try {
-            objectMapper.readerForUpdating(this).readValue(data);
+            objectMapper.readerForUpdating(this).readValue(tree.get("projectRepository"));
         } catch (IOException e) {
             throw new RuntimeException("Unable to load", e);
         }

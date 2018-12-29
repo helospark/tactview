@@ -41,6 +41,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         this.interval = clip.interval;
         this.type = clip.type;
         this.renderOffset = clip.renderOffset;
+        this.creatorFactoryId = clip.creatorFactoryId;
 
         this.effectChannels = new ArrayList<NonIntersectingIntervalList<StatelessEffect>>(effectChannels.size());
         for (int i = 0; i < clip.effectChannels.size(); ++i) {

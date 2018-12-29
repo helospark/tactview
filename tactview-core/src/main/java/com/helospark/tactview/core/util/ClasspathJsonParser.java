@@ -10,12 +10,13 @@ import java.nio.file.Paths;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 
 @Component
 public class ClasspathJsonParser {
     private ObjectMapper objectMapper;
 
-    public ClasspathJsonParser(ObjectMapper objectMapper) {
+    public ClasspathJsonParser(@Qualifier("simpleObjectMapper") ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

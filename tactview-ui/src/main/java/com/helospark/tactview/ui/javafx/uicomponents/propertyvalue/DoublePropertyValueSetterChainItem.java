@@ -38,6 +38,9 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     private UiTimelineManager timelineManager;
     private LightDiContext context;
 
+    // required because setting the value during playback also triggers keyframe setting
+    private CustomObservableObject userChangedValueObservable = new CustomObservableObject();
+
     public DoublePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
             UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
         super(DoubleProvider.class);
@@ -61,6 +64,11 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
             slider.setShowTickLabels(true);
             slider.setShowTickMarks(true);
             StringConverter<Number> converter = new NumberStringConverter();
+            slider.valueProperty().addListener((o, old, newValue) -> {
+                if (slider.isValueChanging()) {
+                    userChangedValueObservable.setValue(String.valueOf(newValue));
+                }
+            });
             Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
             hbox.getChildren().add(slider);
         }
@@ -84,7 +92,11 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
 
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+        textField.setOnKeyReleased(event -> {
+            userChangedValueObservable.setValue(textField.getText());
+        });
+
+        userChangedValueObservable.registerListener(newValue -> {
             result.sendKeyframe(timelineManager.getCurrentPosition());
         });
 

@@ -42,7 +42,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
 
-        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+        textArea.setOnKeyReleased(newValue -> {
             TimelinePosition position = timelineManager.getCurrentPosition();
             String currentValue = stringProvider.getValueAt(position);
             if (!textArea.getText().equals(currentValue)) {
