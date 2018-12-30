@@ -17,6 +17,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 @Component
@@ -54,6 +55,7 @@ public class EffectAddedListener {
     public Node createEffect(EffectAddedMessage effectAddedMessage) {
         nameToIdRepository.generateAndAddNameForIdIfNotPresent(effectAddedMessage.getEffect().getClass().getSimpleName(), effectAddedMessage.getEffectId());
         Rectangle rectangle = new Rectangle();
+        rectangle.setFill(new Color(0 / 255.0, 102 / 255.0, 204 / 255.0, 1.0));
         int width = timelineState.secondsToPixels(effectAddedMessage.getEffect().getInterval().getLength());
         rectangle.setWidth(width);
         rectangle.setHeight(EFFECT_HEIGHT);

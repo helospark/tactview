@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx;
+package com.helospark.tactview.ui.javafx.uicomponents.pattern;
 
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 

@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx.uicomponents;
+package com.helospark.tactview.ui.javafx.uicomponents.pattern;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -24,8 +24,7 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMe
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
-import com.helospark.tactview.ui.javafx.AudioImagePatternService;
-import com.helospark.tactview.ui.javafx.TimelineImagePatternService;
+import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
