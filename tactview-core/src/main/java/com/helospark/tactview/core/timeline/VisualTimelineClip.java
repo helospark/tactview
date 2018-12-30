@@ -60,9 +60,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
         int width = (int) (mediaMetadata.getWidth() * scale);
         int height = (int) (mediaMetadata.getHeight() * scale);
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-        relativePosition = relativePosition.add(renderOffset);
 
-        ByteBuffer frame = requestFrame(relativePosition, width, height);
+        ByteBuffer frame = requestFrame(relativePosition.add(renderOffset), width, height);
         ClipImage frameResult = new ClipImage(frame, width, height);
 
         return applyEffects(relativePosition, frameResult, request);

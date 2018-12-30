@@ -22,6 +22,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class SingleColorProceduralClip extends ProceduralVisualClip {
     private ColorProvider colorProvider;
@@ -36,7 +37,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
 
     public SingleColorProceduralClip(SingleColorProceduralClip singleColorProceduralClip) {
         super(singleColorProceduralClip);
-        this.independentPixelOperation = singleColorProceduralClip.independentPixelOperation;
+        ReflectionUtil.copyOrCloneFieldFromTo(singleColorProceduralClip, this);
     }
 
     public SingleColorProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

@@ -483,7 +483,14 @@ public class TimelineManager implements SaveLoadContributor {
             TimelineChannel channel = findChannelWithId(newChannelId).orElseThrow();
             TimelineLength clipLength = clipToMove.getInterval().getLength();
 
-            specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), clipToMove.getId())
+            List<String> ignoredIds = new ArrayList<>();
+            ignoredIds.add(clipToMove.getId());
+            clipToMove.getEffects()
+                    .stream()
+                    .map(effect -> effect.getId())
+                    .forEach(effectId -> ignoredIds.add(effectId));
+
+            specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds)
                     .stream()
                     .filter(a -> channel.canAddResourceAtExcluding(new TimelineInterval(a.getClipPosition(), a.getClipPosition().add(clipLength)), clipToMove.getId()))
                     .sorted()
@@ -520,7 +527,7 @@ public class TimelineManager implements SaveLoadContributor {
 
         Optional<ClosesIntervalChannel> specialPosition = Optional.empty();
         if (maximumJumpToSpecialPositions.isPresent()) {
-            specialPosition = calculateSpecialPositionAround(globalNewPosition, maximumJumpToSpecialPositions.get(), effect.getGlobalInterval(), effectId)
+            specialPosition = calculateSpecialPositionAround(globalNewPosition, maximumJumpToSpecialPositions.get(), effect.getGlobalInterval(), List.of(effectId))
                     .stream()
                     .findFirst();
             globalNewPosition = specialPosition.map(a -> a.getSpecialPosition()).orElse(globalNewPosition);
@@ -646,13 +653,13 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     // TODO: some cleanup on below
-    public Set<ClosesIntervalChannel> calculateSpecialPositionAround(TimelinePosition position, TimelineLength inRadius, TimelineInterval intervalToAdd, String excludeId) {
+    public Set<ClosesIntervalChannel> calculateSpecialPositionAround(TimelinePosition position, TimelineLength inRadius, TimelineInterval intervalToAdd, List<String> ignoredIds) {
         Set<ClosesIntervalChannel> set = new TreeSet<>();
         TimelineLength clipLength = intervalToAdd.getLength();
         TimelinePosition endPosition = position.add(clipLength);
-        set.addAll(findSpecialPositionAround(position, inRadius, excludeId));
+        set.addAll(findSpecialPositionAround(position, inRadius, ignoredIds));
 
-        set.addAll(findSpecialPositionAround(endPosition, inRadius, excludeId)
+        set.addAll(findSpecialPositionAround(endPosition, inRadius, ignoredIds)
                 .stream()
                 .map(a -> {
                     a.setPosition(a.getClipPosition().subtract(clipLength));
@@ -663,10 +670,10 @@ public class TimelineManager implements SaveLoadContributor {
         return set;
     }
 
-    private Set<ClosesIntervalChannel> findSpecialPositionAround(TimelinePosition position, TimelineLength length, String excludeId) {
+    private Set<ClosesIntervalChannel> findSpecialPositionAround(TimelinePosition position, TimelineLength length, List<String> ignoredIds) {
         return channels.stream()
                 .flatMap(channel -> {
-                    List<TimelineInterval> spec = channel.findSpecialPositionsAround(position, length, excludeId);
+                    List<TimelineInterval> spec = channel.findSpecialPositionsAround(position, length, ignoredIds);
                     return findClosesIntervalForChannel(spec, position, channel, length).stream();
                 })
                 .collect(Collectors.toCollection(TreeSet::new));

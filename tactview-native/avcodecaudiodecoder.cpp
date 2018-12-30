@@ -168,6 +168,7 @@ extern "C" {
 
 
                 if (isPlanar) {
+                    int actuallyWrittenSamples = 0;
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
                         if (channel == 1 )
                               std::cout << "Second channel data: " << std::endl;
@@ -179,15 +180,16 @@ extern "C" {
                                     running = false;
                                     break;
                                 }
-                              if (channel == 1 && toUpdate < 5000) {
-                                std::cout << (int)frame->data[0][i * sampleSize + k] << " ";
-                              }
+                             // if (channel == 1 && toUpdate < 5000) {
+                             //   std::cout << (int)frame->data[0][i * sampleSize + k] << " ";
+                             // }
                               //  
                                 request->channels[channel].data[toUpdate] = frame->data[channel][i * sampleSize + k];
                             }
+                            if (running && channel==0) actuallyWrittenSamples++;
                         }
                     }
-                    totalNumberOfSamplesRead += frame->nb_samples * sampleSize;
+                    totalNumberOfSamplesRead += actuallyWrittenSamples * sampleSize;
                 } else {
                     for (int i = 0, j = 0; i < frame->nb_samples; ++i, ++j) {
                         for (int channel = 0; channel < request->numberOfChannels; ++channel) {
