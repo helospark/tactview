@@ -11,6 +11,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.helospark.tactview</groupId>
+      <artifactId>tactview-3rd-party</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.helospark</groupId>
       <artifactId>lightdi</artifactId>
       <version>0.0.3</version>
@@ -126,18 +130,4 @@
 
 
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
-        <configuration>
-          <source>10</source>
-          <target>10</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

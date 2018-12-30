@@ -115,7 +115,7 @@ public class JavaFXUiMain extends Application {
         loadItem.setOnAction(a -> {
             lightDi.getBean(UiLoadHandler.class).load();
         });
-        MenuItem loadAutosaveItem = new MenuItem("_Load autosaved");
+        MenuItem loadAutosaveItem = new MenuItem("Load _autosaved");
         loadAutosaveItem.setOnAction(a -> {
             lightDi.getBean(UiLoadHandler.class).loadAutosaved();
         });

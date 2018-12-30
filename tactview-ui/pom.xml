@@ -17,20 +17,13 @@
       <version>0.0.3</version>
     </dependency>
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.2</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.controlsfx</groupId>
       <artifactId>controlsfx</artifactId>
       <version>9.0.0</version>
     </dependency>
-    <dependency> <!-- Only here temporarily, as testing -->
+    <dependency>
       <groupId>com.helospark.tactview</groupId>
       <artifactId>tactview-core</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>org.projectlombok</groupId>
@@ -51,10 +44,4 @@
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-        <id>projectlombok.org</id>
-        <url>https://projectlombok.org/edge-releases</url>
-    </repository>
-</repositories>
 </project>

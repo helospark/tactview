@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradie
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
@@ -104,6 +105,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new PolygonProceduralClip(metadata, node, loadMetadata);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem noiseProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("noise", "Noise",
+                request -> {
+                    return new NoiseProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                (node, loadMetadata) -> {
+                    return new NoiseProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 }
