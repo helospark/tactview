@@ -76,7 +76,7 @@ public class MediaCache {
                 logger.warn("Error while cleaning mediacache", e);
             }
 
-        }).start();
+        }, "cache-cleaner-thread").start();
 
     }
 

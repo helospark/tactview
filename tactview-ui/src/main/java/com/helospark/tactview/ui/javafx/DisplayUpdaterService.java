@@ -66,7 +66,7 @@ public class DisplayUpdaterService {
                     logger.warn("Unable to check dirty state of display", e);
                 }
             }
-        });
+        }, "display-updater-thread");
         thread.setDaemon(true);
         thread.start();
     }

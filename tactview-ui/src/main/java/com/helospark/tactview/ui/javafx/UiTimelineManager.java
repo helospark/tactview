@@ -46,7 +46,7 @@ public class UiTimelineManager {
                     notifyConsumers();
                     sleep(sleepTime);
                 }
-            });
+            }, "playback-thread");
             runThread.start();
         }
     }

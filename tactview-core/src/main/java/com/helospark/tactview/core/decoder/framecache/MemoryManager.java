@@ -62,7 +62,7 @@ public class MemoryManager {
                     logger.error("Error while cleaning buffer", e);
                 }
             }
-        }).start();
+        }, "memory-cleaner-thread").start();
     }
 
     private void doForcefulCleanup() {

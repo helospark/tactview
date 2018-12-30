@@ -108,7 +108,7 @@ public class EffectPatternDrawerListener {
                     logger.warn("Image pattern update failed", e);
                 }
             }
-        }).start();
+        }, "effect-pattern-updater-thread").start();
     }
 
     private void updatePattern(EffectPatternUpdateRequest request) {

@@ -20,6 +20,7 @@ public class MultiKeyframeBasedDoubleInterpolatorFactory implements DesSerFactor
     public void addDataForDeserialize(MultiKeyframeBasedDoubleInterpolator instance, Map<String, Object> data) {
         data.put("defaultValue", instance.defaultValue);
         data.put("values", instance.values);
+        data.put("useKeyframes", instance.useKeyframes);
         data.put("interpolatorImplementation", instance.interpolatorImplementation.getClass().getName());
     }
 
@@ -36,6 +37,7 @@ public class MultiKeyframeBasedDoubleInterpolatorFactory implements DesSerFactor
             interpolator = (UnivariateInterpolator) Class.forName(data.get("interpolatorImplementation").asText()).newInstance();
             MultiKeyframeBasedDoubleInterpolator result = new MultiKeyframeBasedDoubleInterpolator(defaultValue, interpolator);
             result.values = new TreeMap<>(values);
+            result.useKeyframes = data.get("useKeyframes").asBoolean();
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);

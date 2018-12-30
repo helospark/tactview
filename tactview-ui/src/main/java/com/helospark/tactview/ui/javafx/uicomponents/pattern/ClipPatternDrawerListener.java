@@ -113,7 +113,7 @@ public class ClipPatternDrawerListener {
                     logger.warn("Image pattern update failed", e);
                 }
             }
-        }).start();
+        }, "clip-pattern-updater-thread").start();
     }
 
     private void updatePattern(ClipPatternUpdateRequest request) {
