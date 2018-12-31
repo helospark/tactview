@@ -3,8 +3,12 @@ package com.helospark.tactview.core.timeline.effect.interpolation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 import javax.annotation.Generated;
+
+import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class ValueProviderDescriptor {
     private String name;
@@ -12,6 +16,7 @@ public class ValueProviderDescriptor {
     private List<ActivePredicate> activePredicate;
     private List<ActivePredicate> showPredicate;
     private Map<Object, Object> renderHints;
+    private Optional<Function<TimelinePosition, Boolean>> enabledIf;
 
     @Generated("SparkTools")
     private ValueProviderDescriptor(Builder builder) {
@@ -20,6 +25,7 @@ public class ValueProviderDescriptor {
         this.activePredicate = builder.activePredicate;
         this.showPredicate = builder.showPredicate;
         this.renderHints = builder.renderHints;
+        this.enabledIf = builder.enabledIf;
     }
 
     public String getName() {
@@ -42,6 +48,10 @@ public class ValueProviderDescriptor {
         return renderHints;
     }
 
+    public Optional<Function<TimelinePosition, Boolean>> getEnabledIf() {
+        return enabledIf;
+    }
+
     @Override
     public String toString() {
         return "ValueProviderDescriptor [name=" + name + ", keyframeableEffect=" + keyframeableEffect + ", activePredicate=" + activePredicate + ", showPredicate=" + showPredicate + ", renderHints="
@@ -60,6 +70,7 @@ public class ValueProviderDescriptor {
         private List<ActivePredicate> activePredicate = Collections.emptyList();
         private List<ActivePredicate> showPredicate = Collections.emptyList();
         private Map<Object, Object> renderHints = Collections.emptyMap();
+        private Optional<Function<TimelinePosition, Boolean>> enabledIf = Optional.empty();
 
         private Builder() {
         }
@@ -86,6 +97,11 @@ public class ValueProviderDescriptor {
 
         public Builder withRenderHints(Map<Object, Object> renderHints) {
             this.renderHints = renderHints;
+            return this;
+        }
+
+        public Builder withEnabledIf(Function<TimelinePosition, Boolean> enabledIf) {
+            this.enabledIf = Optional.ofNullable(enabledIf);
             return this;
         }
 

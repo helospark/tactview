@@ -53,6 +53,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 .withDescriptorId(pointProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
+                .withDescriptor(descriptor)
                 .withUpdateFromValue(value -> {
                     Point point = (Point) value;
                     xProvider.getUpdateFromValue().accept(point.x);

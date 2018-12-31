@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
 
@@ -12,6 +13,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.layout.FlowPane;
 
 @Component
+@Order(1)
 public class ProceduralClipTabFactory implements TabFactory {
     private static final String DEFAULT_URI = "classpath:/icons/effect/fallback.png";
     private LightDiContext lightDi;

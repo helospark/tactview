@@ -68,6 +68,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                         textField.setText(integerProviderValueToString(integerProvider, position));
                     }
                 })
+                .withDescriptor(descriptor)
                 .withVisibleNode(hbox)
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)

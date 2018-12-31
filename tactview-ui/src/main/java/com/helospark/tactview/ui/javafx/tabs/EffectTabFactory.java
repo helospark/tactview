@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
 
@@ -14,6 +15,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
 @Component
+@Order(0)
 public class EffectTabFactory implements TabFactory {
     private static final String DEFAULT_URI = "classpath:/icons/effect/fallback.png";
     private LightDiContext lightDi;

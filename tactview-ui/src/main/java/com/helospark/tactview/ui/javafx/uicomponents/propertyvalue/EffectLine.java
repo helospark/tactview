@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 import javafx.scene.Node;
@@ -13,7 +14,9 @@ public abstract class EffectLine {
     protected EffectParametersRepository effectParametersRepository;
     protected Node visibleNode;
     protected String descriptorId;
+    protected Consumer<Boolean> disabledUpdater;
     protected Consumer<Object> updateFromValue;
+    protected ValueProviderDescriptor descriptor;
 
     public void setCommandInterpreter(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
         this.commandInterpreter = commandInterpreter;

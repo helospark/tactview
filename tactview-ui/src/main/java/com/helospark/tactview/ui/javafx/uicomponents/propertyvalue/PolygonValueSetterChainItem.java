@@ -42,6 +42,7 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
                 .withDescriptorId(polygonProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
+                .withDescriptor(descriptor)
                 .withUpdateFunction(position -> {
                     // TODO
                 })

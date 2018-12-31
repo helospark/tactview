@@ -56,6 +56,7 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
                 .withDescriptorId(lineProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
+                .withDescriptor(descriptor)
                 .withUpdateFromValue(value -> {
                     InterpolationLine line = (InterpolationLine) value;
                     startPointProvider.getUpdateFromValue().accept(line.start);

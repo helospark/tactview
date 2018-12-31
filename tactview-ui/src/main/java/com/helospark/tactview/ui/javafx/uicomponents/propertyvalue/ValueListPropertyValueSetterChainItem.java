@@ -37,14 +37,14 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         ValueListProvider<ValueListElement> typeFixedValueProvider = valueProvider; // thanks Java
 
         if (typeFixedValueProvider.getElements().size() > COMBOBOX_THRESHOLD) {
-            return createCombobox(typeFixedValueProvider);
+            return createCombobox(typeFixedValueProvider, descriptor);
         } else {
-            return createRadioButtons(typeFixedValueProvider);
+            return createRadioButtons(typeFixedValueProvider, descriptor);
         }
 
     }
 
-    private PrimitiveEffectLine createRadioButtons(ValueListProvider<ValueListElement> typeFixedValueProvider) {
+    private PrimitiveEffectLine createRadioButtons(ValueListProvider<ValueListElement> typeFixedValueProvider, ValueProviderDescriptor descriptor) {
         HBox box = new HBox();
         ToggleGroup group = new ToggleGroup();
 
@@ -75,6 +75,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                     }
                 })
                 .withVisibleNode(box)
+                .withDescriptor(descriptor)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
@@ -85,7 +86,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         return result;
     }
 
-    private PrimitiveEffectLine createCombobox(ValueListProvider<ValueListElement> typeFixedValueProvider) {
+    private PrimitiveEffectLine createCombobox(ValueListProvider<ValueListElement> typeFixedValueProvider, ValueProviderDescriptor descriptor) {
         Map<String, ValueListElement> elements = typeFixedValueProvider.getElements();
         ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
 
@@ -113,7 +114,9 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                         comboBox.getSelectionModel().select(comboBoxElements.get(value));
                     }
                 })
+                .withDisabledUpdater(disabled -> comboBox.setDisable(disabled))
                 .withVisibleNode(comboBox)
+                .withDescriptor(descriptor)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();

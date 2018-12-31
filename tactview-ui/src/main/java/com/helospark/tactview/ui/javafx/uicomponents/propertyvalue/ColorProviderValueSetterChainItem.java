@@ -54,6 +54,7 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     .withDescriptorId(lineProvider.getId())
                     .withEffectParametersRepository(effectParametersRepository)
                     .withCommandInterpreter(commandInterpreter)
+                    .withDescriptor(descriptor)
                     .withAdditionalUpdateUi(value -> control.setValue(new javafx.scene.paint.Color(effectLineToDouble(redProvider),
                             effectLineToDouble(greenProvider),
                             effectLineToDouble(blueProvider), 1.0)))
@@ -85,6 +86,7 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     .withDescriptorId(lineProvider.getId())
                     .withEffectParametersRepository(effectParametersRepository)
                     .withCommandInterpreter(commandInterpreter)
+                    .withDescriptor(descriptor)
                     .withAdditionalUpdateUi(value -> colorPicker.setValue(new javafx.scene.paint.Color(effectLineToDouble(redProvider),
                             effectLineToDouble(greenProvider),
                             effectLineToDouble(blueProvider), 1.0)))

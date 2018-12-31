@@ -24,8 +24,7 @@ import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
-import com.helospark.tactview.ui.javafx.tabs.EffectTabFactory;
-import com.helospark.tactview.ui.javafx.tabs.ProceduralClipTabFactory;
+import com.helospark.tactview.ui.javafx.tabs.TabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
@@ -158,16 +157,12 @@ public class JavaFXUiMain extends Application {
         upper.setMaxHeight(400);
 
         TabPane tabPane = new TabPane();
-
-        // insert effect
-
-        Tab effectTab = lightDi.getBean(EffectTabFactory.class).createTabContent();
-
-        tabPane.getTabs().add(effectTab);
-
-        Tab proceduralClipTab = lightDi.getBean(ProceduralClipTabFactory.class).createTabContent();
-
-        tabPane.getTabs().add(proceduralClipTab);
+        lightDi.getListOfBeans(TabFactory.class)
+                .stream()
+                .forEach(tabFactory -> {
+                    Tab tab = tabFactory.createTabContent();
+                    tabPane.getTabs().add(tab);
+                });
 
         VBox rightVBox = new VBox(5);
         rightVBox.setPrefWidth(300);

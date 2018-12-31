@@ -7,6 +7,7 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
@@ -26,6 +27,8 @@ public class PrimitiveEffectLine extends EffectLine {
         this.updateFromValue = builder.updateFromValue;
         this.updateFunction = builder.updateFunction;
         this.currentValueProvider = builder.currentValueProvider;
+        this.disabledUpdater = builder.disabledUpdater;
+        this.descriptor = builder.descriptor;
     }
 
     @Override
@@ -51,6 +54,16 @@ public class PrimitiveEffectLine extends EffectLine {
     @Override
     public void updateUi(TimelinePosition position) {
         updateFunction.accept(position);
+        if (descriptor != null && descriptor.getEnabledIf().isPresent()) {
+            Boolean disabled = !descriptor.getEnabledIf().get().apply(position);
+
+            if (disabledUpdater == null) {
+                visibleNode.setDisable(disabled);
+            } else {
+                disabledUpdater.accept(disabled);
+            }
+
+        }
     }
 
     @Generated("SparkTools")
@@ -65,8 +78,10 @@ public class PrimitiveEffectLine extends EffectLine {
         private Node visibleNode;
         private String descriptorId;
         private Consumer<Object> updateFromValue;
+        private Consumer<Boolean> disabledUpdater;
         private Consumer<TimelinePosition> updateFunction;
         private Supplier<String> currentValueProvider;
+        private ValueProviderDescriptor descriptor;
 
         private Builder() {
         }
@@ -103,6 +118,16 @@ public class PrimitiveEffectLine extends EffectLine {
 
         public Builder withCurrentValueProvider(Supplier<String> currentValueProvider) {
             this.currentValueProvider = currentValueProvider;
+            return this;
+        }
+
+        public Builder withDisabledUpdater(Consumer<Boolean> disabledUpdater) {
+            this.disabledUpdater = disabledUpdater;
+            return this;
+        }
+
+        public Builder withDescriptor(ValueProviderDescriptor descriptor) {
+            this.descriptor = descriptor;
             return this;
         }
 

@@ -8,6 +8,7 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 import javafx.scene.Node;
@@ -25,6 +26,7 @@ public class CompositeEffectLine extends EffectLine {
         this.updateFromValue = builder.updateFromValue;
         this.values = builder.values;
         this.additionalUpdateUi = builder.additionalUpdateUi;
+        this.descriptor = builder.descriptor;
     }
 
     @Override
@@ -56,6 +58,7 @@ public class CompositeEffectLine extends EffectLine {
         private Consumer<Object> updateFromValue;
         private List<EffectLine> values = Collections.emptyList();
         private Consumer<TimelinePosition> additionalUpdateUi;
+        private ValueProviderDescriptor descriptor;
 
         private Builder() {
         }
@@ -92,6 +95,11 @@ public class CompositeEffectLine extends EffectLine {
 
         public Builder withAdditionalUpdateUi(Consumer<TimelinePosition> additionalUpdateUi) {
             this.additionalUpdateUi = additionalUpdateUi;
+            return this;
+        }
+
+        public Builder withDescriptor(ValueProviderDescriptor descriptor) {
+            this.descriptor = descriptor;
             return this;
         }
 

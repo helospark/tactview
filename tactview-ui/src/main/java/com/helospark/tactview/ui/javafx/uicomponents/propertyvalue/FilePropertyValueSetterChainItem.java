@@ -53,6 +53,7 @@ public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSett
                 .withVisibleNode(hbox)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
+                .withDescriptor(descriptor)
                 .withUpdateFromValue(value -> {
                     textArea.setText((String) value);
                     fileChooser.setInitialFileName((String) value);

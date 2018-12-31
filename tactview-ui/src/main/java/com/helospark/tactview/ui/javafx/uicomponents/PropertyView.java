@@ -212,7 +212,10 @@ public class PropertyView {
         result.getBox().add(labelBox, 0, line);
         result.getBox().add(key, 1, line);
 
-        result.addUpdateFunctions(currentTime -> Platform.runLater(() -> keyframeChange.updateUi(currentTime)));
+        result.addUpdateFunctions(currentTime -> Platform.runLater(() -> {
+            keyframeChange.updateUi(currentTime);
+
+        }));
     }
 
     private ImageView createKeyframeSupportImageNode(Builder builder, KeyframeableEffect keyframeableEffect) {

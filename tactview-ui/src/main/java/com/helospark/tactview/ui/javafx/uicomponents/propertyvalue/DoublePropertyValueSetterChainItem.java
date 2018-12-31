@@ -90,6 +90,7 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 })
                 .withUpdateFromValue(value -> textField.setText(String.valueOf(value)))
                 .withVisibleNode(hbox)
+                .withDescriptor(descriptor)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();

@@ -37,6 +37,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                         textArea.setText(currentValue);
                     }
                 })
+                .withDescriptor(descriptor)
                 .withVisibleNode(textArea)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)

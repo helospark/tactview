@@ -36,6 +36,7 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withVisibleNode(checkbox)
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
+                .withDescriptor(descriptor)
                 .build();
 
         checkbox.selectedProperty().addListener((a, b, c) -> {

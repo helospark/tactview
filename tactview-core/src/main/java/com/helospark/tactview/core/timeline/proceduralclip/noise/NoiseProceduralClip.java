@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.proceduralclip.noise;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -195,31 +196,38 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
                 .withName("color")
                 .build();
 
+        Function<TimelinePosition, Boolean> enabledIfCellular = globalPosition -> fractalKindProvider.getValueAt(globalPosition).getId().equals("cellular");
         ValueProviderDescriptor cellularReturnTypeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(cellularReturnTypeProvider)
-                .withName("cell ReturnType") // TODO: only enable if type is cellular
+                .withName("cell ReturnType")
+                .withEnabledIf(enabledIfCellular)
                 .build();
         ValueProviderDescriptor cellularDistanceDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(cellularDistanceFunctionProvider)
-                .withName("cell distance") // TODO: only enable if type is cellular
+                .withName("cell distance")
+                .withEnabledIf(enabledIfCellular)
                 .build();
 
-        // TODO: enable only if fractal
+        Function<TimelinePosition, Boolean> enabledIfFractal = globalPosition -> fractalKindProvider.getValueAt(globalPosition).getId().contains("Fractal");
         ValueProviderDescriptor octaveDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(octaveProvider)
                 .withName("fractal octave")
+                .withEnabledIf(enabledIfFractal)
                 .build();
         ValueProviderDescriptor octaveCombinerDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(fractalOctaveCombinderProvider)
                 .withName("fractal octaveCombiner")
+                .withEnabledIf(enabledIfFractal)
                 .build();
         ValueProviderDescriptor lacunarityDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lacunarityProvider)
                 .withName("fractal lacunarity")
+                .withEnabledIf(enabledIfFractal)
                 .build();
         ValueProviderDescriptor gainDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(gainProvider)
                 .withName("fractal gain")
+                .withEnabledIf(enabledIfFractal)
                 .build();
 
         descriptors.add(fractalTypeDescriptor);
