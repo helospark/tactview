@@ -2,8 +2,10 @@ package com.helospark.tactview.ui.javafx.commands.impl;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.ResizeEffectRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
@@ -19,6 +21,9 @@ public class EffectResizedCommand implements UiCommand {
 
     private boolean revertable;
 
+    private boolean useSpecialPoints;
+    private TimelineLength maximumJumpLength;
+
     @Generated("SparkTools")
     private EffectResizedCommand(Builder builder) {
         this.timelineManager = builder.timelineManager;
@@ -27,6 +32,8 @@ public class EffectResizedCommand implements UiCommand {
         this.left = builder.left;
         this.originalInterval = builder.originalInterval;
         this.revertable = builder.revertable;
+        this.useSpecialPoints = builder.useSpecialPoints;
+        this.maximumJumpLength = builder.maximumJumpLength;
     }
 
     @Override
@@ -34,14 +41,30 @@ public class EffectResizedCommand implements UiCommand {
         StatelessEffect effect = timelineManager.findEffectById(effectId).orElseThrow(() -> new IllegalArgumentException("No effect found"));
         originalInterval = effect.getInterval();
 
-        timelineManager.resizeEffect(effect, left, globalPosition);
+        ResizeEffectRequest request = ResizeEffectRequest.builder()
+                .withEffect(effect)
+                .withLeft(left)
+                .withGlobalPosition(globalPosition)
+                .withUseSpecialPoints(useSpecialPoints)
+                .withMaximumJumpLength(maximumJumpLength)
+                .build();
+
+        timelineManager.resizeEffect(request);
     }
 
     @Override
     public void revert() {
         StatelessEffect effect = timelineManager.findEffectById(effectId).orElseThrow(() -> new IllegalArgumentException("No effect found"));
         TimelinePosition previousPosition = (left ? originalInterval.getStartPosition() : originalInterval.getEndPosition());
-        timelineManager.resizeEffect(effect, left, previousPosition);
+
+        ResizeEffectRequest request = ResizeEffectRequest.builder()
+                .withEffect(effect)
+                .withLeft(left)
+                .withGlobalPosition(previousPosition)
+                .withUseSpecialPoints(false)
+                .build();
+
+        timelineManager.resizeEffect(request);
     }
 
     @Override
@@ -51,7 +74,8 @@ public class EffectResizedCommand implements UiCommand {
 
     @Override
     public String toString() {
-        return "EffectResizedCommand [timelineManager=" + timelineManager + ", effectId=" + effectId + ", globalPosition=" + globalPosition + ", left=" + left + ", originalInterval=" + originalInterval + ", revertable=" + revertable + "]";
+        return "EffectResizedCommand [timelineManager=" + timelineManager + ", effectId=" + effectId + ", globalPosition=" + globalPosition + ", left=" + left + ", originalInterval="
+                + originalInterval + ", revertable=" + revertable + ", useSpecialPoints=" + useSpecialPoints + ", maximumJumpLength=" + maximumJumpLength + "]";
     }
 
     @Generated("SparkTools")
@@ -67,6 +91,8 @@ public class EffectResizedCommand implements UiCommand {
         private boolean left;
         private TimelineInterval originalInterval;
         private boolean revertable;
+        private boolean useSpecialPoints;
+        private TimelineLength maximumJumpLength;
 
         private Builder() {
         }
@@ -98,6 +124,16 @@ public class EffectResizedCommand implements UiCommand {
 
         public Builder withRevertable(boolean revertable) {
             this.revertable = revertable;
+            return this;
+        }
+
+        public Builder withUseSpecialPoints(boolean useSpecialPoints) {
+            this.useSpecialPoints = useSpecialPoints;
+            return this;
+        }
+
+        public Builder withMaximumJumpLength(TimelineLength maximumJumpLength) {
+            this.maximumJumpLength = maximumJumpLength;
             return this;
         }
 

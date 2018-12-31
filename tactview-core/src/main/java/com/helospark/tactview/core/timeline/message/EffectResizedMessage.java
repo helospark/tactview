@@ -1,9 +1,11 @@
 package com.helospark.tactview.core.timeline.message;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.ClosesIntervalChannel;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 
@@ -12,6 +14,7 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
     private String effectId;
     private TimelineInterval originalInterval;
     private TimelineInterval newInterval;
+    private Optional<ClosesIntervalChannel> specialPositionUsed;
 
     @Generated("SparkTools")
     private EffectResizedMessage(Builder builder) {
@@ -19,6 +22,7 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
         this.effectId = builder.effectId;
         this.originalInterval = builder.originalInterval;
         this.newInterval = builder.newInterval;
+        this.specialPositionUsed = builder.specialPositionUsed;
     }
 
     public String getClipId() {
@@ -38,9 +42,14 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
         return List.of(originalInterval, newInterval);
     }
 
+    public Optional<ClosesIntervalChannel> getSpecialPositionUsed() {
+        return specialPositionUsed;
+    }
+
     @Override
     public String toString() {
-        return "EffectResizedMessage [clipId=" + clipId + ", effectId=" + effectId + ", newInterval=" + newInterval + "]";
+        return "EffectResizedMessage [clipId=" + clipId + ", effectId=" + effectId + ", originalInterval=" + originalInterval + ", newInterval=" + newInterval + ", specialPositionUsed="
+                + specialPositionUsed + "]";
     }
 
     @Generated("SparkTools")
@@ -54,6 +63,7 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
         private String effectId;
         private TimelineInterval originalInterval;
         private TimelineInterval newInterval;
+        private Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
 
         private Builder() {
         }
@@ -75,6 +85,11 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
 
         public Builder withNewInterval(TimelineInterval newInterval) {
             this.newInterval = newInterval;
+            return this;
+        }
+
+        public Builder withSpecialPositionUsed(Optional<ClosesIntervalChannel> specialPositionUsed) {
+            this.specialPositionUsed = specialPositionUsed;
             return this;
         }
 

@@ -28,6 +28,7 @@ import javafx.scene.layout.Pane;
 
 @Component
 public class TimelineDragAndDropHandler {
+    private static final int MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS = 30;
     private TimelineManager timelineManager;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineState timelineState;
@@ -144,7 +145,7 @@ public class TimelineDragAndDropHandler {
                         .withNewChannelId(channelId)
                         .withTimelineManager(timelineManager)
                         .withEnableJumpingToSpecialPosition(true)
-                        .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(30).getSeconds()))
+                        .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                         .build();
 
                 commandInterpreter.sendWithResult(command);
@@ -164,6 +165,8 @@ public class TimelineDragAndDropHandler {
                     .withPosition(position)
                     .withRevertable(b)
                     .withTimelineManager(timelineManager)
+                    .withUseSpecialPoints(true)
+                    .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                     .build();
             commandInterpreter.sendWithResult(command);
         }
@@ -202,6 +205,8 @@ public class TimelineDragAndDropHandler {
         EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
                 .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
+                .withUseSpecialPoints(true)
+                .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                 .withGlobalPosition(timelineState.pixelsToSeconds(x))
                 .withRevertable(revertable)
                 .withTimelineManager(timelineManager)

@@ -567,25 +567,67 @@ public class TimelineManager implements SaveLoadContributor {
         return findClipForEffect(effectId).flatMap(clip -> clip.getEffect(effectId));
     }
 
-    public void resizeClip(TimelineClip clip, boolean left, TimelinePosition position) {
+    public void resizeClip(ResizeClipRequest resizeEffectRequest) {
+        TimelineClip clip = resizeEffectRequest.getClip();
+        boolean left = resizeEffectRequest.isLeft();
+        TimelinePosition globalPosition = resizeEffectRequest.getPosition();
+        boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
+
         TimelineInterval originalInterval = clip.getInterval();
         TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such channel"));
-        boolean success = channel.resizeClip(clip, left, position);
+
+        Optional<ClosesIntervalChannel> specialPointUsed = Optional.empty();
+        if (useSpecialPoints) {
+            List<String> excludedIds = new ArrayList<>();
+            excludedIds.add(clip.getId());
+            clip.getEffects()
+                    .stream()
+                    .map(effect -> effect.getId())
+                    .forEach(effectId -> excludedIds.add(effectId));
+
+            specialPointUsed = findSpecialPositionAround(globalPosition, resizeEffectRequest.getMaximumJumpLength(), excludedIds)
+                    .stream()
+                    .findFirst();
+            if (specialPointUsed.isPresent()) {
+                globalPosition = specialPointUsed.get().getSpecialPosition();
+            }
+        }
+
+        boolean success = channel.resizeClip(clip, left, globalPosition);
         if (success) {
             TimelineClip renewedClip = findClipById(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
             ClipResizedMessage clipResizedMessage = ClipResizedMessage.builder()
                     .withClipId(clip.getId())
                     .withOriginalInterval(originalInterval)
                     .withNewInterval(renewedClip.getInterval())
+                    .withSpecialPointUsed(specialPointUsed)
                     .build();
             messagingService.sendMessage(clipResizedMessage);
         }
     }
 
-    public void resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {
+    public void resizeEffect(ResizeEffectRequest resizeEffectRequest) {
+        StatelessEffect effect = resizeEffectRequest.getEffect();
+        boolean left = resizeEffectRequest.isLeft();
+        TimelinePosition globalPosition = resizeEffectRequest.getGlobalPosition();
+        boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
+
         TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
         TimelineInterval originalInterval = clip.getInterval();
-        boolean success = clip.resizeEffect(effect, left, globalPosition);
+
+        TimelinePosition newPosition = globalPosition;
+
+        Optional<ClosesIntervalChannel> specialPointUsed = Optional.empty();
+        if (useSpecialPoints) {
+            specialPointUsed = findSpecialPositionAround(globalPosition, resizeEffectRequest.getMaximumJumpLength(), List.of(effect.getId()))
+                    .stream()
+                    .findFirst();
+            if (specialPointUsed.isPresent()) {
+                newPosition = specialPointUsed.get().getSpecialPosition();
+            }
+        }
+
+        boolean success = clip.resizeEffect(effect, left, newPosition);
 
         if (success) {
             StatelessEffect renewedClip = findEffectById(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such effect"));
@@ -594,6 +636,7 @@ public class TimelineManager implements SaveLoadContributor {
                     .withEffectId(renewedClip.getId())
                     .withNewInterval(renewedClip.getInterval())
                     .withOriginalInterval(originalInterval)
+                    .withSpecialPositionUsed(specialPointUsed)
                     .build();
             messagingService.sendMessage(clipResizedMessage);
         }

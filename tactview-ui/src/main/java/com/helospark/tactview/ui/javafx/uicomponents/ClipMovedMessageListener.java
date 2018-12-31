@@ -6,18 +6,20 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.ClosesIntervalChannel;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.uicomponents.util.SpecialPointLineDrawer;
 
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
 @Component
 public class ClipMovedMessageListener {
     private UiMessagingService messagingService;
     private TimelineState timelineState;
+    private SpecialPointLineDrawer specialPointLineDrawer;
 
-    public ClipMovedMessageListener(UiMessagingService messagingService, TimelineState timelineState) {
+    public ClipMovedMessageListener(UiMessagingService messagingService, TimelineState timelineState, SpecialPointLineDrawer specialPointLineDrawer) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
+        this.specialPointLineDrawer = specialPointLineDrawer;
     }
 
     @PostConstruct
@@ -40,21 +42,8 @@ public class ClipMovedMessageListener {
 
     private void drawSpecialPositionLine(ClipMovedMessage message) {
         ClosesIntervalChannel specialPosition = message.getSpecialPositionUsed().get();
-        HBox specialPositionChannel = timelineState.findChannelById(specialPosition.getChannelId()).orElseThrow();
-        HBox currentChannel = timelineState.findChannelById(message.getChannelId()).orElseThrow();
-
-        int lineStartX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
-        int lineEndX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
-
-        int lineStartY = (int) specialPositionChannel.getLayoutY();
-        int lineEndY = (int) (currentChannel.getLayoutY() + currentChannel.getHeight());
-
-        MoveSpecialPointLineProperties properties = timelineState.getMoveSpecialPointLineProperties();
-        properties.setStartX(lineStartX);
-        properties.setStartY(lineStartY);
-        properties.setEndX(lineEndX);
-        properties.setEndY(lineEndY);
-        properties.setEnabledProperty(true);
+        String channelId = message.getChannelId();
+        specialPointLineDrawer.drawSpecialPositionLineForClip(specialPosition, channelId);
     }
 
 }
