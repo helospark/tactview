@@ -21,7 +21,7 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
     public StatelessEffect(TimelineInterval interval) {
         id = UUID.randomUUID().toString();
         this.interval = interval;
-        initializeValueProvider();
+        //        initializeValueProvider();
     }
 
     public StatelessEffect(StatelessEffect effect) {

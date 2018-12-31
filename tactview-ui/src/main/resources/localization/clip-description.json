@@ -1,14 +1,20 @@
 [
     {
-        "type": "com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect",
+        "type": "proceduralClipFactory:radialgradient",
         "description": "Draws a gradient between two colors"
     },
     {
-        "type": "com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip",
+        "type": "proceduralClipFactory:gaussianNoise",
         "description": "Renders Gaussian noise that can be used as a simple film grain effect"
     },
     {
-        "type": "com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip",
-        "description": "Renders a text"
+        "type": "proceduralClipFactory:text",
+        "description": "Renders a text",
+        "iconUrl": "classpath:/icons/proceduralclip/text.png"
+    },
+    {
+        "type": "proceduralClipFactory:singlecolor",
+        "description": "Creates a layer out of a single color",
+        "iconUrl": "classpath:/icons/proceduralclip/single_color.png"
     }
 ]

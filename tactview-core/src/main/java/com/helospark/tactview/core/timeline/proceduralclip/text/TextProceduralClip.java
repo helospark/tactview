@@ -35,6 +35,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class TextProceduralClip extends ProceduralVisualClip {
     private StringProvider textProvider;
@@ -55,7 +56,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
 
     public TextProceduralClip(TextProceduralClip textProceduralClip) {
         super(textProceduralClip);
-        this.bufferedImageToClipFrameResultConverter = textProceduralClip.bufferedImageToClipFrameResultConverter;
+        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this);
     }
 
     public TextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {

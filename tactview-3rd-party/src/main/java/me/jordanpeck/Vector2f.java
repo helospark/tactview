@@ -1,5 +1,6 @@
 package me.jordanpeck;
 
+// https://github.com/Auburns/FastNoise_Java
 class Vector2f {
     public float x, y;
 

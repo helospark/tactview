@@ -1,8 +1,11 @@
-package com.helospark.tactview.ui.javafx.uicomponents.detailsdata;
+package com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail;
 
-public class ClassToDetailDomain {
+import java.util.Optional;
+
+public class LocalizedDetailDomain {
     private String type;
     private String description;
+    private String iconUrl;
 
     public String getType() {
         return type;
@@ -18,6 +21,14 @@ public class ClassToDetailDomain {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Optional<String> getIconUrl() {
+        return Optional.ofNullable(iconUrl);
+    }
+
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 
 }

@@ -16,8 +16,6 @@ import com.helospark.lightdi.LightDi;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.effect.EffectFactory;
-import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
@@ -26,14 +24,14 @@ import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
+import com.helospark.tactview.ui.javafx.tabs.EffectTabFactory;
+import com.helospark.tactview.ui.javafx.tabs.ProceduralClipTabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -42,18 +40,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
@@ -167,37 +159,14 @@ public class JavaFXUiMain extends Application {
 
         TabPane tabPane = new TabPane();
 
-        FlowPane effectTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
-        // leftHBox.setPrefWidth(scene.getWidth() - 300);
+        // insert effect
 
-        List<EffectFactory> effects = lightDi.getListOfBeans(EffectFactory.class);
+        Tab effectTab = lightDi.getBean(EffectTabFactory.class).createTabContent();
 
-        effects.stream()
-                .forEach(factory -> {
-                    effectTabContent.getChildren().add(createIcon("effect:" + factory.getEffectId(),
-                            factory.getEffectName(),
-                            "file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/logo-32.png"));
-                });
-        Tab effectTab = new Tab();
-        effectTab.setText("effects");
-
-        ScrollPane effectScrollPane = new ScrollPane(effectTabContent);
-        effectScrollPane.setFitToWidth(true);
-        effectScrollPane.setId("effect-view");
-        effectTab.setContent(effectScrollPane);
         tabPane.getTabs().add(effectTab);
 
-        FlowPane proceduralClipTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
-        List<ProceduralClipFactoryChainItem> proceduralClips = lightDi.getListOfBeans(ProceduralClipFactoryChainItem.class);
-        proceduralClips.stream()
-                .forEach(chainItem -> {
-                    proceduralClipTabContent.getChildren().add(createIcon("clip:" + chainItem.getProceduralClipId(),
-                            chainItem.getProceduralClipName(),
-                            "file:/home/black/.config/google-chrome/Default_old/Extensions/hbdkkfheckcdppiaiabobmennhijkknn/9.6.0.0_0/image/icon-cache.png"));
-                });
-        Tab proceduralClipTab = new Tab();
-        proceduralClipTab.setText("clips");
-        proceduralClipTab.setContent(proceduralClipTabContent);
+        Tab proceduralClipTab = lightDi.getBean(ProceduralClipTabFactory.class).createTabContent();
+
         tabPane.getTabs().add(proceduralClipTab);
 
         VBox rightVBox = new VBox(5);
@@ -284,42 +253,6 @@ public class JavaFXUiMain extends Application {
                 element.getStyleClass().remove("input-mode-enabled");
             }
         };
-    }
-
-    private VBox createIcon(String effectId, String name, String file) {
-        ImageView image = new ImageView(file);
-        image.setPreserveRatio(true);
-        image.setFitWidth(50);
-        Label text = new Label();
-        text.setTextOverrun(OverrunStyle.ELLIPSIS);
-        text.setEllipsisString("...");
-        text.setText(name);
-
-        VBox vbox = new VBox();
-        vbox.getStyleClass().add("icon");
-        vbox.getChildren().addAll(image, text);
-        vbox.setPadding(new Insets(10));
-        vbox.setAlignment(Pos.CENTER);
-
-        Tooltip tooltip = new Tooltip(name);
-        Tooltip.install(vbox, tooltip);
-
-        vbox.setOnDragDetected(event -> {
-            /* drag was detected, start drag-and-drop gesture */
-            System.out.println("onDragDetected");
-
-            /* allow any transfer mode */
-            Dragboard db = vbox.startDragAndDrop(TransferMode.ANY);
-
-            /* put a string on dragboard */
-            ClipboardContent content = new ClipboardContent();
-            content.putString(effectId);
-            db.setContent(content);
-
-            event.consume();
-        });
-
-        return vbox;
     }
 
     public static void main(String[] args) {

@@ -8,6 +8,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -17,14 +18,14 @@ import javafx.scene.layout.GridPane;
 @Component
 public class DetailsGridChain {
     private TimelineManager timelineManager;
-    private ClassToDetailRepository classToDetailRepository;
+    private LocalizedDetailRepository localizedDetailRepository;
     private List<ClipDetailGridChainElement> clipDetailChainElements;
     private List<EffectDetailGridChainElement> effectDetailChainElements;
 
-    public DetailsGridChain(TimelineManager timelineManager, ClassToDetailRepository classToDetailRepository,
+    public DetailsGridChain(TimelineManager timelineManager, LocalizedDetailRepository localizedDetailRepository,
             List<ClipDetailGridChainElement> chainElements, List<EffectDetailGridChainElement> effectDetailChainElements) {
         this.timelineManager = timelineManager;
-        this.classToDetailRepository = classToDetailRepository;
+        this.localizedDetailRepository = localizedDetailRepository;
         this.clipDetailChainElements = chainElements;
         this.effectDetailChainElements = effectDetailChainElements;
     }
@@ -35,7 +36,7 @@ public class DetailsGridChain {
 
         result.put("type", new Label(clip.getClass().getSimpleName()));
 
-        classToDetailRepository.queryDetail(clip.getClass())
+        localizedDetailRepository.queryDetailForClip(clip)
                 .ifPresent(a -> {
                     Label text = new Label(a);
                     text.getStyleClass().add("description-text-area");
@@ -58,7 +59,7 @@ public class DetailsGridChain {
 
         result.put("type", new Label(effect.getClass().getSimpleName()));
 
-        classToDetailRepository.queryDetail(effect.getClass())
+        localizedDetailRepository.queryDetail(effect.getId())
                 .ifPresent(a -> {
                     Label text = new Label(a);
                     text.getStyleClass().add("description-text-area");

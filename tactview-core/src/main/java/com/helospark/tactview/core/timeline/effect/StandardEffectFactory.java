@@ -37,7 +37,7 @@ public class StandardEffectFactory implements EffectFactory {
     @Override
     public StatelessEffect createEffect(CreateEffectRequest request) {
         StatelessEffect result = factory.apply(request);
-
+        result.initializeValueProvider();
         return result;
     }
 
