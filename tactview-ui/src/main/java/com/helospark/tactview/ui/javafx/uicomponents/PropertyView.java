@@ -244,6 +244,10 @@ public class PropertyView {
         return propertyValueSetterChain.create(descriptor);
     }
 
+    private void addContextMenuIfRequired(EffectLine result) {
+
+    }
+
     public FlowPane getPropertyWindow() {
         return propertyWindow;
     }

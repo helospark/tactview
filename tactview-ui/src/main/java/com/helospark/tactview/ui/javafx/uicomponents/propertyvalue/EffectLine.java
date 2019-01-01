@@ -35,4 +35,8 @@ public abstract class EffectLine {
         return updateFromValue;
     }
 
+    public abstract void removeKeyframe(TimelinePosition currentPosition);
+
+    public abstract void removeAllAndSetKeyframe(TimelinePosition currentPosition);
+
 }

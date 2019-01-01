@@ -36,6 +36,18 @@ public class CompositeEffectLine extends EffectLine {
     }
 
     @Override
+    public void removeKeyframe(TimelinePosition currentPosition) {
+        values.stream()
+                .forEach(a -> a.removeKeyframe(currentPosition));
+    }
+
+    @Override
+    public void removeAllAndSetKeyframe(TimelinePosition currentPosition) {
+        values.stream()
+                .forEach(a -> a.removeAllAndSetKeyframe(currentPosition));
+    }
+
+    @Override
     public void updateUi(TimelinePosition position) {
         values.stream()
                 .forEach(a -> a.updateUi(position));

@@ -9,8 +9,11 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.RemoveKeyframeCommand;
 
 import javafx.scene.Node;
 
@@ -49,6 +52,30 @@ public class PrimitiveEffectLine extends EffectLine {
                 .build();
 
         commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+    }
+
+    @Override
+    public void removeAllAndSetKeyframe(TimelinePosition currentPosition) {
+        RemoveAllKeyframeCommand removeAllKeyFrameCommand = new RemoveAllKeyframeCommand(effectParametersRepository, descriptorId);
+
+        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                .withDescriptorId(descriptorId)
+                .withGlobalTimelinePosition(currentPosition)
+                .withValue(currentValueProvider.get())
+                .build();
+        AddKeyframeForPropertyCommand addKeyframeCommand = new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest);
+
+        commandInterpreter.sendWithResult(new CompositeCommand(removeAllKeyFrameCommand, addKeyframeCommand));
+    }
+
+    @Override
+    public void removeKeyframe(TimelinePosition currentPosition) {
+        KeyframeRemovedRequest removeKeyframeRequest = KeyframeRemovedRequest.builder()
+                .withDescriptorId(descriptorId)
+                .withGlobalTimelinePosition(currentPosition)
+                .build();
+        RemoveKeyframeCommand command = new RemoveKeyframeCommand(effectParametersRepository, removeKeyframeRequest);
+        commandInterpreter.sendWithResult(command);
     }
 
     @Override

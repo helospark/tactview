@@ -171,6 +171,7 @@ void readFrames(FFmpegImageRequest* request) {
     fprintf(stderr, "Unsupported codec!\n");
     return;
   }
+  printf("Using codec %s\n", pCodec->name);
 
   pCodecCtx = avcodec_alloc_context3(pCodec);
 
