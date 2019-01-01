@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.effect.colorchannelchange.ColorChann
 import com.helospark.tactview.core.timeline.effect.colorize.ColorBalanceEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeService;
+import com.helospark.tactview.core.timeline.effect.colorize.MaximumRgbEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrignessContrastService;
 import com.helospark.tactview.core.timeline.effect.crop.CropEffect;
@@ -38,6 +39,7 @@ import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlphaCalculator;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
+import com.helospark.tactview.core.timeline.effect.levels.LevelsEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutProviderService;
 import com.helospark.tactview.core.timeline.effect.median.MedianEffect;
@@ -461,6 +463,28 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new ExclusiveDesaturizeEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Exclusive desaturize")
                 .withSupportedEffectId("exclusivedesaturize")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory maximumRgbEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new MaximumRgbEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new MaximumRgbEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Max rgb")
+                .withSupportedEffectId("maximumrgbeffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory levelsEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new LevelsEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new LevelsEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Levels")
+                .withSupportedEffectId("levelseffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

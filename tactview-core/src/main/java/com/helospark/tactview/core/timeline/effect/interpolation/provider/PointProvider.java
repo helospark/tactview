@@ -56,7 +56,6 @@ public class PointProvider extends CompositeKeyframeableEffect {
     @Override
     public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
         return PointProviderFactory.class;
-        //        return new PointProvider((DoubleProvider)xProvider, (DoubleProvider) xProvider);
     }
 
 }

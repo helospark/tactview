@@ -42,6 +42,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
             pasteKeyframeMenuItem.setOnAction(e -> {
                 Clipboard clipboard = Clipboard.getSystemClipboard();
                 String value = clipboard.getString();
+                // TODO: Maybe we need a value update function rather
                 ((PrimitiveEffectLine) (request.effectLine)).sendKeyframeWithValue(timelineManager.getCurrentPosition(), value);
             });
             return pasteKeyframeMenuItem;
