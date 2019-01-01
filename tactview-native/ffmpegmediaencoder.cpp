@@ -569,7 +569,7 @@ extern "C" {
             have_video = 1;
             encode_video = 1;
         }
-        if (fmt->audio_codec != AV_CODEC_ID_NONE) {
+        if (fmt->audio_codec != AV_CODEC_ID_NONE && request->audioChannels > 0) {
             add_stream(audio_st, oc, &audio_codec, fmt->audio_codec, request);
             have_audio = 1;
             encode_audio = 1;
@@ -611,8 +611,10 @@ extern "C" {
         renderContext.encode_audio = encode_audio;
         renderContext.opt = opt;
         renderContext.bytesPerSample = audio_st->bytesPerSample;
-        renderContext.audioBuffer = new unsigned char[audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * request->audioChannels];
-        renderContext.audioChannels = request->audioChannels;
+        if (have_audio) {
+          renderContext.audioBuffer = new unsigned char[audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * request->audioChannels];
+          renderContext.audioChannels = request->audioChannels;
+        }
         renderContext.actualWidth = request->actualWidth;
         renderContext.actualHeight = request->actualHeight;
         renderContext.renderWidth = request->renderWidth;

@@ -53,8 +53,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             nativeRequest.frame = new RenderFFMpegFrame();
             RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
             array[0].imageData = frame.getVideoResult().getBuffer();
-            array[0].audioData = convertAudio(frame.getAudioResult());
-            array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
+            if (frame.getAudioResult().getChannels().size() > 0) {
+                array[0].audioData = convertAudio(frame.getAudioResult());
+                array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
+            }
             nativeRequest.encoderIndex = encoderIndex;
             nativeRequest.startFrameIndex = frameIndex;
 
@@ -64,7 +66,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             for (var buffer : frame.getAudioResult().getChannels()) {
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
             }
-            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(array[0].audioData);
+
             currentPosition = currentPosition.add(renderRequest.getStep());
             ++frameIndex;
         }
