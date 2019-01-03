@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
@@ -75,8 +75,8 @@ public class LayerMaskEffect extends StatelessVideoEffect {
 
     @Override
     public void initializeValueProvider() {
-        layerMaskProvider = new DependentClipProvider(new StringInterpolator());
-        layerMaskTypeProvider = new ValueListProvider<>(getList(calculators), new StringInterpolator(getDefault(calculators)));
+        layerMaskProvider = new DependentClipProvider(new StepStringInterpolator());
+        layerMaskTypeProvider = new ValueListProvider<>(getList(calculators), new StepStringInterpolator(getDefault(calculators)));
         invertProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
     }
 

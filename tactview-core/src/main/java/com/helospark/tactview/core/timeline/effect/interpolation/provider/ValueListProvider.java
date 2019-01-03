@@ -8,14 +8,14 @@ import java.util.stream.Collectors;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class ValueListProvider<T extends ValueListElement> extends KeyframeableEffect {
     Map<String, T> elements;
-    StringInterpolator stringInterpolator;
+    StepStringInterpolator stringInterpolator;
 
-    public ValueListProvider(List<T> elements, StringInterpolator stringInterpolator) {
+    public ValueListProvider(List<T> elements, StepStringInterpolator stringInterpolator) {
         this.elements = elements.stream()
                 .collect(Collectors.toMap(a -> a.getId(), a -> a));
         this.stringInterpolator = stringInterpolator;

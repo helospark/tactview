@@ -1,7 +1,7 @@
 package com.helospark.tactview.core.repository.dynamicvalue;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.DoubleInterpolatorFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
 
 public class DynamicInterpolatorFactory implements DoubleInterpolatorFactory {
 

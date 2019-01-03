@@ -16,7 +16,7 @@ import com.helospark.tactview.core.timeline.blendmode.BlendModeValueListElement;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
@@ -124,7 +124,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         translatePointProvider = new PointProvider(translateXProvider, translateYProvider);
         globalClipAlphaProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
         enabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0, new StepInterpolator()));
-        blendModeProvider = new ValueListProvider<>(createBlendModes(), new StringInterpolator("normal"));
+        blendModeProvider = new ValueListProvider<>(createBlendModes(), new StepStringInterpolator("normal"));
     }
 
     @Override

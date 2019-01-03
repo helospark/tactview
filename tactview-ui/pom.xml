@@ -25,11 +25,6 @@
       <groupId>com.helospark.tactview</groupId>
       <artifactId>tactview-core</artifactId>
     </dependency>
-    <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>edge-SNAPSHOT</version>
-    </dependency>
   </dependencies>
   <build>
     <plugins>

@@ -7,8 +7,8 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.stringinterpolator.StringInterpolatorFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.InterpolatorChangedCommand;
 
@@ -17,12 +17,12 @@ import javafx.scene.control.MenuItem;
 
 @Component
 @Order(40)
-public class DoublePropertyValueContextMenuItem implements PropertyValueContextMenuItem {
+public class StringPropertyValueContextMenuItem implements PropertyValueContextMenuItem {
     private LightDiContext context;
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
 
-    public DoublePropertyValueContextMenuItem(LightDiContext context, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+    public StringPropertyValueContextMenuItem(LightDiContext context, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
         this.context = context;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
@@ -30,7 +30,7 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
 
     @Override
     public boolean supports(PropertyValueContextMenuRequest request) {
-        return request.valueProvider.keyframesEnabled() && request.valueProvider instanceof DoubleProvider;
+        return request.valueProvider.keyframesEnabled() && request.valueProvider instanceof StringProvider;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
     private Menu createInterpolators(String id) {
         Menu menu = new Menu("Change interpolator");
 
-        List<DoubleInterpolatorFactory> interpolators = context.getListOfBeans(DoubleInterpolatorFactory.class);
+        List<StringInterpolatorFactory> interpolators = context.getListOfBeans(StringInterpolatorFactory.class);
         List<MenuItem> menuItems = interpolators.stream()
                 .map(interpolator -> {
                     MenuItem menuItem = new MenuItem(interpolator.getId());

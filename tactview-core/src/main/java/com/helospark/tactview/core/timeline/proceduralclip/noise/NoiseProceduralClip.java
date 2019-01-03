@@ -16,7 +16,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
@@ -127,18 +127,18 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
-        fractalKindProvider = new ValueListProvider<>(createFractalTypes(), new StringInterpolator("perlin"));
+        fractalKindProvider = new ValueListProvider<>(createFractalTypes(), new StepStringInterpolator("perlin"));
         seedProvider = new IntegerProvider(0, 1000000, new MultiKeyframeBasedDoubleInterpolator((double) new Random().nextInt(1000000)));
         frequencyProvider = new DoubleProvider(0.00001, 1, new MultiKeyframeBasedDoubleInterpolator(0.01));
-        cellularReturnTypeProvider = new ValueListProvider<>(createCellularReturnTypeElements(), new StringInterpolator(CellularReturnType.CellValue.name()));
-        fractalOctaveCombinderProvider = new ValueListProvider<>(createFractalOctaveCombinerElements(), new StringInterpolator(FractalType.FBM.name()));
+        cellularReturnTypeProvider = new ValueListProvider<>(createCellularReturnTypeElements(), new StepStringInterpolator(CellularReturnType.CellValue.name()));
+        fractalOctaveCombinderProvider = new ValueListProvider<>(createFractalOctaveCombinerElements(), new StepStringInterpolator(FractalType.FBM.name()));
         octaveProvider = new IntegerProvider(1, 20, new MultiKeyframeBasedDoubleInterpolator(1.0));
         lacunarityProvider = new DoubleProvider(0.1, 10, new MultiKeyframeBasedDoubleInterpolator(1.0)); // TODO: is this doing anything?
         gainProvider = new DoubleProvider(0.1, 10, new MultiKeyframeBasedDoubleInterpolator(1.0)); // TODO: is this doing anything?
         xOffsetProvider = new DoubleProvider(-10000, 10000, new MultiKeyframeBasedDoubleInterpolator(0.0));
         yOffsetProvider = new DoubleProvider(-10000, 10000, new MultiKeyframeBasedDoubleInterpolator(0.0));
         colorProvider = new ColorProvider(createColorProviderComponent(1.0), createColorProviderComponent(1.0), createColorProviderComponent(1.0));
-        cellularDistanceFunctionProvider = new ValueListProvider<>(createCellularDistanceFunctionElements(), new StringInterpolator(CellularDistanceFunction.Euclidean.name()));
+        cellularDistanceFunctionProvider = new ValueListProvider<>(createCellularDistanceFunctionElements(), new StepStringInterpolator(CellularDistanceFunction.Euclidean.name()));
     }
 
     private List<CellularDistanceFunctionValueListElement> createCellularDistanceFunctionElements() {

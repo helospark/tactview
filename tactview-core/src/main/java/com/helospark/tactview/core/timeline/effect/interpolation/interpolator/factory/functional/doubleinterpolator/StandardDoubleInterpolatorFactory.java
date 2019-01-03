@@ -1,4 +1,4 @@
-package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional;
+package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator;
 
 import java.util.function.Function;
 

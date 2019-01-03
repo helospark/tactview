@@ -1,4 +1,4 @@
-package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.impl;
+package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl;
 
 import java.math.BigDecimal;
 

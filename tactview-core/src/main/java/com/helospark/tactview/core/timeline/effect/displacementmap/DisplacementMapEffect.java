@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
@@ -121,7 +121,7 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
 
     @Override
     public void initializeValueProvider() {
-        displacementMapProvider = new DependentClipProvider(new StringInterpolator());
+        displacementMapProvider = new DependentClipProvider(new StepStringInterpolator());
         verticalDisplacementMultiplierProvider = new DoubleProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(30.0));
         verticalDisplacementMultiplierProvider.setScaleDependent();
 

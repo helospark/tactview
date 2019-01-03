@@ -23,7 +23,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
@@ -143,14 +143,14 @@ public class TextProceduralClip extends ProceduralVisualClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
-        textProvider = new StringProvider(new StringInterpolator());
+        textProvider = new StringProvider(new StepStringInterpolator());
         sizeProvider = new IntegerProvider(0, 500, new MultiKeyframeBasedDoubleInterpolator(100.0));
         sizeProvider.setScaleDependent();
         colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)));
-        fontProvider = new ValueListProvider<>(createFontList(), new StringInterpolator("Serif.plain"));
-        alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StringInterpolator("left"));
+        fontProvider = new ValueListProvider<>(createFontList(), new StepStringInterpolator("Serif.plain"));
+        alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StepStringInterpolator("left"));
         italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
         boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
     }

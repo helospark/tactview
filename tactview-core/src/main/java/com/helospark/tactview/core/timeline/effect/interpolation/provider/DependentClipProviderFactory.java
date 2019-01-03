@@ -5,7 +5,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.AbstractKeyframeableEffectDesSerFactory;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class DependentClipProviderFactory extends AbstractKeyframeableEffectDesSerFactory<DependentClipProvider> {
@@ -17,7 +17,7 @@ public class DependentClipProviderFactory extends AbstractKeyframeableEffectDesS
 
     @Override
     public DependentClipProvider deserializeInternal(JsonNode data, DependentClipProvider currentFieldValue, LoadMetadata loadMetadata) {
-        return new DependentClipProvider(ReflectionUtil.deserialize(data.get("stringInterpolator"), StringInterpolator.class, currentFieldValue.stringInterpolator, loadMetadata));
+        return new DependentClipProvider(ReflectionUtil.deserialize(data.get("stringInterpolator"), StepStringInterpolator.class, currentFieldValue.stringInterpolator, loadMetadata));
     }
 
 }

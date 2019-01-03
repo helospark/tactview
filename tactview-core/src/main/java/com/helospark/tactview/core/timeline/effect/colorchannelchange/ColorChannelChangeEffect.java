@@ -12,7 +12,7 @@ import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
@@ -58,10 +58,10 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
 
     @Override
     public void initializeValueProvider() {
-        redProvider = new ValueListProvider<>(createColorOperations(), new StringInterpolator(ColorElementOperation.RED.id));
-        greenProvider = new ValueListProvider<>(createColorOperations(), new StringInterpolator(ColorElementOperation.GREEN.id));
-        blueProvider = new ValueListProvider<>(createColorOperations(), new StringInterpolator(ColorElementOperation.BLUE.id));
-        alphaProvider = new ValueListProvider<>(createColorOperations(), new StringInterpolator(ColorElementOperation.ALPHA.id));
+        redProvider = new ValueListProvider<>(createColorOperations(), new StepStringInterpolator(ColorElementOperation.RED.id));
+        greenProvider = new ValueListProvider<>(createColorOperations(), new StepStringInterpolator(ColorElementOperation.GREEN.id));
+        blueProvider = new ValueListProvider<>(createColorOperations(), new StepStringInterpolator(ColorElementOperation.BLUE.id));
+        alphaProvider = new ValueListProvider<>(createColorOperations(), new StepStringInterpolator(ColorElementOperation.ALPHA.id));
     }
 
     @Override

@@ -12,7 +12,7 @@ import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErod
 import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErodeDilateRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
@@ -71,8 +71,8 @@ public class ErodeDilateEffect extends StatelessVideoEffect {
     public void initializeValueProvider() {
         kernelWidthProvider = new DoubleProvider(1 / 4000.0, 0.1, new MultiKeyframeBasedDoubleInterpolator(10.0 / 1920));
         kernelHeightProvider = new DoubleProvider(1 / 4000.0, 0.1, new MultiKeyframeBasedDoubleInterpolator(10.0 / 1080));
-        erodeOrDelodeProvider = new ValueListProvider<>(createErodeOrDilate(), new StringInterpolator("dilate"));
-        shapeProvider = new ValueListProvider<>(createShape(), new StringInterpolator("ellipse"));
+        erodeOrDelodeProvider = new ValueListProvider<>(createErodeOrDilate(), new StepStringInterpolator("dilate"));
+        shapeProvider = new ValueListProvider<>(createShape(), new StepStringInterpolator("ellipse"));
     }
 
     @Override

@@ -19,7 +19,9 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.DoubleInterpolatorFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.stringinterpolator.StringInterpolatorFactory;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
@@ -33,16 +35,18 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class EffectParametersRepository {
     private MessagingService messagingService;
-    private List<DoubleInterpolatorFactory> interpolatorFactories;
+    private List<DoubleInterpolatorFactory> doubleInterpolatorFactories;
+    private List<StringInterpolatorFactory> stringInterpolatorFactories;
     @Slf4j
     private Logger logger;
 
     private Map<String, EffectStore> primitiveEffectIdToEffectMap = new ConcurrentHashMap<>();
     private Map<String, EffectStore> allEffectIdToEffectMap = new ConcurrentHashMap<>();
 
-    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories) {
+    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories) {
         this.messagingService = messagingService;
-        this.interpolatorFactories = interpolatorFactories;
+        this.doubleInterpolatorFactories = interpolatorFactories;
+        this.stringInterpolatorFactories = stringInterpolatorFactories;
     }
 
     @PostConstruct
@@ -168,11 +172,18 @@ public class EffectParametersRepository {
     public void changeInterpolator(String descriptorId, String newInterpolatorId) {
         EffectInterpolator previousInterpolator = primitiveEffectIdToEffectMap.get(descriptorId).effect.getInterpolator();
         if (previousInterpolator instanceof DoubleInterpolator) {
-            DoubleInterpolator interpolator = interpolatorFactories.stream()
+            DoubleInterpolator interpolator = doubleInterpolatorFactories.stream()
                     .filter(factory -> factory.doesSuppert(newInterpolatorId))
                     .findFirst()
                     .orElseThrow()
                     .createInterpolator((DoubleInterpolator) previousInterpolator);
+            changeInterpolatorToInstance(descriptorId, interpolator);
+        } else if (previousInterpolator instanceof StringInterpolator) {
+            StringInterpolator interpolator = stringInterpolatorFactories.stream()
+                    .filter(factory -> factory.doesSuppert(newInterpolatorId))
+                    .findFirst()
+                    .orElseThrow()
+                    .createInterpolator((StringInterpolator) previousInterpolator);
             changeInterpolatorToInstance(descriptorId, interpolator);
         }
         // TODO: do the rest for other interpolators

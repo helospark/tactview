@@ -7,7 +7,7 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
@@ -111,7 +111,7 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
     @Override
     public void initializeValueProvider() {
         super.initializeValueProvider();
-        directionProvider = new ValueListProvider<>(createDirections(), new StringInterpolator("right"));
+        directionProvider = new ValueListProvider<>(createDirections(), new StepStringInterpolator("right"));
     }
 
     @Override
@@ -123,7 +123,7 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
                 .withName("direction")
                 .build();
 
-        floatOrWipeProvider = new ValueListProvider<>(createFloatOrWipe(), new StringInterpolator("float"));
+        floatOrWipeProvider = new ValueListProvider<>(createFloatOrWipe(), new StepStringInterpolator("float"));
 
         ValueProviderDescriptor floatOrWipeProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(floatOrWipeProvider)

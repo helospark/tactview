@@ -1,11 +1,11 @@
-package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional;
+package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator;
 
 import java.math.BigDecimal;
 
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.impl.ConstantInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.impl.RandomDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.RandomDoubleInterpolator;
 
 @Configuration
 public class StandardDoubleInterpolatorFactoryConfiguration {

@@ -6,7 +6,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.DoubleInterpolatorFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
 
 public class StandardInterpolationFunctionFactory implements DoubleInterpolatorFactory {
     private String id;

@@ -7,7 +7,7 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
@@ -89,7 +89,7 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
     public void initializeValueProvider() {
         super.initializeValueProvider();
 
-        directionProvider = new ValueListProvider<>(createList(), new StringInterpolator(DISSOLVE_DARK_FIRST));
+        directionProvider = new ValueListProvider<>(createList(), new StepStringInterpolator(DISSOLVE_DARK_FIRST));
     }
 
     @Override

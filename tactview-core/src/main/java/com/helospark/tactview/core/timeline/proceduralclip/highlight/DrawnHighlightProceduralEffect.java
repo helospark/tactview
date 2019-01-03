@@ -19,7 +19,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.blendmode.impl.NormalBlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
@@ -152,7 +152,7 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
         colorProvider = createColorProvider(0, 0, 0);
         brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
         endPositionProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(2.0));
-        brushFileProvider = new FileProvider("gbr", new StringInterpolator());
+        brushFileProvider = new FileProvider("gbr", new StepStringInterpolator());
     }
 
     @Override

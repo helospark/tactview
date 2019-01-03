@@ -10,7 +10,7 @@ import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -67,7 +67,7 @@ public class LutEffect extends StatelessVideoEffect {
 
     @Override
     public void initializeValueProvider() {
-        lutFileProvider = new FileProvider("cube", new StringInterpolator(""));
+        lutFileProvider = new FileProvider("cube", new StepStringInterpolator(""));
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
@@ -65,4 +66,13 @@ public class StringProvider extends KeyframeableEffect {
         return ((KeyframeSupportingInterpolator) stringInterpolator).isUsingKeyframes();
     }
 
+    @Override
+    public void setInterpolator(Object previousInterpolator) {
+        this.stringInterpolator = (StringInterpolator) previousInterpolator;
+    }
+
+    @Override
+    public EffectInterpolator getInterpolator() {
+        return this.stringInterpolator;
+    }
 }

@@ -13,17 +13,17 @@ import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
-public class StringInterpolatorFactory implements DesSerFactory<StringInterpolator> {
+public class StepStringInterpolatorFactory implements DesSerFactory<StepStringInterpolator> {
     private ObjectMapper regularObjectMapper;
 
-    public StringInterpolatorFactory() {
+    public StepStringInterpolatorFactory() {
         regularObjectMapper = new ObjectMapper();
         regularObjectMapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
         regularObjectMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
     }
 
     @Override
-    public void addDataForDeserialize(StringInterpolator instance, Map<String, Object> data) {
+    public void addDataForDeserialize(StepStringInterpolator instance, Map<String, Object> data) {
         try {
             data.put("instance", regularObjectMapper.writeValueAsString(instance));
         } catch (JsonProcessingException e) {
@@ -32,10 +32,9 @@ public class StringInterpolatorFactory implements DesSerFactory<StringInterpolat
     }
 
     @Override
-    public StringInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
+    public StepStringInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
-            StringInterpolator result = StaticObjectMapper.getterIgnoringOjectMapper.readValue(data.get("instance").asText(), StringInterpolator.class);
-            return result;
+            return StaticObjectMapper.getterIgnoringOjectMapper.readValue(data.get("instance").asText(), StepStringInterpolator.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
