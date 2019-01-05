@@ -67,16 +67,18 @@ public class TimelineManager implements SaveLoadContributor {
     private AudioBufferMerger audioBufferMerger;
     private ProjectRepository projectRepository;
     private EffectFactoryChain effectFactoryChain;
+    private LinkClipRepository linkClipRepository;
 
     public TimelineManager(FrameBufferMerger frameBufferMerger,
             EffectFactoryChain effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
-            AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository) {
+            AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository, LinkClipRepository linkClipRepository) {
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
         this.frameBufferMerger = frameBufferMerger;
         this.audioBufferMerger = audioBufferMerger;
         this.projectRepository = projectRepository;
+        this.linkClipRepository = linkClipRepository;
     }
 
     public TimelineClip addClip(AddClipRequest request) {
@@ -85,6 +87,7 @@ public class TimelineManager implements SaveLoadContributor {
 
         Integer channelIndex = findChannelIndex(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
         for (var clip : clips) {
+            linkClipRepository.linkClips(clip.getId(), clips);
             if (channelIndex >= channels.size()) {
                 createChannel(channelIndex);
             }
@@ -471,20 +474,25 @@ public class TimelineManager implements SaveLoadContributor {
         String newChannelId = moveClipRequest.newChannelId;
 
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip " + clipId));
-        TimelineChannel newChannel = findChannelWithId(newChannelId).orElseThrow(() -> new IllegalArgumentException("Cannot find channel " + newChannelId));
 
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
         TimelineInterval originalInterval = clipToMove.getGlobalInterval();
-        TimelineInterval newInterval = new TimelineInterval(newPosition, clipToMove.getInterval().getLength());
+
+        List<String> linkedClipIds = new ArrayList<>(linkClipRepository.getLinkedClips(clipId));
+        linkedClipIds.add(clipToMove.getId());
+        List<TimelineClip> linkedClips = linkedClipIds
+                .stream()
+                .map(a -> findClipById(a))
+                .filter(a -> a.isPresent())
+                .map(a -> a.get())
+                .collect(Collectors.toList());
 
         Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
 
         if (moveClipRequest.enableJumpingToSpecialPosition) {
-            TimelineChannel channel = findChannelWithId(newChannelId).orElseThrow();
-            TimelineLength clipLength = clipToMove.getInterval().getLength();
-
             List<String> ignoredIds = new ArrayList<>();
             ignoredIds.add(clipToMove.getId());
+            ignoredIds.addAll(linkedClipIds);
             clipToMove.getEffects()
                     .stream()
                     .map(effect -> effect.getId())
@@ -492,7 +500,11 @@ public class TimelineManager implements SaveLoadContributor {
 
             specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds)
                     .stream()
-                    .filter(a -> channel.canAddResourceAtExcluding(new TimelineInterval(a.getClipPosition(), a.getClipPosition().add(clipLength)), clipToMove.getId()))
+                    .filter(a -> {
+                        TimelinePosition relativeMove = originalInterval.getStartPosition().subtract(a.getClipPosition());
+                        boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
+                        return allClipsCanBePlaced;
+                    })
                     .sorted()
                     .findFirst();
             if (specialPositionUsed.isPresent()) {
@@ -500,24 +512,93 @@ public class TimelineManager implements SaveLoadContributor {
             }
         }
 
-        if (!originalChannel.equals(newChannel)) {
-            synchronized (fullLock) {
-                if (newChannel.canAddResourceAt(clipToMove.getInterval()) && newChannel.canAddResourceAt(newInterval)) {
-                    originalChannel.removeClip(clipId);
-                    clipToMove.setInterval(newInterval);
-                    newChannel.addResource(clipToMove);
+        TimelinePosition relativeMove = newPosition.subtract(originalInterval.getStartPosition());
+        int relativeChannelMove = findChannelIndex(newChannelId).orElseThrow() - findChannelIndex(originalChannel.getId()).orElseThrow();
+        Optional<ClosesIntervalChannel> finalSpecialPositionUsed = specialPositionUsed;
 
-                    messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed, originalInterval, clipToMove.getGlobalInterval()));
+        synchronized (fullLock) {
+            if (!originalChannel.getId().equals(newChannelId)) {
+
+                boolean canMove = linkedClips.stream()
+                        .allMatch(clip -> {
+                            int currentIndex = findChannelIndexForClipId(clip.getId()).get() + relativeChannelMove;
+
+                            if (currentIndex < channels.size()) {
+                                TimelineChannel movedChannel = channels.get(currentIndex);
+                                TimelineInterval clipCurrentInterval = clip.getInterval();
+                                TimelineInterval clipNewInterval = clipCurrentInterval.butAddOffset(relativeMove);
+                                return movedChannel.canAddResourceAtExcluding(clipNewInterval, linkedClipIds);
+                            } else {
+                                return true;
+                            }
+                        });
+
+                if (canMove) {
+                    linkedClips.stream()
+                            .forEach(clip -> {
+                                int currentIndex = findChannelIndexForClipId(clip.getId()).get() + relativeChannelMove;
+
+                                for (int i = channels.size(); i < currentIndex; ++i) {
+                                    createChannel(i);
+                                }
+                            });
+
+                    linkedClips.stream()
+                            .forEach(clip -> {
+                                int originalIndex = findChannelIndexForClipId(clip.getId()).get();
+                                int currentIndex = originalIndex + relativeChannelMove;
+
+                                TimelineChannel originalMovedChannel = channels.get(originalIndex);
+                                TimelineChannel newMovedChannel = channels.get(currentIndex);
+
+                                TimelineInterval clipCurrentInterval = clip.getInterval();
+                                TimelineInterval clipNewPosition = clipCurrentInterval.butAddOffset(relativeMove);
+
+                                originalMovedChannel.removeClip(clip.getId());
+                                clip.setInterval(clipNewPosition);
+                                newMovedChannel.addResource(clip);
+
+                                messagingService.sendAsyncMessage(new ClipMovedMessage(clip.getId(), clipNewPosition.getStartPosition(), newMovedChannel.getId(), finalSpecialPositionUsed,
+                                        clipCurrentInterval, clip.getGlobalInterval()));
+                            });
                 }
-            }
-        } else {
-            boolean success = originalChannel.moveClip(clipId, newPosition);
 
-            if (success) {
-                messagingService.sendAsyncMessage(new ClipMovedMessage(clipId, newPosition, newChannelId, specialPositionUsed, originalInterval, clipToMove.getGlobalInterval()));
+            } else {
+                boolean canAddResource = linkedClips
+                        .stream()
+                        .allMatch(clip -> {
+                            TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow();
+                            return channel.canAddResourceAtExcluding(clip.getInterval().butAddOffset(relativeMove), clip.getId());
+                        });
+
+                if (canAddResource) {
+                    linkedClips
+                            .stream()
+                            .forEach(clip -> {
+                                TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow();
+                                TimelineInterval clipCurrentInterval = clip.getInterval();
+                                TimelinePosition clipNewPosition = clipCurrentInterval.getStartPosition().add(relativeMove);
+                                channel.moveClip(clip.getId(), clipNewPosition);
+                                messagingService.sendAsyncMessage(
+                                        new ClipMovedMessage(clip.getId(), clipNewPosition, channel.getId(), finalSpecialPositionUsed, clipCurrentInterval, clip.getGlobalInterval()));
+                            });
+
+                }
+
             }
         }
         return true;
+    }
+
+    private boolean allLinkedClipsCanBeMoved(List<TimelineClip> linkedClips, TimelinePosition relativeMove) {
+        boolean clipItemMatch = linkedClips.stream()
+                .allMatch(clip -> {
+                    TimelineChannel currentChannel = findChannelForClipId(clip.getId()).orElseThrow();
+                    TimelineInterval newClipInterval = clip.getInterval().butAddOffset(relativeMove);
+                    return currentChannel.canAddResourceAtExcluding(newClipInterval, clip.getId());
+                });
+
+        return clipItemMatch;
     }
 
     public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, Optional<TimelineLength> maximumJumpToSpecialPositions) {
@@ -774,7 +855,7 @@ public class TimelineManager implements SaveLoadContributor {
 
     public Optional<Integer> findChannelIndexForClipId(String clipId) {
         return findChannelForClipId(clipId)
-                .flatMap(a -> findChannelIndex(clipId));
+                .flatMap(a -> findChannelIndex(a.getId()));
     }
 
     private Optional<Integer> findChannelIndex(String channelId) {

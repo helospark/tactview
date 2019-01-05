@@ -181,4 +181,9 @@ public class TimelineChannel {
         return fullChannelLock;
     }
 
+    public boolean canAddResourceAtExcluding(TimelineInterval clipNewPosition, List<String> linkedClipIds) {
+        return linkedClipIds.stream()
+                .anyMatch(id -> canAddResourceAtExcluding(clipNewPosition, id));
+    }
+
 }
