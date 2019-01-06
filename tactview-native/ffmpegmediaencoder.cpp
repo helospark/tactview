@@ -84,6 +84,7 @@ extern "C" {
         int bytesPerSample;
         int numberOfSamplesPerAudioFrame;
         int audioChannels;
+        int sampleRate;
 
         int actualWidth;
         int actualHeight;
@@ -283,7 +284,7 @@ extern "C" {
         ost->frame     = alloc_audio_frame(c->sample_fmt, c->channel_layout,
                                            c->sample_rate, nb_samples);
         ost->tmp_frame = alloc_audio_frame(ost->sampleFormat, c->channel_layout,
-                                           request->sampleRate, nb_samples);
+                                           request->sampleRate, (int)(nb_samples * ((double)request->sampleRate / c->sample_rate)));
 
         /* copy the stream parameters to the muxer */
         ret = avcodec_parameters_from_context(ost->st->codecpar, c);
@@ -298,6 +299,8 @@ extern "C" {
                 fprintf(stderr, "Could not allocate resampler context\n");
                 exit(1);
             }
+
+            std::cout << "SWR " << c->sample_rate << " " << request->sampleRate << " " << request->audioChannels << std::endl;
 
             /* set options */
             av_opt_set_int       (ost->swr_ctx, "in_channel_count",   request->audioChannels,       0);
@@ -354,9 +357,11 @@ extern "C" {
         if (frame) {
             /* convert samples from native format to destination codec format, using the resampler */
                 /* compute destination number of samples */
-                dst_nb_samples = av_rescale_rnd(swr_get_delay(ost->swr_ctx, c->sample_rate) + frame->nb_samples,
-                                                c->sample_rate, c->sample_rate, AV_ROUND_UP);
-                av_assert0(dst_nb_samples == frame->nb_samples);
+                int a = swr_get_delay(ost->swr_ctx, renderContext.sampleRate) + frame->nb_samples;
+                dst_nb_samples = av_rescale_rnd(a, c->sample_rate, renderContext.sampleRate, AV_ROUND_UP);
+                std::cout << a << " , " << c->sample_rate << " , " << renderContext.sampleRate << std::endl;
+                std::cout << dst_nb_samples << " == " << ost->frame->nb_samples << " | " << std::endl;
+                //av_assert0(dst_nb_samples == frame->nb_samples);
 
             /* when we pass a frame to the encoder, it may keep a reference to it
              * internally;
@@ -599,6 +604,7 @@ extern "C" {
             fprintf(stderr, "Error occurred when opening output file: \n");
             return 1;
         }
+        memset(&renderContext, 0, sizeof(RenderContext));
         renderContext.oc = oc;
         renderContext.fmt = fmt;
         renderContext.have_audio = have_audio;
@@ -614,6 +620,7 @@ extern "C" {
         if (have_audio) {
           renderContext.audioBuffer = new unsigned char[audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * request->audioChannels];
           renderContext.audioChannels = request->audioChannels;
+          renderContext.sampleRate = request->sampleRate;
         }
         renderContext.actualWidth = request->actualWidth;
         renderContext.actualHeight = request->actualHeight;
@@ -649,10 +656,11 @@ extern "C" {
 
 
             int nbSamples = renderContext.numberOfSamplesPerAudioFrame;
+
             for (int i = 0; i < request->frame->numberOfAudioSamples * renderContext.bytesPerSample * renderContext.audioChannels; ++i) {
                 renderContext.audioBuffer[renderContext.audioBufferPointer++] = request->frame->audioData[i];
 
-                if (renderContext.audioBufferPointer >= nbSamples * renderContext.bytesPerSample * renderContext.audioChannels) {
+                if (renderContext.audioBufferPointer >= audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * renderContext.audioChannels) {
                     AVFrame *frame = get_audio_frame(audio_st, renderContext.audioBuffer);
                     renderContext.encode_audio = !write_audio_frame(renderContext.oc, audio_st, frame);
                     renderContext.audioBufferPointer = 0;

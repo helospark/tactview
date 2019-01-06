@@ -11,4 +11,9 @@ public class ProgressDoneMessage {
         return id;
     }
 
+    @Override
+    public String toString() {
+        return "ProgressDoneMessage [id=" + id + "]";
+    }
+
 }

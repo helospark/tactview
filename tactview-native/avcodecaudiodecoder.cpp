@@ -10,6 +10,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
 
+const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32;
 
     struct AVCodecAudioMetadataResponse {
         int sampleRate;
@@ -24,6 +25,39 @@ extern "C" {
             this->sampleRate = -1;
         }
     };
+
+    AVFrame *alloc_audio_frame(enum AVSampleFormat sample_fmt,
+                                      uint64_t channel_layout,
+                                      int sample_rate, int nb_samples)
+    {
+        AVFrame *frame = av_frame_alloc();
+        int ret;
+
+        if (!frame) {
+            fprintf(stderr, "Error allocating an audio frame\n");
+            exit(1);
+        }
+
+        frame->format = sample_fmt;
+        frame->channel_layout = channel_layout;
+        frame->sample_rate = sample_rate;
+        frame->nb_samples = nb_samples;
+
+        if (nb_samples) {
+            ret = av_frame_get_buffer(frame, 0);
+            if (ret < 0) {
+                fprintf(stderr, "Error allocating an audio buffer\n");
+                exit(1);
+            }
+        }
+
+        return frame;
+    }
+
+    bool doesNeedResampling(AVSampleFormat sampleFormat) {
+      return sampleFormat != AV_SAMPLE_FMT_U8 && sampleFormat != AV_SAMPLE_FMT_S16 && sampleFormat != AV_SAMPLE_FMT_S32
+                  && sampleFormat != AV_SAMPLE_FMT_U8P && sampleFormat != AV_SAMPLE_FMT_S16P && sampleFormat != AV_SAMPLE_FMT_S32P;
+    }
 
     AVCodecAudioMetadataResponse readMetadata(const char* path) {
         av_register_all();
@@ -62,10 +96,16 @@ extern "C" {
 
         AVCodecAudioMetadataResponse response;
 
+        AVSampleFormat sampleFormat = codec->sample_fmt;
+
+        if (doesNeedResampling(sampleFormat)) {
+          sampleFormat = AV_SAMPLE_FMT_S32;
+        }
+
         response.channels = codec->channels;
         response.sampleRate = codec->sample_rate;
         response.lengthInMicroseconds = format->duration / (AV_TIME_BASE / 1000000);
-        response.bytesPerSample = av_get_bytes_per_sample(codec->sample_fmt);
+        response.bytesPerSample = av_get_bytes_per_sample(sampleFormat);
 
         avcodec_close(codec);
         avformat_free_context(format);
@@ -126,12 +166,44 @@ extern "C" {
             fprintf(stderr, "Failed to open decoder for stream #%u in file '%s'\n", stream_index, request->path);
             return -1;
         }
-        int sampleSize = av_get_bytes_per_sample(codec->sample_fmt);
+
+        bool needsResampling = false;
 
 
-        // prepare resampler
+        SwrContext* swrContext = NULL;
+        AVFrame* tmp_frame = NULL;
 
-        std::cout << "sample format: " << codec->sample_fmt << std::endl;
+        AVSampleFormat sampleFormat = codec->sample_fmt;
+
+        if (doesNeedResampling(sampleFormat)) {
+          needsResampling = true;
+          swrContext = swr_alloc();
+          if (!swrContext) {
+              fprintf(stderr, "Could not allocate resampler context\n");
+              exit(1);
+          }
+
+          
+          /* set options */
+          av_opt_set_int       (swrContext, "in_channel_count",   codec->channels,       0);
+          av_opt_set_int       (swrContext, "in_sample_rate",     codec->sample_rate,    0);
+          av_opt_set_sample_fmt(swrContext, "in_sample_fmt",      sampleFormat, 0);
+          av_opt_set_channel_layout(swrContext, "in_channel_layout",  codec->channel_layout, 0);
+          av_opt_set_int       (swrContext, "out_channel_count",  codec->channels,       0);
+          av_opt_set_int       (swrContext, "out_sample_rate",    codec->sample_rate,    0);
+          av_opt_set_sample_fmt(swrContext, "out_sample_fmt",     RESAMPLE_FORMAT,     0);
+          av_opt_set_channel_layout(swrContext, "out_channel_layout", codec->channel_layout,  0);
+
+          std::cout << "Initializing SWR" << std::endl;
+          if ((swr_init(swrContext)) < 0) {
+              fprintf(stderr, "Failed to initialize the resampling context\n");
+              exit(1);
+          }
+
+          sampleFormat = RESAMPLE_FORMAT;
+        } 
+        int sampleSize = av_get_bytes_per_sample(sampleFormat);
+
 
         // prepare to read data
         AVPacket packet;
@@ -141,10 +213,8 @@ extern "C" {
             fprintf(stderr, "Error allocating the frame\n");
             return -1;
         }
-        std::cout << "Data frame init done: " << std::endl;
 
-        bool isPlanar = av_sample_fmt_is_planar(codec->sample_fmt);
-
+        bool isPlanar = av_sample_fmt_is_planar(sampleFormat);
 
         int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000);
         seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, stream->time_base);
@@ -152,9 +222,7 @@ extern "C" {
 
         int totalNumberOfSamplesRead = 0;
         bool running = true;
-        std::cout << "Before while: " << std::endl;
         while (av_read_frame(format, &packet) >= 0 && running) {
-            std::cout << "Read stream: " << packet.stream_index << std::endl;
             if(packet.stream_index==stream_index) {
                 int gotFrame;
                 //std::cout << "Before continue: " << std::endl;
@@ -164,34 +232,45 @@ extern "C" {
                 if (!gotFrame) {
                     continue;
                 }
-                std::cout << "Got frame " << frame->nb_samples  << " " << isPlanar  << std::endl;
+                std::cout << "Got frame" << std::endl;
 
+                AVFrame* frameToUse = frame;
+                if (needsResampling) {
+
+                  if (tmp_frame == NULL) {
+
+                      tmp_frame = alloc_audio_frame(RESAMPLE_FORMAT, codec->channel_layout,
+                                           codec->sample_rate, frame->nb_samples);
+                  }
+
+                  swr_convert(swrContext,
+                                ( uint8_t **)tmp_frame->data, tmp_frame->nb_samples,
+                                (const uint8_t **)frame->data, frame->nb_samples);
+
+                  frameToUse = tmp_frame;
+                }
 
                 if (isPlanar) {
                     int actuallyWrittenSamples = 0;
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
-                        if (channel == 1 )
-                              std::cout << "Second channel data: " << std::endl;
-                        int startIndex = channel * frame->nb_samples;
-                        for (int i = 0, j = 0; i < frame->nb_samples; ++i, ++j) {
+                        int startIndex = channel * frameToUse->nb_samples;
+                        for (int i = 0, j = 0; i < frameToUse->nb_samples; ++i, ++j) {
                             for (int k = 0; k < sampleSize; ++k) {
                                 int toUpdate = totalNumberOfSamplesRead + j * sampleSize + k;
                                 if (toUpdate >= request->bufferSize) {
                                     running = false;
                                     break;
                                 }
-                             // if (channel == 1 && toUpdate < 5000) {
-                             //   std::cout << (int)frame->data[0][i * sampleSize + k] << " ";
-                             // }
-                              //  
-                                request->channels[channel].data[toUpdate] = frame->data[channel][i * sampleSize + k];
+
+                                request->channels[channel].data[toUpdate] = frameToUse->data[channel][i * sampleSize + k];
                             }
                             if (running && channel==0) actuallyWrittenSamples++;
                         }
+                        std::cout << "\nChannel done" << channel << std::endl;
                     }
                     totalNumberOfSamplesRead += actuallyWrittenSamples * sampleSize;
                 } else {
-                    for (int i = 0, j = 0; i < frame->nb_samples; ++i, ++j) {
+                    for (int i = 0, j = 0; i < frameToUse->nb_samples; ++i, ++j) {
                         for (int channel = 0; channel < request->numberOfChannels; ++channel) {
                             for (int k = 0; k < sampleSize; ++k) {
                                 int outputBufferIndex = j * sampleSize + k;
@@ -200,7 +279,7 @@ extern "C" {
                                     break;
                                 }
                                 // TODO: this only supports single channel
-                                request->channels[channel].data[totalNumberOfSamplesRead++] = frame->data[0][request->numberOfChannels * sampleSize * i + channel *sampleSize + k];
+                                request->channels[channel].data[totalNumberOfSamplesRead++] = frameToUse->data[0][request->numberOfChannels * sampleSize * i + channel *sampleSize + k];
                             }
                         }
                     }
@@ -208,19 +287,23 @@ extern "C" {
             }
 
         }
-                    std::cout << "new: " << std::endl;
-                    for (int u = 0; u <  totalNumberOfSamplesRead && u < 5000; ++u) {
-                        std::cout << (int)request->channels[0].data[u] << " ";
-                    }
 
         // clean up
         av_frame_free(&frame);
+        if (needsResampling) {
+          av_frame_free(&tmp_frame);
+          swr_free(&swrContext);
+        }
         avcodec_close(codec);
         avformat_free_context(format);
 
         return totalNumberOfSamplesRead;
 
     }
+
+
+
+
 /**
     int main() {
         double* data = NULL;

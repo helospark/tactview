@@ -17,4 +17,9 @@ public class ProgressInitializeMessage {
         return allJobs;
     }
 
+    @Override
+    public String toString() {
+        return "ProgressInitializeMessage [id=" + id + ", allJobs=" + allJobs + "]";
+    }
+
 }

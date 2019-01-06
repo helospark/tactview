@@ -17,4 +17,9 @@ public class ProgressAdvancedMessage {
         return numberOfJobsDone;
     }
 
+    @Override
+    public String toString() {
+        return "ProgressAdvancedMessage [id=" + id + ", numberOfJobsDone=" + numberOfJobsDone + "]";
+    }
+
 }
