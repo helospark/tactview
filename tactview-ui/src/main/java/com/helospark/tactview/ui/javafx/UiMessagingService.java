@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
 import com.helospark.tactview.core.util.messaging.MessageListener;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -32,6 +33,13 @@ public class UiMessagingService {
 
     public <T> void sendAsyncMessage(T message) {
         delegate.sendAsyncMessage(message);
+    }
+
+    public void removeListener(MessageListener<ProgressInitializeMessage> initializedListener) {
+    }
+
+    public void removeListener(Class<?> clazz, Object progressAdvancer) {
+        delegate.removeListener(clazz, progressAdvancer);
     }
 
 }

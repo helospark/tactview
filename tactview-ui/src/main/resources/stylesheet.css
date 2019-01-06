@@ -178,6 +178,14 @@
     -fx-pref-width: 400px;
 }
 
+.render-dialog-grid-pane {
+    -fx-padding: 10px;
+}
+
+.render-dialog-button-bar {
+    -fx-padding: 10px;
+}
+
 /** tmp **/
 
 .button {

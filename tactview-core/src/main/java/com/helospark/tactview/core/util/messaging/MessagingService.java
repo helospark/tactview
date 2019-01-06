@@ -52,4 +52,8 @@ public class MessagingService {
             }
         });
     }
+
+    public void removeListener(Class<?> clazz, Object progressAdvancer) {
+        messageListeners.get(clazz).remove(progressAdvancer);
+    }
 }

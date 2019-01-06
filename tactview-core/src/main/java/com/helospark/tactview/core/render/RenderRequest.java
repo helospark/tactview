@@ -1,12 +1,14 @@
 package com.helospark.tactview.core.render;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class RenderRequest {
+    private String renderId = UUID.randomUUID().toString();
     private TimelinePosition startPosition;
     private TimelinePosition endPosition;
     private BigDecimal step;
@@ -24,6 +26,14 @@ public class RenderRequest {
         this.width = builder.width;
         this.height = builder.height;
         this.fileName = builder.fileName;
+    }
+
+    public String getRenderId() {
+        return renderId;
+    }
+
+    public void setRenderId(String renderId) {
+        this.renderId = renderId;
     }
 
     public TimelinePosition getStartPosition() {

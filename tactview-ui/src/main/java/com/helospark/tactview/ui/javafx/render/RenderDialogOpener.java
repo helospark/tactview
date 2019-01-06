@@ -1,38 +1,25 @@
 package com.helospark.tactview.ui.javafx.render;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.lightdi.aware.ContextAware;
-import com.helospark.tactview.core.render.RenderService;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 
 @Component
-public class RenderDialogOpener implements ContextAware {
+public class RenderDialogOpener {
     private RenderServiceChain renderService;
     private ProjectRepository projectRepository;
-    private LightDiContext context;
+    private UiMessagingService messagingService;
 
-    public RenderDialogOpener(RenderServiceChain renderService, ProjectRepository projectRepository) {
+    public RenderDialogOpener(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService) {
         this.renderService = renderService;
         this.projectRepository = projectRepository;
+        this.messagingService = messagingService;
     }
 
     public void render() {
-        List<String> renderServices = context.getListOfBeans(RenderService.class)
-                .stream()
-                .map(a -> a.getId())
-                .collect(Collectors.toList());
-        RenderDialog renderDialog = new RenderDialog(renderServices, renderService, projectRepository);
+        RenderDialog renderDialog = new RenderDialog(renderService, projectRepository, messagingService);
         renderDialog.show();
-    }
-
-    @Override
-    public void setContext(LightDiContext context) {
-        this.context = context;
     }
 
 }

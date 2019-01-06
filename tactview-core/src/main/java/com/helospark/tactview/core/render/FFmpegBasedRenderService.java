@@ -14,18 +14,20 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedRenderService extends AbstractRenderService {
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
 
-    public FFmpegBasedRenderService(TimelineManager timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder) {
-        super(timelineManager);
+    public FFmpegBasedRenderService(TimelineManager timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService) {
+        super(timelineManager, messagingService);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
     }
 
     @Override
-    public void render(RenderRequest renderRequest) {
+    public void renderInternal(RenderRequest renderRequest) {
         TimelinePosition currentPosition = renderRequest.getStartPosition();
 
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
@@ -68,6 +70,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             }
 
             currentPosition = currentPosition.add(renderRequest.getStep());
+            messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));
             ++frameIndex;
         }
 

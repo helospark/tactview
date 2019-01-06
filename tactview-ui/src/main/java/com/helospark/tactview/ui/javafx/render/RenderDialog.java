@@ -3,36 +3,37 @@ package com.helospark.tactview.ui.javafx.render;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
 import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 
-import javafx.collections.FXCollections;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class RenderDialog {
     private Stage stage;
 
-    public RenderDialog(List<String> supportedIds, RenderServiceChain renderService, ProjectRepository projectRepository) {
+    public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService) {
         BorderPane borderPane = new BorderPane();
 
+        Scene dialog = new Scene(borderPane);
+        stage = new Stage();
+
         GridPane gridPane = new GridPane();
-        gridPane.add(new Label("format"), 0, 0);
-        Node comboBox = createComboBox(supportedIds);
-        gridPane.add(comboBox, 1, 0);
+        gridPane.getStyleClass().add("render-dialog-grid-pane");
 
         gridPane.add(new Label("start position"), 0, 1);
         TextField startPositionTextField = new TextField("0");
@@ -52,7 +53,7 @@ public class RenderDialog {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
-        TextField textField = new TextField("/tmp/test.mpeg");
+        TextField textField = new TextField("/tmp/test.mp4");
         Button button = new Button("Browse");
         button.setOnMouseClicked(e -> {
             File result = fileChooser.showOpenDialog(stage);
@@ -65,16 +66,30 @@ public class RenderDialog {
         gridPane.add(new Label("File name"), 0, 5);
         gridPane.add(hbox, 1, 5);
 
+        ProgressBar progressBar = new ProgressBar();
+        progressBar.setProgress(0);
+        progressBar.prefWidthProperty().bind(dialog.widthProperty());
+        GridPane.setColumnSpan(progressBar, 2);
+        gridPane.add(progressBar, 0, 6);
+
         borderPane.setCenter(gridPane);
 
         HBox buttonBar = new HBox();
+        button.getStyleClass().add("render-dialog-button-bar");
 
-        Button cancelButton = new Button("cancel");
+        Button cancelButton = new Button("Close");
         cancelButton.setOnMouseClicked(e -> stage.close());
-        hbox.getChildren().add(cancelButton);
+        buttonBar.getChildren().add(cancelButton);
 
-        Button okButton = new Button("ok");
+        Region emptyRegion = new Region();
+        HBox.setHgrow(emptyRegion, Priority.ALWAYS);
+        buttonBar.getChildren().add(emptyRegion);
+
+        Button okButton = new Button("Render");
         okButton.setOnMouseClicked(e -> {
+            cancelButton.setDisable(true);
+            okButton.setDisable(true);
+
             RenderRequest request = RenderRequest.builder()
                     .withWidth(Integer.parseInt(widthTextField.getText()))
                     .withHeight(Integer.parseInt(heightTextField.getText()))
@@ -84,15 +99,28 @@ public class RenderDialog {
                     .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
                     .withFileName(textField.getText())
                     .build();
-            renderService.render(request);
+
+            String id = request.getRenderId();
+
+            ProgressAdvancer progressAdvancer = new ProgressAdvancer(messagingService, id);
+            stage.setTitle("Rendering inprogress...");
+            progressAdvancer.updateProgress(progress -> progressBar.setProgress(progress), () -> {
+                progressBar.setProgress(0);
+                stage.setTitle("Render done");
+            });
+
+            renderService.render(request)
+                    .thenAccept(a -> {
+                        cancelButton.setDisable(false);
+                        okButton.setDisable(false);
+                    });
+
         });
 
-        hbox.getChildren().add(okButton);
+        buttonBar.getChildren().add(okButton);
 
         borderPane.setBottom(buttonBar);
 
-        Scene dialog = new Scene(borderPane);
-        stage = new Stage();
         stage.setTitle("Render");
         stage.setScene(dialog);
     }
@@ -100,10 +128,6 @@ public class RenderDialog {
     public void show() {
         stage.show();
         stage.toFront();
-    }
-
-    private Node createComboBox(List<String> supportedIds) {
-        return new ComboBox<>(FXCollections.observableArrayList(supportedIds));
     }
 
 }

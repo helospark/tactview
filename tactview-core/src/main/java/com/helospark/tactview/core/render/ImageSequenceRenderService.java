@@ -19,26 +19,29 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class ImageSequenceRenderService extends AbstractRenderService {
 
     private static final int FRAME_PER_BATCH = 60;
-    private ExecutorService renderExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     @Slf4j
     private Logger logger;
 
     private ByteBufferToImageConverter byteBufferToImageConverter;
 
-    public ImageSequenceRenderService(TimelineManager timelineManager, ByteBufferToImageConverter byteBufferToImageConverter) {
-        super(timelineManager);
+    public ImageSequenceRenderService(TimelineManager timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService) {
+        super(timelineManager, messagingService);
         this.byteBufferToImageConverter = byteBufferToImageConverter;
     }
 
     @Override
-    public void render(RenderRequest renderRequest) {
+    public void renderInternal(RenderRequest renderRequest) {
+        ExecutorService renderExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         BigDecimal startSeconds = renderRequest.getStartPosition().getSeconds();
@@ -62,6 +65,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        renderExecutorService.shutdown();
     }
 
     private void renderFrames(BigDecimal position, int startFrame, RenderRequest renderRequest) {
@@ -83,6 +87,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame);
                 currentPosition = currentPosition.add(renderRequest.getStep());
                 ++currentFrame;
+                messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));
             } catch (IOException e) {
                 logger.error("Error rendering frame", e);
             }
