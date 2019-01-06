@@ -33,6 +33,11 @@ public class SelectedNodeRepository implements CleanableMode {
                 .findFirst();
     }
 
+    public Optional<String> getPrimarySelectedClipId() {
+        return getPrimarySelectedClip()
+                .map(node -> (String) node.getUserData());
+    }
+
     public Optional<Node> getPrimarySelectedEffect() {
         return selectedEffects.stream()
                 .findFirst();
@@ -115,4 +120,5 @@ public class SelectedNodeRepository implements CleanableMode {
     public void clean() {
         clearAllSelectedItems();
     }
+
 }

@@ -26,7 +26,7 @@ public class StandardClipContextMenuChainItemConfiguration {
     public ClipContextMenuChainItem copyMenuItem(CopyPasteRepository copyPasteRepository) {
         return alwaysSupportedContextMenuItem(request -> {
             MenuItem copyClip = new MenuItem("Copy");
-            copyClip.setOnAction(e -> copyPasteRepository.copyClip(request.getClip().getId()));
+            copyClip.setOnAction(e -> copyPasteRepository.copyClip(request.getPrimaryClip().getId()));
             return copyClip;
         });
     }
@@ -36,7 +36,7 @@ public class StandardClipContextMenuChainItemConfiguration {
     public ClipContextMenuChainItem deleteMenuItem(RemoveClipService removeClipService) {
         return alwaysSupportedContextMenuItem(request -> {
             MenuItem deleteClipMenuItem = new MenuItem("Delete");
-            deleteClipMenuItem.setOnAction(e -> removeClipService.removeClip(request.getClip().getId()));
+            deleteClipMenuItem.setOnAction(e -> removeClipService.removeClip(request.getPrimaryClip().getId()));
             return deleteClipMenuItem;
         });
     }
@@ -49,7 +49,7 @@ public class StandardClipContextMenuChainItemConfiguration {
             MenuItem scaleToImageMenuItem = new MenuItem("Scale to frame");
             scaleToImageMenuItem.setOnAction(e -> {
                 AddScaleCommand command = AddScaleCommand.builder()
-                        .withClipId(request.getClip().getId())
+                        .withClipId(request.getPrimaryClip().getId())
                         .withProjectRepository(projectRepository)
                         .withScaleEffectFactory(scaleFactory)
                         .withTimelineManager(timelineManager)
@@ -82,7 +82,7 @@ public class StandardClipContextMenuChainItemConfiguration {
 
             @Override
             public boolean supports(ClipContextMenuChainItemRequest request) {
-                return supportedType.isAssignableFrom(request.getClip().getClass());
+                return supportedType.isAssignableFrom(request.getPrimaryClip().getClass());
             }
 
             @Override

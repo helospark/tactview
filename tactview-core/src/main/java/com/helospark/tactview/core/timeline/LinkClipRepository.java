@@ -62,6 +62,11 @@ public class LinkClipRepository implements SaveLoadContributor {
                 .forEach(clip -> linkClip(clipId, clip.getId()));
     }
 
+    public void linkClipIds(String clipId, List<String> clips) {
+        clips.stream()
+                .forEach(clip -> linkClip(clipId, clip));
+    }
+
     private void removeClip(String elementId) {
         linkedClips.remove(elementId);
         for (var entry : linkedClips.entrySet()) {
@@ -90,6 +95,32 @@ public class LinkClipRepository implements SaveLoadContributor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void linkClips(List<String> linkedClipIds) {
+        for (var clipId : linkedClipIds) {
+            linkClipIds(clipId, linkedClipIds);
+        }
+    }
+
+    public void unlinkClips(List<String> linkedClipIds) {
+        for (var clipId : linkedClipIds) {
+            linkClipIds(clipId, linkedClipIds);
+        }
+    }
+
+    public void unlinkClipIds(List<String> linkedClipIds) {
+        for (var clipId : linkedClipIds) {
+            unlinkClipIds(clipId, linkedClipIds);
+        }
+    }
+
+    private void unlinkClipIds(String clipId, List<String> linkedClipIds) {
+        List<String> entries = linkedClips.get(clipId);
+        if (entries == null) {
+            return;
+        }
+        entries.removeAll(linkedClipIds);
     }
 
 }

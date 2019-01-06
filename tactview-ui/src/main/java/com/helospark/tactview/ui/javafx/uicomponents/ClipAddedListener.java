@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -26,7 +27,9 @@ import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 import javafx.scene.Cursor;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
@@ -112,7 +115,14 @@ public class ClipAddedListener {
 
         parentPane.getStyleClass().add("timeline-clip");
         rectangle.setOnMouseClicked(event -> {
-            selectedNodeRepository.setOnlySelectedClip(parentPane);
+            if (!selectedNodeRepository.getSelectedClipIds().isEmpty() && !event.getButton().equals(MouseButton.PRIMARY)) {
+                return;
+            }
+            if (event.isControlDown()) {
+                selectedNodeRepository.addSelectedClip(parentPane);
+            } else {
+                selectedNodeRepository.setOnlySelectedClip(parentPane);
+            }
         });
         parentPane.getChildren().add(rectangle);
 
@@ -149,9 +159,12 @@ public class ClipAddedListener {
             }
         });
 
-        ContextMenu contextMenu = clipContextMenuFactory.createContextMenuForClip(clip);
-        rectangle.setOnContextMenuRequested(e -> {
-            contextMenu.show(rectangle.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+        rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
+            Optional<ContextMenu> contextMenu = clipContextMenuFactory.createContextMenuForSelectedClips();
+            if (contextMenu.isPresent()) {
+                contextMenu.get().show(rectangle.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+                event.consume();
+            }
         });
 
         return parentPane;
