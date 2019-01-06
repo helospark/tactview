@@ -9,17 +9,25 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
+import com.helospark.tactview.ui.javafx.save.DirtyRepository;
 
 @Component
 public class UiCommandInterpreterService {
+    private DirtyRepository dirtyRepository;
+
     @Slf4j
     private Logger logger;
 
     private Deque<UiCommand> commandHistory = new ConcurrentLinkedDeque<>();
     private Deque<UiCommand> redoHistory = new ConcurrentLinkedDeque<>();
 
+    public UiCommandInterpreterService(DirtyRepository dirtyRepository) {
+        this.dirtyRepository = dirtyRepository;
+    }
+
     public <T extends UiCommand> T synchronousSend(T uiCommand) {
         logger.info("Executing " + uiCommand);
+        dirtyRepository.setDirty(true);
         redoHistory.clear();
         uiCommand.execute();
         if (uiCommand.isRevertable()) {
@@ -41,9 +49,11 @@ public class UiCommandInterpreterService {
     public CompletableFuture<UiCommand> revertLast() {
         return CompletableFuture.supplyAsync(() -> {
             UiCommand previousOperation = commandHistory.poll();
-            logger.info("Reverting " + previousOperation);
-            previousOperation.revert();
-            redoHistory.push(previousOperation);
+            if (previousOperation != null) {
+                logger.info("Reverting " + previousOperation);
+                previousOperation.revert();
+                redoHistory.push(previousOperation);
+            }
             return previousOperation;
         });
     }
@@ -51,8 +61,11 @@ public class UiCommandInterpreterService {
     public CompletableFuture<UiCommand> redoLast() {
         return CompletableFuture.supplyAsync(() -> {
             UiCommand previousOperation = redoHistory.poll();
-            previousOperation.redo();
-            commandHistory.push(previousOperation);
+            if (previousOperation != null) {
+                logger.info("Redo " + previousOperation);
+                previousOperation.redo();
+                commandHistory.push(previousOperation);
+            }
             return previousOperation;
         });
     }

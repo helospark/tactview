@@ -21,6 +21,8 @@ import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.save.DirtyRepository;
+import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
@@ -83,6 +85,9 @@ public class JavaFXUiMain extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        DirtyRepository dirtyRepository = lightDi.getBean(DirtyRepository.class);
+        ExitWithSaveService exitWithSaveService = lightDi.getBean(ExitWithSaveService.class);
+
         JavaFXUiMain.STAGE = stage;
         NotificationPane notificationPane = new NotificationPane();
         BorderPane root = new BorderPane();
@@ -95,12 +100,10 @@ public class JavaFXUiMain extends Application {
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setAccelerator(new KeyCodeCombination(KeyCode.F4, KeyCombination.ALT_DOWN));
         exitItem.setOnAction(ae -> {
-            Platform.exit();
-            System.exit(0);
+            exitApplication(exitWithSaveService);
         });
         stage.setOnCloseRequest(e -> {
-            Platform.exit();
-            System.exit(0);
+            exitApplication(exitWithSaveService);
         });
         MenuItem loadItem = new MenuItem("_Load");
         loadItem.setOnAction(a -> {
@@ -138,6 +141,14 @@ public class JavaFXUiMain extends Application {
         root.setTop(menuBar);
         stage.setScene(scene);
         stage.setTitle("TactView - Video editor");
+        dirtyRepository.addUiChangeListener(value -> {
+            String title = "";
+            if (value) {
+                title += "* ";
+            }
+            title += "TactView - Video editor";
+            stage.setTitle(title);
+        });
         stage.setMaximized(true);
 
         VBox vbox = new VBox(2); // spacing between child nodes only.
@@ -238,6 +249,13 @@ public class JavaFXUiMain extends Application {
         lightDi.getBean(UiInitializer.class).initialize();
 
         stage.show();
+    }
+
+    private void exitApplication(ExitWithSaveService exitWithSaveService) {
+        exitWithSaveService.optionallySaveAndThenRun(() -> {
+            Platform.exit();
+            System.exit(0);
+        });
     }
 
     private static Consumer<Boolean> onClassChange(Node element) {

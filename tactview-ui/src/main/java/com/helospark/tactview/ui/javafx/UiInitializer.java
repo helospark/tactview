@@ -5,15 +5,18 @@ import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelComman
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
+import com.helospark.tactview.ui.javafx.save.DirtyRepository;
 
 @Component
 public class UiInitializer {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManager timelineManager;
+    private DirtyRepository dirtyRepository;
 
-    public UiInitializer(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager) {
+    public UiInitializer(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager, DirtyRepository dirtyRepository) {
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
+        this.dirtyRepository = dirtyRepository;
     }
 
     public void initialize() {
@@ -21,6 +24,8 @@ public class UiInitializer {
             for (int i = 0; i < 8; ++i) {
                 commandInterpreter.sendWithResult(new CreateChannelCommand(timelineManager, LAST_INDEX)).get();
             }
+
+            dirtyRepository.setDirty(false);
         } catch (Exception e) {
             e.printStackTrace();
         }
