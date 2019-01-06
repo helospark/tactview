@@ -18,13 +18,16 @@ public class PlaybackController {
     private UiProjectRepository uiProjectRepository;
     private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
     private JavaByteArrayConverter javaByteArrayConverter;
+    private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
 
     public PlaybackController(TimelineManager timelineManager, UiProjectRepository uiProjectRepository,
-            ByteBufferToJavaFxImageConverter byteBufferToImageConverter, JavaByteArrayConverter javaByteArrayConverter) {
+            ByteBufferToJavaFxImageConverter byteBufferToImageConverter, JavaByteArrayConverter javaByteArrayConverter,
+            UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
         this.timelineManager = timelineManager;
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
         this.javaByteArrayConverter = javaByteArrayConverter;
+        this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
     }
 
     public JavaDisplayableAudioVideoFragment getFrameAt(TimelinePosition position) {
@@ -36,6 +39,7 @@ public class PlaybackController {
                 .withScale(uiProjectRepository.getScaleFactor())
                 .withPreviewWidth(width)
                 .withPreviewHeight(height)
+                .withNeedSound(!uiPlaybackPreferenceRepository.isMute())
                 .build();
         AudioVideoFragment frame = timelineManager.getFrames(request);
         Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame.getVideoResult().getBuffer(), width, height);

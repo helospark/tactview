@@ -186,4 +186,16 @@ public class TimelineChannel {
                 .anyMatch(id -> canAddResourceAtExcluding(clipNewPosition, id));
     }
 
+    public TimelinePosition findMaximumEndPosition() {
+        TimelinePosition endPosition = TimelinePosition.ofZero();
+
+        for (var clip : clips) {
+            if (clip.getInterval().getEndPosition().isGreaterThan(endPosition)) {
+                endPosition = clip.getInterval().getEndPosition();
+            }
+        }
+
+        return endPosition;
+    }
+
 }

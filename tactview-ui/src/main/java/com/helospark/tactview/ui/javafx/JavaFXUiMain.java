@@ -44,6 +44,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -197,6 +198,12 @@ public class JavaFXUiMain extends Application {
         rightVBox.getChildren().add(videoStatusBar);
 
         HBox underVideoBar = new HBox(1);
+        ToggleButton muteButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.VOLUME_OFF));
+        muteButton.setSelected(false);
+        muteButton.setOnAction(event -> {
+            lightDi.getBean(UiPlaybackPreferenceRepository.class).setMute(muteButton.isSelected());
+        });
+
         SingleFullImageViewController fullScreenRenderer = lightDi.getBean(SingleFullImageViewController.class);
         Button fullscreenButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.IMAGE));
         fullscreenButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
@@ -209,6 +216,7 @@ public class JavaFXUiMain extends Application {
         Button jumpForwardButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FAST_FORWARD));
         jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
 
+        underVideoBar.getChildren().add(muteButton);
         underVideoBar.getChildren().add(fullscreenButton);
         underVideoBar.getChildren().add(jumpBackButton);
         underVideoBar.getChildren().add(playButton);

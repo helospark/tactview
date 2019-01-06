@@ -216,7 +216,7 @@ public class TimelineManager implements SaveLoadContributor {
                         logger.error("Unable to render", e);
                         return null;
                     }));
-                } else if (clip instanceof AudibleTimelineClip) {
+                } else if (clip instanceof AudibleTimelineClip && request.isNeedSound()) {
                     AudibleTimelineClip audibleClip = (AudibleTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
@@ -877,6 +877,17 @@ public class TimelineManager implements SaveLoadContributor {
 
     public void addExistingEffect(AddExistingEffectRequest request) {
         addEffectForClip(request.getClipToAdd(), request.getEffect());
+    }
+
+    public TimelinePosition findEndPosition() {
+        TimelinePosition endPosition = TimelinePosition.ofZero();
+        for (var channel : channels) {
+            TimelinePosition channelEndPosition = channel.findMaximumEndPosition();
+            if (channelEndPosition.isGreaterThan(endPosition)) {
+                endPosition = channelEndPosition;
+            }
+        }
+        return endPosition;
     }
 
 }

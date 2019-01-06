@@ -212,6 +212,34 @@
         radial-gradient(center 50% -40%, radius 200%, #000000 45%, rgba(150,150,150,0) 50%);
 }
 
+
+
+.toggle-button {
+    -fx-background-color: 
+        #555555,
+        linear-gradient(#111111 50%, white 100%),
+        radial-gradient(center 50% -40%, radius 200%, #444444 45%, rgba(230,230,230,0) 50%);
+    -fx-background-radius: 30;
+    -fx-background-insets: 0,1,1;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 3, 0.0 , 0 , 1 );
+}
+
+.toggle-button:hover {
+    -fx-background-color: 
+        #333333,
+        linear-gradient(#000000 50%, white 100%),
+        radial-gradient(center 50% -40%, radius 200%, #222222 45%, rgba(230,230,230,0) 50%);
+}
+
+.toggle-button:selected {
+    -fx-background-color: 
+        #333333,
+        linear-gradient(#000000 70%, white 100%),
+        radial-gradient(center 50% -40%, radius 200%, #000000 45%, rgba(150,150,150,0) 50%);
+}
+
+
+
 .tab-pane .tab-header-area .tab-header-background {
     -fx-opacity: 0;
 }

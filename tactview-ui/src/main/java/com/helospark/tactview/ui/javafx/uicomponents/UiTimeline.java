@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 
@@ -43,6 +44,7 @@ public class UiTimeline {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManager timelineManager;
     private UiTimelineManager uiTimelineManager;
+    private UiPlaybackPreferenceRepository playbackPreferenceRepository;
 
     private Line positionIndicatorLine;
 
@@ -53,12 +55,13 @@ public class UiTimeline {
 
     public UiTimeline(TimeLineZoomCallback timeLineZoomCallback, MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
-            TimelineManager timelineManager, UiTimelineManager uiTimelineManager) {
+            TimelineManager timelineManager, UiTimelineManager uiTimelineManager, UiPlaybackPreferenceRepository playbackPreferenceRepository) {
         this.timeLineZoomCallback = timeLineZoomCallback;
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
         this.uiTimelineManager = uiTimelineManager;
+        this.playbackPreferenceRepository = playbackPreferenceRepository;
     }
 
     public Node createTimeline(VBox lower, BorderPane root) {
@@ -70,7 +73,7 @@ public class UiTimeline {
         });
 
         HBox titleBarTop = new HBox();
-        titleBarTop.getChildren().add(addChannelButton);
+        titleBarTop.getChildren().addAll(addChannelButton);
 
         HBox timelineTimeLabels = new HBox();
 

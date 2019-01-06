@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 
@@ -26,7 +27,7 @@ import javafx.stage.Stage;
 public class RenderDialog {
     private Stage stage;
 
-    public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService) {
+    public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManager timelineManager) {
         BorderPane borderPane = new BorderPane();
 
         Scene dialog = new Scene(borderPane);
@@ -40,7 +41,7 @@ public class RenderDialog {
         gridPane.add(startPositionTextField, 1, 1);
 
         gridPane.add(new Label("end position"), 0, 2);
-        TextField endPositionTextField = new TextField("10.0");
+        TextField endPositionTextField = new TextField(timelineManager.findEndPosition().getSeconds().toString());
         gridPane.add(endPositionTextField, 1, 2);
 
         gridPane.add(new Label("Width"), 0, 3);
@@ -105,8 +106,7 @@ public class RenderDialog {
             ProgressAdvancer progressAdvancer = new ProgressAdvancer(messagingService, id);
             stage.setTitle("Rendering inprogress...");
             progressAdvancer.updateProgress(progress -> progressBar.setProgress(progress), () -> {
-                progressBar.setProgress(0);
-                stage.setTitle("Render done");
+                stage.close();
             });
 
             renderService.render(request)

@@ -4,6 +4,7 @@ import javax.annotation.Generated;
 
 public class TimelineManagerFramesRequest {
     private double scale;
+    private boolean needSound;
     private Integer previewWidth;
     private Integer previewHeight;
     private Integer frameBufferSize;
@@ -12,10 +13,15 @@ public class TimelineManagerFramesRequest {
     @Generated("SparkTools")
     private TimelineManagerFramesRequest(Builder builder) {
         this.scale = builder.scale;
+        this.needSound = builder.needSound;
         this.previewWidth = builder.previewWidth;
         this.previewHeight = builder.previewHeight;
         this.frameBufferSize = builder.frameBufferSize;
         this.position = builder.position;
+    }
+
+    public boolean isNeedSound() {
+        return needSound;
     }
 
     public double getScale() {
@@ -46,6 +52,7 @@ public class TimelineManagerFramesRequest {
     @Generated("SparkTools")
     public static final class Builder {
         private double scale;
+        private boolean needSound = true;
         private Integer previewWidth;
         private Integer previewHeight;
         private Integer frameBufferSize;
@@ -56,6 +63,11 @@ public class TimelineManagerFramesRequest {
 
         public Builder withScale(double scale) {
             this.scale = scale;
+            return this;
+        }
+
+        public Builder withNeedSound(boolean needSound) {
+            this.needSound = needSound;
             return this;
         }
 
