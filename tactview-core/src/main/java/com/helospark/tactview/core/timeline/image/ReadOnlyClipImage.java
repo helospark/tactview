@@ -21,6 +21,8 @@ public interface ReadOnlyClipImage {
 
     int getColorComponentWithOffset(int x, int y, int index);
 
+    int getColorComponentWithOffsetUsingInterpolation(double x, double y, int index);
+
     int getAlpha(int x, int y);
 
     boolean inBounds(int x, int y);

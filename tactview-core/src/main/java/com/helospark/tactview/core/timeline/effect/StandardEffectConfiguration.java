@@ -46,6 +46,7 @@ import com.helospark.tactview.core.timeline.effect.median.MedianEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorLineEffect;
 import com.helospark.tactview.core.timeline.effect.motionblur.GhostingEffect;
+import com.helospark.tactview.core.timeline.effect.mozaic.MozaicEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
 import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
@@ -485,6 +486,17 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new LevelsEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Levels")
                 .withSupportedEffectId("levelseffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory mozaicEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new MozaicEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new MozaicEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Mozaic")
+                .withSupportedEffectId("mozaiceffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

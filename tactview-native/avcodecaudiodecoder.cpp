@@ -10,7 +10,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
 
-const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32;
+const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
     struct AVCodecAudioMetadataResponse {
         int sampleRate;
@@ -250,13 +250,14 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32;
                   frameToUse = tmp_frame;
                 }
 
+                std::cout << "Preparing to read " << isPlanar << " " << sampleSize << " " << totalNumberOfSamplesRead << " " << frameToUse->nb_samples << " " << std::endl;
+
                 if (isPlanar) {
                     int actuallyWrittenSamples = 0;
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
-                        int startIndex = channel * frameToUse->nb_samples;
-                        for (int i = 0, j = 0; i < frameToUse->nb_samples; ++i, ++j) {
+                        for (int i = 0; i < frameToUse->nb_samples; ++i) {
                             for (int k = 0; k < sampleSize; ++k) {
-                                int toUpdate = totalNumberOfSamplesRead + j * sampleSize + k;
+                                int toUpdate = totalNumberOfSamplesRead + i * sampleSize + k;
                                 if (toUpdate >= request->bufferSize) {
                                     running = false;
                                     break;

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.image;
 import java.nio.ByteBuffer;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.util.MathUtil;
 
 public class ClipImage implements ReadOnlyClipImage {
     private ByteBuffer buffer;
@@ -118,6 +119,25 @@ public class ClipImage implements ReadOnlyClipImage {
     @Override
     public int getColorComponentWithOffset(int x, int y, int index) {
         return signedToUnsignedByte(buffer.get(y * width * 4 + x * 4 + index));
+    }
+
+    @Override
+    public int getColorComponentWithOffsetUsingInterpolation(double x, double y, int index) {
+        int lowX = (int) x;
+        int lowY = (int) y;
+
+        int highX = (int) Math.ceil(x);
+        int highY = (int) Math.ceil(y);
+
+        double xDistanceNormalized = x - lowX;
+        double yDistanceNormalized = y - lowY;
+
+        int topLeftColor = getColorComponentWithOffset(lowX, lowY, index);
+        int bottomLeftColor = highY < height ? getColorComponentWithOffset(lowX, highY, index) : topLeftColor;
+        int topRightColor = highX < width ? getColorComponentWithOffset(highX, lowY, index) : topLeftColor;
+        int bottomRightColor = highX < width && highY < height ? getColorComponentWithOffset(highX, highY, index) : topRightColor;
+
+        return (int) MathUtil.bilinearInterpolate(topLeftColor, topRightColor, bottomLeftColor, bottomRightColor, xDistanceNormalized, yDistanceNormalized);
     }
 
     @Override
