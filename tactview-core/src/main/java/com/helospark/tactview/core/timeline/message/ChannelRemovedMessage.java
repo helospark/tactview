@@ -11,4 +11,9 @@ public class ChannelRemovedMessage {
         return channelId;
     }
 
+    @Override
+    public String toString() {
+        return "ChannelRemovedMessage [channelId=" + channelId + "]";
+    }
+
 }

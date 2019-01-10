@@ -26,7 +26,7 @@ public class UiCommandInterpreterService {
     }
 
     public <T extends UiCommand> T synchronousSend(T uiCommand) {
-        logger.info("Executing " + uiCommand);
+        logger.info("Executing {}", uiCommand);
         dirtyRepository.setDirty(true);
         redoHistory.clear();
         uiCommand.execute();
@@ -37,11 +37,11 @@ public class UiCommandInterpreterService {
     }
 
     public <T extends UiCommand> CompletableFuture<T> sendWithResult(T uiCommand) {
-        System.out.println("Adding " + uiCommand);
+        logger.debug("Adding command {}", uiCommand);
         return CompletableFuture.supplyAsync(() -> {
             return synchronousSend(uiCommand);
         }).exceptionally(e -> {
-            e.printStackTrace();
+            logger.error("Unable to execute command {}", uiCommand, e);
             return null;
         });
     }
@@ -50,11 +50,15 @@ public class UiCommandInterpreterService {
         return CompletableFuture.supplyAsync(() -> {
             UiCommand previousOperation = commandHistory.poll();
             if (previousOperation != null) {
+                dirtyRepository.setDirty(true);
                 logger.info("Reverting " + previousOperation);
                 previousOperation.revert();
                 redoHistory.push(previousOperation);
             }
             return previousOperation;
+        }).exceptionally(e -> {
+            logger.error("Unable to revert command {}", e);
+            return null;
         });
     }
 
@@ -62,11 +66,15 @@ public class UiCommandInterpreterService {
         return CompletableFuture.supplyAsync(() -> {
             UiCommand previousOperation = redoHistory.poll();
             if (previousOperation != null) {
+                dirtyRepository.setDirty(true);
                 logger.info("Redo " + previousOperation);
                 previousOperation.redo();
                 commandHistory.push(previousOperation);
             }
             return previousOperation;
+        }).exceptionally(e -> {
+            logger.error("Unable to redo command {}", e);
+            return null;
         });
     }
 }

@@ -1,7 +1,12 @@
 package com.helospark.tactview.ui.javafx.commands.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.TimelineChannel;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
@@ -12,6 +17,10 @@ public class CutClipCommand implements UiCommand {
 
     private TimelineManager timelineManager;
 
+    private TimelineClip originalCuttedClip;
+    private TimelineChannel originalChannel;
+    private List<String> cuttedPartIds;
+
     @Generated("SparkTools")
     private CutClipCommand(Builder builder) {
         this.clipId = builder.clipId;
@@ -21,12 +30,19 @@ public class CutClipCommand implements UiCommand {
 
     @Override
     public void execute() {
-        this.timelineManager.cutClip(clipId, globalTimelinePosition);
+        originalCuttedClip = timelineManager.findClipById(clipId).orElseThrow().cloneClip();
+        originalChannel = timelineManager.findChannelForClipId(clipId).orElseThrow();
+        cuttedPartIds = this.timelineManager.cutClip(clipId, globalTimelinePosition)
+                .stream()
+                .map(clip -> clip.getId())
+                .collect(Collectors.toList());
     }
 
     @Override
     public void revert() {
-        // TODO: later
+        cuttedPartIds.stream()
+                .forEach(clipId -> timelineManager.removeClip(clipId));
+        timelineManager.addClip(originalChannel, originalCuttedClip);
     }
 
     @Generated("SparkTools")

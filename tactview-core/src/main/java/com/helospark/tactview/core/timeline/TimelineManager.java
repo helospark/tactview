@@ -728,7 +728,7 @@ public class TimelineManager implements SaveLoadContributor {
         }
     }
 
-    public void cutClip(String clipId, TimelinePosition globalTimelinePosition) {
+    public List<TimelineClip> cutClip(String clipId, TimelinePosition globalTimelinePosition) {
         TimelineChannel channel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("No such channel"));
         TimelineClip clip = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
 
@@ -738,6 +738,7 @@ public class TimelineManager implements SaveLoadContributor {
             removeClip(clipId);
             addClip(channel, cuttedParts.get(0));
             addClip(channel, cuttedParts.get(1));
+            return cuttedParts;
         }
     }
 
