@@ -65,6 +65,7 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
                 .stream()
                 .map(key -> key.getSeconds())
                 .map(key -> key.doubleValue())
+                .distinct() // just in case double representation of TimelinePosition is equals
                 .mapToDouble(Double::valueOf)
                 .toArray();
     }

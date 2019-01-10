@@ -1,6 +1,9 @@
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvsharpen.so -o libopencvsharpen.so opencvsharpen.cpp `pkg-config --libs opencv`
 cp libopencvsharpen.so ../tactview-core/src/main/resources/linux-x86-64/.
 
+gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libopencvlensdistort.so -o libopencvlensdistort.so opencvlensdistort.cpp `pkg-config --libs opencv`
+cp libopencvlensdistort.so ../tactview-core/src/main/resources/linux-x86-64/.
+
 gcc `pkg-config --cflags opencv` -shared -fPIC -Wl,-soname,libgenericconvolutionmatrix.so -o libgenericconvolutionmatrix.so genericconvolutionmatrix.cpp `pkg-config --libs opencv`
 cp libgenericconvolutionmatrix.so ../tactview-core/src/main/resources/linux-x86-64/.
 

@@ -25,6 +25,8 @@ import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDen
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.ExclusiveDesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementMapEffect;
+import com.helospark.tactview.core.timeline.effect.distort.LensDistortEffect;
+import com.helospark.tactview.core.timeline.effect.distort.impl.OpenCVBasedLensDistort;
 import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeDetectImplementation;
 import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
@@ -497,6 +499,17 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new MozaicEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Mozaic")
                 .withSupportedEffectId("mozaiceffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory lensDistortEffect(OpenCVBasedLensDistort lensDistortImplementation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new LensDistortEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), lensDistortImplementation))
+                .withRestoreFactory((node, loadMetadata) -> new LensDistortEffect(node, loadMetadata, lensDistortImplementation))
+                .withName("Lens distort")
+                .withSupportedEffectId("lensdistort")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
