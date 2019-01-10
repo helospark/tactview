@@ -1,6 +1,6 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.helospark.lightdi.annotation.Component;
@@ -51,7 +51,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         String currentlySelectedId = currentlySelectedId(typeFixedValueProvider.getId());
 
         Map<String, ValueListElement> elements = typeFixedValueProvider.getElements();
-        Map<String, Toggle> toggleMap = new HashMap<>();
+        Map<String, Toggle> toggleMap = new LinkedHashMap<>();
         for (var element : elements.entrySet()) {
             RadioButton radioButton = new RadioButton(element.getValue().getText());
             radioButton.setToggleGroup(group);
@@ -93,7 +93,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         String currentlySelectedId = currentlySelectedId(typeFixedValueProvider.getId());
         System.out.println("Current selected id " + currentlySelectedId);
 
-        Map<String, ComboBoxElement> comboBoxElements = new HashMap<>();
+        Map<String, ComboBoxElement> comboBoxElements = new LinkedHashMap<>();
 
         elements.values()
                 .stream()

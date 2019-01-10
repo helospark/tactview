@@ -17,7 +17,7 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
 
     @Bean
     public StandardDoubleInterpolatorFactory randomDoubleInterpolator() {
-        return new StandardDoubleInterpolatorFactory("randomDoubleInterpolator", previous -> new RandomDoubleInterpolator(0, 100, BigDecimal.valueOf(1)));
+        return new StandardDoubleInterpolatorFactory("randomDoubleInterpolator", previous -> new RandomDoubleInterpolator(previous.getMin(), previous.getMax(), BigDecimal.valueOf(1)));
     }
 
 }

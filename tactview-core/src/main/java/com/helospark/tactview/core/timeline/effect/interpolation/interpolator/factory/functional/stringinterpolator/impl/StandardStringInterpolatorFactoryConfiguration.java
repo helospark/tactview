@@ -17,14 +17,15 @@ public class StandardStringInterpolatorFactoryConfiguration {
     @Bean
     public StandardStringInterpolatorFactory stringStepInterpolatorFactory() {
         return new StandardStringInterpolatorFactory("stringStepInterpolator", previous -> {
-            return new StepStringInterpolator(previous.getDefaultValue(), getValues(previous), previous.useKeyframes());
+            return new StepStringInterpolator(previous.getInterpolator().getDefaultValue(), getValues(previous.getInterpolator()), previous.getInterpolator().useKeyframes());
         });
     }
 
     @Bean
     public StandardStringInterpolatorFactory typingStringInterpolatorFactory() {
         return new StandardStringInterpolatorFactory("typingStringInterpolator", previous -> {
-            return new TypingStringInterpolator(new StepStringInterpolator(previous.getDefaultValue(), getValues(previous), previous.useKeyframes()));
+            return new TypingStringInterpolator(
+                    new StepStringInterpolator(previous.getInterpolator().getDefaultValue(), getValues(previous.getInterpolator()), previous.getInterpolator().useKeyframes()));
         });
     }
 

@@ -3,18 +3,19 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.f
 import java.util.function.Function;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
 public class StandardDoubleInterpolatorFactory implements DoubleInterpolatorFactory {
     private String id;
-    private Function<DoubleInterpolator, DoubleInterpolator> supplier;
+    private Function<DoubleProvider, DoubleInterpolator> supplier;
 
-    public StandardDoubleInterpolatorFactory(String id, Function<DoubleInterpolator, DoubleInterpolator> supplier) {
+    public StandardDoubleInterpolatorFactory(String id, Function<DoubleProvider, DoubleInterpolator> supplier) {
         this.id = id;
         this.supplier = supplier;
     }
 
     @Override
-    public DoubleInterpolator createInterpolator(DoubleInterpolator previousInterpolator) {
+    public DoubleInterpolator createInterpolator(DoubleProvider previousInterpolator) {
         return supplier.apply(previousInterpolator);
     }
 

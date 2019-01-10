@@ -342,8 +342,13 @@ public class TimelineManager implements SaveLoadContributor {
         ByteBuffer outputBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(previewHeight * previewWidth * 4);
         ByteBuffer inputBuffer = frameResult.getBuffer();
 
-        int requestedXPosition = clip.getXPosition(timelinePosition, request.getScale());
-        int requestedYPosition = clip.getYPosition(timelinePosition, request.getScale());
+        int anchorOffsetX = clip.getHorizontalAlignment(timelinePosition).apply(frameResult.getWidth(), previewWidth);
+        int anchorOffsetY = clip.getVerticalAlignment(timelinePosition).apply(frameResult.getHeight(), previewHeight);
+
+        double scale = request.getScale();
+
+        int requestedXPosition = anchorOffsetX + clip.getXPosition(timelinePosition, scale);
+        int requestedYPosition = anchorOffsetY + clip.getYPosition(timelinePosition, scale);
 
         int destinationStartX = Math.max(requestedXPosition, 0);
         int destinationStartY = Math.max(requestedYPosition, 0);

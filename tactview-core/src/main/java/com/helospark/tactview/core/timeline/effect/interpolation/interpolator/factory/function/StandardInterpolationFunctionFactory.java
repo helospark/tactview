@@ -7,6 +7,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
 public class StandardInterpolationFunctionFactory implements DoubleInterpolatorFactory {
     private String id;
@@ -18,11 +19,11 @@ public class StandardInterpolationFunctionFactory implements DoubleInterpolatorF
     }
 
     @Override
-    public DoubleInterpolator createInterpolator(DoubleInterpolator previousInterpolator) {
-        if (previousInterpolator instanceof MultiKeyframeBasedDoubleInterpolator) {
+    public DoubleInterpolator createInterpolator(DoubleProvider previousInterpolator) {
+        if (previousInterpolator.getInterpolator() instanceof MultiKeyframeBasedDoubleInterpolator) {
             UnivariateInterpolator newInterpolator = factory.get();
 
-            MultiKeyframeBasedDoubleInterpolator multiKeyframeBasedDoubleInterpolator = (MultiKeyframeBasedDoubleInterpolator) previousInterpolator;
+            MultiKeyframeBasedDoubleInterpolator multiKeyframeBasedDoubleInterpolator = (MultiKeyframeBasedDoubleInterpolator) previousInterpolator.getInterpolator();
             MultiKeyframeBasedDoubleInterpolator clone = multiKeyframeBasedDoubleInterpolator.deepClone();
             clone.setInterpolatorFunction(newInterpolator);
             return clone;

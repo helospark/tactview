@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,7 +18,11 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
 
     public ValueListProvider(List<T> elements, StepStringInterpolator stringInterpolator) {
         this.elements = elements.stream()
-                .collect(Collectors.toMap(a -> a.getId(), a -> a));
+                .collect(Collectors.toMap(a -> a.getId(), a -> a,
+                        (v1, v2) -> {
+                            throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));
+                        },
+                        LinkedHashMap::new));
         this.stringInterpolator = stringInterpolator;
     }
 

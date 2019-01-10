@@ -11,13 +11,13 @@ import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class RandomDoubleInterpolator implements DoubleInterpolator {
-    int min;
-    int max;
+    double min;
+    double max;
     RepeatableRandom repeatableRandom;
     BigDecimal changeScale;
     LinearInterpolator linearInterpolator = new LinearInterpolator();
 
-    public RandomDoubleInterpolator(int min, int max, BigDecimal changeScale) {
+    public RandomDoubleInterpolator(double min, double max, BigDecimal changeScale) {
         this.min = min;
         this.max = max;
         this.changeScale = changeScale;
@@ -28,7 +28,7 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
     public Double valueAt(TimelinePosition position) {
         BigDecimal currentSeconds = position.getSeconds();
         BigDecimal previousSecond = currentSeconds.subtract(currentSeconds.remainder(changeScale));
-        BigDecimal nextSeconds = currentSeconds.add(changeScale);
+        BigDecimal nextSeconds = previousSecond.add(changeScale);
 
         double currentDouble = getValueAt(previousSecond);
         double nextDouble = getValueAt(nextSeconds);
