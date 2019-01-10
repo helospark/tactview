@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.mirror;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -30,8 +31,8 @@ public class MirrorLineEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public MirrorLineEffect(MirrorLineEffect mirrorLineEffect) {
-        super(mirrorLineEffect);
+    public MirrorLineEffect(MirrorLineEffect mirrorLineEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(mirrorLineEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(mirrorLineEffect, this);
     }
 
@@ -112,8 +113,8 @@ public class MirrorLineEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new MirrorLineEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new MirrorLineEffect(this, cloneRequestMetadata);
     }
 
 }

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.vignette;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -28,8 +29,8 @@ public class VignetteEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public VignetteEffect(VignetteEffect cloneFrom) {
-        super(cloneFrom);
+    public VignetteEffect(VignetteEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -77,8 +78,8 @@ public class VignetteEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new VignetteEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new VignetteEffect(this, cloneRequestMetadata);
     }
 
 }

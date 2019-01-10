@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.edgedetect;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -30,8 +31,8 @@ public class EdgeDetectEffect extends StatelessVideoEffect {
         this.implementation = implementation;
     }
 
-    public EdgeDetectEffect(EdgeDetectEffect cloneFrom) {
-        super(cloneFrom);
+    public EdgeDetectEffect(EdgeDetectEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -88,8 +89,8 @@ public class EdgeDetectEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new EdgeDetectEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new EdgeDetectEffect(this, cloneRequestMetadata);
     }
 
 }

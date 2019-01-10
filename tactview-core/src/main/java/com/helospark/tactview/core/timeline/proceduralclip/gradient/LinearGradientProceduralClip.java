@@ -8,6 +8,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -29,7 +30,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
-public class LinearGradientProceduralEffect extends ProceduralVisualClip {
+public class LinearGradientProceduralClip extends ProceduralVisualClip {
 
     private IndependentPixelOperation independentPixelOperation;
 
@@ -38,17 +39,17 @@ public class LinearGradientProceduralEffect extends ProceduralVisualClip {
 
     private LineProvider lineProvider;
 
-    public LinearGradientProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public LinearGradientProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public LinearGradientProceduralEffect(LinearGradientProceduralEffect linearProceduralEffect) {
-        super(linearProceduralEffect);
+    public LinearGradientProceduralClip(LinearGradientProceduralClip linearProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(linearProceduralEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(linearProceduralEffect, this);
     }
 
-    public LinearGradientProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public LinearGradientProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
         super(metadata, node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }
@@ -147,8 +148,8 @@ public class LinearGradientProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new LinearGradientProceduralEffect(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new LinearGradientProceduralClip(this, cloneRequestMetadata);
     }
 
 }

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.shadow;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -40,8 +41,8 @@ public class DropShadowEffect extends StatelessVideoEffect {
         this.blurService = blurService;
     }
 
-    public DropShadowEffect(DropShadowEffect dropShadowEffect) {
-        super(dropShadowEffect);
+    public DropShadowEffect(DropShadowEffect dropShadowEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(dropShadowEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this);
     }
 
@@ -179,8 +180,8 @@ public class DropShadowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new DropShadowEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new DropShadowEffect(this, cloneRequestMetadata);
     }
 
 }

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -24,8 +25,8 @@ public class CartoonEffect extends StatelessVideoEffect {
         this.implementation = implementation;
     }
 
-    public CartoonEffect(CartoonEffect cloneFrom) {
-        super(cloneFrom);
+    public CartoonEffect(CartoonEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -61,8 +62,8 @@ public class CartoonEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new CartoonEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new CartoonEffect(this, cloneRequestMetadata);
     }
 
 }

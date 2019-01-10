@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -59,8 +60,8 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public NoiseProceduralClip(NoiseProceduralClip noiseProceduralEffect) {
-        super(noiseProceduralEffect);
+    public NoiseProceduralClip(NoiseProceduralClip noiseProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(noiseProceduralEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(noiseProceduralEffect, this);
     }
 
@@ -262,8 +263,8 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new NoiseProceduralClip(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new NoiseProceduralClip(this, cloneRequestMetadata);
     }
 
     static class FractalTypeValueListElement extends ValueListElement {

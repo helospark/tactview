@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -26,8 +27,8 @@ public class ImageClip extends VisualTimelineClip {
         this.mediaMetadata = metadata;
     }
 
-    public ImageClip(ImageClip imageClip) {
-        super(imageClip);
+    public ImageClip(ImageClip imageClip, CloneRequestMetadata cloneRequestMetadata) {
+        super(imageClip, cloneRequestMetadata);
         this.backingSource = imageClip.backingSource;
         this.mediaMetadata = imageClip.mediaMetadata;
     }
@@ -66,8 +67,8 @@ public class ImageClip extends VisualTimelineClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new ImageClip(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new ImageClip(this, cloneRequestMetadata);
     }
 
 }

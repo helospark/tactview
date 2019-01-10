@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.math.DoubleMath;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -58,8 +59,8 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
         this.colorizeService = colorizeService;
     }
 
-    public ColorBalanceEffect(ColorBalanceEffect colorBalance) {
-        super(colorBalance);
+    public ColorBalanceEffect(ColorBalanceEffect colorBalance, CloneRequestMetadata cloneRequestMetadata) {
+        super(colorBalance, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(colorBalance, this);
     }
 
@@ -241,8 +242,8 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new ColorBalanceEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new ColorBalanceEffect(this, cloneRequestMetadata);
     }
 
 }

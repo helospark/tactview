@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.threshold;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -25,8 +26,8 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public SimpleThresholdEffect(SimpleThresholdEffect cloneFrom) {
-        super(cloneFrom);
+    public SimpleThresholdEffect(SimpleThresholdEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -67,8 +68,8 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new SimpleThresholdEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new SimpleThresholdEffect(this, cloneRequestMetadata);
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -24,8 +25,12 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
         //        initializeValueProvider();
     }
 
-    public StatelessEffect(StatelessEffect effect) {
-        id = UUID.randomUUID().toString();
+    public StatelessEffect(StatelessEffect effect, CloneRequestMetadata cloneRequestMetadata) {
+        if (cloneRequestMetadata.isDeepCloneId()) {
+            this.id = effect.id;
+        } else {
+            this.id = UUID.randomUUID().toString();
+        }
         this.interval = effect.interval;
         this.factoryId = effect.factoryId;
     }
@@ -96,7 +101,7 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
         return new ArrayList<>();
     }
 
-    public abstract StatelessEffect cloneEffect();
+    public abstract StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata);
 
     protected void generateSavedContentInternal(Map<String, Object> result) {
         // clients can optionally override if necessary

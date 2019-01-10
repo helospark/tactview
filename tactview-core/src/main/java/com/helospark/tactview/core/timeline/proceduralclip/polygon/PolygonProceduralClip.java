@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -183,7 +184,7 @@ public class PolygonProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
         // TODO Auto-generated method stub
         return null;
     }

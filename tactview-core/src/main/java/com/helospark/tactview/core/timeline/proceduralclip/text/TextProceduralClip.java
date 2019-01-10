@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -54,8 +55,8 @@ public class TextProceduralClip extends ProceduralVisualClip {
         this.bufferedImageToClipFrameResultConverter = bufferedImageToClipFrameResultConverter;
     }
 
-    public TextProceduralClip(TextProceduralClip textProceduralClip) {
-        super(textProceduralClip);
+    public TextProceduralClip(TextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
+        super(textProceduralClip, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this);
     }
 
@@ -218,7 +219,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new TextProceduralClip(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new TextProceduralClip(this, cloneRequestMetadata);
     }
 }

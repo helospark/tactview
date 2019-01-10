@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -27,8 +28,8 @@ public class RotateEffect extends StatelessVideoEffect {
         this.implementation = implementation;
     }
 
-    public RotateEffect(RotateEffect cloneFrom) {
-        super(cloneFrom);
+    public RotateEffect(RotateEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -88,8 +89,8 @@ public class RotateEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new RotateEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new RotateEffect(this, cloneRequestMetadata);
     }
 
 }

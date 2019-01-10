@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.valueprovidereffect.impl;
 
 import java.util.List;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -22,8 +23,8 @@ public class PivotPointValueProviderEffect extends StatelessValueProviderEffect 
         super(interval);
     }
 
-    public PivotPointValueProviderEffect(PivotPointValueProviderEffect pivotPointValueProviderEffect) {
-        super(pivotPointValueProviderEffect);
+    public PivotPointValueProviderEffect(PivotPointValueProviderEffect pivotPointValueProviderEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(pivotPointValueProviderEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(pivotPointValueProviderEffect, this);
     }
 
@@ -51,8 +52,8 @@ public class PivotPointValueProviderEffect extends StatelessValueProviderEffect 
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new PivotPointValueProviderEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new PivotPointValueProviderEffect(this, cloneRequestMetadata);
     }
 
     @Override

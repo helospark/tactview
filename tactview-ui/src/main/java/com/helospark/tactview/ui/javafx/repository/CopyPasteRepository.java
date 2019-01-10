@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.repository;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.AddExistingClipRequest;
 import com.helospark.tactview.core.timeline.AddExistingEffectRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -28,7 +29,7 @@ public class CopyPasteRepository {
     public void copyClip(String clipId) {
         TimelineChannel timelineChannel = timelineManager.findChannelForClipId(clipId).orElse(null);
         TimelineClip timelineClip = timelineManager.findClipById(clipId)
-                .map(clip -> clip.cloneClip()) // clone here, so changes will not affect the pasted clip
+                .map(clip -> clip.cloneClip(CloneRequestMetadata.ofDefault())) // clone here, so changes will not affect the pasted clip
                 .orElse(null);
         if (timelineChannel != null && timelineClip != null) {
             clipboardContent = new ClipCopyPasteDomain(timelineClip, timelineChannel);
@@ -65,7 +66,7 @@ public class CopyPasteRepository {
             TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow();
             AddExistingEffectRequest request = AddExistingEffectRequest.builder()
                     .withClipToAdd(clip)
-                    .withEffect(((EffectCopyPasteDomain) clipboardContent).effect.cloneEffect())
+                    .withEffect(((EffectCopyPasteDomain) clipboardContent).effect.cloneEffect(CloneRequestMetadata.ofDefault()))
                     .build();
             AddExistingEffectCommand addExistingEffectCommand = new AddExistingEffectCommand(request, timelineManager);
 
@@ -77,7 +78,7 @@ public class CopyPasteRepository {
         if (clipboardContent instanceof ClipCopyPasteDomain) {
             AddExistingClipRequest request = AddExistingClipRequest.builder()
                     .withChannel(((ClipCopyPasteDomain) clipboardContent).timelineChannel)
-                    .withClipToAdd(((ClipCopyPasteDomain) clipboardContent).clipboardContent.cloneClip()) // multiple ctrl+v
+                    .withClipToAdd(((ClipCopyPasteDomain) clipboardContent).clipboardContent.cloneClip(CloneRequestMetadata.ofDefault())) // multiple ctrl+v
                     .build();
             AddExistingClipsCommand addClipCommand = new AddExistingClipsCommand(request, timelineManager);
 

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.colorize;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -21,8 +22,8 @@ public class MaximumRgbEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public MaximumRgbEffect(MaximumRgbEffect maximumRgbEffect) {
-        super(maximumRgbEffect);
+    public MaximumRgbEffect(MaximumRgbEffect maximumRgbEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(maximumRgbEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(maximumRgbEffect, this);
     }
 
@@ -65,8 +66,8 @@ public class MaximumRgbEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new MaximumRgbEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new MaximumRgbEffect(this, cloneRequestMetadata);
     }
 
 }

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -28,8 +29,8 @@ public class SepiaEffect extends StatelessVideoEffect {
         this.genericMatrixTransformationService = genericMatrixTransformationService;
     }
 
-    public SepiaEffect(SepiaEffect sepiaEffect) {
-        super(sepiaEffect);
+    public SepiaEffect(SepiaEffect sepiaEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(sepiaEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(sepiaEffect, this);
     }
 
@@ -61,8 +62,8 @@ public class SepiaEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new SepiaEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new SepiaEffect(this, cloneRequestMetadata);
     }
 
 }

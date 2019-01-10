@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.transition.blurtransition;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -27,8 +28,8 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
         this.gaussianBlur = gaussianBlur;
     }
 
-    public BlurTransition(BlurTransition cloneFrom) {
-        super(cloneFrom);
+    public BlurTransition(BlurTransition cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -97,8 +98,8 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new BlurTransition(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new BlurTransition(this, cloneRequestMetadata);
     }
 
 }

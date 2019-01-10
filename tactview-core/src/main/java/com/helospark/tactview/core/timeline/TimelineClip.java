@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -36,8 +37,12 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         initializeValueProvider();
     }
 
-    public TimelineClip(TimelineClip clip) {
-        this.id = UUID.randomUUID().toString(); // id should not cloned
+    public TimelineClip(TimelineClip clip, CloneRequestMetadata cloneRequestMetadata) {
+        if (cloneRequestMetadata.isDeepCloneId()) {
+            this.id = clip.id;
+        } else {
+            this.id = UUID.randomUUID().toString();
+        }
         this.interval = clip.interval;
         this.type = clip.type;
         this.renderOffset = clip.renderOffset;
@@ -45,7 +50,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
         this.effectChannels = new ArrayList<NonIntersectingIntervalList<StatelessEffect>>(effectChannels.size());
         for (int i = 0; i < clip.effectChannels.size(); ++i) {
-            this.effectChannels.add(cloneEffectList(clip.effectChannels.get(i)));
+            this.effectChannels.add(cloneEffectList(clip.effectChannels.get(i), cloneRequestMetadata));
         }
     }
 
@@ -92,10 +97,10 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
         return savedContent;
     }
 
-    private NonIntersectingIntervalList<StatelessEffect> cloneEffectList(NonIntersectingIntervalList<StatelessEffect> nonIntersectingIntervalList) {
+    private NonIntersectingIntervalList<StatelessEffect> cloneEffectList(NonIntersectingIntervalList<StatelessEffect> nonIntersectingIntervalList, CloneRequestMetadata cloneRequestMetadata) {
         NonIntersectingIntervalList<StatelessEffect> result = new NonIntersectingIntervalList<>();
         for (var effect : nonIntersectingIntervalList) {
-            StatelessEffect effectClone = effect.cloneEffect();
+            StatelessEffect effectClone = effect.cloneEffect(cloneRequestMetadata);
             effectClone.setParentIntervalAware(this);
             result.addInterval(effectClone);
         }
@@ -253,7 +258,7 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     public abstract boolean isResizable();
 
-    public abstract TimelineClip cloneClip();
+    public abstract TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata);
 
     protected void changeRenderStartPosition(TimelinePosition position, TimelinePosition globalTimelinePosition) {
         this.renderOffset = position.toLength();
@@ -270,8 +275,8 @@ public abstract class TimelineClip implements IntervalAware, IntervalSettable {
 
     public List<TimelineClip> createCutClipParts(TimelinePosition globalTimelinePosition) {
         TimelinePosition localPosition = globalTimelinePosition.from(this.interval.getStartPosition());
-        TimelineClip clipOne = this.cloneClip();
-        TimelineClip clipTwo = this.cloneClip();
+        TimelineClip clipOne = this.cloneClip(CloneRequestMetadata.ofDefault());
+        TimelineClip clipTwo = this.cloneClip(CloneRequestMetadata.ofDefault());
 
         clipOne.changeRenderEndPosition(globalTimelinePosition);
         clipTwo.changeRenderStartPosition(localPosition, globalTimelinePosition);

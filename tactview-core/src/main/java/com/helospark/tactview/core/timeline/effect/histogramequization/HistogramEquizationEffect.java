@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.histogramequization;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -33,8 +34,8 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
         this.implementation = implementation;
     }
 
-    public HistogramEquizationEffect(HistogramEquizationEffect cloneFrom) {
-        super(cloneFrom);
+    public HistogramEquizationEffect(HistogramEquizationEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -106,8 +107,8 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new HistogramEquizationEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new HistogramEquizationEffect(this, cloneRequestMetadata);
     }
 
 }

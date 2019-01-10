@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -46,8 +47,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
         this.mediaMetadata = mediaMetadata;
     }
 
-    public VisualTimelineClip(VisualTimelineClip clip) {
-        super(clip);
+    public VisualTimelineClip(VisualTimelineClip clip, CloneRequestMetadata cloneRequestMetadata) {
+        super(clip, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(clip, this, VisualTimelineClip.class);
     }
 

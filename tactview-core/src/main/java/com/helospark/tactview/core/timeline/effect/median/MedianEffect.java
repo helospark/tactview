@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -31,8 +32,8 @@ public class MedianEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public MedianEffect(MedianEffect medianEffect) {
-        super(medianEffect);
+    public MedianEffect(MedianEffect medianEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(medianEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(medianEffect, this);
     }
 
@@ -121,8 +122,8 @@ public class MedianEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new MedianEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new MedianEffect(this, cloneRequestMetadata);
     }
 
 }

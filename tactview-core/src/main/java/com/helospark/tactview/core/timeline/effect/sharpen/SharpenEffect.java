@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.sharpen;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -34,8 +35,8 @@ public class SharpenEffect extends StatelessVideoEffect {
         this.openCVSharpenImplementation = openCVSharpenImplementation;
     }
 
-    public SharpenEffect(SharpenEffect sharpenEffect) {
-        super(sharpenEffect);
+    public SharpenEffect(SharpenEffect sharpenEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(sharpenEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(sharpenEffect, this);
     }
 
@@ -82,8 +83,8 @@ public class SharpenEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new SharpenEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new SharpenEffect(this, cloneRequestMetadata);
     }
 
 }

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -34,8 +35,8 @@ public class CropEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public CropEffect(CropEffect cropEffect) {
-        super(cropEffect);
+    public CropEffect(CropEffect cropEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(cropEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cropEffect, this);
     }
 
@@ -110,8 +111,8 @@ public class CropEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new CropEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new CropEffect(this, cloneRequestMetadata);
     }
 
 }

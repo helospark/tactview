@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManager;
@@ -30,7 +31,7 @@ public class CutClipCommand implements UiCommand {
 
     @Override
     public void execute() {
-        originalCuttedClip = timelineManager.findClipById(clipId).orElseThrow().cloneClip();
+        originalCuttedClip = timelineManager.findClipById(clipId).orElseThrow().cloneClip(CloneRequestMetadata.fullCopy());
         originalChannel = timelineManager.findChannelForClipId(clipId).orElseThrow();
         cuttedPartIds = this.timelineManager.cutClip(clipId, globalTimelinePosition)
                 .stream()

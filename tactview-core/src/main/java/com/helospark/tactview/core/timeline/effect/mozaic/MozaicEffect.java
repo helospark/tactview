@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.mozaic;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -27,8 +28,8 @@ public class MozaicEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public MozaicEffect(MozaicEffect mozaicEffect) {
-        super(mozaicEffect);
+    public MozaicEffect(MozaicEffect mozaicEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(mozaicEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(mozaicEffect, this);
     }
 
@@ -84,8 +85,8 @@ public class MozaicEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new MozaicEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new MozaicEffect(this, cloneRequestMetadata);
     }
 
 }

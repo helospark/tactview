@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.blendmode.impl.NormalBlendModeStrategy;
 import com.helospark.tactview.core.timeline.framemerge.AlphaBlitService;
-import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
@@ -66,10 +66,10 @@ public class CoreClipFactoryChainItemConfiguration {
     public StandardProceduralClipFactoryChainItem linearProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("lineargradient", "Linear gradient",
                 request -> {
-                    return new LinearGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                    return new LinearGradientProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
                 },
                 (node, loadMetadata) -> {
-                    return new LinearGradientProceduralEffect(metadata, node, loadMetadata, independentPixelOperation);
+                    return new LinearGradientProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 

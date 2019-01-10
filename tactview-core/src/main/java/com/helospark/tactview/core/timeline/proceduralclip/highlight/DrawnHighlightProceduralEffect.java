@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -59,8 +60,8 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
 
     }
 
-    public DrawnHighlightProceduralEffect(DrawnHighlightProceduralEffect cloneFrom) {
-        super(cloneFrom);
+    public DrawnHighlightProceduralEffect(DrawnHighlightProceduralEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -201,8 +202,8 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new DrawnHighlightProceduralEffect(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new DrawnHighlightProceduralEffect(this, cloneRequestMetadata);
     }
 
 }

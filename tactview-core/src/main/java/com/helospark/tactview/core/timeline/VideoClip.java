@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -23,8 +24,8 @@ public class VideoClip extends VisualTimelineClip {
         this.startPosition = startPosition;
     }
 
-    public VideoClip(VideoClip clip) {
-        super(clip);
+    public VideoClip(VideoClip clip, CloneRequestMetadata cloneRequestMetadata) {
+        super(clip, cloneRequestMetadata);
         this.mediaMetadata = clip.mediaMetadata;
         this.backingSource = clip.backingSource;
         this.startPosition = clip.startPosition;
@@ -75,8 +76,8 @@ public class VideoClip extends VisualTimelineClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new VideoClip(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new VideoClip(this, cloneRequestMetadata);
     }
 
 }

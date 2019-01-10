@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -28,8 +29,8 @@ public class ScaleEffect extends StatelessVideoEffect {
         this.scaleService = scaleService;
     }
 
-    public ScaleEffect(ScaleEffect cloneFrom) {
-        super(cloneFrom);
+    public ScaleEffect(ScaleEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -76,8 +77,8 @@ public class ScaleEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new ScaleEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new ScaleEffect(this, cloneRequestMetadata);
     }
 
     public void setScale(double scaleX, double scaleY) {

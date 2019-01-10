@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaDataRequest;
 import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
@@ -62,7 +63,7 @@ public class SoundClip extends AudibleTimelineClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
         return new SoundClip(mediaMetadata, mediaDecoder, backingSource, interval.getStartPosition(), interval.getLength());
     }
 

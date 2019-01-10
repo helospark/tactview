@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -31,8 +32,8 @@ public class LutEffect extends StatelessVideoEffect {
         this.lutProviderService = lutProviderService;
     }
 
-    public LutEffect(LutEffect lutEffect) {
-        super(lutEffect);
+    public LutEffect(LutEffect lutEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(lutEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(lutEffect, this);
     }
 
@@ -82,8 +83,8 @@ public class LutEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new LutEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new LutEffect(this, cloneRequestMetadata);
     }
 
 }

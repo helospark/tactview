@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.levels;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -34,8 +35,8 @@ public class LevelsEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public LevelsEffect(LevelsEffect levelsEffect) {
-        super(levelsEffect);
+    public LevelsEffect(LevelsEffect levelsEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(levelsEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(levelsEffect, this);
     }
 
@@ -138,8 +139,8 @@ public class LevelsEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new LevelsEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new LevelsEffect(this, cloneRequestMetadata);
     }
 
 }

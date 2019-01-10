@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -32,8 +33,8 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
         repeatableRandom = new RepeatableRandom();
     }
 
-    public GaussianNoiseProceduralClip(GaussianNoiseProceduralClip gaussianNoiseProceduralClip) {
-        super(gaussianNoiseProceduralClip);
+    public GaussianNoiseProceduralClip(GaussianNoiseProceduralClip gaussianNoiseProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
+        super(gaussianNoiseProceduralClip, cloneRequestMetadata);
     }
 
     public GaussianNoiseProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
@@ -95,8 +96,8 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new GaussianNoiseProceduralClip(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new GaussianNoiseProceduralClip(this, cloneRequestMetadata);
     }
 
 }

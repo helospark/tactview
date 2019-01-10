@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.transition.chromadissolve;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -30,8 +31,8 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public LightDissolveTransitionEffect(LightDissolveTransitionEffect cloneFrom) {
-        super(cloneFrom);
+    public LightDissolveTransitionEffect(LightDissolveTransitionEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+        super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
@@ -112,8 +113,8 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new LightDissolveTransitionEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new LightDissolveTransitionEffect(this, cloneRequestMetadata);
     }
 
 }

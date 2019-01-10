@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -33,8 +34,8 @@ public class ExclusiveDesaturizeEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public ExclusiveDesaturizeEffect(ExclusiveDesaturizeEffect exclusiveDesaturizeEffect) {
-        super(exclusiveDesaturizeEffect);
+    public ExclusiveDesaturizeEffect(ExclusiveDesaturizeEffect exclusiveDesaturizeEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(exclusiveDesaturizeEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(exclusiveDesaturizeEffect, this);
     }
 
@@ -109,8 +110,8 @@ public class ExclusiveDesaturizeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new ExclusiveDesaturizeEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new ExclusiveDesaturizeEffect(this, cloneRequestMetadata);
     }
 
 }

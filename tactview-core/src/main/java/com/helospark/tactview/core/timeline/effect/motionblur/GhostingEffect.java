@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
@@ -36,8 +37,8 @@ public class GhostingEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public GhostingEffect(GhostingEffect ghostingEffect) {
-        super(ghostingEffect);
+    public GhostingEffect(GhostingEffect ghostingEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(ghostingEffect, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(ghostingEffect, this);
     }
 
@@ -131,8 +132,8 @@ public class GhostingEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public StatelessEffect cloneEffect() {
-        return new GhostingEffect(this);
+    public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
+        return new GhostingEffect(this, cloneRequestMetadata);
     }
 
 }

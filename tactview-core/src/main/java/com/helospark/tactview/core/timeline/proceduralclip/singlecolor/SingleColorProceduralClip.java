@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -35,8 +36,8 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public SingleColorProceduralClip(SingleColorProceduralClip singleColorProceduralClip) {
-        super(singleColorProceduralClip);
+    public SingleColorProceduralClip(SingleColorProceduralClip singleColorProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
+        super(singleColorProceduralClip, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(singleColorProceduralClip, this);
     }
 
@@ -98,8 +99,8 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
     }
 
     @Override
-    public TimelineClip cloneClip() {
-        return new SingleColorProceduralClip(this);
+    public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
+        return new SingleColorProceduralClip(this, cloneRequestMetadata);
     }
 
 }
