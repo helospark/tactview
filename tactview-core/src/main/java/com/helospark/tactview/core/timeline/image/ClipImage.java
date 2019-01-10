@@ -123,6 +123,9 @@ public class ClipImage implements ReadOnlyClipImage {
 
     @Override
     public int getColorComponentWithOffsetUsingInterpolation(double x, double y, int index) {
+        if (!inBounds((int) x, (int) y)) {
+            return 0;
+        }
         int lowX = (int) x;
         int lowY = (int) y;
 

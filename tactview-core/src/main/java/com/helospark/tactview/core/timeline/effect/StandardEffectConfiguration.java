@@ -26,6 +26,7 @@ import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.ExclusiveDesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementMapEffect;
 import com.helospark.tactview.core.timeline.effect.distort.LensDistortEffect;
+import com.helospark.tactview.core.timeline.effect.distort.PolarCoordinateEffect;
 import com.helospark.tactview.core.timeline.effect.distort.impl.OpenCVBasedLensDistort;
 import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeDetectImplementation;
@@ -510,6 +511,17 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new LensDistortEffect(node, loadMetadata, lensDistortImplementation))
                 .withName("Lens distort")
                 .withSupportedEffectId("lensdistort")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory polarCoordinateEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new PolarCoordinateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new PolarCoordinateEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Polar coordinate")
+                .withSupportedEffectId("polarcoordinate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
