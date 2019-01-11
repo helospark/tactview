@@ -5,13 +5,49 @@ import java.util.function.Function;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
+import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.commands.impl.MoveEffectToChannelCommand;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 
 import javafx.scene.control.MenuItem;
 
 @Configuration
 public class StandardEffectContextMenuChainItemConfiguration {
+
+    @Bean
+    @Order(90)
+    public EffectContextMenuChainItem moveUpItem(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem moveUpClip = new MenuItem("Move up");
+            int index = timelineManager.findEffectChannel(request.getEffect().getId());
+            System.out.println("Up index: " + index);
+            if (index <= 0) {
+                moveUpClip.setDisable(true);
+            } else {
+                moveUpClip.setOnAction(e -> commandInterpreter.sendWithResult(new MoveEffectToChannelCommand(timelineManager, request.getEffect().getId(), index - 1)));
+            }
+            return moveUpClip;
+        });
+    }
+
+    @Bean
+    @Order(91)
+    public EffectContextMenuChainItem moveDownItem(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem moveDownClip = new MenuItem("Move down");
+            int index = timelineManager.findEffectChannel(request.getEffect().getId());
+            int numberOfEffectChannels = timelineManager.getNumberOfEffectChannels(request.getEffect().getId()) - 1;
+            System.out.println("Down index: " + index + " " + numberOfEffectChannels);
+            if (index >= numberOfEffectChannels) {
+                moveDownClip.setDisable(true);
+            } else {
+                moveDownClip.setOnAction(e -> commandInterpreter.sendWithResult(new MoveEffectToChannelCommand(timelineManager, request.getEffect().getId(), index + 1)));
+            }
+            return moveDownClip;
+        });
+    }
 
     @Bean
     @Order(100)

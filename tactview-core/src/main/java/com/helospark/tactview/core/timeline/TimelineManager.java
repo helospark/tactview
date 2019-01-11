@@ -40,6 +40,7 @@ import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
+import com.helospark.tactview.core.timeline.message.EffectChannelChangedMessage;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
@@ -894,6 +895,46 @@ public class TimelineManager implements SaveLoadContributor {
             }
         }
         return endPosition;
+    }
+
+    public void moveEffectToChannel(TimelineClip clip, String effectId, int newChannelIndex) {
+        StatelessEffect effect = clip.getEffect(effectId).get();
+        Integer currentIndex = clip.getEffectChannelIndex(effectId).get();
+        int moveDirection = (currentIndex < newChannelIndex ? 1 : 0);
+        synchronized (clip.getFullClipLock()) {
+            clip.removeEffectById(effectId);
+            if (clip.canAddEffectAt(newChannelIndex, effect.getInterval())) {
+                NonIntersectingIntervalList<StatelessEffect> channel = clip.getChannelByIndex(newChannelIndex).get();
+                channel.addInterval(effect);
+                messagingService.sendAsyncMessage(new EffectChannelChangedMessage(effect.getId(), newChannelIndex, effect.getInterval()));
+            } else {
+                NonIntersectingIntervalList<StatelessEffect> newChannel = clip.addEffectChannel(newChannelIndex + moveDirection);
+                newChannel.addInterval(effect);
+                for (int i = 0; i < clip.getEffectChannels().size(); ++i) {
+                    if (clip.getEffectChannels().get(i).size() == 0) {
+                        clip.getEffectChannels().remove(i);
+                        --i;
+                    }
+                }
+                for (int i = 0; i < clip.getEffectChannels().size(); ++i) {
+                    for (var newEffect : clip.getEffectChannels().get(i)) {
+                        messagingService.sendAsyncMessage(new EffectChannelChangedMessage(newEffect.getId(), i, newEffect.getInterval()));
+                    }
+                }
+            }
+        }
+    }
+
+    public int findEffectChannel(String id) {
+        return findClipForEffect(id)
+                .flatMap(a -> a.getEffectChannelIndex(id))
+                .orElse(-1);
+    }
+
+    public int getNumberOfEffectChannels(String id) {
+        return findClipForEffect(id)
+                .map(a -> a.getEffectChannels().size())
+                .orElse(-1);
     }
 
 }

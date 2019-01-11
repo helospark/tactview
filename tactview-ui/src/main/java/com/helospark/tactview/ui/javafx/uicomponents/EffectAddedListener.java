@@ -15,6 +15,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
@@ -93,8 +94,8 @@ public class EffectAddedListener {
             }
         });
 
-        ContextMenu contextMenu = effectContextMenuFactory.createContextMenuForEffect(effectAddedMessage.getEffect());
-        rectangle.setOnContextMenuRequested(e -> {
+        rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, e -> {
+            ContextMenu contextMenu = effectContextMenuFactory.createContextMenuForEffect(effectAddedMessage.getEffect());
             contextMenu.show(rectangle.getScene().getWindow(), e.getScreenX(), e.getScreenY());
         });
 
