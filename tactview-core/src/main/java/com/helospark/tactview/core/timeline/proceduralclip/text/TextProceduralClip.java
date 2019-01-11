@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.proceduralclip.text;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -67,24 +68,32 @@ public class TextProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        int width = request.getExpectedWidth();
-        int height = request.getExpectedHeight();
-
         String currentText = textProvider.getValueAt(relativePosition);
+        List<String> lines = Arrays.asList(currentText.split("\n"));
         double currentSize = (sizeProvider.getValueAt(relativePosition) * request.getScale());
         var color = colorProvider.getValueAt(relativePosition);
         ValueListElement fontElement = fontProvider.getValueAt(relativePosition);
         ValueListElement alignmentElement = alignmentProvider.getValueAt(relativePosition);
 
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+        Font font = new Font(fontElement.getId(), fontHitsAt(relativePosition), (int) currentSize).deriveFont((float) currentSize);
+        FontMetrics fontMetrics = getFontMetrics(font);
+
+        int maxWidth = 0;
+        int totalHeight = 0;
+        for (var line : lines) {
+            int lineWidth = fontMetrics.stringWidth(line);
+            totalHeight += fontMetrics.getHeight();
+            if (lineWidth > maxWidth) {
+                maxWidth = lineWidth;
+            }
+        }
+
+        BufferedImage bufferedImage = new BufferedImage(maxWidth, totalHeight, BufferedImage.TYPE_4BYTE_ABGR);
         Graphics2D graphics = (Graphics2D) bufferedImage.getGraphics();
-        graphics.setFont(new Font(fontElement.getId(), fontHitsAt(relativePosition), (int) currentSize).deriveFont((float) currentSize));
+        graphics.setFont(font);
         graphics.setColor(new Color((float) color.red, (float) color.green, (float) color.blue));
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        FontMetrics fontMetrics = graphics.getFontMetrics();
-
-        List<String> lines = Arrays.asList(currentText.split("\n"));
         List<Integer> alignments = findXAlignmentsForLines(lines, alignmentElement.getId(), fontMetrics);
 
         fontMetrics.stringWidth(currentText);
@@ -96,6 +105,12 @@ public class TextProceduralClip extends ProceduralVisualClip {
         }
 
         return bufferedImageToClipFrameResultConverter.convertFromAbgr(bufferedImage);
+    }
+
+    private FontMetrics getFontMetrics(Font font) {
+        Canvas c = new Canvas();
+        FontMetrics fontMetrics = c.getFontMetrics(font);
+        return fontMetrics;
     }
 
     private int fontHitsAt(TimelinePosition relativePosition) {
@@ -151,7 +166,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)));
         fontProvider = new ValueListProvider<>(createFontList(), new StepStringInterpolator("Serif.plain"));
-        alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StepStringInterpolator("left"));
+        alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StepStringInterpolator("center"));
         italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
         boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
     }
@@ -191,9 +206,9 @@ public class TextProceduralClip extends ProceduralVisualClip {
 
         result.add(textDescriptor);
         result.add(sizeDescriptor);
+        result.add(alignmentDescriptor);
         result.add(colorDescriptor);
         result.add(fontDescriptor);
-        result.add(alignmentDescriptor);
         result.add(boldDescriptor);
         result.add(italicDescriptor);
 
@@ -205,7 +220,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
         ValueListElement center = new ValueListElement("center", "center");
         ValueListElement right = new ValueListElement("right", "right");
 
-        return List.of(left, right, center);
+        return List.of(left, center, right);
     }
 
     private List<ValueListElement> createFontList() {

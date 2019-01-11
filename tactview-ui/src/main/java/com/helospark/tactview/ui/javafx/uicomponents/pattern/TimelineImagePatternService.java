@@ -13,8 +13,11 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
@@ -33,12 +36,14 @@ public class TimelineImagePatternService {
     private UiProjectRepository uiProjectRepository;
     private ByteBufferToImageConverter byteBufferToImageConverter;
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
+    private TimelineManager timelineManager;
 
     public TimelineImagePatternService(UiProjectRepository uiProjectRepository, ByteBufferToImageConverter byteBufferToImageConverter,
-            ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter) {
+            ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, TimelineManager timelineManager) {
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
+        this.timelineManager = timelineManager;
     }
 
     public Image createTimelinePattern(VisualTimelineClip videoClip, int timelineWidth) {
@@ -65,17 +70,29 @@ public class TimelineImagePatternService {
         graphics.fillRect(0, 0, timelineWidth, FILM_TAPE_SIZE);
 
         for (int i = 0; i < numberOfFrames; ++i) {
+            TimelinePosition position = new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i)));
             GetFrameRequest frameRequest = GetFrameRequest.builder()
                     .withApplyEffects(false)
                     .withExpectedWidth(uiProjectRepository.getPreviewWidth())
                     .withExpectedHeight(uiProjectRepository.getPreviewHeight())
-                    .withRelativePosition(new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i))))
+                    .withRelativePosition(position)
                     .withScale(uiProjectRepository.getScaleFactor())
                     .build();
             ReadOnlyClipImage frame = videoClip.getFrame(frameRequest);
-            BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
+
+            // TODO: Custom domain object
+            TimelineManagerFramesRequest expandFrameRequest = TimelineManagerFramesRequest.builder()
+                    .withPosition(position.add(videoClip.getInterval().getStartPosition()))
+                    .withPreviewWidth(uiProjectRepository.getPreviewWidth())
+                    .withPreviewHeight(uiProjectRepository.getPreviewHeight())
+                    .withScale(uiProjectRepository.getScaleFactor())
+                    .build();
+            ClipImage expandedFrame = timelineManager.expandFrame(frame, videoClip, expandFrameRequest);
+
+            BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(expandedFrame.getBuffer(), expandedFrame.getWidth(), expandedFrame.getHeight());
             java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(expandedFrame.getBuffer());
             graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
         }
 

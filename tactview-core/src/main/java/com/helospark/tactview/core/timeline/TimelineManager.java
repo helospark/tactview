@@ -336,7 +336,7 @@ public class TimelineManager implements SaveLoadContributor {
         }
     }
 
-    private ClipImage expandFrame(ReadOnlyClipImage frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
+    public ClipImage expandFrame(ReadOnlyClipImage frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
         int previewHeight = request.getPreviewHeight();
         int previewWidth = request.getPreviewWidth();
         TimelinePosition timelinePosition = request.getPosition();
