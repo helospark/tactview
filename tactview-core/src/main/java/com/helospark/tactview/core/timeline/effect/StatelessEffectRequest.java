@@ -15,6 +15,8 @@ public class StatelessEffectRequest {
     private TimelinePosition effectPosition;
     private double scale;
     private int effectChannel;
+    private int canvasWidth;
+    private int canvasHeight;
     private Map<String, ReadOnlyClipImage> requestedClips;
     private VisualTimelineClip currentTimelineClip;
 
@@ -24,6 +26,8 @@ public class StatelessEffectRequest {
         this.clipPosition = builder.clipPosition;
         this.effectPosition = builder.effectPosition;
         this.scale = builder.scale;
+        this.canvasWidth = builder.canvasWidth;
+        this.canvasHeight = builder.canvasHeight;
         this.effectChannel = builder.effectChannel;
         this.requestedClips = builder.requestedClips;
         this.currentTimelineClip = builder.currentTimelineClip;
@@ -43,6 +47,14 @@ public class StatelessEffectRequest {
 
     public double getScale() {
         return scale;
+    }
+
+    public int getCanvasWidth() {
+        return canvasWidth;
+    }
+
+    public int getCanvasHeight() {
+        return canvasHeight;
     }
 
     public int getEffectChannel() {
@@ -73,6 +85,8 @@ public class StatelessEffectRequest {
         private TimelinePosition clipPosition;
         private TimelinePosition effectPosition;
         private double scale;
+        private int canvasWidth;
+        private int canvasHeight;
         private int effectChannel;
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
         private VisualTimelineClip currentTimelineClip;
@@ -97,6 +111,16 @@ public class StatelessEffectRequest {
 
         public Builder withScale(double scale) {
             this.scale = scale;
+            return this;
+        }
+
+        public Builder withCanvasWidth(int canvasWidth) {
+            this.canvasWidth = canvasWidth;
+            return this;
+        }
+
+        public Builder withCanvasHeight(int canvasHeight) {
+            this.canvasHeight = canvasHeight;
             return this;
         }
 

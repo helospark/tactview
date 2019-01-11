@@ -28,6 +28,11 @@ public class ScaleRequest {
         return newHeight;
     }
 
+    @Override
+    public String toString() {
+        return "ScaleRequest [image=" + image + ", newWidth=" + newWidth + ", newHeight=" + newHeight + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();

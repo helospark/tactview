@@ -110,12 +110,12 @@ public class BlurEffect extends StatelessVideoEffect {
 
         ValueProviderDescriptor widthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(kernelWidthProvider)
-                .withName("kernelWidth")
+                .withName("kernel width")
                 .build();
 
         ValueProviderDescriptor heightDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(kernelHeightProvider)
-                .withName("kernelWidth")
+                .withName("kernel height")
                 .build();
 
         return Arrays.asList(widthDescriptor, heightDescriptor, sizeDescriptor);

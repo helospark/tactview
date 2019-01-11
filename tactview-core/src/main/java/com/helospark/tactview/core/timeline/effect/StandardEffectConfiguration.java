@@ -32,6 +32,7 @@ import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeDetectImplementation;
 import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
 import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErodeDilateImplementation;
+import com.helospark.tactview.core.timeline.effect.extend.ExtendClipWithBlurredImage;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.glow.LightGlowEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
@@ -522,6 +523,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new PolarCoordinateEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Polar coordinate")
                 .withSupportedEffectId("polarcoordinate")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory blurExtendEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService, ScaleService scaleService) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new ExtendClipWithBlurredImage(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, blurService, scaleService))
+                .withRestoreFactory((node, loadMetadata) -> new ExtendClipWithBlurredImage(node, loadMetadata, independentPixelOperation, blurService, scaleService))
+                .withName("Blurzoom extend")
+                .withSupportedEffectId("blurzoomextend")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

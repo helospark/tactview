@@ -15,6 +15,10 @@ public class ScaleService {
     }
 
     public ClipImage createScaledImage(ScaleRequest request) {
+        if (request.getNewWidth() <= 0 || request.getNewHeight() <= 0) {
+            throw new RuntimeException("Illegal size " + request);
+        }
+
         ReadOnlyClipImage currentFrame = request.getImage();
         ClipImage result = ClipImage.fromSize(request.getNewWidth(), request.getNewHeight());
 

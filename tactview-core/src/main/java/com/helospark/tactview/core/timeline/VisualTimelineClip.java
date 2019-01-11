@@ -88,6 +88,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
                         .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
                         .withCurrentFrame(frameResult)
                         .withScale(frameRequest.getScale())
+                        .withCanvasWidth(frameRequest.getExpectedWidth())
+                        .withCanvasHeight(frameRequest.getExpectedHeight())
                         .withRequestedClips(frameRequest.getRequestedClips())
                         .withCurrentTimelineClip(this)
                         .withEffectChannel(effectChannelIndex)
@@ -106,6 +108,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public abstract ByteBuffer requestFrame(TimelinePosition position, int width, int height);
 
+    @Override
     public List<NonIntersectingIntervalList<StatelessEffect>> getEffectChannels() {
         return effectChannels;
     }
