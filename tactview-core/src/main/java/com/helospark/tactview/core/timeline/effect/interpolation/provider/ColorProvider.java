@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.util.DesSerFactory;
 
@@ -43,6 +44,12 @@ public class ColorProvider extends CompositeKeyframeableEffect {
     @Override
     public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
         return ColorProviderFactory.class;
+    }
+
+    public static ColorProvider fromDefaultValue(double r, double g, double b) {
+        return new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(r)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(g)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(b)));
     }
 
 }

@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoisePr
 import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
@@ -116,6 +117,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new NoiseProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem novaProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("nova", "Nova",
+                request -> {
+                    return new NovaProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                (node, loadMetadata) -> {
+                    return new NovaProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 }

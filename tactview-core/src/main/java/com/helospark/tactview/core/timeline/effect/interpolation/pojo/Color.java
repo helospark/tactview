@@ -13,6 +13,12 @@ public class Color {
         this.blue = blue;
     }
 
+    public Color(Color color) {
+        this.red = color.red;
+        this.green = color.green;
+        this.blue = color.blue;
+    }
+
     public Color interpolate(Color endColor, double factor) {
         double newR = endColor.red * factor + red * (1.0 - factor);
         double newG = endColor.green * factor + green * (1.0 - factor);
