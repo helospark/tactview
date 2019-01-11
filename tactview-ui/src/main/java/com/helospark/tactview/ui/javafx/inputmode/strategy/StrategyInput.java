@@ -1,7 +1,10 @@
 package com.helospark.tactview.ui.javafx.inputmode.strategy;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Generated;
 
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 
 public class StrategyInput {
@@ -10,6 +13,7 @@ public class StrategyInput {
     public double unscaledX;
     public double unscaledY;
     public MouseEvent mouseEvent;
+    public Supplier<Image> canvasImage;
 
     @Generated("SparkTools")
     private StrategyInput(Builder builder) {
@@ -18,6 +22,7 @@ public class StrategyInput {
         this.unscaledX = builder.unscaledX;
         this.unscaledY = builder.unscaledY;
         this.mouseEvent = builder.mouseEvent;
+        this.canvasImage = builder.canvasImage;
     }
 
     @Generated("SparkTools")
@@ -32,6 +37,7 @@ public class StrategyInput {
         private double unscaledX;
         private double unscaledY;
         private MouseEvent mouseEvent;
+        private Supplier<Image> canvasImage;
 
         private Builder() {
         }
@@ -58,6 +64,11 @@ public class StrategyInput {
 
         public Builder withMouseEvent(MouseEvent mouseEvent) {
             this.mouseEvent = mouseEvent;
+            return this;
+        }
+
+        public Builder withCanvasImage(Supplier<Image> canvasImage) {
+            this.canvasImage = canvasImage;
             return this;
         }
 

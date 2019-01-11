@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.controlsfx.glyphfont.GlyphFont;
+import org.controlsfx.glyphfont.GlyphFontRegistry;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ColorPickerType;
@@ -14,9 +17,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorP
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.control.ColorWheelPicker;
+import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.layout.HBox;
 
 @Component
 public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<ColorProvider> {
@@ -24,14 +30,16 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager uiTimelineManager;
+    private InputModeRepository inputModeRepository;
 
     public ColorProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager) {
+            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, InputModeRepository inputModeRepository) {
         super(ColorProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.inputModeRepository = inputModeRepository;
     }
 
     @Override
@@ -78,10 +86,16 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
             return result;
         } else { // TODO: many duplications due to separate interfaces
             ColorPicker colorPicker = new ColorPicker();
+            GlyphFont fontAwesome = GlyphFontRegistry.font("FontAwesome");
+            Button colorPickerInputButton = new Button("", fontAwesome.create('\uf1fb'));
+
+            HBox hbox = new HBox();
+            hbox.getChildren().add(colorPicker);
+            hbox.getChildren().add(colorPickerInputButton);
 
             CompositeEffectLine result = CompositeEffectLine
                     .builder()
-                    .withVisibleNode(colorPicker)
+                    .withVisibleNode(hbox)
                     .withValues(List.of(redProvider, greenProvider, blueProvider))
                     .withDescriptorId(lineProvider.getId())
                     .withEffectParametersRepository(effectParametersRepository)
@@ -105,6 +119,12 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 blueProvider.updateFromValue.accept(color.getBlue());
                 result.sendKeyframe(uiTimelineManager.getCurrentPosition());
             });
+            colorPickerInputButton.setOnMouseClicked(event -> inputModeRepository.requestColor(color -> {
+                redProvider.updateFromValue.accept(color.red);
+                greenProvider.updateFromValue.accept(color.green);
+                blueProvider.updateFromValue.accept(color.blue);
+                result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+            }));
 
             return result;
         }

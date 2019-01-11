@@ -5,12 +5,16 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
+import com.helospark.tactview.ui.javafx.PlaybackController;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.ColorInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.InputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
@@ -24,7 +28,6 @@ import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 @Component
 public class InputModeRepository {
@@ -33,13 +36,18 @@ public class InputModeRepository {
     private UiProjectRepository projectRepository;
     private DisplayUpdaterService displayUpdaterService;
     private InputModeInput<?> inputModeInput;
+    private PlaybackController playbackController;
+    private UiTimelineManager timelineManager;
     private List<Consumer<Boolean>> inputModeConsumer = new ArrayList<>();
 
     public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService,
-            SizeFunctionImplementation sizeFunctionImplementation) {
+            SizeFunctionImplementation sizeFunctionImplementation, PlaybackController playbackController,
+            UiTimelineManager timelineManager) {
         this.projectRepository = projectRepository;
         this.displayUpdaterService = displayUpdaterService;
         this.sizeFunctionImplementation = sizeFunctionImplementation;
+        this.playbackController = playbackController;
+        this.timelineManager = timelineManager;
     }
 
     // TODO: should this be in DI framework?
@@ -70,6 +78,12 @@ public class InputModeRepository {
         inputModeChanged(true);
     }
 
+    public void requestColor(Consumer<Color> consumer) {
+        InputTypeStrategy<Color> currentStrategy = new ColorInputTypeStrategy();
+        this.inputModeInput = new InputModeInput<>(Color.class, consumer, currentStrategy, SizeFunction.CLAMP_TO_MIN_MAX);
+        inputModeChanged(true);
+    }
+
     private void processStrategy() {
         canvas.setOnMousePressed(createHandler(input -> inputModeInput.currentStrategy.onMouseDownEvent(input)));
         canvas.setOnMouseReleased(createHandler(input -> inputModeInput.currentStrategy.onMouseUpEvent(input)));
@@ -82,7 +96,7 @@ public class InputModeRepository {
                 // TODO: should not be here
                 displayUpdaterService.updateCurrentPosition();
                 Platform.runLater(() -> {
-                    graphics.setStroke(Color.RED);
+                    graphics.setStroke(javafx.scene.paint.Color.RED);
                     graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
                     graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
                     if (inputModeInput != null) {
@@ -106,6 +120,9 @@ public class InputModeRepository {
                         .withMouseEvent(e)
                         .withUnscaledX(e.getX())
                         .withUnscaledY(e.getY())
+                        .withCanvasImage(() -> {
+                            return playbackController.getFrameAt(timelineManager.getCurrentPosition()).getImage();
+                        })
                         .build();
 
                 function.accept(strategyInput);
