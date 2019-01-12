@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -14,13 +15,12 @@ import javafx.scene.Node;
 
 @Component
 public class SelectionChangedListener {
-    private static final Map<ChangeType, String> CHANGE_TYPE_TO_CLASS = Map.of(
-            ChangeType.PRIMARY_SELECTION_ADDED, "primary-active",
-            ChangeType.SECONDARY_SELECTION_ADDED, "secondary-active");
+    private static final Map<ChangeType, List<String>> CHANGE_TYPE_TO_CLASS = Map.of(
+            ChangeType.PRIMARY_SELECTION_ADDED, List.of("primary-active"),
+            ChangeType.SECONDARY_SELECTION_ADDED, List.of("secondary-active"));
 
-    private static final Map<ChangeType, String> CHANGE_TYPE_TO_REMOVE = Map.of(
-            ChangeType.PRIMARY_SELECTION_REMOVED, "primary-active",
-            ChangeType.SECONDARY_SELECTION_REMOVED, "secondary-active");
+    private static final Map<ChangeType, List<String>> CHANGE_TYPE_TO_REMOVE = Map.of(
+            ChangeType.ALL_SELECTION_REMOVED, List.of("primary-active", "secondary-active"));
 
     private MessagingService messagingService;
     private PropertyView propertyView;
@@ -57,14 +57,14 @@ public class SelectionChangedListener {
     }
 
     private void process(ChangeType type, Node node) {
-        String classToAdd = CHANGE_TYPE_TO_CLASS.get(type);
+        List<String> classToAdd = CHANGE_TYPE_TO_CLASS.get(type);
         if (classToAdd != null) {
-            node.getStyleClass().add(classToAdd);
+            node.getStyleClass().addAll(classToAdd);
             return;
         }
-        String classToRemove = CHANGE_TYPE_TO_REMOVE.get(type);
+        List<String> classToRemove = CHANGE_TYPE_TO_REMOVE.get(type);
         if (classToRemove != null) {
-            node.getStyleClass().remove(classToRemove);
+            node.getStyleClass().removeAll(classToRemove);
             return;
         }
     }

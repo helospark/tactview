@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -181,7 +182,7 @@ public class TimelineChannel {
         return fullChannelLock;
     }
 
-    public boolean canAddResourceAtExcluding(TimelineInterval clipNewPosition, List<String> linkedClipIds) {
+    public boolean canAddResourceAtExcluding(TimelineInterval clipNewPosition, Collection<String> linkedClipIds) {
         return linkedClipIds.stream()
                 .anyMatch(id -> canAddResourceAtExcluding(clipNewPosition, id));
     }

@@ -1,9 +1,13 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Collections;
+import java.util.List;
+
 import javax.annotation.Generated;
 
 public class MoveClipRequest {
     public String clipId;
+    public List<String> additionalClipIds;
     public TimelinePosition newPosition;
     public String newChannelId;
     public boolean enableJumpingToSpecialPosition;
@@ -12,6 +16,7 @@ public class MoveClipRequest {
     @Generated("SparkTools")
     private MoveClipRequest(Builder builder) {
         this.clipId = builder.clipId;
+        this.additionalClipIds = builder.additionalClipIds;
         this.newPosition = builder.newPosition;
         this.newChannelId = builder.newChannelId;
         this.enableJumpingToSpecialPosition = builder.enableJumpingToSpecialPosition;
@@ -26,6 +31,7 @@ public class MoveClipRequest {
     @Generated("SparkTools")
     public static final class Builder {
         private String clipId;
+        private List<String> additionalClipIds = Collections.emptyList();
         private TimelinePosition newPosition;
         private String newChannelId;
         private boolean enableJumpingToSpecialPosition;
@@ -36,6 +42,11 @@ public class MoveClipRequest {
 
         public Builder withClipId(String clipId) {
             this.clipId = clipId;
+            return this;
+        }
+
+        public Builder withAdditionalClipIds(List<String> additionalClipIds) {
+            this.additionalClipIds = additionalClipIds;
             return this;
         }
 

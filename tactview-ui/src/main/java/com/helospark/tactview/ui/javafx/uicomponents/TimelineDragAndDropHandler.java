@@ -18,6 +18,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
+import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.scene.Node;
@@ -33,6 +34,7 @@ public class TimelineDragAndDropHandler {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineState timelineState;
     private DragRepository dragRepository;
+    private SelectedNodeRepository selectedNodeRepository;
 
     @Slf4j
     private Logger logger;
@@ -40,11 +42,12 @@ public class TimelineDragAndDropHandler {
     private boolean isLoadingInprogress = false;
 
     public TimelineDragAndDropHandler(TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
-            DragRepository dragRepository) {
+            DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository) {
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
         this.timelineState = timelineState;
         this.dragRepository = dragRepository;
+        this.selectedNodeRepository = selectedNodeRepository;
     }
 
     public void addDragAndDrop(Node timeline, Pane timelineRow, String channelId) {
@@ -139,6 +142,7 @@ public class TimelineDragAndDropHandler {
                 ClipMovedCommand command = ClipMovedCommand.builder()
                         .withIsRevertable(revertable)
                         .withClipId(clipId)
+                        .withAdditionalClipIds(selectedNodeRepository.getSelectedClipIds())
                         .withNewPosition(position)
                         .withPreviousPosition(currentlyDraggedEffect.getOriginalPosition())
                         .withOriginalChannelId(currentlyDraggedEffect.getOriginalChannelId())

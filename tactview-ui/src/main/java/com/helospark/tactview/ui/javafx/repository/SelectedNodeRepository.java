@@ -1,7 +1,7 @@
 package com.helospark.tactview.ui.javafx.repository;
 
+import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.ALL_SELECTION_REMOVED;
 import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.PRIMARY_SELECTION_ADDED;
-import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.PRIMARY_SELECTION_REMOVED;
 import static com.helospark.tactview.ui.javafx.repository.selection.ChangeType.SECONDARY_SELECTION_ADDED;
 
 import java.util.ArrayList;
@@ -44,37 +44,37 @@ public class SelectedNodeRepository implements CleanableMode {
     }
 
     public void clearAllSelectedItems() {
-        clearClips();
-        clearEffects();
+        clearClipSelections();
+        clearEffectSelections();
     }
 
     public void setOnlySelectedClip(Node clip) {
-        clearClips();
-        clearEffects();
+        clearClipSelections();
+        clearEffectSelections();
         this.selectedClips.add(clip);
         messagingService.sendMessage(new ClipSelectionChangedMessage(clip, PRIMARY_SELECTION_ADDED));
     }
 
-    private void clearClips() {
+    private void clearClipSelections() {
         while (!selectedClips.isEmpty()) {
             Node item = selectedClips.get(0);
-            removeClip(item);
+            removeClipSelection(item);
         }
     }
 
-    private void removeClip(Node item) {
+    private void removeClipSelection(Node item) {
         selectedClips.remove(item);
-        messagingService.sendMessage(new ClipSelectionChangedMessage(item, PRIMARY_SELECTION_REMOVED));
+        messagingService.sendMessage(new ClipSelectionChangedMessage(item, ALL_SELECTION_REMOVED));
     }
 
     public void setOnlySelectedEffect(Node clip) {
-        clearClips();
-        clearEffects();
+        clearClipSelections();
+        clearEffectSelections();
         this.selectedEffects.add(clip);
         messagingService.sendMessage(new EffectSelectionChangedMessage(clip, PRIMARY_SELECTION_ADDED));
     }
 
-    private void clearEffects() {
+    private void clearEffectSelections() {
         while (!selectedEffects.isEmpty()) {
             Node item = selectedEffects.get(0);
             removeEffect(item);
@@ -83,7 +83,7 @@ public class SelectedNodeRepository implements CleanableMode {
 
     private void removeEffect(Node item) {
         selectedEffects.remove(item);
-        messagingService.sendMessage(new EffectSelectionChangedMessage(item, PRIMARY_SELECTION_REMOVED));
+        messagingService.sendMessage(new EffectSelectionChangedMessage(item, ALL_SELECTION_REMOVED));
     }
 
     public void addSelectedClip(Node clip) {

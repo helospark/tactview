@@ -18,4 +18,10 @@ public class ClipSelectionChangedMessage {
     public ChangeType getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return "ClipSelectionChangedMessage [clip=" + clip.getUserData() + ", type=" + type + "]";
+    }
+
 }

@@ -1,5 +1,8 @@
 package com.helospark.tactview.ui.javafx.commands.impl;
 
+import java.util.Collections;
+import java.util.List;
+
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.MoveClipRequest;
@@ -12,6 +15,7 @@ public class ClipMovedCommand implements UiCommand {
     private boolean isRevertable;
 
     private String clipId;
+    private List<String> additionalClipIds;
 
     private String originalChannelId;
     private String newChannelId;
@@ -28,6 +32,7 @@ public class ClipMovedCommand implements UiCommand {
     private ClipMovedCommand(Builder builder) {
         this.isRevertable = builder.isRevertable;
         this.clipId = builder.clipId;
+        this.additionalClipIds = builder.additionalClipIds;
         this.originalChannelId = builder.originalChannelId;
         this.newChannelId = builder.newChannelId;
         this.newPosition = builder.newPosition;
@@ -41,6 +46,7 @@ public class ClipMovedCommand implements UiCommand {
     public void execute() {
         MoveClipRequest request = MoveClipRequest.builder()
                 .withClipId(clipId)
+                .withAdditionalClipIds(additionalClipIds)
                 .withNewPosition(newPosition)
                 .withNewChannelId(newChannelId)
                 .withMaximumJump(maximumJumpLength)
@@ -66,22 +72,23 @@ public class ClipMovedCommand implements UiCommand {
         return isRevertable;
     }
 
+    @Override
+    public String toString() {
+        return "ClipMovedCommand [isRevertable=" + isRevertable + ", clipId=" + clipId + ", additionalClipIds=" + additionalClipIds + ", originalChannelId=" + originalChannelId + ", newChannelId="
+                + newChannelId + ", newPosition=" + newPosition + ", previousPosition=" + previousPosition + ", timelineManager=" + timelineManager + ", enableJumpingToSpecialPosition="
+                + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
-    }
-
-    @Override
-    public String toString() {
-        return "ClipMovedCommand [isRevertable=" + isRevertable + ", clipId=" + clipId + ", originalChannelId=" + originalChannelId + ", newChannelId=" + newChannelId + ", newPosition=" + newPosition
-                + ", previousPosition=" + previousPosition + ", timelineManager=" + timelineManager + ", enableJumpingToSpecialPosition=" + enableJumpingToSpecialPosition + ", maximumJumpLength="
-                + maximumJumpLength + "]";
     }
 
     @Generated("SparkTools")
     public static final class Builder {
         private boolean isRevertable;
         private String clipId;
+        private List<String> additionalClipIds = Collections.emptyList();
         private String originalChannelId;
         private String newChannelId;
         private TimelinePosition newPosition;
@@ -100,6 +107,11 @@ public class ClipMovedCommand implements UiCommand {
 
         public Builder withClipId(String clipId) {
             this.clipId = clipId;
+            return this;
+        }
+
+        public Builder withAdditionalClipIds(List<String> additionalClipIds) {
+            this.additionalClipIds = additionalClipIds;
             return this;
         }
 

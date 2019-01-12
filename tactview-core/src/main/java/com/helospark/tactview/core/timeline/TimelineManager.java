@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -484,8 +485,14 @@ public class TimelineManager implements SaveLoadContributor {
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
         TimelineInterval originalInterval = clipToMove.getGlobalInterval();
 
-        List<String> linkedClipIds = new ArrayList<>(linkClipRepository.getLinkedClips(clipId));
+        Set<String> linkedClipIds = new HashSet<>(linkClipRepository.getLinkedClips(clipId));
         linkedClipIds.add(clipToMove.getId());
+
+        for (String additionalClipId : moveClipRequest.additionalClipIds) {
+            linkedClipIds.addAll(linkClipRepository.getLinkedClips(additionalClipId));
+            linkedClipIds.add(additionalClipId);
+        }
+
         List<TimelineClip> linkedClips = linkedClipIds
                 .stream()
                 .map(a -> findClipById(a))
