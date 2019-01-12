@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.helospark.tactview.core.optionprovider.OptionProvider;
@@ -14,9 +15,11 @@ import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
@@ -146,21 +149,40 @@ public class RenderDialog {
 
                 Collection<OptionProvider<?>> values = optionProviders.values();
 
+                // TODO: all the below out of here
                 int i = 0;
                 for (var value : values) {
                     OptionProvider<Object> optionProvider = (OptionProvider<Object>) value;
                     Label label = new Label(optionProvider.getTitle());
-
-                    TextField textField = new TextField();
-                    textField.setText(String.valueOf(optionProvider.getValue()));
-                    textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
-                        Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
-                        // TODO: isValid, etc.
-                        optionProvider.setValue(parsedValue);
-                    });
-
                     rendererOptions.add(label, 0, i);
-                    rendererOptions.add(textField, 1, i);
+
+                    if (optionProvider.getValidValues().isEmpty()) {
+                        TextField textField = new TextField();
+                        textField.setText(String.valueOf(optionProvider.getValue()));
+                        textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
+                            Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
+                            // TODO: isValid, etc.
+                            optionProvider.setValue(parsedValue);
+                        });
+                        rendererOptions.add(textField, 1, i);
+                    } else {
+                        ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
+                        Map<String, ComboBoxElement> comboBoxElements = new LinkedHashMap<>();
+
+                        optionProvider.getValidValues()
+                                .stream()
+                                .forEach(a -> {
+                                    var entry = new ComboBoxElement(a.getId(), a.getText());
+                                    comboBox.getItems().add(entry);
+                                    comboBoxElements.put(a.getId(), entry);
+                                });
+                        comboBox.getSelectionModel().select(comboBoxElements.get(optionProvider.getValue().toString()));
+
+                        comboBox.setOnAction(e -> {
+                            optionProvider.setValue(comboBox.getValue().getId());
+                        });
+                        rendererOptions.add(comboBox, 1, i);
+                    }
 
                     ++i;
                 }

@@ -2,26 +2,31 @@ package com.helospark.tactview.core.render;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.render.ffmpeg.CodecInformation;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegBasedMediaEncoder;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegClearEncoderRequest;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegEncodeFrameRequest;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegInitEncoderRequest;
+import com.helospark.tactview.core.render.ffmpeg.QueryCodecRequest;
 import com.helospark.tactview.core.render.ffmpeg.RenderFFMpegFrame;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedRenderService extends AbstractRenderService {
+    private static final int MAX_NUMBER_OF_CODECS = 400;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
 
     public FFmpegBasedRenderService(TimelineManager timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService) {
@@ -43,6 +48,12 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         int audioSampleRate = (int) renderRequest.getOptions().get("audiosamplerate").getValue();
         System.out.println("Audio SampleRate: " + audioSampleRate);
 
+        String videoCodec = (String) renderRequest.getOptions().get("videocodec").getValue();
+        System.out.println("VideoCodec: " + videoCodec);
+
+        String audioCodec = (String) renderRequest.getOptions().get("audiocodec").getValue();
+        System.out.println("AudioCodec: " + audioCodec);
+
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
         initNativeRequest.fps = renderRequest.getFps();
@@ -60,6 +71,8 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.audioBitRate = audioBitRate;
         initNativeRequest.videoBitRate = videoBitRate;
         initNativeRequest.audioSampleRate = audioSampleRate;
+        initNativeRequest.videoCodec = videoCodec;
+        initNativeRequest.audioCodec = audioCodec;
         // frame not freed
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
@@ -161,9 +174,55 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 })
                 .build();
 
-        return Map.of("videobitrate", bitRateProvider,
-                "audiobitrate", audioBitRateProvider,
-                "audiosamplerate", audioSampleRateProvider);
+        CodecValueElements codecs = queryCodecInformation();
+
+        OptionProvider<String> videoCodecProvider = OptionProvider.stringOptionBuilder()
+                .withTitle("Video codec")
+                .withDefaultValue("default")
+                .withValidValues(codecs.videoCodecs)
+                .build();
+        OptionProvider<String> audioCodecProvider = OptionProvider.stringOptionBuilder()
+                .withTitle("Audio codec")
+                .withDefaultValue("default")
+                .withValidValues(codecs.audioCodecs)
+                .build();
+
+        LinkedHashMap<String, OptionProvider<?>> result = new LinkedHashMap<>();
+
+        result.put("videobitrate", bitRateProvider);
+        result.put("audiobitrate", audioBitRateProvider);
+        result.put("audiosamplerate", audioSampleRateProvider);
+        result.put("videocodec", videoCodecProvider);
+        result.put("audiocodec", audioCodecProvider);
+
+        return result;
+    }
+
+    static class CodecValueElements {
+        List<ValueListElement> videoCodecs = new ArrayList<>();
+        List<ValueListElement> audioCodecs = new ArrayList<>();
+    }
+
+    private CodecValueElements queryCodecInformation() {
+        QueryCodecRequest nativeRequest = new QueryCodecRequest();
+        nativeRequest.audioCodecs = new CodecInformation();
+        CodecInformation[] audioCodecs = (CodecInformation[]) nativeRequest.audioCodecs.toArray(MAX_NUMBER_OF_CODECS);
+        nativeRequest.videoCodecs = new CodecInformation();
+        CodecInformation[] videoCodecs = (CodecInformation[]) nativeRequest.videoCodecs.toArray(MAX_NUMBER_OF_CODECS);
+
+        ffmpegBasedMediaEncoder.queryCodecs(nativeRequest);
+
+        CodecValueElements result = new CodecValueElements();
+
+        for (int i = 0; i < nativeRequest.videoCodecNumber; ++i) {
+            result.videoCodecs.add(new ValueListElement(videoCodecs[i].id, "[" + videoCodecs[i].id + "] " + videoCodecs[i].longName));
+        }
+        for (int i = 0; i < nativeRequest.audioCodecNumber; ++i) {
+            result.audioCodecs.add(new ValueListElement(audioCodecs[i].id, "[" + audioCodecs[i].id + "] " + audioCodecs[i].longName));
+        }
+        result.videoCodecs.add(new ValueListElement("default", "default"));
+        result.audioCodecs.add(new ValueListElement("default", "default"));
+        return result;
     }
 
 }

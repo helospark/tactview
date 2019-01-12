@@ -12,4 +12,5 @@ public interface FFmpegBasedMediaEncoder extends Library {
 
     public void clearEncoder(FFmpegClearEncoderRequest request);
 
+    public void queryCodecs(QueryCodecRequest request);
 }

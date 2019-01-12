@@ -49,6 +49,8 @@ extern "C" {
         int videoBitRate;
         int audioBitRate;
         int audioSampleRate;
+        const char* videoCodec;
+        const char* audioCodec;
     };
 
 
@@ -574,11 +576,18 @@ extern "C" {
         /* Add the audio and video streams using the default format codecs
          * and initialize the codecs. */
         if (fmt->video_codec != AV_CODEC_ID_NONE) {
+            if (strcmp(request->videoCodec, "default") != 0) {            
+                fmt->video_codec = avcodec_find_encoder_by_name(request->videoCodec)->id;
+            }
+
             add_stream(video_st, oc, &video_codec, fmt->video_codec, request);
             have_video = 1;
             encode_video = 1;
         }
         if (fmt->audio_codec != AV_CODEC_ID_NONE && request->audioChannels > 0) {
+            if (strcmp(request->audioCodec, "default") != 0) {            
+                fmt->audio_codec = avcodec_find_encoder_by_name(request->audioCodec)->id;
+            }
             add_stream(audio_st, oc, &audio_codec, fmt->audio_codec, request);
             have_audio = 1;
             encode_audio = 1;
@@ -675,6 +684,48 @@ extern "C" {
 
             AVFrame *frame = get_video_frame(video_st, request->frame);
             renderContext.encode_video = !write_video_frame(renderContext.oc, video_st, frame);
+    }
+
+
+
+    struct CodecInformation {
+        const char* id;
+        const char* longName;
+    };
+
+    struct QueryCodecRequest {
+        CodecInformation* videoCodecs;
+        CodecInformation* audioCodecs;
+
+        int videoCodecNumber;
+        int audioCodecNumber;
+    };
+
+    void queryCodecs(QueryCodecRequest* request)
+    {
+        av_register_all();
+
+
+        request->videoCodecNumber = 0;
+        request->audioCodecNumber = 0;
+        AVCodec * codec = av_codec_next(NULL);
+        while(codec != NULL)
+        {
+            if (av_codec_is_encoder(codec)) {
+                //fprintf(stderr, "%s - %s\n", codec->long_name, codec->name);
+                if (codec->type == AVMediaType::AVMEDIA_TYPE_AUDIO) {
+                    request->audioCodecs[request->audioCodecNumber].id = codec->name;
+                    request->audioCodecs[request->audioCodecNumber++].longName = codec->long_name;
+                }
+                if (codec->type == AVMediaType::AVMEDIA_TYPE_VIDEO) {
+                    request->videoCodecs[request->videoCodecNumber].id = codec->name;
+                    request->videoCodecs[request->videoCodecNumber++].longName = codec->long_name;
+                }
+            }
+
+            codec = av_codec_next(codec);
+        }
+
     }
 
 }

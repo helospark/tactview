@@ -20,10 +20,12 @@ public class FFmpegInitEncoderRequest extends Structure implements Structure.ByR
     public int videoBitRate;
     public int audioBitRate;
     public int audioSampleRate;
+    public String videoCodec;
+    public String audioCodec;
 
     @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("fileName", "actualWidth", "actualHeight", "renderWidth", "renderHeight", "fps", "audioChannels", "bytesPerSample", "sampleRate",
-                "videoBitRate", "audioBitRate", "audioSampleRate");
+                "videoBitRate", "audioBitRate", "audioSampleRate", "videoCodec", "audioCodec");
     }
 }

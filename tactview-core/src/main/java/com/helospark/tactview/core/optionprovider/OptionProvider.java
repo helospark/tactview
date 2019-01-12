@@ -6,12 +6,15 @@ import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+
 public class OptionProvider<T> {
     private String title;
     private Function<String, T> valueConverter;
     private Function<T, List<String>> validationErrorProvider;
     private Supplier<Boolean> shouldShow;
     private Supplier<Boolean> isEnabled;
+    private List<ValueListElement> validValues;
     private T value;
 
     @Generated("SparkTools")
@@ -21,7 +24,12 @@ public class OptionProvider<T> {
         this.validationErrorProvider = builder.validationErrorProvider != null ? builder.validationErrorProvider : value -> List.of();
         this.shouldShow = builder.shouldShow != null ? builder.shouldShow : () -> true;
         this.isEnabled = builder.isEnabled != null ? builder.isEnabled : () -> true;
+        this.validValues = builder.validValues != null ? builder.validValues : List.of();
         this.value = builder.defaultValue;
+    }
+
+    public List<ValueListElement> getValidValues() {
+        return validValues;
     }
 
     public void setValue(T value) {
@@ -62,6 +70,11 @@ public class OptionProvider<T> {
                 .withValueConverter(Integer::valueOf);
     }
 
+    public static Builder<String> stringOptionBuilder() {
+        return new Builder<String>()
+                .withValueConverter(String::valueOf);
+    }
+
     @Generated("SparkTools")
     public static final class Builder<T> {
         private String title;
@@ -69,6 +82,7 @@ public class OptionProvider<T> {
         private Function<T, List<String>> validationErrorProvider;
         private Supplier<Boolean> shouldShow;
         private Supplier<Boolean> isEnabled;
+        private List<ValueListElement> validValues;
         private T defaultValue;
 
         private Builder() {
@@ -96,6 +110,11 @@ public class OptionProvider<T> {
 
         public Builder<T> withIsEnabled(Supplier<Boolean> isEnabled) {
             this.isEnabled = isEnabled;
+            return this;
+        }
+
+        public Builder<T> withValidValues(List<ValueListElement> validValues) {
+            this.validValues = validValues;
             return this;
         }
 
