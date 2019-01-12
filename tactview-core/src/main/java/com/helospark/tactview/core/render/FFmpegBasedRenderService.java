@@ -57,8 +57,16 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
         initNativeRequest.fps = renderRequest.getFps();
-        initNativeRequest.renderWidth = renderRequest.getWidth();
-        initNativeRequest.renderHeight = renderRequest.getHeight();
+        int width = renderRequest.getWidth();
+        if (width % 2 == 1) {
+            width++;
+        }
+        int height = renderRequest.getHeight();
+        if (height % 2 == 1) {
+            height++;
+        }
+        initNativeRequest.renderWidth = width;
+        initNativeRequest.renderHeight = height;
 
         AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition);//tmp solution
 
