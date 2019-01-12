@@ -19,10 +19,7 @@ public class RenderServiceChain {
     }
 
     public CompletableFuture<Void> render(RenderRequest renderRequest) {
-        RenderService chainItem = renderServiceChainItem.stream()
-                .filter(a -> a.supports(renderRequest))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No renderer supports format " + renderRequest.getFileName()));
+        RenderService chainItem = getRenderer(renderRequest);
 
         return CompletableFuture
                 .runAsync(() -> chainItem.render(renderRequest))
@@ -31,4 +28,12 @@ public class RenderServiceChain {
                     return null;
                 });
     }
+
+    public RenderService getRenderer(RenderRequest renderRequest) {
+        return renderServiceChainItem.stream()
+                .filter(a -> a.supports(renderRequest))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No renderer supports format " + renderRequest.getFileName()));
+    }
+
 }

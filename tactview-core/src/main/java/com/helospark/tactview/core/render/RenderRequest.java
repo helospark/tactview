@@ -1,14 +1,17 @@
 package com.helospark.tactview.core.render;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class RenderRequest {
-    private String renderId = UUID.randomUUID().toString();
+    private final String renderId = UUID.randomUUID().toString();
     private TimelinePosition startPosition;
     private TimelinePosition endPosition;
     private BigDecimal step;
@@ -16,6 +19,7 @@ public class RenderRequest {
     private int width;
     private int height;
     private String fileName;
+    private Map<String, OptionProvider<?>> options;
 
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
@@ -26,14 +30,11 @@ public class RenderRequest {
         this.width = builder.width;
         this.height = builder.height;
         this.fileName = builder.fileName;
+        this.options = builder.options;
     }
 
     public String getRenderId() {
         return renderId;
-    }
-
-    public void setRenderId(String renderId) {
-        this.renderId = renderId;
     }
 
     public TimelinePosition getStartPosition() {
@@ -64,6 +65,10 @@ public class RenderRequest {
         return fps;
     }
 
+    public Map<String, OptionProvider<?>> getOptions() {
+        return options;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -78,6 +83,7 @@ public class RenderRequest {
         private int width;
         private int height;
         private String fileName;
+        private Map<String, OptionProvider<?>> options = Collections.emptyMap();
 
         private Builder() {
         }
@@ -114,6 +120,11 @@ public class RenderRequest {
 
         public Builder withFileName(String fileName) {
             this.fileName = fileName;
+            return this;
+        }
+
+        public Builder withOptions(Map<String, OptionProvider<?>> options) {
+            this.options = options;
             return this;
         }
 

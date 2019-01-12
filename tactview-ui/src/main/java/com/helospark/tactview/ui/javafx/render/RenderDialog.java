@@ -3,8 +3,12 @@ package com.helospark.tactview.ui.javafx.render;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collection;
+import java.util.Map;
 
+import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.render.RenderRequest;
+import com.helospark.tactview.core.render.RenderService;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManager;
@@ -26,6 +30,8 @@ import javafx.stage.Stage;
 
 public class RenderDialog {
     private Stage stage;
+    private RenderService previousRenderService = null;
+    private Map<String, OptionProvider<?>> optionProviders = Map.of();
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManager timelineManager) {
         BorderPane borderPane = new BorderPane();
@@ -54,24 +60,27 @@ public class RenderDialog {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
-        TextField textField = new TextField("/tmp/test.mp4");
+        TextField fileNameTextField = new TextField();
         Button button = new Button("Browse");
         button.setOnMouseClicked(e -> {
             File result = fileChooser.showOpenDialog(stage);
             if (result != null) {
-                textField.setText(result.getAbsolutePath());
+                fileNameTextField.setText(result.getAbsolutePath());
             }
         });
         HBox hbox = new HBox();
-        hbox.getChildren().addAll(textField, button);
+        hbox.getChildren().addAll(fileNameTextField, button);
         gridPane.add(new Label("File name"), 0, 5);
         gridPane.add(hbox, 1, 5);
+
+        GridPane rendererOptions = new GridPane();
+        gridPane.add(rendererOptions, 0, 6, 2, 1);
 
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress(0);
         progressBar.prefWidthProperty().bind(dialog.widthProperty());
         GridPane.setColumnSpan(progressBar, 2);
-        gridPane.add(progressBar, 0, 6);
+        gridPane.add(progressBar, 0, 7);
 
         borderPane.setCenter(gridPane);
 
@@ -98,7 +107,8 @@ public class RenderDialog {
                     .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
                     .withStartPosition(new TimelinePosition(new BigDecimal(startPositionTextField.getText())))
                     .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
-                    .withFileName(textField.getText())
+                    .withFileName(fileNameTextField.getText())
+                    .withOptions(optionProviders)
                     .build();
 
             String id = request.getRenderId();
@@ -116,6 +126,49 @@ public class RenderDialog {
                     });
 
         });
+
+        fileNameTextField.textProperty().addListener((obj, oldValue, newValue) -> {
+            RenderRequest request = RenderRequest.builder()
+                    .withWidth(Integer.parseInt(widthTextField.getText()))
+                    .withHeight(Integer.parseInt(heightTextField.getText()))
+                    .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
+                    .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
+                    .withStartPosition(new TimelinePosition(new BigDecimal(startPositionTextField.getText())))
+                    .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
+                    .withFileName(fileNameTextField.getText())
+                    .build();
+
+            RenderService currentRenderService = renderService.getRenderer(request);
+            if (currentRenderService != previousRenderService) {
+                optionProviders = currentRenderService.getOptionProviders();
+                previousRenderService = currentRenderService;
+                rendererOptions.getChildren().clear();
+
+                Collection<OptionProvider<?>> values = optionProviders.values();
+
+                int i = 0;
+                for (var value : values) {
+                    OptionProvider<Object> optionProvider = (OptionProvider<Object>) value;
+                    Label label = new Label(optionProvider.getTitle());
+
+                    TextField textField = new TextField();
+                    textField.setText(String.valueOf(optionProvider.getValue()));
+                    textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
+                        Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
+                        // TODO: isValid, etc.
+                        optionProvider.setValue(parsedValue);
+                    });
+
+                    rendererOptions.add(label, 0, i);
+                    rendererOptions.add(textField, 1, i);
+
+                    ++i;
+                }
+
+            }
+        });
+
+        fileNameTextField.setText("/tmp/test.mp4");
 
         buttonBar.getChildren().add(okButton);
 

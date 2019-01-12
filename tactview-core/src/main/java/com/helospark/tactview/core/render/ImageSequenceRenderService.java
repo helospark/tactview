@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,7 +17,9 @@ import javax.imageio.ImageIO;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
@@ -25,6 +28,7 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
+@Order(value = -1)
 public class ImageSequenceRenderService extends AbstractRenderService {
 
     private static final int FRAME_PER_BATCH = 60;
@@ -111,6 +115,11 @@ public class ImageSequenceRenderService extends AbstractRenderService {
                 .filter(a -> renderRequest.getFileName().endsWith(a))
                 .findFirst()
                 .isPresent();
+    }
+
+    @Override
+    public Map<String, OptionProvider<?>> getOptionProviders() {
+        return Map.of();
     }
 
 }

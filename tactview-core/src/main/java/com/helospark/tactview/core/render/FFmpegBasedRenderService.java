@@ -1,10 +1,13 @@
 package com.helospark.tactview.core.render;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegBasedMediaEncoder;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegClearEncoderRequest;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegEncodeFrameRequest;
@@ -30,6 +33,16 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     public void renderInternal(RenderRequest renderRequest) {
         TimelinePosition currentPosition = renderRequest.getStartPosition();
 
+        int videoBitRate = (int) renderRequest.getOptions().get("videobitrate").getValue();
+
+        System.out.println("Video BitRate: " + videoBitRate);
+
+        int audioBitRate = (int) renderRequest.getOptions().get("audiobitrate").getValue();
+        System.out.println("Audio BitRate: " + audioBitRate);
+
+        int audioSampleRate = (int) renderRequest.getOptions().get("audiosamplerate").getValue();
+        System.out.println("Audio SampleRate: " + audioSampleRate);
+
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
         initNativeRequest.fps = renderRequest.getFps();
@@ -43,6 +56,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.bytesPerSample = tmpFrame.getAudioResult().getBytesPerSample();
         initNativeRequest.audioChannels = tmpFrame.getAudioResult().getChannels().size();
         initNativeRequest.sampleRate = tmpFrame.getAudioResult().getSamplePerSecond();
+
+        initNativeRequest.audioBitRate = audioBitRate;
+        initNativeRequest.videoBitRate = videoBitRate;
+        initNativeRequest.audioSampleRate = audioSampleRate;
         // frame not freed
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
@@ -109,6 +126,44 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     public boolean supports(RenderRequest renderRequest) {
         //        return renderRequest.getFileName().endsWith(".mpeg");
         return true;
+    }
+
+    @Override
+    public Map<String, OptionProvider<?>> getOptionProviders() {
+        OptionProvider<Integer> bitRateProvider = OptionProvider.integerOptionBuilder()
+                .withTitle("Video bitrate")
+                .withDefaultValue(800000)
+                .withValidationErrorProvider(bitRate -> {
+                    List<String> errors = new ArrayList<>();
+                    if (bitRate < 100) {
+                        errors.add("Too low bitrate");
+                    }
+                    return errors;
+                })
+                .build();
+        OptionProvider<Integer> audioBitRateProvider = OptionProvider.integerOptionBuilder()
+                .withTitle("Audio bitrate")
+                .withDefaultValue(128000)
+                .withValidationErrorProvider(bitRate -> {
+                    List<String> errors = new ArrayList<>();
+                    if (bitRate < 100) {
+                        errors.add("Too low bitrate");
+                    }
+                    return errors;
+                })
+                .build();
+        OptionProvider<Integer> audioSampleRateProvider = OptionProvider.integerOptionBuilder()
+                .withTitle("Audio samplerate")
+                .withDefaultValue(44100)
+                .withValidationErrorProvider(bitRate -> {
+                    List<String> errors = new ArrayList<>();
+                    return errors;
+                })
+                .build();
+
+        return Map.of("videobitrate", bitRateProvider,
+                "audiobitrate", audioBitRateProvider,
+                "audiosamplerate", audioSampleRateProvider);
     }
 
 }
