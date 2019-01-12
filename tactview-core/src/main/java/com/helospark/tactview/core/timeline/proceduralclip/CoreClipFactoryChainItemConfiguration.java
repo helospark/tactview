@@ -5,11 +5,11 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.blendmode.impl.NormalBlendModeStrategy;
-import com.helospark.tactview.core.timeline.framemerge.AlphaBlitService;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighlightProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.lines.LineProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.pattern.CheckerBoardProceduralClip;
@@ -20,7 +20,6 @@ import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralCl
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
-import com.helospark.tactview.core.util.brush.ScaledBrushProvider;
 
 @Configuration
 public class CoreClipFactoryChainItemConfiguration {
@@ -87,15 +86,13 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem drawnHighlightProceduralEffect(IndependentPixelOperation independentPixelOperation,
-            AlphaBlitService alphaBlitService, NormalBlendModeStrategy normalBlendModeStrategy, ScaledBrushProvider scaledBrushProvider, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem drawnHighlightProceduralEffect(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("drawnhighlight", "Drawn highlight",
                 request -> {
-                    return new DrawnHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), scaledBrushProvider, normalBlendModeStrategy, alphaBlitService,
-                            bresenhemPixelProvider);
+                    return new DrawnHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
                 },
                 (node, loadMetadata) -> {
-                    return new DrawnHighlightProceduralEffect(metadata, node, loadMetadata, scaledBrushProvider, normalBlendModeStrategy, alphaBlitService, bresenhemPixelProvider);
+                    return new DrawnHighlightProceduralEffect(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
                 });
     }
 
@@ -140,6 +137,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new CheckerBoardProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem lineProceduralClip(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+        return new StandardProceduralClipFactoryChainItem("line", "Line",
+                request -> {
+                    return new LineProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
+                },
+                (node, loadMetadata) -> {
+                    return new LineProceduralClip(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
                 });
     }
 }

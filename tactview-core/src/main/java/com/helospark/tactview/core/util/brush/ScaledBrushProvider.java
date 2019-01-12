@@ -27,7 +27,7 @@ public class ScaledBrushProvider {
 
     @Cacheable(cacheTimeInMilliseconds = 600000, size = 100)
     public ClipImage getBrushImage(GetBrushRequest brushRequest) {
-        logger.info("Loading brush ", brushRequest);
+        logger.info("Loading brush {}", brushRequest);
         rawBrushProvider.getBrush(brushRequest.getFilename());
 
         GimpBrush brush = rawBrushProvider.getBrush(brushRequest.getFilename());

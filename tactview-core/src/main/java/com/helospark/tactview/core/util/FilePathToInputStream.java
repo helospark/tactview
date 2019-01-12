@@ -16,7 +16,7 @@ public class FilePathToInputStream {
         InputStream result = null;
         try {
             if (filename.startsWith("classpath:")) {
-                Path path = Paths.get(this.getClass().getResource("/brushes/Oils-03.gbr").toURI());
+                Path path = Paths.get(this.getClass().getResource(filename.replaceFirst("classpath:", "")).toURI());
                 result = Files.newInputStream(path);
             } else if (filename.startsWith("file:")) {
                 result = new FileInputStream(new File(filename.replaceFirst("filename:", "")));

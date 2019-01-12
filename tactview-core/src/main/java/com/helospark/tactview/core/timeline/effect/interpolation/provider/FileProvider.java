@@ -72,4 +72,13 @@ public class FileProvider extends KeyframeableEffect {
         return ((KeyframeSupportingInterpolator) stringInterpolator).isUsingKeyframes();
     }
 
+    public String getValueOrDefault(TimelinePosition relativePosition, String defaultValue) {
+        File result = getValueAt(relativePosition);
+        if (result.exists()) {
+            return result.getAbsolutePath();
+        } else {
+            return defaultValue;
+        }
+    }
+
 }

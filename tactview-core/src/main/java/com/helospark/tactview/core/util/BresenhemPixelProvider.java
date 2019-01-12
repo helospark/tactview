@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
@@ -60,6 +61,62 @@ public class BresenhemPixelProvider {
         points.addAll(bottomSecondQuarter);
 
         return points;
+    }
+
+    @Cacheable
+    public List<Vector2D> linePixels(Point startPoint, Point endPoint) {
+        List<Vector2D> result = new ArrayList<>();
+
+        int x1 = (int) startPoint.x;
+        int x2 = (int) endPoint.x;
+
+        int y1 = (int) startPoint.y;
+        int y2 = (int) endPoint.y;
+        boolean steep = (Math.abs(y2 - y1) > Math.abs(x2 - x1));
+        if (steep) {
+            int tmp = x1;
+            x1 = y1;
+            y1 = tmp;
+
+            tmp = x2;
+            x2 = y2;
+            y2 = tmp;
+        }
+
+        if (x1 > x2) {
+            int tmp = x1;
+            x1 = x2;
+            x2 = tmp;
+
+            tmp = y1;
+            y1 = y2;
+            y2 = tmp;
+        }
+
+        double dx = x2 - x1;
+        double dy = Math.abs(y2 - y1);
+
+        double error = dx / 2.0f;
+        int ystep = (y1 < y2) ? 1 : -1;
+        int y = y1;
+
+        int maxX = x2;
+
+        for (int x = x1; x < maxX; x++) {
+            if (steep) {
+                result.add(new Vector2D(y, x));
+            } else {
+                result.add(new Vector2D(x, y));
+            }
+
+            error -= dy;
+            if (error < 0) {
+                y += ystep;
+                error += dx;
+            }
+        }
+
+        return result;
     }
 
 }
