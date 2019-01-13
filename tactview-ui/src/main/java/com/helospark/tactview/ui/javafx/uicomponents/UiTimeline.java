@@ -3,6 +3,8 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -15,7 +17,10 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.UiCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -28,6 +33,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -68,12 +74,34 @@ public class UiTimeline {
         borderPane = new BorderPane();
 
         Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
+        addChannelButton.setTooltip(new Tooltip("Add new channel"));
         addChannelButton.setOnMouseClicked(event -> {
             commandInterpreter.sendWithResult(new CreateChannelCommand(timelineManager, LAST_INDEX));
         });
+        Button cutAllClipsButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.CUT));
+        cutAllClipsButton.setTooltip(new Tooltip("Cut all clips at cursor position"));
+
+        cutAllClipsButton.setOnMouseClicked(event -> {
+            TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
+            List<String> intersectingClips = timelineManager.findIntersectingClips(currentPosition);
+
+            List<CutClipCommand> clipsToCut = intersectingClips.stream()
+                    .map(clipId -> {
+                        return CutClipCommand.builder()
+                                .withClipId(clipId)
+                                .withGlobalTimelinePosition(currentPosition)
+                                .withTimelineManager(timelineManager)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            if (clipsToCut.size() > 0) {
+                commandInterpreter.sendWithResult(new CompositeCommand(clipsToCut.toArray(new UiCommand[0])));
+            }
+        });
 
         HBox titleBarTop = new HBox();
-        titleBarTop.getChildren().addAll(addChannelButton);
+        titleBarTop.getChildren().addAll(addChannelButton, cutAllClipsButton);
 
         HBox timelineTimeLabels = new HBox();
 

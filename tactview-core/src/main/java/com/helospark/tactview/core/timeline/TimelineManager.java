@@ -973,4 +973,13 @@ public class TimelineManager implements SaveLoadContributor {
         return false;
     }
 
+    public List<String> findIntersectingClips(TimelinePosition currentPosition) {
+        return channels
+                .stream()
+                .map(channel -> channel.getDataAt(currentPosition))
+                .flatMap(Optional::stream)
+                .map(clip -> clip.getId())
+                .collect(Collectors.toList());
+    }
+
 }
