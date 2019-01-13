@@ -3,10 +3,14 @@ package com.helospark.tactview.core.timeline.message;
 public class ChannelAddedMessage {
     private String channelId;
     private Integer index;
+    private boolean disabled;
+    private boolean mute;
 
-    public ChannelAddedMessage(String channelId, Integer index) {
+    public ChannelAddedMessage(String channelId, Integer index, boolean disabled, boolean mute) {
         this.channelId = channelId;
         this.index = index;
+        this.disabled = disabled;
+        this.mute = mute;
     }
 
     public String getChannelId() {
@@ -17,9 +21,17 @@ public class ChannelAddedMessage {
         return index;
     }
 
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public boolean isMute() {
+        return mute;
+    }
+
     @Override
     public String toString() {
-        return "ChannelAddedMessage [channelId=" + channelId + ", index=" + index + "]";
+        return "ChannelAddedMessage [channelId=" + channelId + ", index=" + index + ", disabled=" + disabled + ", mute=" + mute + "]";
     }
 
 }

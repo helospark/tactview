@@ -35,6 +35,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
+import com.helospark.tactview.core.timeline.message.ChannelSettingUpdatedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
@@ -261,6 +262,10 @@ public class TimelineManager implements SaveLoadContributor {
 
     private AudioFrameResult renderAudio(List<String> renderOrder, Map<String, AudioFrameResult> audioToFrames) {
         List<AudioFrameResult> audioFrames = renderOrder.stream()
+                .filter(clipId -> {
+                    TimelineChannel channelContainingCurrentClip = findChannelForClipId(clipId).get();
+                    return !channelContainingCurrentClip.isDisabled() && !channelContainingCurrentClip.isMute();
+                })
                 .map(a -> audioToFrames.get(a))
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
@@ -271,6 +276,10 @@ public class TimelineManager implements SaveLoadContributor {
 
     private ReadOnlyClipImage renderVideo(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> clipsToFrames) {
         List<RenderFrameData> frames = renderOrder.stream()
+                .filter(clipId -> {
+                    TimelineChannel channelContainingCurrentClip = findChannelForClipId(clipId).get();
+                    return !channelContainingCurrentClip.isDisabled();
+                })
                 .map(a -> clipsToFrames.get(a))
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
@@ -448,7 +457,7 @@ public class TimelineManager implements SaveLoadContributor {
                 channels.add(channelToInsert);
             }
         }
-        messagingService.sendMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert)));
+        messagingService.sendMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert), channelToInsert.isDisabled(), channelToInsert.isMute()));
     }
 
     public void removeChannel(String channelId) {
@@ -942,6 +951,26 @@ public class TimelineManager implements SaveLoadContributor {
         return findClipForEffect(id)
                 .map(a -> a.getEffectChannels().size())
                 .orElse(-1);
+    }
+
+    public boolean muteChannel(String channelId, boolean isMute) {
+        TimelineChannel channel = findChannelWithId(channelId).get();
+        if (channel.isMute() != isMute) {
+            channel.setMute(isMute);
+            messagingService.sendAsyncMessage(new ChannelSettingUpdatedMessage(new TimelineInterval(TimelinePosition.ofZero(), channel.findMaximumEndPosition())));
+            return true;
+        }
+        return false;
+    }
+
+    public boolean disableChannel(String channelId, boolean isDisable) {
+        TimelineChannel channel = findChannelWithId(channelId).get();
+        if (channel.isDisabled() != isDisable) {
+            channel.setDisabled(isDisable);
+            messagingService.sendAsyncMessage(new ChannelSettingUpdatedMessage(new TimelineInterval(TimelinePosition.ofZero(), channel.findMaximumEndPosition())));
+            return true;
+        }
+        return false;
     }
 
 }

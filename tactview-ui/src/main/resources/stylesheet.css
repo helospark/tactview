@@ -3,10 +3,6 @@
 	-fx-text-fill: white;
 }
 
-.border-pane {
-    -fx-background-color: red;
-}
-
 .timelinerow,#content-area {
 	-fx-background-color: #333333;
 	-fx-background: #333333;
@@ -89,6 +85,11 @@
     -fx-border-insets: 5;
     -fx-border-width: 1;
     -fx-border-style: hidden hidden dashed hidden;
+    -fx-alignment: center ;
+}
+
+.channel-header-button-bar {
+    -fx-alignment: center ;
 }
 
 .timeline-titles-pane {
@@ -185,6 +186,38 @@
 .render-dialog-button-bar {
     -fx-padding: 10px;
 }
+
+.channel-header-button-bar .channel-title-button {
+    -fx-border-color: transparent;
+    -fx-background-radius: 10;
+    -fx-background-color: transparent;
+    -fx-font-size: 8px;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 0 5px 0 5px;
+    -fx-background-insets: 0;
+}
+.channel-header-button-bar .channel-title-button > * {
+    -fx-text-fill: #ffffff;
+}
+
+.channel-header-button-bar .channel-title-button:hover {
+    -fx-text-fill: #dddddd;
+    -fx-fill: #dddddd;
+}
+.channel-header-button-bar .channel-title-button:hover > * {
+    -fx-text-fill: #dddddd;
+}
+
+
+.channel-header-button-bar .channel-title-button:selected {
+    -fx-text-fill: #555555;
+    -fx-fill: #555555;
+    -fx-background-color: rgba(0,0,0,0.2);
+}
+.channel-header-button-bar .channel-title-button:selected > * {
+    -fx-text-fill: #555555;
+}
+
 
 /** tmp **/
 

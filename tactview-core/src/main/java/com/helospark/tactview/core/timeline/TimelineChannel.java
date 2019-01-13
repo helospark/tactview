@@ -16,10 +16,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class TimelineChannel {
     private NonIntersectingIntervalList<TimelineClip> clips = new NonIntersectingIntervalList<>();
     private String id = UUID.randomUUID().toString();
+
+    private boolean disabled = false;
+    private boolean mute = false;
+
     private Object fullChannelLock = new Object();
 
     public TimelineChannel(JsonNode savedChannel) {
         this.id = savedChannel.get("id").asText();
+        this.disabled = savedChannel.get("disabled").asBoolean(false);
+        this.mute = savedChannel.get("mute").asBoolean(false);
     }
 
     public TimelineChannel() {
@@ -29,6 +35,8 @@ public class TimelineChannel {
     public Map<String, Object> generateSavedContent() {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", id);
+        result.put("disabled", disabled);
+        result.put("mute", mute);
         List<Object> serializedClips = new ArrayList<>();
         for (TimelineClip clip : clips) {
             serializedClips.add(clip.generateSavedContent());
@@ -197,6 +205,22 @@ public class TimelineChannel {
         }
 
         return endPosition;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public boolean isMute() {
+        return mute;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public void setMute(boolean mute) {
+        this.mute = mute;
     }
 
 }
