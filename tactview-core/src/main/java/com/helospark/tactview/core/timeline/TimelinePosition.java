@@ -126,4 +126,8 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
         return new TimelinePosition(this.seconds.remainder(BigDecimal.ONE));
     }
 
+    public static TimelinePosition ofSeconds(int seconds) {
+        return new TimelinePosition(BigDecimal.valueOf(seconds));
+    }
+
 }

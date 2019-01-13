@@ -64,9 +64,10 @@ public class EffectParametersRepository {
     }
 
     private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, IntervalAware intervalAware, String containingElementId) {
-        list.stream()
-                .map(a -> a.getKeyframeableEffect())
-                .forEach(a -> allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware)));
+        for (var element : list) {
+            var a = element.getKeyframeableEffect();
+            allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware, element));
+        }
 
         list.stream()
                 .map(a -> a.getKeyframeableEffect())
@@ -134,11 +135,20 @@ public class EffectParametersRepository {
         public KeyframeableEffect effect;
         public String containingElementId;
         public IntervalAware intervalAware;
+        public Optional<ValueProviderDescriptor> descriptor;
 
         public EffectStore(KeyframeableEffect effect, String elementId, IntervalAware intervalAware) {
             this.effect = effect;
             this.containingElementId = elementId;
             this.intervalAware = intervalAware;
+            this.descriptor = Optional.empty();
+        }
+
+        public EffectStore(KeyframeableEffect effect, String elementId, IntervalAware intervalAware, ValueProviderDescriptor descriptor) {
+            this.effect = effect;
+            this.containingElementId = elementId;
+            this.intervalAware = intervalAware;
+            this.descriptor = Optional.ofNullable(descriptor);
         }
 
     }
@@ -211,5 +221,15 @@ public class EffectParametersRepository {
         } else {
             logger.warn("Setting keyframes is called for id {}, but keyframeableInterpolator does not support it", keyframeableEffectId);
         }
+    }
+
+    public Optional<ValueProviderDescriptor> findDescriptorForLabelAndClipId(String clipId, String label) {
+        return allEffectIdToEffectMap.values()
+                .stream()
+                .filter(a -> a.containingElementId.equals(clipId))
+                .filter(a -> a.descriptor.isPresent())
+                .map(a -> a.descriptor.get())
+                .filter(a -> a.getName().equals(label))
+                .findFirst();
     }
 }

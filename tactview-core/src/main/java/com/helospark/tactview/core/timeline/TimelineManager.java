@@ -982,4 +982,8 @@ public class TimelineManager implements SaveLoadContributor {
                 .collect(Collectors.toList());
     }
 
+    public CopyOnWriteArrayList<TimelineChannel> getChannels() {
+        return channels;
+    }
+
 }
