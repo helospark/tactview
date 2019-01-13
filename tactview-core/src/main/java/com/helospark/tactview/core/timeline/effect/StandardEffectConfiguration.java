@@ -7,6 +7,8 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
+import com.helospark.tactview.core.timeline.effect.blend.BlendEffect;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.BlurService;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
@@ -535,6 +537,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new ExtendClipWithBlurredImage(node, loadMetadata, independentPixelOperation, blurService, scaleService))
                 .withName("Blurzoom extend")
                 .withSupportedEffectId("blurzoomextend")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory blendEffect(List<BlendModeStrategy> strategies, ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new BlendEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), strategies, scaleService, independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new BlendEffect(node, loadMetadata, strategies, scaleService, independentPixelOperation))
+                .withName("Blend")
+                .withSupportedEffectId("blendeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

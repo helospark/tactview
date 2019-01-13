@@ -163,13 +163,14 @@ public class ClipImage implements ReadOnlyClipImage {
         return width == displacementMap.getWidth() && height == displacementMap.getHeight();
     }
 
-    public void copyFrom(ReadOnlyClipImage currentFrame) {
+    public ClipImage copyFrom(ReadOnlyClipImage currentFrame) {
         if (!isSameSizeAs(currentFrame)) {
             throw new IllegalArgumentException("Copy requires images to be the same size");
         }
         this.buffer.position(0);
         currentFrame.getBuffer().position(0); // is it really readonly?
         this.buffer.put(currentFrame.getBuffer());
+        return this;
     }
 
 }

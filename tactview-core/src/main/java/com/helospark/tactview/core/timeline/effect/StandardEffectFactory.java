@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClipType;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class StandardEffectFactory implements EffectFactory {
     protected List<TimelineClipType> supportedClipTypes;
@@ -43,7 +44,10 @@ public class StandardEffectFactory implements EffectFactory {
 
     @Override
     public StatelessEffect restoreEffect(JsonNode node, LoadMetadata loadMetadata) {
-        return restoreFactory.apply(node, loadMetadata);
+        StatelessEffect result = restoreFactory.apply(node, loadMetadata);
+        result.initializeValueProvider();
+        ReflectionUtil.realoadSavedFields(node.get("savedFields"), result, loadMetadata);
+        return result;
     }
 
     @Override
