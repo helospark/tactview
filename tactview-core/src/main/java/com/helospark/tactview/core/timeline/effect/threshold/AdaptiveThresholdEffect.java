@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresh
 import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresholdRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class AdaptiveThresholdEffect extends StatelessVideoEffect {
     private IntegerProvider addedConstantProvider;
@@ -30,7 +31,7 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
 
     public AdaptiveThresholdEffect(AdaptiveThresholdEffect adaptiveThresholdEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(adaptiveThresholdEffect, cloneRequestMetadata);
-        this.thresholdImplementation = adaptiveThresholdEffect.thresholdImplementation;
+        ReflectionUtil.copyOrCloneFieldFromTo(adaptiveThresholdEffect, this);
     }
 
     public AdaptiveThresholdEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVThresholdImplementation openCVThresholdImplementation) {

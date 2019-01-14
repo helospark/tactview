@@ -60,6 +60,11 @@ public class StandardEffectFactory implements EffectFactory {
         return name;
     }
 
+    @Override
+    public List<TimelineClipType> getSupportedTypes() {
+        return supportedClipTypes;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();

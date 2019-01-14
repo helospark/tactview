@@ -108,7 +108,8 @@ public class BlendEffect extends StatelessVideoEffect {
             return result;
         } else {
             ReadOnlyClipImage currentFrame = request.getCurrentFrame();
-            return ClipImage.sameSizeAs(currentFrame).copyFrom(currentFrame);
+            ClipImage result = ClipImage.sameSizeAs(currentFrame);
+            return result.copyFrom(currentFrame);
         }
     }
 

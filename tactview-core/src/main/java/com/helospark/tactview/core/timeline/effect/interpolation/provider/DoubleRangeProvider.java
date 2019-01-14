@@ -52,7 +52,7 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect {
 
     @Override
     public KeyframeableEffect deepClone() {
-        return new DoubleRangeProvider(highEndProvider.deepClone(), highEndProvider.deepClone());
+        return new DoubleRangeProvider(lowEndProvider.deepClone(), highEndProvider.deepClone());
     }
 
     @Override

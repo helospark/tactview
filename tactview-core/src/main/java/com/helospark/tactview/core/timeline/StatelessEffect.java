@@ -40,7 +40,7 @@ public abstract class StatelessEffect implements IntervalAware, IntervalSettable
         this.factoryId = node.get("factoryId").asText();
     }
 
-    protected Object generateSavedContent() {
+    public Object generateSavedContent() {
         Map<String, Object> result = new LinkedHashMap<>();
 
         result.put("id", id);

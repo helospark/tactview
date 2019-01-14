@@ -212,9 +212,9 @@ public class MemoryManager {
         //            unsafe.setMemory(address, buffer.capacity(), (byte) 0);
         //        } catch (Throwable e) {
         //        logger.warn("Unable to clear bytebuffer the efficient way", e);
-        buffer.position(0);
+        //        buffer.position(0);
         for (int i = 0; i < buffer.capacity(); ++i) {
-            buffer.put((byte) 0);
+            buffer.put(i, (byte) 0);
         }
         //        }
     }
