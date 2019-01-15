@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.VisualMediaSource;
+import com.helospark.tactview.core.util.FileTypeProberUtil;
 
 @Component
 public class FFmpegClipFactory implements ClipFactory {
@@ -36,7 +37,9 @@ public class FFmpegClipFactory implements ClipFactory {
 
     @Override
     public boolean doesSupport(AddClipRequest request) {
-        return request.containsFile() && hasVideoStream(request.getFile());
+        return request.containsFile() &&
+                !FileTypeProberUtil.isImageByContentType(request.getFile()) && // FFmpeg handles some image formats as well
+                hasVideoStream(request.getFile());
     }
 
     private boolean hasVideoStream(File file) {

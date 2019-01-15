@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.it.util.ui;
 
+import java.io.File;
 import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
@@ -85,16 +86,32 @@ public class FakeUi {
     }
 
     public AudioVideoFragment requestPreviewVideoFrame(TimelinePosition position) {
+        return requestPreviewVideoFrameWithScale(position, 1.0);
+    }
+
+    public AudioVideoFragment requestPreviewVideoFrameWithScale(TimelinePosition position, double scale) {
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
                 .withFrameBufferSize(1)
                 .withNeedSound(false)
                 .withPosition(position)
                 .withPreviewWidth(600)
                 .withPreviewHeight(400)
-                .withScale(1.0)
+                .withScale(scale)
                 .build();
 
         return timelineManager.getSingleFrame(frameRequest);
+    }
+
+    public TimelineClip dragFileToTimeline(File testFile, TimelinePosition position) {
+        TimelineChannel channel = timelineManager.getChannels().get(0);
+
+        AddClipRequest request = AddClipRequest.builder()
+                .withChannelId(channel.getId())
+                .withFilePath(testFile.getAbsolutePath())
+                .withPosition(position)
+                .build();
+
+        return timelineManager.addClip(request);
     }
 
 }

@@ -46,12 +46,16 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         }
 
         FFmpegResult result = implementation.readMediaMetadata(file.getAbsolutePath());
-        return VideoMetadata.builder()
+        VideoMetadata resultMetadata = VideoMetadata.builder()
                 .withFps(result.fps)
                 .withHeight(result.height)
                 .withWidth(result.width)
                 .withLength(TimelineLength.ofMicroseconds(result.lengthInMicroseconds))
                 .build();
+
+        System.out.println("Video metadata read: " + resultMetadata);
+
+        return resultMetadata;
     }
 
     @Override

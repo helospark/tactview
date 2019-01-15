@@ -1,8 +1,6 @@
 package com.helospark.tactview.core.timeline.clipfactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
@@ -15,6 +13,7 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualMediaSource;
 import com.helospark.tactview.core.timeline.image.ImageClip;
+import com.helospark.tactview.core.util.FileTypeProberUtil;
 
 @Component
 public class OpencvBasedImageClipFactory implements ClipFactory {
@@ -26,13 +25,7 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
 
     @Override
     public boolean doesSupport(AddClipRequest request) {
-        try {
-            return request.containsFile() &&
-                    Files.probeContentType(request.getFile().toPath()).contains("image/");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return request.containsFile() && FileTypeProberUtil.isImageByContentType(request.getFile());
     }
 
     @Override

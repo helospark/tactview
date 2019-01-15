@@ -98,7 +98,16 @@ MediaMetadata readMediaMetadata(const char* path) {
   mediaMetadata.width = pCodecCtx->width;
   mediaMetadata.height = pCodecCtx->height;
   mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
-  mediaMetadata.fps = st->avg_frame_rate.num / (double)st->avg_frame_rate.den;
+
+  AVRational framerate;
+
+  if (st->avg_frame_rate.den == 0) {
+    framerate = st->r_frame_rate;
+  } else {
+    framerate = st->avg_frame_rate;
+  }
+
+  mediaMetadata.fps = framerate.num / (double)framerate.den;
 
     fprintf(stderr, "Length 1=%ldd 2=%ldd!\n", mediaMetadata.lengthInMicroseconds, (st->duration / (AV_TIME_BASE / 1000000)));
 

@@ -39,6 +39,11 @@ public class VideoMetadata extends VisualMediaMetadata {
         return width > 0 && height > 0 && fps > 0;
     }
 
+    @Override
+    public String toString() {
+        return "VideoMetadata [fps=" + fps + ", width=" + width + ", height=" + height + ", resizable=" + resizable + ", length=" + length + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
