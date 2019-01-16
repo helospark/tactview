@@ -14,4 +14,14 @@ public class MathUtil {
         return linearInterpolate(linearInterpolate(c00, c10, tx), linearInterpolate(c01, c11, tx), ty);
     }
 
+    public static double min(double... elements) {
+        double result = elements[0];
+
+        for (var element : elements) {
+            result = Math.min(result, element);
+        }
+
+        return result;
+    }
+
 }

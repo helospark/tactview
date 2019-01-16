@@ -15,6 +15,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoisePr
 import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.pattern.CheckerBoardProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
@@ -160,6 +161,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new GridProceduralClip(metadata, node, loadMetadata);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem rectangleProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("rectangle", "Rectangle",
+                request -> {
+                    return new RectangleProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                (node, loadMetadata) -> {
+                    return new RectangleProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 }

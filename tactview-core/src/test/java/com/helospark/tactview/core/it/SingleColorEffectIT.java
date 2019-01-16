@@ -3,6 +3,8 @@ package com.helospark.tactview.core.it;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.helospark.lightdi.LightDiContext;
@@ -14,30 +16,39 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 
 public class SingleColorEffectIT {
+    private LightDiContext lightDi;
+    private FakeUi fakeUi;
+
+    @BeforeEach
+    public void setUp() {
+        lightDi = IntegrationTestUtil.startContext();
+        fakeUi = lightDi.getBean(FakeUi.class);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        lightDi.close();
+    }
 
     @Test
     public void testSingleColorEffect() {
-        LightDiContext lightDi = IntegrationTestUtil.startContext();
-        FakeUi fakeUi = lightDi.getBean(FakeUi.class);
-
         fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
 
         AudioVideoFragment frame = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofZero());
 
         assertFrameOfColor(frame, 255, 255, 255, 255);
-        lightDi.close();
     }
 
     @Test
     public void testSingleColorEffectWithAddedKeyframes() {
-        LightDiContext lightDi = IntegrationTestUtil.startContext();
-        FakeUi fakeUi = lightDi.getBean(FakeUi.class);
-
         TimelineClip addedClip = fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
 
-        fakeUi.enableKeyframesFor(addedClip.getId(), "color");
-        fakeUi.setKeyframeForColorDescriptor(addedClip.getId(), "color", TimelinePosition.ofZero(), new Color(1.0, 1.0, 1.0));
-        fakeUi.setKeyframeForColorDescriptor(addedClip.getId(), "color", TimelinePosition.ofSeconds(10), new Color(0.0, 1.0, 1.0));
+        fakeUi.selectClipAndFindSettingByName(addedClip.getId(), "color")
+                .enableKeyframes()
+                .moveToPosition(TimelinePosition.ofZero())
+                .addKeyframe(new Color(1.0, 1.0, 1.0))
+                .moveToPosition(TimelinePosition.ofSeconds(10))
+                .addKeyframe(new Color(0.0, 1.0, 1.0));
 
         AudioVideoFragment frameAtZero = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofZero());
         AudioVideoFragment frameAtHalfway = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(5));
@@ -46,20 +57,18 @@ public class SingleColorEffectIT {
         assertFrameOfColor(frameAtZero, 255, 255, 255, 255);
         assertFrameOfColor(frameAtHalfway, 127, 255, 255, 255);
         assertFrameOfColor(frameAtEnd, 0, 255, 255, 255);
-
-        lightDi.close();
     }
 
     @Test
     public void testSingleColorEffectWhenKeyframesAreNotEnabledShouldOnlyKeepLast() {
-        LightDiContext lightDi = IntegrationTestUtil.startContext();
-        FakeUi fakeUi = lightDi.getBean(FakeUi.class);
-
         TimelineClip addedClip = fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
 
-        fakeUi.disableKeyframesFor(addedClip.getId(), "color");
-        fakeUi.setKeyframeForColorDescriptor(addedClip.getId(), "color", TimelinePosition.ofZero(), new Color(1.0, 1.0, 1.0));
-        fakeUi.setKeyframeForColorDescriptor(addedClip.getId(), "color", TimelinePosition.ofSeconds(10), new Color(0.0, 1.0, 1.0));
+        fakeUi.selectClipAndFindSettingByName(addedClip.getId(), "color")
+                .disableKeyframes()
+                .moveToPosition(TimelinePosition.ofZero())
+                .addKeyframe(new Color(1.0, 1.0, 1.0))
+                .moveToPosition(TimelinePosition.ofSeconds(10))
+                .addKeyframe(new Color(0.0, 1.0, 1.0));
 
         AudioVideoFragment frameAtZero = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofZero());
         AudioVideoFragment frameAtHalfway = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(5));
@@ -68,8 +77,6 @@ public class SingleColorEffectIT {
         assertFrameOfColor(frameAtZero, 0, 255, 255, 255);
         assertFrameOfColor(frameAtHalfway, 0, 255, 255, 255);
         assertFrameOfColor(frameAtEnd, 0, 255, 255, 255);
-
-        lightDi.close();
     }
 
     private void assertFrameOfColor(AudioVideoFragment frame, int red, int green, int blue, int alpha) {

@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.it.util;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.awt.Color;
@@ -18,6 +20,10 @@ import com.helospark.lightdi.LightDi;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
 import com.helospark.tactview.core.TactViewCoreConfiguration;
+import com.helospark.tactview.core.it.util.ui.ColorWithAlpha;
+import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
+import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest.Builder;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.DebugImageRenderer;
@@ -92,6 +98,23 @@ public class IntegrationTestUtil {
     public static byte[] readClasspathFile(String fileName) throws IOException, URISyntaxException {
         Path uri = Paths.get(IntegrationTestUtil.class.getResource("/" + fileName).toURI());
         return Files.readAllBytes(uri);
+    }
+
+    public static Builder getDefaultFrameRequest() {
+        return TimelineManagerFramesRequest.builder()
+                .withFrameBufferSize(1)
+                .withNeedSound(false)
+                .withPosition(TimelinePosition.ofZero())
+                .withPreviewWidth(600)
+                .withPreviewHeight(400)
+                .withScale(1.0);
+    }
+
+    public static void pixelEquals(ReadOnlyClipImage videoFrame, int x, int y, ColorWithAlpha colorWithAlpha) {
+        assertThat(videoFrame.getRed(x, y), is(colorWithAlpha.getRed()));
+        assertThat(videoFrame.getGreen(x, y), is(colorWithAlpha.getGreen()));
+        assertThat(videoFrame.getBlue(x, y), is(colorWithAlpha.getBlue()));
+        assertThat(videoFrame.getAlpha(x, y), is(colorWithAlpha.getAlpha()));
     }
 
 }

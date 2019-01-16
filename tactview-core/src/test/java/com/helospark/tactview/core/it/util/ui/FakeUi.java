@@ -16,7 +16,6 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -67,13 +66,9 @@ public class FakeUi {
         parametersRepository.setUsingKeyframes(provider.getId(), status);
     }
 
-    public void setKeyframeForColorDescriptor(String clipId, String descriptorName, TimelinePosition position, Color color) {
+    public TestKeyframeUi selectClipAndFindSettingByName(String clipId, String descriptorName) {
         ValueProviderDescriptor descriptor = parametersRepository.findDescriptorForLabelAndClipId(clipId, descriptorName).get();
-        ColorProvider colorProvider = (ColorProvider) descriptor.getKeyframeableEffect();
-
-        setKeyframeForChild(position, () -> String.valueOf(color.red), 0, colorProvider);
-        setKeyframeForChild(position, () -> String.valueOf(color.green), 1, colorProvider);
-        setKeyframeForChild(position, () -> String.valueOf(color.blue), 2, colorProvider);
+        return new TestKeyframeUi(parametersRepository, descriptor);
     }
 
     private void setKeyframeForChild(TimelinePosition position, Supplier<String> supplier, int index, ColorProvider colorProvider) {
@@ -99,6 +94,10 @@ public class FakeUi {
                 .withScale(scale)
                 .build();
 
+        return requestFrame(frameRequest);
+    }
+
+    public AudioVideoFragment requestFrame(TimelineManagerFramesRequest frameRequest) {
         return timelineManager.getSingleFrame(frameRequest);
     }
 
