@@ -6,6 +6,10 @@ public class MathUtil {
         return Math.max(min, Math.min(max, val));
     }
 
+    public static int clamp(int val, int min, int max) {
+        return Math.max(min, Math.min(max, val));
+    }
+
     public static double linearInterpolate(double s, double e, double t) {
         return s + (e - s) * t;
     }

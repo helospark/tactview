@@ -47,4 +47,11 @@ public class AudioStreamService {
         }
     }
 
+    public int numberOfBytesThatCanBeWritten() {
+        return sourceDataLine.available();
+    }
+
+    public void clearBuffer() {
+        sourceDataLine.flush();
+    }
 }

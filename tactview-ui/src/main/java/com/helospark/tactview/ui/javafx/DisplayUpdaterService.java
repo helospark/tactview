@@ -16,7 +16,6 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
 import javafx.application.Platform;
@@ -34,7 +33,6 @@ public class DisplayUpdaterService {
     private UiProjectRepository uiProjectRepostiory;
     private UiTimelineManager uiTimelineManager;
     private GlobalDirtyClipManager globalDirtyClipManager;
-    private AudioStreamService audioStreamService;
 
     @Slf4j
     private Logger logger;
@@ -42,12 +40,11 @@ public class DisplayUpdaterService {
     private Canvas canvas;
 
     public DisplayUpdaterService(PlaybackController playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
-            GlobalDirtyClipManager globalDirtyClipManager, AudioStreamService audioStreamService) {
+            GlobalDirtyClipManager globalDirtyClipManager) {
         this.playbackController = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
         this.globalDirtyClipManager = globalDirtyClipManager;
-        this.audioStreamService = audioStreamService;
     }
 
     @PostConstruct
@@ -89,7 +86,7 @@ public class DisplayUpdaterService {
         Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
         JavaDisplayableAudioVideoFragment actualAudioVideoFragment;
         if (cachedKey == null) {
-            actualAudioVideoFragment = playbackController.getFrameAt(currentPosition);
+            actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
         } else {
             try {
                 System.out.println("Served from cache " + currentPosition);
@@ -106,7 +103,6 @@ public class DisplayUpdaterService {
             GraphicsContext gc = canvas.getGraphicsContext2D();
             gc.drawImage(actualAudioVideoFragment.getImage(), 0, 0, width, height);
         });
-        audioStreamService.streamAudio(actualAudioVideoFragment.getAudioData());
 
         startCacheJobs(currentPosition);
     }
@@ -116,7 +112,7 @@ public class DisplayUpdaterService {
         for (TimelinePosition nextFrameTime : expectedNextFrames) {
             if (!framecache.containsKey(nextFrameTime)) {
                 Future<JavaDisplayableAudioVideoFragment> task = executorService.submit(() -> {
-                    return playbackController.getFrameAt(currentPosition);
+                    return playbackController.getVideoFrameAt(currentPosition);
                 });
                 framecache.put(nextFrameTime, task);
                 System.out.println("started " + nextFrameTime);

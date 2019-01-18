@@ -28,7 +28,7 @@ import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
 public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
-    private static final int CHUNK_SIZE = 30;
+    private static final int CHUNK_SIZE = 50;
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;

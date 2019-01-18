@@ -16,8 +16,9 @@ import javafx.application.Platform;
 public class UiTimelineManager {
     private static final int NUMBER_OF_FRAMES_TO_PRECACHE = 20;
     // private IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
-    private List<Consumer<TimelinePosition>> uiConsumers = new ArrayList<>();
-    private List<Consumer<TimelinePosition>> consumers = new ArrayList<>();
+    private List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
+    private List<Consumer<TimelinePosition>> playbackConsumers = new ArrayList<>();
+    private List<Consumer<PlaybackStatus>> statusChangeConsumers = new ArrayList<>();
     private double fps = 30;
     private long sleepTime = (long) (1 / fps * 1000);
     private BigDecimal increment = new BigDecimal(1).divide(new BigDecimal(fps), 100, RoundingMode.HALF_DOWN);
@@ -27,17 +28,23 @@ public class UiTimelineManager {
     private Thread runThread;
     private Object timelineLock = new Object();
 
-    public void registerUiConsumer(Consumer<TimelinePosition> consumer) {
-        this.uiConsumers.add(consumer);
+    public void registerUiPlaybackConsumer(Consumer<TimelinePosition> consumer) {
+        this.uiPlaybackConsumers.add(consumer);
     }
 
-    public void registerConsumer(Consumer<TimelinePosition> consumer) {
-        this.consumers.add(consumer);
+    public void registerPlaybackConsumer(Consumer<TimelinePosition> consumer) {
+        this.playbackConsumers.add(consumer);
+    }
+
+    public void registerStoppedConsumer(Consumer<PlaybackStatus> consumer) {
+        this.statusChangeConsumers.add(consumer);
     }
 
     public void startPlayback() {
         if (!isPlaying) {
             isPlaying = true;
+            statusChangeConsumers.stream()
+                    .forEach(consumer -> consumer.accept(PlaybackStatus.STARTED));
             runThread = new Thread(() -> {
                 while (isPlaying) {
                     synchronized (timelineLock) {
@@ -52,7 +59,11 @@ public class UiTimelineManager {
     }
 
     public void stopPlayback() {
-        isPlaying = false;
+        if (isPlaying) {
+            isPlaying = false;
+            statusChangeConsumers.stream()
+                    .forEach(consumer -> consumer.accept(PlaybackStatus.STOPPED));
+        }
     }
 
     public void jumpRelative(BigDecimal seconds) {
@@ -81,10 +92,10 @@ public class UiTimelineManager {
     }
 
     private void notifyConsumers() {
-        for (var consumer : consumers) {
+        for (var consumer : playbackConsumers) {
             consumer.accept(currentPosition);
         }
-        for (var consumer : uiConsumers) {
+        for (var consumer : uiPlaybackConsumers) {
             Platform.runLater(() -> consumer.accept(currentPosition));
         }
     }
@@ -116,4 +127,12 @@ public class UiTimelineManager {
         jumpRelative(increment);
     }
 
+    public boolean isPlaybackInProgress() {
+        return isPlaying;
+    }
+
+    public static enum PlaybackStatus {
+        STARTED,
+        STOPPED
+    }
 }

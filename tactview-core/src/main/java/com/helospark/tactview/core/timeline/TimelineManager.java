@@ -185,7 +185,7 @@ public class TimelineManager implements SaveLoadContributor {
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             for (var clip : layers.get(i)) {
-                if (clip instanceof VisualTimelineClip) { // TODO: rest later
+                if (clip instanceof VisualTimelineClip && request.isNeedVideo()) { // TODO: rest later
                     VisualTimelineClip visualClip = (VisualTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {

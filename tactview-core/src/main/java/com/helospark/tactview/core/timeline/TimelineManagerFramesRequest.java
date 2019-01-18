@@ -5,6 +5,7 @@ import javax.annotation.Generated;
 public class TimelineManagerFramesRequest {
     private double scale;
     private boolean needSound;
+    private boolean needVideo;
     private Integer previewWidth;
     private Integer previewHeight;
     private Integer frameBufferSize;
@@ -14,6 +15,7 @@ public class TimelineManagerFramesRequest {
     private TimelineManagerFramesRequest(Builder builder) {
         this.scale = builder.scale;
         this.needSound = builder.needSound;
+        this.needVideo = builder.needVideo;
         this.previewWidth = builder.previewWidth;
         this.previewHeight = builder.previewHeight;
         this.frameBufferSize = builder.frameBufferSize;
@@ -22,6 +24,10 @@ public class TimelineManagerFramesRequest {
 
     public boolean isNeedSound() {
         return needSound;
+    }
+
+    public boolean isNeedVideo() {
+        return needVideo;
     }
 
     public double getScale() {
@@ -53,6 +59,7 @@ public class TimelineManagerFramesRequest {
     public static final class Builder {
         private double scale;
         private boolean needSound = true;
+        private boolean needVideo = true;
         private Integer previewWidth;
         private Integer previewHeight;
         private Integer frameBufferSize;
@@ -68,6 +75,11 @@ public class TimelineManagerFramesRequest {
 
         public Builder withNeedSound(boolean needSound) {
             this.needSound = needSound;
+            return this;
+        }
+
+        public Builder withNeedVideo(boolean needVideo) {
+            this.needVideo = needVideo;
             return this;
         }
 

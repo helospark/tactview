@@ -121,7 +121,7 @@ public class InputModeRepository {
                         .withUnscaledX(e.getX())
                         .withUnscaledY(e.getY())
                         .withCanvasImage(() -> {
-                            return playbackController.getFrameAt(timelineManager.getCurrentPosition()).getImage();
+                            return playbackController.getVideoFrameAt(timelineManager.getCurrentPosition()).getImage();
                         })
                         .build();
 

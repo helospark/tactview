@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class AudioVideoFragment {
@@ -17,6 +18,13 @@ public class AudioVideoFragment {
 
     public AudioFrameResult getAudioResult() {
         return audioResult;
+    }
+
+    public void free() {
+        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(videoResult.getBuffer());
+        for (int i = 0; i < audioResult.getChannels().size(); ++i) {
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(audioResult.getChannels().get(i));
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package com.helospark.tactview.core.repository;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 import javax.annotation.Generated;
@@ -23,6 +24,7 @@ public class ProjectRepository implements SaveLoadContributor {
     private int width = 0;
     private int height = 0;
     private BigDecimal fps = BigDecimal.valueOf(24);
+    private BigDecimal frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
 
     public ProjectRepository(@Qualifier("getterIgnoringObjectMapper") ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -33,6 +35,7 @@ public class ProjectRepository implements SaveLoadContributor {
         this.width = builder.width;
         this.height = builder.height;
         this.fps = builder.fps;
+        this.frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
         return this;
     }
 
@@ -50,6 +53,10 @@ public class ProjectRepository implements SaveLoadContributor {
 
     public BigDecimal getFps() {
         return fps;
+    }
+
+    public BigDecimal getFrameTime() {
+        return frameTime;
     }
 
     @Generated("SparkTools")
