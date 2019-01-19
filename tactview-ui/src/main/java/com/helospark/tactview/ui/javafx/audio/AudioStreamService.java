@@ -34,6 +34,7 @@ public class AudioStreamService {
     }
 
     public void streamAudio(byte[] data) {
+        System.out.println("Streaming " + data.length);
         if (data.length > 0) {
             //            System.out.println("Sending this music: ");
             //            for (int i = 0; i < data.length && i < 500; ++i) {

@@ -1,42 +1,38 @@
 package com.helospark.tactview.ui.javafx;
 
-import static java.math.RoundingMode.HALF_UP;
-
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import javax.annotation.PostConstruct;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.util.MathUtil;
-import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
 
 @Component
 public class AudioUpdaterService {
-    private static final int NUMBER_OF_FRAMES_TO_KEEP_IN_MEMORY = 30;
+    private static final int AUDIOFRAME_NUMBER_PER_ELEMENT = 5;
+    private static final int MAX_RING_BUFFER_SIZE = 15;
+    private static final int BYTES_PER_SAMPLE = 2 * 1;
+    private static final BigDecimal BYTES_PER_SECOND = BigDecimal.valueOf(44100 * BYTES_PER_SAMPLE);
 
     private UiTimelineManager uiTimelineManager;
     private PlaybackController playbackController;
     private AudioStreamService audioStreamService;
     private ProjectRepository projectRepository;
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(1);
-    private Thread soundUpdaterThread;
-    private Runnable audioThreadUpdater;
+    private Deque<AudioData> buffer = new LinkedList<>();
+    private AtomicInteger inprogressItems = new AtomicInteger(0);
 
-    private volatile AudioData[] buffer = new AudioData[2];
-    private volatile int activeBuffer = 0;
-    private volatile TimelinePosition expectedPosition = null;
-    private volatile TimelinePosition lastWrittenEndPosition = null;
-    private volatile TimelinePosition lastReadPosition = null;
-    private volatile boolean audioPlaybackProcessing = false;
-    private volatile Future<Object> threadUpdaterFuture = null;
+    private ExecutorService executorService = Executors.newFixedThreadPool(1);
+
+    private TimelinePosition lastWrittenEndPosition = null;
+    private volatile TimelinePosition latestPosition;
 
     public AudioUpdaterService(UiTimelineManager uiTimelineManager, PlaybackController playbackController, AudioStreamService audioStreamService, ProjectRepository projectRepository) {
         this.uiTimelineManager = uiTimelineManager;
@@ -45,117 +41,143 @@ public class AudioUpdaterService {
         this.projectRepository = projectRepository;
     }
 
-    @SuppressWarnings("unchecked")
-    @PostConstruct
-    public void init() {
-        audioThreadUpdater = () -> {
-            while (audioPlaybackProcessing) {
-                try {
-                    if (lastWrittenEndPosition == null || (lastWrittenEndPosition.subtract(expectedPosition).multiply(BigDecimal.valueOf(1000)).isLessThan(5))) {
-                        int available = audioStreamService.numberOfBytesThatCanBeWritten();
-
-                        if (buffer[activeBuffer] == null) {
-                            threadUpdaterFuture.get();
-                            if (buffer[activeBuffer] == null) {
-                                readDataToBufferAtPosition(expectedPosition, activeBuffer);
-                            }
-                        }
-
-                        byte[] bytes = buffer[activeBuffer].getBytes(available); /** channels**/
-
-                        audioStreamService.streamAudio(bytes);
-
-                        lastWrittenEndPosition = calculateEndPosition(buffer[activeBuffer].startPosition, bytes.length);
-
-                        if (!buffer[activeBuffer].hasMoreBytes()) {
-                            buffer[activeBuffer] = null;
-                            int bufferToUpdate = activeBuffer;
-                            threadUpdaterFuture = (Future<Object>) executorService.submit(() -> {
-                                TimelinePosition nextPosition = calculateNextTime(lastReadPosition);
-                                readDataToBufferAtPosition(nextPosition, bufferToUpdate);
-                            });
-                            activeBuffer = (activeBuffer + 1) % 2;
-                        }
-                    }
-
-                    int millisecondsToSleep = MathUtil.clamp(lastWrittenEndPosition.subtract(expectedPosition).getSeconds().multiply(BigDecimal.valueOf(1000)).intValue(), 0, 2000);
-                    ThreadSleep.sleep(millisecondsToSleep);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    ThreadSleep.sleep(100);
-                }
-            }
-        };
-
-    }
-
-    private TimelinePosition calculateNextTime(TimelinePosition currentPosition) {
-        return currentPosition.add(projectRepository.getFrameTime().multiply(BigDecimal.valueOf(NUMBER_OF_FRAMES_TO_KEEP_IN_MEMORY)));
-    }
-
-    private void readDataToBufferAtPosition(TimelinePosition position, int bufferToUpdate) {
-        TimelinePosition newPosition = position;
-        byte[] data = playbackController.getAudioFrameAt(newPosition, NUMBER_OF_FRAMES_TO_KEEP_IN_MEMORY);
-        lastReadPosition = newPosition;
-        AudioData audioData = new AudioData(newPosition, data);
-        buffer[bufferToUpdate] = audioData;
-        System.out.println("Updated buffer at " + position + " " + bufferToUpdate);
-    }
-
-    private TimelinePosition calculateEndPosition(TimelinePosition startPosition, int bytes) {
-        // 2 bytes, 44100 samples, 1 channels
-        BigDecimal time = BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(44100 * 2 * 1), 20, HALF_UP);
-        System.out.println("Updating time with " + time + " " + buffer[activeBuffer].startPosition);
-        return startPosition.add(time);
-    }
-
     public void updateAtPosition(TimelinePosition position) {
         if (uiTimelineManager.isPlaybackInProgress()) {
-            this.expectedPosition = position;
+            latestPosition = position;
 
-            if (!audioPlaybackProcessing) {
-                readDataToBufferAtPosition(position, 0);
-                activeBuffer = 0;
-                threadUpdaterFuture = executorService.submit(() -> calculateNextTime(position), 1);
-                audioPlaybackProcessing = true;
-                soundUpdaterThread = new Thread(audioThreadUpdater);
-                soundUpdaterThread.start();
+            if (lastWrittenEndPosition == null || position.isGreaterThan(lastWrittenEndPosition)) {
+                streamAudio(position);
+            } else if (lastWrittenEndPosition.subtract(position).getSeconds().doubleValue() * 1000.0 < 50.0) {
+                streamAudio(lastWrittenEndPosition);
             }
+
+            TimelinePosition fillBuffersFrom = lastWrittenEndPosition != null ? lastWrittenEndPosition : position;
+            int endIndex = MAX_RING_BUFFER_SIZE - buffer.size() - inprogressItems.get();
+            for (int i = 0; i < endIndex; ++i) {
+                int currentIndex = i;
+                inprogressItems.incrementAndGet();
+                TimelinePosition startPosition = calculateAt(fillBuffersFrom, currentIndex);
+                TimelinePosition endPosition = calculateAt(fillBuffersFrom, currentIndex + 1);
+
+                executorService.submit(() -> {
+                    if (latestPosition.isLessThan(endPosition)) {
+                        byte[] audioFrame = playbackController.getAudioFrameAt(startPosition, AUDIOFRAME_NUMBER_PER_ELEMENT);
+                        buffer.offer(new AudioData(startPosition, audioFrame));
+                    }
+                    inprogressItems.decrementAndGet();
+                });
+            }
+
+        }
+    }
+
+    private TimelinePosition calculateAt(TimelinePosition fillBuffersFrom, int currentIndex) {
+        return fillBuffersFrom.add(projectRepository.getFrameTime().multiply(BigDecimal.valueOf(currentIndex * AUDIOFRAME_NUMBER_PER_ELEMENT)));
+    }
+
+    private void streamAudio(TimelinePosition position) {
+        dropFramesUntil(position);
+        int availableBytesToWrite = audioStreamService.numberOfBytesThatCanBeWritten();
+
+        if (availableBytesToWrite == 0) {
+            return;
+        }
+
+        AudioData currentFrame = buffer.poll();
+
+        if (currentFrame != null) {
+            int writtenBytes = 0;
+
+            byte[] tmpBytes = currentFrame.getBytesStartingFrom(position, availableBytesToWrite);
+            audioStreamService.streamAudio(tmpBytes);
+            availableBytesToWrite -= tmpBytes.length;
+            writtenBytes += tmpBytes.length;
+
+            AudioData previousFrame = currentFrame;
+
+            while (availableBytesToWrite > 0 && (currentFrame = buffer.poll()) != null) {
+                if (currentFrame.startPosition.isGreaterThan(previousFrame.startPosition)) {
+                    tmpBytes = currentFrame.getBytes(availableBytesToWrite);
+                    audioStreamService.streamAudio(tmpBytes);
+                    availableBytesToWrite -= tmpBytes.length;
+                    writtenBytes += tmpBytes.length;
+                    previousFrame = currentFrame;
+                } else {
+                    currentFrame = null;
+                }
+            }
+
+            if (availableBytesToWrite == 0 && currentFrame != null) { // Some data may be in the buffer still
+                buffer.offerFirst(currentFrame);
+            }
+
+            if (writtenBytes > 0) {
+                lastWrittenEndPosition = position.add(BigDecimal.valueOf(writtenBytes).divide(BYTES_PER_SECOND, 10, RoundingMode.HALF_UP));
+            }
+        } // else play some silence, alternatively we could block :)
+    }
+
+    private void dropFramesUntil(TimelinePosition position) {
+        // TODO: user jumping back
+        //        AudioData lastFrame = buffer.peekLast();
+        //
+        //        if (lastFrame != null && position.isGreaterThan(firstFrame.calculateEndPosition())) {
+        //            buffer.clear(); // user jumped back on the timeline, need to reinitialize the buffers
+        //        }
+
+        AudioData data;
+        while ((data = buffer.peek()) != null && !data.containsTime(position)) {
+            buffer.poll();
         }
     }
 
     public void playbackStopped() {
-        audioPlaybackProcessing = false;
-        audioStreamService.clearBuffer();
         lastWrittenEndPosition = null;
-        lastReadPosition = null;
-        expectedPosition = null;
-        buffer[0] = null;
-        buffer[1] = null;
-        soundUpdaterThread = null;
+        audioStreamService.clearBuffer();
     }
 
     static class AudioData {
         TimelinePosition startPosition;
         byte[] data;
-        int index;
 
         public AudioData(TimelinePosition position, byte[] data) {
             this.startPosition = position;
             this.data = data;
-            this.index = 0;
         }
 
-        public boolean hasMoreBytes() {
-            return index < data.length;
+        public TimelinePosition calculateEndPosition() {
+            return new TimelinePosition(startPosition.getSeconds().add(BigDecimal.valueOf(data.length).divide(BYTES_PER_SECOND, 10, RoundingMode.HALF_UP)));
+        }
+
+        public boolean containsTime(TimelinePosition expectedPosition) {
+            TimelinePosition endPosition = calculateEndPosition();
+            return (expectedPosition.isLessOrEqualToThan(endPosition) && expectedPosition.isGreaterOrEqualToThan(startPosition));
         }
 
         public byte[] getBytes(int available) {
-            int endPosition = Math.min(index + available, data.length);
-            byte[] result = Arrays.copyOfRange(data, index, endPosition);
-            index = endPosition;
+            int endPosition = Math.min(available, data.length);
+            byte[] result = Arrays.copyOfRange(data, 0, endPosition);
             return result;
         }
+
+        public byte[] getBytesStartingFrom(TimelinePosition position, int available) {
+            int sampleStart = position.subtract(startPosition).getSeconds().multiply(BYTES_PER_SECOND).intValue();
+            if ((sampleStart % BYTES_PER_SAMPLE) != 0) {
+                sampleStart += ((BYTES_PER_SAMPLE - (sampleStart % BYTES_PER_SAMPLE)));
+            }
+            if (sampleStart <= 0) {
+                return new byte[0];
+            }
+            int endPosition = Math.min(sampleStart + available, data.length);
+            byte[] result = Arrays.copyOfRange(data, sampleStart, endPosition);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "AudioData [startPosition=" + startPosition + "]";
+        }
+
     }
 
 }

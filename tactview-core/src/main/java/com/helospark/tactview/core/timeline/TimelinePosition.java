@@ -90,6 +90,10 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
         return this.compareTo(key) > 0;
     }
 
+    public boolean isGreaterOrEqualToThan(TimelinePosition position) {
+        return this.compareTo(position) >= 0;
+    }
+
     public boolean isLessOrEqualToThan(TimelinePosition other) {
         return this.getSeconds().compareTo(other.getSeconds()) <= 0;
     }
