@@ -105,10 +105,15 @@ public class UiTimelineManager {
     }
 
     public List<TimelinePosition> expectedNextFrames() {
+        return expectedNextFrames(NUMBER_OF_FRAMES_TO_PRECACHE);
+
+    }
+
+    public List<TimelinePosition> expectedNextFrames(int number) {
         if (isPlaying) {
             List<TimelinePosition> result = new ArrayList<>();
             TimelinePosition position = currentPosition;
-            for (int i = 0; i < NUMBER_OF_FRAMES_TO_PRECACHE; ++i) {
+            for (int i = 0; i < number; ++i) {
                 position = position.add(increment);
                 result.add(position);
             }
@@ -116,7 +121,6 @@ public class UiTimelineManager {
         } else {
             return Collections.emptyList();
         }
-
     }
 
     public void moveBackOneFrame() {
@@ -125,6 +129,10 @@ public class UiTimelineManager {
 
     public void moveForwardOneFrame() {
         jumpRelative(increment);
+    }
+
+    public BigDecimal getIncrement() {
+        return increment;
     }
 
     public boolean isPlaybackInProgress() {
