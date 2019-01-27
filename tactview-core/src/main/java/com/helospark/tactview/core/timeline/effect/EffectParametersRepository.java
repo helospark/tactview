@@ -166,6 +166,11 @@ public class EffectParametersRepository {
         return String.valueOf(valueToChange.effect.getValueAt(positionToLocal(position, valueToChange)));
     }
 
+    public Object getValueAtAsObject(String id, TimelinePosition position) {
+        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(id);
+        return valueToChange.effect.getValueAt(positionToLocal(position, valueToChange));
+    }
+
     private TimelinePosition positionToLocal(TimelinePosition position, EffectStore valueToChange) {
         return position.from(valueToChange.intervalAware.getGlobalInterval().getStartPosition());
     }

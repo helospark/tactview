@@ -45,4 +45,8 @@ public class Point {
         return new Point(x * rhs.x, y * rhs.y);
     }
 
+    public Point deepClone() {
+        return new Point(x, y);
+    }
+
 }

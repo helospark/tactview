@@ -33,11 +33,10 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
     @Override
     protected EffectLine handle(PolygonProvider polygonProvider, ValueProviderDescriptor descriptor) {
         Button button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.DIAMOND));
-        Polygon resultPolygon = new Polygon();
 
         PrimitiveEffectLine result = PrimitiveEffectLine
                 .builder()
-                .withCurrentValueProvider(() -> resultPolygon.serializeToString())
+                .withCurrentValueProvider(() -> "???")
                 .withVisibleNode(button)
                 .withDescriptorId(polygonProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
@@ -51,10 +50,18 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
                 })
                 .build();
 
-        button.setOnMouseClicked(event -> inputModeRepository.requestPolygon(polygon -> {
-            result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-            resultPolygon.copyFrom(polygon);
-        }, polygonProvider.getSizeFunction()));
+        button.setOnMouseClicked(event -> {
+            Polygon currentPolygon = (Polygon) effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition());
+            if (currentPolygon.getPoints().isEmpty()) {
+                inputModeRepository.requestPolygon(polygon -> {
+                    result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
+                }, polygonProvider.getSizeFunction());
+            } else {
+                inputModeRepository.requestPolygonPrefilled(polygon -> {
+                    result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
+                }, polygonProvider.getSizeFunction(), currentPolygon.getPoints());
+            }
+        });
 
         return result;
     }

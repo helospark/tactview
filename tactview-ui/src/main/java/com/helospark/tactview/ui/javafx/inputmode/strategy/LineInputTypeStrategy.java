@@ -11,7 +11,7 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     private boolean hasStartPosition;
 
     @Override
-    public void onMouseDownEvent(StrategyInput input) {
+    public void onMouseDownEvent(StrategyMouseInput input) {
         double x = input.x;
         double y = input.y;
         if (!hasStartPosition) {
@@ -22,14 +22,14 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     }
 
     @Override
-    public void onMouseDraggedEvent(StrategyInput input) {
+    public void onMouseDraggedEvent(StrategyMouseInput input) {
         double x = input.x;
         double y = input.y;
         result.end = new Point(x, y);
     }
 
     @Override
-    public void onMouseUpEvent(StrategyInput input) {
+    public void onMouseUpEvent(StrategyMouseInput input) {
         double x = input.x;
         double y = input.y;
         result.end = new Point(x, y);
@@ -48,7 +48,7 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     }
 
     @Override
-    public void draw(GraphicsContext canvas) {
+    public void draw(GraphicsContext canvas, int width, int height) {
 
     }
 

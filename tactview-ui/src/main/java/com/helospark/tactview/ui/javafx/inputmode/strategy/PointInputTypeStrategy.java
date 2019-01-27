@@ -9,14 +9,14 @@ public class PointInputTypeStrategy implements InputTypeStrategy<Point> {
     private boolean done = false;
 
     @Override
-    public void onMouseDraggedEvent(StrategyInput input) {
+    public void onMouseDraggedEvent(StrategyMouseInput input) {
         double x = input.x;
         double y = input.y;
         result = new Point(x, y);
     }
 
     @Override
-    public void onMouseUpEvent(StrategyInput input) {
+    public void onMouseUpEvent(StrategyMouseInput input) {
         double x = input.x;
         double y = input.y;
         result = new Point(x, y);
@@ -35,7 +35,7 @@ public class PointInputTypeStrategy implements InputTypeStrategy<Point> {
     }
 
     @Override
-    public void draw(GraphicsContext canvas) {
+    public void draw(GraphicsContext canvas, int width, int height) {
         if (result != null) {
             canvas.strokeLine(result.x - 10, result.y, result.x + 10, result.y);
             canvas.strokeLine(result.x, result.y - 10, result.x, result.y + 10);

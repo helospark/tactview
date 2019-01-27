@@ -20,17 +20,20 @@ import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PolygonInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
-import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyInput;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyKeyInput;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyMouseInput;
+import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 @Component
-public class InputModeRepository {
+public class InputModeRepository implements CleanableMode {
     private SizeFunctionImplementation sizeFunctionImplementation;
     private Canvas canvas;
     private UiProjectRepository projectRepository;
@@ -64,57 +67,80 @@ public class InputModeRepository {
         InputTypeStrategy<Point> currentStrategy = new PointInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
     }
 
     public void requestLine(Consumer<InterpolationLine> consumer, SizeFunction sizeFunction) {
         InputTypeStrategy<InterpolationLine> currentStrategy = new LineInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(InterpolationLine.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
     }
 
     public void requestPolygon(Consumer<Polygon> consumer, SizeFunction sizeFunction) {
         InputTypeStrategy<Polygon> currentStrategy = new PolygonInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(Polygon.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+    }
+
+    public void requestPolygonPrefilled(Consumer<Polygon> consumer, SizeFunction sizeFunction, List<Point> polygon) {
+        InputTypeStrategy<Polygon> currentStrategy = new PolygonInputTypeStrategy(polygon);
+        this.inputModeInput = new InputModeInput<>(Polygon.class, consumer, currentStrategy, sizeFunction);
+        inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
     }
 
     public void requestColor(Consumer<Color> consumer) {
         InputTypeStrategy<Color> currentStrategy = new ColorInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(Color.class, consumer, currentStrategy, SizeFunction.CLAMP_TO_MIN_MAX);
         inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
     }
 
     private void processStrategy() {
-        canvas.setOnMousePressed(createHandler(input -> inputModeInput.currentStrategy.onMouseDownEvent(input)));
-        canvas.setOnMouseReleased(createHandler(input -> inputModeInput.currentStrategy.onMouseUpEvent(input)));
-        canvas.setOnMouseDragged(createHandler(input -> inputModeInput.currentStrategy.onMouseDraggedEvent(input)));
-        EventHandler<? super MouseEvent> mouseMoveHandler = createHandler(input -> inputModeInput.currentStrategy.onMouseMovedEvent(input));
+        canvas.setOnMousePressed(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDownEvent(input)));
+        canvas.setOnMouseReleased(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseUpEvent(input)));
+        canvas.setOnMouseDragged(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDraggedEvent(input)));
+        canvas.setOnKeyReleased(createKeyHandler(input -> inputModeInput.currentStrategy.onKeyReleasedEvent(input)));
+        EventHandler<? super MouseEvent> mouseMoveHandler = createMouseHandler(input -> inputModeInput.currentStrategy.onMouseMovedEvent(input));
         canvas.setOnMouseMoved(e -> {
             mouseMoveHandler.handle(e);
-            GraphicsContext graphics = canvas.getGraphicsContext2D();
-            if (inputModeInput != null) {
-                // TODO: should not be here
-                displayUpdaterService.updateCurrentPosition();
-                Platform.runLater(() -> {
-                    graphics.setStroke(javafx.scene.paint.Color.RED);
-                    graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
-                    graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
-                    if (inputModeInput != null) {
-                        inputModeInput.currentStrategy.draw(graphics);
-                    }
-                });
-            }
+            updateCanvas(e);
         });
-        canvas.setOnMouseExited(e -> displayUpdaterService.updateCurrentPosition());
+        canvas.setOnMouseExited(e -> {
+            displayUpdaterService.updateCurrentPosition();
+            updateCanvasWithStrategy(canvas.getGraphicsContext2D());
+        });
     }
 
-    private EventHandler<? super MouseEvent> createHandler(Consumer<StrategyInput> function) {
+    private void updateCanvas(MouseEvent e) {
+        GraphicsContext graphics = canvas.getGraphicsContext2D();
+        if (inputModeInput != null) {
+            // TODO: should not be here
+            displayUpdaterService.updateCurrentPosition();
+            Platform.runLater(() -> {
+                graphics.setStroke(javafx.scene.paint.Color.RED);
+                graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
+                graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
+                updateCanvasWithStrategy(graphics);
+            });
+        }
+    }
+
+    private void updateCanvasWithStrategy(GraphicsContext graphics) {
+        if (inputModeInput != null) {
+            inputModeInput.currentStrategy.draw(graphics, (int) canvas.getWidth(), (int) canvas.getHeight());
+        }
+    }
+
+    private EventHandler<? super MouseEvent> createMouseHandler(Consumer<StrategyMouseInput> function) {
         return e -> {
             if (inputModeInput != null) {
                 double x = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getX(), inputModeInput.sizeFunction, projectRepository.getPreviewWidth()));
                 double y = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getY(), inputModeInput.sizeFunction, projectRepository.getPreviewHeight()));
 
-                StrategyInput strategyInput = StrategyInput.builder()
+                StrategyMouseInput strategyInput = StrategyMouseInput.builder()
                         .withx(x)
                         .withy(y)
                         .withMouseEvent(e)
@@ -126,6 +152,24 @@ public class InputModeRepository {
                         .build();
 
                 function.accept(strategyInput);
+                if (inputModeInput.currentStrategy.getResultType() == ResultType.PARTIAL) {
+                    handleStrategyHasResult();
+                }
+                if (inputModeInput.currentStrategy.getResultType() == ResultType.DONE) {
+                    handleStrategyHasResult();
+                    reset();
+                }
+            }
+        };
+    }
+
+    private EventHandler<? super KeyEvent> createKeyHandler(Consumer<StrategyKeyInput> function) {
+        return e -> {
+            if (inputModeInput != null) {
+                StrategyKeyInput strategyInput = new StrategyKeyInput(e);
+
+                function.accept(strategyInput);
+
                 if (inputModeInput.currentStrategy.getResultType() == ResultType.PARTIAL) {
                     handleStrategyHasResult();
                 }
@@ -150,6 +194,11 @@ public class InputModeRepository {
     public void reset() {
         inputModeInput = null;
         inputModeChanged(false);
+    }
+
+    @Override
+    public void clean() {
+        reset();
     }
 
 }

@@ -4,21 +4,24 @@ import javafx.scene.canvas.GraphicsContext;
 
 public interface InputTypeStrategy<T> {
 
-    public default void onMouseDownEvent(StrategyInput input) {
+    public default void onMouseDownEvent(StrategyMouseInput input) {
     }
 
-    public default void onMouseMovedEvent(StrategyInput input) {
+    public default void onMouseMovedEvent(StrategyMouseInput input) {
     }
 
-    public default void onMouseUpEvent(StrategyInput input) {
+    public default void onMouseUpEvent(StrategyMouseInput input) {
     }
 
-    public default void onMouseDraggedEvent(StrategyInput input) {
+    public default void onMouseDraggedEvent(StrategyMouseInput input) {
+    }
+
+    public default void onKeyReleasedEvent(StrategyKeyInput input) {
     }
 
     public ResultType getResultType();
 
-    public void draw(GraphicsContext canvas);
+    public void draw(GraphicsContext canvas, int width, int height);
 
     public T getResult();
 

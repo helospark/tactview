@@ -9,7 +9,7 @@ public class ColorInputTypeStrategy implements InputTypeStrategy<Color> {
     private boolean done = false;
 
     @Override
-    public void onMouseUpEvent(StrategyInput input) {
+    public void onMouseUpEvent(StrategyMouseInput input) {
         double x = input.unscaledX;
         double y = input.unscaledY;
 
@@ -30,7 +30,7 @@ public class ColorInputTypeStrategy implements InputTypeStrategy<Color> {
     }
 
     @Override
-    public void draw(GraphicsContext canvas) {
+    public void draw(GraphicsContext canvas, int width, int height) {
 
     }
 

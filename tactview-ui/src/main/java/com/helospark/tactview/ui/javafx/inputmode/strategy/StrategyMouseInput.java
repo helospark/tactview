@@ -7,7 +7,7 @@ import javax.annotation.Generated;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 
-public class StrategyInput {
+public class StrategyMouseInput {
     public double x;
     public double y;
     public double unscaledX;
@@ -16,7 +16,7 @@ public class StrategyInput {
     public Supplier<Image> canvasImage;
 
     @Generated("SparkTools")
-    private StrategyInput(Builder builder) {
+    private StrategyMouseInput(Builder builder) {
         this.x = builder.x;
         this.y = builder.y;
         this.unscaledX = builder.unscaledX;
@@ -72,8 +72,8 @@ public class StrategyInput {
             return this;
         }
 
-        public StrategyInput build() {
-            return new StrategyInput(this);
+        public StrategyMouseInput build() {
+            return new StrategyMouseInput(this);
         }
     }
 }
