@@ -3,6 +3,8 @@ package com.helospark.tactview.core.util;
 import java.math.BigDecimal;
 import java.util.Random;
 
+import com.helospark.tactview.core.timeline.TimelinePosition;
+
 public class RepeatableRandom implements SavedContentAddable<RepeatableRandom> {
     int seed;
 
@@ -12,6 +14,14 @@ public class RepeatableRandom implements SavedContentAddable<RepeatableRandom> {
 
     public RepeatableRandom(int seed) {
         this.seed = seed;
+    }
+
+    public Random createRandomForPosition(TimelinePosition position) {
+        return createRandom(position.getSeconds());
+    }
+
+    public Random createRandomForPosition(BigDecimal position) {
+        return createRandom(position);
     }
 
     public int nextInt(BigDecimal position) {
