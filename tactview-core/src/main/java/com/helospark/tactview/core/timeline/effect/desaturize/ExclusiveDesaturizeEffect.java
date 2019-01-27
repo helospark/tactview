@@ -1,7 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.desaturize;
 
-import static com.helospark.tactview.core.timeline.effect.interpolation.ColorPickerType.CIRCLE;
-import static com.helospark.tactview.core.timeline.effect.interpolation.RenderTypeHint.TYPE;
+import static com.helospark.tactview.core.timeline.effect.interpolation.hint.ColorPickerType.CIRCLE;
+import static com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint.TYPE;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,9 +1,13 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.Objects;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.SliderValueType;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -37,28 +41,34 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         TextField textField = new TextField();
         textField.getStyleClass().add("integer-property-field");
         HBox hbox = new HBox();
-
-        Slider slider = new Slider();
-        slider.setMin(integerProvider.getMin());
-        slider.setMax(integerProvider.getMax());
-        slider.setShowTickLabels(true);
-        slider.setMinorTickCount(3);
-        slider.valueProperty().addListener((obs, oldval, newVal) -> {
-            if (slider.isValueChanging()) {
-                userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
-            }
-            slider.setValue(newVal.intValue());
-        });
-
-        textField.setOnKeyReleased(newValue -> {
-            userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
-        });
-
-        StringConverter<Number> converter = new NumberStringConverter();
-        Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
-
         hbox.getChildren().add(textField);
-        hbox.getChildren().add(slider);
+
+        if (Objects.equals(descriptor.getRenderHints().get(RenderTypeHint.TYPE), SliderValueType.INPUT_FIELD)) {
+            textField.setOnKeyReleased(newValue -> {
+                userChangedValueObservable.setValue(textField.getText());
+            });
+        } else {
+            Slider slider = new Slider();
+            slider.setMin(integerProvider.getMin());
+            slider.setMax(integerProvider.getMax());
+            slider.setShowTickLabels(true);
+            slider.setMinorTickCount(3);
+            slider.valueProperty().addListener((obs, oldval, newVal) -> {
+                if (slider.isValueChanging()) {
+                    userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
+                }
+                slider.setValue(newVal.intValue());
+            });
+
+            textField.setOnKeyReleased(newValue -> {
+                userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
+            });
+
+            StringConverter<Number> converter = new NumberStringConverter();
+            Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
+
+            hbox.getChildren().add(slider);
+        }
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> textField.getText())

@@ -1,11 +1,13 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
-import com.helospark.lightdi.LightDiContext;
+import java.util.Objects;
+
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.lightdi.aware.ContextAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.SliderValueType;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -19,11 +21,10 @@ import javafx.util.StringConverter;
 import javafx.util.converter.NumberStringConverter;
 
 @Component
-public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<DoubleProvider> implements ContextAware {
+public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<DoubleProvider> {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
-    private LightDiContext context;
 
     public DoublePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
             UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
@@ -44,7 +45,7 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         HBox hbox = new HBox();
         hbox.getChildren().add(textField);
 
-        if (doubleProvider.getSizeFunction().equals(SizeFunction.CLAMP_TO_MIN_MAX)) {
+        if (doubleProvider.getSizeFunction().equals(SizeFunction.CLAMP_TO_MIN_MAX) && !Objects.equals(descriptor.getRenderHints().get(RenderTypeHint.TYPE), SliderValueType.INPUT_FIELD)) {
             Slider slider = new Slider();
             slider.setMin(doubleProvider.getMin());
             slider.setMax(doubleProvider.getMax());
@@ -96,11 +97,6 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
 
     private String doubleProviderValueToString(String id, TimelinePosition position) {
         return effectParametersRepository.getValueAt(id, position);
-    }
-
-    @Override
-    public void setContext(LightDiContext context) {
-        this.context = context;
     }
 
 }

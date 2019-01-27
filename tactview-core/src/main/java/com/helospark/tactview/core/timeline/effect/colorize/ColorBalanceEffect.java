@@ -1,7 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.colorize;
 
-import static com.helospark.tactview.core.timeline.effect.interpolation.ColorPickerType.CIRCLE;
-import static com.helospark.tactview.core.timeline.effect.interpolation.RenderTypeHint.TYPE;
+import static com.helospark.tactview.core.timeline.effect.interpolation.hint.ColorPickerType.CIRCLE;
+import static com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint.TYPE;
 
 import java.util.Collections;
 import java.util.List;
@@ -64,7 +64,8 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(colorBalance, this);
     }
 
-    public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2, ColorizeService colorizeService2) {
+    public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2,
+            ColorizeService colorizeService2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
         this.brignessContrastService = brignessContrastService2;

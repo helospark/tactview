@@ -9,9 +9,9 @@ import org.controlsfx.glyphfont.GlyphFontRegistry;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
-import com.helospark.tactview.core.timeline.effect.interpolation.ColorPickerType;
-import com.helospark.tactview.core.timeline.effect.interpolation.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.ColorPickerType;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;

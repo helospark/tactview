@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.proceduralclip.noise;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -16,6 +17,8 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.SliderValueType;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
@@ -176,6 +179,7 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
         ValueProviderDescriptor seedDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(seedProvider)
                 .withName("seed")
+                .withRenderHints(Map.of(RenderTypeHint.TYPE, SliderValueType.INPUT_FIELD))
                 .build();
 
         ValueProviderDescriptor xOffsetDescriptor = ValueProviderDescriptor.builder()
