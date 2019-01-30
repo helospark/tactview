@@ -1,11 +1,8 @@
 package com.helospark.tactview.core.util;
 
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,15 +28,10 @@ public class ClasspathJsonParser {
 
     public String readClasspathFile(String fileName) {
         try {
-            URL fileUrl = this.getClass().getResource("/" + fileName);
-            if (fileUrl == null) {
-                throw new RuntimeException("Cannot find classpath file: " + fileName);
-            }
-            Path uri;
-            uri = Paths.get(fileUrl.toURI());
-            return new String(Files.readAllBytes(uri), Charset.forName("UTF-8"));
+            InputStream stream = getClass().getResourceAsStream("/" + fileName);
+            return new String(stream.readAllBytes(), Charset.forName("UTF-8"));
         } catch (Exception e) {
-            throw new RuntimeException("Cannot read file", e);
+            throw new RuntimeException("Cannot read file " + fileName, e);
         }
     }
 
