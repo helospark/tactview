@@ -13,7 +13,8 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.IntervalAware;
+import com.helospark.tactview.core.timeline.EffectAware;
+import com.helospark.tactview.core.timeline.EffectAware.EffectChangedRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -63,7 +64,7 @@ public class EffectParametersRepository {
         });
     }
 
-    private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, IntervalAware intervalAware, String containingElementId) {
+    private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, EffectAware intervalAware, String containingElementId) {
         for (var element : list) {
             var a = element.getKeyframeableEffect();
             allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware, element));
@@ -113,7 +114,8 @@ public class EffectParametersRepository {
         if (valueToChange != null) {
             TimelinePosition relativePosition = positionToLocal(message.getGlobalTimelinePosition(), valueToChange);
             valueToChange.effect.keyframeAdded(relativePosition, message.getValue());
-            messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(message.getDescriptorId(), valueToChange.intervalAware.getGlobalInterval(), valueToChange.containingElementId));
+            valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
+            messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(message.getDescriptorId(), valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
         } else {
             System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
         }
@@ -122,7 +124,8 @@ public class EffectParametersRepository {
     public void removeKeyframe(KeyframeRemovedRequest request) {
         EffectStore valueToChange = primitiveEffectIdToEffectMap.get(request.getDescriptorId());
         valueToChange.effect.removeKeyframeAt(positionToLocal(request.getGlobalTimelinePosition(), valueToChange));
-        messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(request.getDescriptorId(), valueToChange.intervalAware.getGlobalInterval(), valueToChange.containingElementId));
+        valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
+        messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(request.getDescriptorId(), valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
     }
 
     public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
@@ -134,20 +137,20 @@ public class EffectParametersRepository {
     static class EffectStore {
         public KeyframeableEffect effect;
         public String containingElementId;
-        public IntervalAware intervalAware;
+        public EffectAware effectAware;
         public Optional<ValueProviderDescriptor> descriptor;
 
-        public EffectStore(KeyframeableEffect effect, String elementId, IntervalAware intervalAware) {
+        public EffectStore(KeyframeableEffect effect, String elementId, EffectAware intervalAware) {
             this.effect = effect;
             this.containingElementId = elementId;
-            this.intervalAware = intervalAware;
+            this.effectAware = intervalAware;
             this.descriptor = Optional.empty();
         }
 
-        public EffectStore(KeyframeableEffect effect, String elementId, IntervalAware intervalAware, ValueProviderDescriptor descriptor) {
+        public EffectStore(KeyframeableEffect effect, String elementId, EffectAware intervalAware, ValueProviderDescriptor descriptor) {
             this.effect = effect;
             this.containingElementId = elementId;
-            this.intervalAware = intervalAware;
+            this.effectAware = intervalAware;
             this.descriptor = Optional.ofNullable(descriptor);
         }
 
@@ -158,7 +161,7 @@ public class EffectParametersRepository {
         return valueToChange.effect.getValues()
                 .entrySet()
                 .stream()
-                .collect(Collectors.toMap(a -> a.getKey().add(valueToChange.intervalAware.getGlobalInterval().getStartPosition()), b -> b.getValue()));
+                .collect(Collectors.toMap(a -> a.getKey().add(valueToChange.effectAware.getGlobalInterval().getStartPosition()), b -> b.getValue()));
     }
 
     public String getValueAt(String id, TimelinePosition position) {
@@ -172,7 +175,7 @@ public class EffectParametersRepository {
     }
 
     private TimelinePosition positionToLocal(TimelinePosition position, EffectStore valueToChange) {
-        return position.from(valueToChange.intervalAware.getGlobalInterval().getStartPosition());
+        return position.from(valueToChange.effectAware.getGlobalInterval().getStartPosition());
     }
 
     public boolean isKeyframeAt(String id, TimelinePosition position) {
@@ -222,7 +225,7 @@ public class EffectParametersRepository {
         EffectStore value = allEffectIdToEffectMap.get(keyframeableEffectId);
         if (value.effect.supportsKeyframes() && value.effect.keyframesEnabled() != useKeyframes) {
             value.effect.setUseKeyframes(useKeyframes);
-            messagingService.sendAsyncMessage(new KeyframeEnabledWasChangedMessage(value.containingElementId, keyframeableEffectId, useKeyframes, value.intervalAware.getGlobalInterval()));
+            messagingService.sendAsyncMessage(new KeyframeEnabledWasChangedMessage(value.containingElementId, keyframeableEffectId, useKeyframes, value.effectAware.getGlobalInterval()));
         } else {
             logger.warn("Setting keyframes is called for id {}, but keyframeableInterpolator does not support it", keyframeableEffectId);
         }

@@ -13,7 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
-public abstract class StatelessEffect implements IntervalAware, IntervalSettable {
+public abstract class StatelessEffect implements EffectAware, IntervalAware, IntervalSettable {
     protected String id;
     protected String factoryId;
     protected TimelineInterval interval;

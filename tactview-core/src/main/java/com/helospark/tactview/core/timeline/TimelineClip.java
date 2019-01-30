@@ -17,7 +17,7 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
-public abstract class TimelineClip implements IntervalAware, IntervalSettable {
+public abstract class TimelineClip implements EffectAware, IntervalAware, IntervalSettable {
     private Object fullClipLock = new Object();
 
     protected String id;

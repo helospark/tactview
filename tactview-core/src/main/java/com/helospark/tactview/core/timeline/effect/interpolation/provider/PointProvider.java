@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.DesSerFactory;
 
@@ -56,6 +57,11 @@ public class PointProvider extends CompositeKeyframeableEffect {
     @Override
     public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
         return PointProviderFactory.class;
+    }
+
+    public static PointProvider ofNormalizedImagePosition(double d, double e) {
+        return new PointProvider(new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.5)),
+                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.5)));
     }
 
 }

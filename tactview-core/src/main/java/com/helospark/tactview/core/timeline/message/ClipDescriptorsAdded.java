@@ -2,15 +2,15 @@ package com.helospark.tactview.core.timeline.message;
 
 import java.util.List;
 
-import com.helospark.tactview.core.timeline.IntervalAware;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 public class ClipDescriptorsAdded {
     private String clipId;
     private List<ValueProviderDescriptor> descriptors;
-    private IntervalAware clip;
+    private TimelineClip clip;
 
-    public ClipDescriptorsAdded(String clipId, List<ValueProviderDescriptor> descriptors, IntervalAware clip) {
+    public ClipDescriptorsAdded(String clipId, List<ValueProviderDescriptor> descriptors, TimelineClip clip) {
         this.descriptors = descriptors;
         this.clipId = clipId;
         this.clip = clip;
@@ -24,7 +24,7 @@ public class ClipDescriptorsAdded {
         return descriptors;
     }
 
-    public IntervalAware getClip() {
+    public TimelineClip getClip() {
         return clip;
     }
 
