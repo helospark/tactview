@@ -16,6 +16,22 @@
       <artifactId>lightdi</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx</artifactId>
+      <version>11.0.2</version>
+      <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>11.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-swing</artifactId>
+      <version>11.0.2</version>
+    </dependency>
+    <dependency>
       <groupId>org.controlsfx</groupId>
       <artifactId>controlsfx</artifactId>
       <version>9.0.0</version>
@@ -75,7 +91,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>com.helospark.tactview.ui.javafx.JavaFXUiMain</mainClass>
+              <mainClass>application.HackyMain</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -83,7 +99,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>1.5</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -94,11 +110,11 @@
               <transformers>
                 <transformer
                   implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.helospark.tactview.ui.javafx.JavaFXUiMain</mainClass>
+                  <mainClass>application.HackyMain</mainClass>
                 </transformer>
                 <transformer
-                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                    <resource>resources/lightdi/preprocessed</resource>
+                  implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>resources/lightdi/preprocessed</resource>
                 </transformer>
               </transformers>
             </configuration>

@@ -4,3 +4,5 @@ target
 *.so
 *.ppm
 tactview-core/src/main/resources/linux-x86-64/
+release
+dependency-reduced-pom.xml

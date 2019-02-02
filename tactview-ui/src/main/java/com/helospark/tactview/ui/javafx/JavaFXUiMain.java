@@ -276,7 +276,9 @@ public class JavaFXUiMain extends Application {
         };
     }
 
-    public static void main(String[] args) {
+    @Override
+    public void init() throws Exception {
+        super.init();
         LightDiContextConfiguration configuration = LightDiContextConfiguration.builder()
                 .withThreadNumber(4)
                 .withCheckForIntegrity(true)
@@ -303,7 +305,9 @@ public class JavaFXUiMain extends Application {
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
         renderService = lightDi.getBean(RenderDialogOpener.class);
         lightDi.eagerInitAllBeans();
+    }
 
+    public static void main(String[] args) {
         launch(args);
     }
 
