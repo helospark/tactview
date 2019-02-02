@@ -29,7 +29,7 @@ extern "C"
         cv::split(inputMat, matChannels);
 
         Mat singleChannelInputMat;
-        cv::cvtColor(inputMat, singleChannelInputMat ,CV_BGRA2GRAY);
+        cv::cvtColor(inputMat, singleChannelInputMat ,cv::COLOR_BGRA2GRAY);
 
         Mat singleChannelOutputMat;
         cv::Canny(singleChannelInputMat, singleChannelOutputMat, request->lowThreshold, request->lowThreshold * request->highThresholdMultiplier, request->apertureSize);

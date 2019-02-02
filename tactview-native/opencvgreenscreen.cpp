@@ -23,8 +23,8 @@ extern "C"
 
       cv::Mat hsv;
       cv::Mat rgbMat;
-      cv::cvtColor(inputMat , rgbMat , CV_RGBA2RGB);
-      cvtColor(rgbMat,hsv,CV_RGB2HSV);
+      cv::cvtColor(inputMat , rgbMat , cv::COLOR_RGBA2RGB);
+      cvtColor(rgbMat,hsv,cv::COLOR_RGB2HSV);
 
       cv::Mat filtered;
 

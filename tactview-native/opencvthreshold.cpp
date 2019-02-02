@@ -31,7 +31,7 @@ extern "C"
         cv::cvtColor(inputMat, grayscaleMat, cv::COLOR_RGBA2GRAY, 0);
 
         Mat grayscaleOutput;
-        cv::adaptiveThreshold(grayscaleMat, grayscaleOutput, 255, ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, request->blockSize, request->addedConstant);
+        cv::adaptiveThreshold(grayscaleMat, grayscaleOutput, 255, ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, request->blockSize, request->addedConstant);
 
 
        std::vector<Mat> resultChannels;

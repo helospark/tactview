@@ -14,7 +14,6 @@
     <dependency>
       <groupId>com.helospark</groupId>
       <artifactId>lightdi</artifactId>
-      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>
@@ -97,24 +96,14 @@
                   implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>com.helospark.tactview.ui.javafx.JavaFXUiMain</mainClass>
                 </transformer>
-                <!-- <transformer -->
-                <!-- implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer"> -->
-                <!-- <resource>resources/lightdi/preprocessed</resource> -->
-                <!-- </transformer> -->
+                <transformer
+                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                    <resource>resources/lightdi/preprocessed</resource>
+                </transformer>
               </transformers>
             </configuration>
           </execution>
         </executions>
-        <configuration>
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>resources/lightdi/preprocessed</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>

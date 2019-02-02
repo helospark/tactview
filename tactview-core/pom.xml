@@ -21,7 +21,6 @@
     <dependency>
       <groupId>com.helospark</groupId>
       <artifactId>lightdi</artifactId>
-      <version>0.0.3</version>
     </dependency>
     <dependency> <!-- Needed, because Eclipse's annotationprocessor is not good -->
       <groupId>io.github.lukehutch</groupId>

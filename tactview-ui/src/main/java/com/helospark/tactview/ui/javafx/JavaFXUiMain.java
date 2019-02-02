@@ -281,6 +281,7 @@ public class JavaFXUiMain extends Application {
                 .withThreadNumber(4)
                 .withCheckForIntegrity(true)
                 .withAdditionalDependencies(Collections.singletonList(new JnaLightDiPlugin()))
+                .withUseClasspathFile(false)
                 .build();
         lightDi = LightDi.initContextByClass(MainApplicationConfiguration.class, configuration);
         uiTimeline = lightDi.getBean(UiTimeline.class);

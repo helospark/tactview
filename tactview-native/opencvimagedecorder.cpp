@@ -19,7 +19,7 @@ extern "C"
     } ImageMetadataResonse;
 
     ImageMetadataResonse readMetadata(ImageMetadataRequest* request)  {
-        Mat mat = imread(request->path, CV_LOAD_IMAGE_COLOR);
+        Mat mat = imread(request->path, cv::IMREAD_COLOR);
         ImageMetadataResonse response;
         response.width = mat.cols;
         response.height = mat.rows;
@@ -35,7 +35,7 @@ extern "C"
 
     void readImage(ImageRequest* request)
     {
-        Mat input = imread(request->path, CV_LOAD_IMAGE_COLOR);
+        Mat input = imread(request->path, cv::IMREAD_COLOR);
 
 
         if(! input.data ) {
