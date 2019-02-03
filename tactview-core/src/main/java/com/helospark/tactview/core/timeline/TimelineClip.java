@@ -344,6 +344,19 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return result;
     }
 
+    protected List<String> getChannelDependency(TimelinePosition position) {
+        ArrayList<String> result = new ArrayList<>();
+
+        List<String> clipsRequiredForEffect = getEffectsAtGlobalPosition(position, StatelessEffect.class)
+                .stream()
+                .flatMap(a -> a.getChannelDependency(position).stream())
+                .collect(Collectors.toList());
+
+        result.addAll(clipsRequiredForEffect);
+
+        return result;
+    }
+
     public List<StatelessEffect> getEffects() {
         return effectChannels.stream()
                 .flatMap(a -> a.stream())

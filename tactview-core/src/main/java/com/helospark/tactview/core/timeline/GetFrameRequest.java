@@ -17,6 +17,7 @@ public class GetFrameRequest {
     private boolean applyEffects;
     private Optional<Integer> applyEffectsLessThanEffectChannel;
     private Map<String, ReadOnlyClipImage> requestedClips;
+    private Map<String, ReadOnlyClipImage> requestedChannelClips;
 
     @Generated("SparkTools")
     private GetFrameRequest(Builder builder) {
@@ -28,6 +29,7 @@ public class GetFrameRequest {
         this.applyEffects = builder.applyEffects;
         this.applyEffectsLessThanEffectChannel = builder.applyEffectsLessThanEffectChannel;
         this.requestedClips = builder.requestedClips;
+        this.requestedChannelClips = builder.requestedChannelClips;
     }
 
     public TimelinePosition getGlobalPosition() {
@@ -58,6 +60,10 @@ public class GetFrameRequest {
         return requestedClips;
     }
 
+    public Map<String, ReadOnlyClipImage> getRequestedChannelClips() {
+        return requestedChannelClips;
+    }
+
     public Optional<Integer> getApplyEffectsLessThanEffectChannel() {
         return applyEffectsLessThanEffectChannel;
     }
@@ -85,6 +91,7 @@ public class GetFrameRequest {
         private boolean applyEffects;
         private Optional<Integer> applyEffectsLessThanEffectChannel = Optional.empty();
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
+        private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
 
         private Builder() {
         }
@@ -126,6 +133,11 @@ public class GetFrameRequest {
 
         public Builder withRequestedClips(Map<String, ReadOnlyClipImage> requestedClips) {
             this.requestedClips = requestedClips;
+            return this;
+        }
+
+        public Builder withRequestedChannelClips(Map<String, ReadOnlyClipImage> requestedChannelClips) {
+            this.requestedChannelClips = requestedChannelClips;
             return this;
         }
 

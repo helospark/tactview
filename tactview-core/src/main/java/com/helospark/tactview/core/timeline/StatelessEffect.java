@@ -104,4 +104,8 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
         // clients can optionally override if necessary
     }
 
+    protected List<String> getChannelDependency(TimelinePosition position) {
+        return List.of();
+    }
+
 }

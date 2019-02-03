@@ -5,6 +5,7 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.proceduralclip.channelcopy.ChannelCopyProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighlightProceduralEffect;
@@ -184,6 +185,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new ParticleSystemProceduralClip(metadata, node, loadMetadata);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem channelCopyProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("channelcopy", "Copy channel",
+                request -> {
+                    return new ChannelCopyProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                },
+                (node, loadMetadata) -> {
+                    return new ChannelCopyProceduralClip(metadata, node, loadMetadata);
                 });
     }
 }

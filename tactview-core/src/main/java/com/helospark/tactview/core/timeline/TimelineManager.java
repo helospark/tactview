@@ -194,6 +194,13 @@ public class TimelineManager implements SaveLoadContributor {
                                 .filter(a -> clipsToFrames.containsKey(a))
                                 .map(a -> clipsToFrames.get(a))
                                 .collect(Collectors.toMap(a -> a.id, a -> a.clipFrameResult));
+                        Map<String, ReadOnlyClipImage> channelCopiedClips = visualClip.getChannelDependency(request.getPosition())
+                                .stream()
+                                .flatMap(channelId -> findChannelWithId(channelId).stream())
+                                .flatMap(channel -> channel.getDataAt(request.getPosition()).stream())
+                                .filter(a -> clipsToFrames.containsKey(a.getId()))
+                                .map(a -> clipsToFrames.get(a.getId()))
+                                .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult));
 
                         GetFrameRequest frameRequest = GetFrameRequest.builder()
                                 .withScale(request.getScale())
@@ -202,6 +209,7 @@ public class TimelineManager implements SaveLoadContributor {
                                 .withExpectedHeight(request.getPreviewHeight())
                                 .withApplyEffects(true)
                                 .withRequestedClips(requiredClips)
+                                .withRequestedChannelClips(channelCopiedClips)
                                 .build();
 
                         ReadOnlyClipImage frameResult = visualClip.getFrame(frameRequest);
@@ -212,7 +220,9 @@ public class TimelineManager implements SaveLoadContributor {
 
                         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 
-                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame, clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class));
+                        String channelId = findChannelForClipId(visualClip.getId()).get().getId();
+                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame, clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class),
+                                channelId);
                     }, executorService).thenAccept(a -> {
                         clipsToFrames.put(visualClip.getId(), a);
                     }).exceptionally(e -> {
@@ -292,7 +302,7 @@ public class TimelineManager implements SaveLoadContributor {
         List<TreeNode> tree = new ArrayList<>();
 
         for (var clip : clipsToRender.values()) {
-            if (clip.getClipDependency(position).isEmpty()) {
+            if (clip.getClipDependency(position).isEmpty() && clip.getChannelDependency(position).isEmpty()) {
                 tree.add(new TreeNode(clip));
             }
         }
@@ -321,8 +331,9 @@ public class TimelineManager implements SaveLoadContributor {
 
     private List<TreeNode> findNodesDependentOn(Map<String, TimelineClip> clipsToRender, String dependentClipId, TimelinePosition position) {
         List<TreeNode> result = new ArrayList<>();
+        String dependentClipChannel = findChannelForClipId(dependentClipId).map(channel -> channel.getId()).get();
         for (TimelineClip clip : clipsToRender.values()) {
-            if (clip.getClipDependency(position).contains(dependentClipId)) {
+            if (clip.getClipDependency(position).contains(dependentClipId) || clip.getChannelDependency(position).contains(dependentClipChannel)) {
                 result.add(new TreeNode(clip));
             }
         }
@@ -853,6 +864,12 @@ public class TimelineManager implements SaveLoadContributor {
     public List<String> getAllClipIds() {
         return channels.stream()
                 .flatMap(channel -> channel.getAllClipId().stream())
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAllChannelIds() {
+        return channels.stream()
+                .map(channel -> channel.getId())
                 .collect(Collectors.toList());
     }
 

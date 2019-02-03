@@ -18,6 +18,7 @@ public class StatelessEffectRequest {
     private int canvasWidth;
     private int canvasHeight;
     private Map<String, ReadOnlyClipImage> requestedClips;
+    private Map<String, ReadOnlyClipImage> requestedChannelClips;
     private VisualTimelineClip currentTimelineClip;
 
     @Generated("SparkTools")
@@ -89,6 +90,7 @@ public class StatelessEffectRequest {
         private int canvasHeight;
         private int effectChannel;
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
+        private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
         private VisualTimelineClip currentTimelineClip;
 
         private Builder() {
@@ -131,6 +133,11 @@ public class StatelessEffectRequest {
 
         public Builder withRequestedClips(Map<String, ReadOnlyClipImage> requestedClips) {
             this.requestedClips = requestedClips;
+            return this;
+        }
+
+        public Builder withRequestedChannelClips(Map<String, ReadOnlyClipImage> requestedChannelClips) {
+            this.requestedChannelClips = requestedChannelClips;
             return this;
         }
 

@@ -11,15 +11,17 @@ public class RenderFrameData {
     public double globalAlpha;
     public BlendModeStrategy blendModeStrategy;
     public ReadOnlyClipImage clipFrameResult;
+    public String channelId;
     public String id;
     public Optional<AbstractVideoTransitionEffect> videoTransition;
 
-    public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ReadOnlyClipImage clipFrameResult, List<AbstractVideoTransitionEffect> list) {
+    public RenderFrameData(String id, double globalAlpha, BlendModeStrategy blendModeStrategy, ReadOnlyClipImage clipFrameResult, List<AbstractVideoTransitionEffect> list, String channelId) {
         this.id = id;
         this.globalAlpha = globalAlpha;
         this.blendModeStrategy = blendModeStrategy;
         this.clipFrameResult = clipFrameResult;
         videoTransition = list.isEmpty() ? Optional.empty() : Optional.ofNullable(list.get(0)); // should multiple transition be handled?
+        this.channelId = channelId;
     }
 
 }

@@ -91,6 +91,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                         .withCanvasWidth(frameRequest.getExpectedWidth())
                         .withCanvasHeight(frameRequest.getExpectedHeight())
                         .withRequestedClips(frameRequest.getRequestedClips())
+                        .withRequestedChannelClips(frameRequest.getRequestedChannelClips())
                         .withCurrentTimelineClip(this)
                         .withEffectChannel(effectChannelIndex)
                         .build();
