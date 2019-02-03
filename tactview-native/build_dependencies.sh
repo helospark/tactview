@@ -36,8 +36,6 @@ apt-get -y install \
   libnuma-dev
 
 cd /tmp
-mkdir ffmpeg
-mkdir ffmpeg_build
 
 echo "Downloading FFmpeg"
 
@@ -58,8 +56,6 @@ echo "Installing FFmpeg (Requires root)"
 
 make install
 
-rm -r /tmp/ffmpeg
-rm -r /tmp/ffmpeg_build
 
 echo "Installing OpenCV"
 

@@ -8,9 +8,7 @@ import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
 import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.LightDiContext;
@@ -22,6 +20,7 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.key.GlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.key.KeyCombinationRepository;
+import com.helospark.tactview.ui.javafx.key.ShortcutExecutedEvent;
 import com.helospark.tactview.ui.javafx.key.StandardGlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
@@ -33,7 +32,6 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination.Modifier;
-import javafx.scene.input.KeyEvent;
 
 @Component
 public class GlobalKeyCombinationAttacher implements ScenePostProcessor, ContextAware {
@@ -69,15 +67,10 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     public void postProcess(Scene scene) {
         setupDefaultKeyCombinations();
 
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            keyCombinationRepository.getCombinations()
-                    .filter(a -> a.getKey().match(event))
-                    .findFirst()
-                    .ifPresent(a -> {
-                        a.getValue().onShortcutExecuted(event);
-                        event.consume();
-                    });
-        });
+        keyCombinationRepository.getCombinations()
+                .forEach(a -> {
+                    scene.getAccelerators().put(a.getKey(), () -> a.getValue().onShortcutExecuted(new ShortcutExecutedEvent(a.getKey())));
+                });
     }
 
     private void setupDefaultKeyCombinations() {
@@ -123,7 +116,6 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     } else {
                         List<String> selectedEffects = selectedNodeRepository.getSelectedEffectIds();
                         if (selectedEffects.size() > 0) {
-                            String selectedEffectId = selectedEffects.get(0);
                             copyPasteRepository.copyEffect(selectedEffects.get(0));
                         }
                     }
@@ -139,35 +131,6 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                 }));
     }
 
-    private Map<String, Object> processMap(Map<String, Object> result) {
-        try {
-            return whoMadeCheckedExceptionsssss(result);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Map<String, Object> whoMadeCheckedExceptionsssss(Map<String, Object> result) throws InstantiationException, IllegalAccessException {
-        int i = 0;
-        for (i = 0; i < 1000; ++i) {
-            boolean hasChange = false;
-            Map<String, Object> tempMap = new LinkedHashMap<>();
-            for (var entry : result.entrySet()) {
-
-            }
-            result.clear();
-            result.putAll(tempMap);
-            tempMap.clear();
-            if (!hasChange) {
-                break;
-            }
-        }
-        if (i >= 1000) {
-            throw new RuntimeException("Infinite loop?");
-        }
-        return result;
-    }
-
     private KeyCodeCombination on(KeyCode code) {
         return new KeyCodeCombination(code);
     }
@@ -180,7 +143,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         return new KeyCodeCombination(code, modifier1, modifier2);
     }
 
-    private GlobalShortcutHandler useHandler(String name, Consumer<KeyEvent> consumer) {
+    private GlobalShortcutHandler useHandler(String name, Consumer<ShortcutExecutedEvent> consumer) {
         return new StandardGlobalShortcutHandler(name, consumer);
     }
 
