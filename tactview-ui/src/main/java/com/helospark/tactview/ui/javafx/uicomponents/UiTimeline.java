@@ -34,10 +34,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -45,7 +45,6 @@ import javafx.scene.shape.Line;
 @Component
 public class UiTimeline {
 
-    private TimeLineZoomCallback timeLineZoomCallback;
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManager timelineManager;
@@ -54,15 +53,14 @@ public class UiTimeline {
 
     private Line positionIndicatorLine;
 
-    private ScrollPane timeLineScrollPane;
+    private ZoomableScrollPane timeLineScrollPane;
     private VBox timelineTitlesPane;
     private BorderPane borderPane;
     private Canvas timelineLabelCanvas;
 
-    public UiTimeline(TimeLineZoomCallback timeLineZoomCallback, MessagingService messagingService,
+    public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
             TimelineManager timelineManager, UiTimelineManager uiTimelineManager, UiPlaybackPreferenceRepository playbackPreferenceRepository) {
-        this.timeLineZoomCallback = timeLineZoomCallback;
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
@@ -103,26 +101,16 @@ public class UiTimeline {
         HBox titleBarTop = new HBox();
         titleBarTop.getChildren().addAll(addChannelButton, cutAllClipsButton);
 
-        HBox timelineTimeLabels = new HBox();
-
-        timelineLabelCanvas = new Canvas(200, 20);
-        timelineLabelCanvas.widthProperty().bind(root.widthProperty());
-        timelineLabelCanvas.widthProperty().addListener(newValue -> updateTimelineLabels());
-        timelineTimeLabels.prefWidthProperty().bind(lower.widthProperty());
-
-        timelineTimeLabels.getChildren().add(timelineLabelCanvas);
-
         VBox timelineTopRow = new VBox();
         timelineTopRow.getChildren().add(titleBarTop);
-        timelineTopRow.getChildren().add(timelineTimeLabels);
 
         borderPane.setTop(timelineTopRow);
 
-        timeLineScrollPane = new ScrollPane();
         GridPane gridPane = new GridPane();
 
-        Group timelineGroup = new Group();
+        //        Group timelineGroup = new Group();
         Group zoomGroup = new Group();
+        timeLineScrollPane = new ZoomableScrollPane(zoomGroup, timelineState);
         VBox timelineBoxes = new VBox();
         timelineBoxes.setPrefWidth(2000);
         timelineBoxes.setPadding(new Insets(0, 0, 0, -6));
@@ -159,14 +147,43 @@ public class UiTimeline {
         timelineTitlesScrollPane.setContent(timelineTitles);
         timelineTitlesPane.getChildren().add(timelineTitlesScrollPane);
 
-        timelineGroup.getChildren().add(zoomGroup);
+        //        timelineGroup.getChildren().add(zoomGroup);
+        ScrollPane timelineTimeLabelsScrollPane = new ScrollPane();
+        timelineTimeLabelsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        timelineTimeLabelsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
-        timelineState.onShownLocationChange(() -> updateTimelineLabels());
+        Group timelineCanvasGroup = new Group();
+        timelineLabelCanvas = new Canvas(200, 35);
+        timelineLabelCanvas.widthProperty().bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
 
-        zoomGroup.addEventFilter(ScrollEvent.SCROLL, e -> {
-            timeLineZoomCallback.onScroll(e, timeLineScrollPane);
-            e.consume();
-        });
+        timelineLabelCanvas.widthProperty().addListener(newValue -> updateTimelineLabels());
+        //        timelineLabelCanvas.scaleXProperty().addListener(newValue -> updateTimelineLabels());
+
+        timelineCanvasGroup.getChildren().add(timelineLabelCanvas);
+
+        //        timelineTimeLabelsScrollPane.prefWidthProperty().bind(timeLineScrollPane.widthProperty());
+        timelineTimeLabelsScrollPane.setContent(timelineCanvasGroup);
+        timelineTimeLabelsScrollPane.hvalueProperty().bind(timeLineScrollPane.hvalueProperty());
+        timelineTimeLabelsScrollPane.setFitToHeight(true);
+        timelineTimeLabelsScrollPane.setFitToWidth(true);
+
+        Region timelineTitlesSpacingPane = new Region();
+        timelineTitlesSpacingPane.prefWidthProperty().set(timelineState.getChannelTitlesWidth());
+        timelineTitlesSpacingPane.minWidthProperty().set(timelineState.getChannelTitlesWidth());
+        timelineTitlesSpacingPane.maxWidthProperty().set(timelineState.getChannelTitlesWidth());
+
+        HBox timelineLabelsTopHbox = new HBox();
+        timelineLabelsTopHbox.getChildren().add(timelineTitlesSpacingPane);
+        timelineLabelsTopHbox.getChildren().add(timelineTimeLabelsScrollPane);
+
+        timelineTopRow.getChildren().add(timelineLabelsTopHbox);
+
+        //        timelineState.onShownLocationChange(() -> updateTimelineLabels());
+
+        //        zoomGroup.addEventFilter(ScrollEvent.SCROLL, e -> {
+        //            timeLineZoomCallback.onScroll(e, timeLineScrollPane);
+        //            e.consume();
+        //        });
         timeLineScrollPane.hvalueProperty().addListener((o, oldValue, newValue) -> {
             Bounds viewportBounds = timeLineScrollPane.getViewportBounds();
             Bounds contentBounds = timeLineScrollPane.getContent().getBoundsInLocal();
@@ -176,16 +193,16 @@ public class UiTimeline {
             timelineState.setTranslate(translate);
         });
 
-        timelineTimeLabels.setOnMouseClicked(e -> {
+        timelineTimeLabelsScrollPane.setOnMouseClicked(e -> {
             double xPosition = e.getX() - timelineTitles.getWidth();
             jumpTo(xPosition);
         });
-        timelineTimeLabels.setOnMouseDragged(e -> {
+        timelineTimeLabelsScrollPane.setOnMouseDragged(e -> {
             double xPosition = e.getX() - timelineTitles.getWidth();
             jumpTo(xPosition);
         });
 
-        timeLineScrollPane.setContent(timelineGroup);
+        //        timeLineScrollPane.setContent(timelineGroup);
         timeLineScrollPane.prefHeightProperty().bind(borderPane.heightProperty());
 
         gridPane.add(timelineTitlesPane, 0, 0);
@@ -199,39 +216,32 @@ public class UiTimeline {
 
     private void updateTimelineLabels() {
         Platform.runLater(() -> {
+            System.out.println("Canvas width: " + timelineLabelCanvas.getWidth());
             GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
+            double scaleX = timelineLabelCanvas.scaleXProperty().get();
+            //            timelineLabelCanvas.setScaleX(scaleX);
             int width = (int) timelineLabelCanvas.getWidth();
             int height = (int) timelineLabelCanvas.getHeight();
             g.clearRect(0, 0, width, height);
-            drawLines(0.1, 17, 1.0);
-            drawLines(0.5, 12, 0.5);
-            drawLines(1.0, 7, 0.8);
-            drawLines(10.0, 3, 1.5);
-            drawLines(60.0, 0, 3.0);
+            drawLines(0.1, 27, 1.0);
+            drawLines(0.5, 22, 0.5);
+            drawLines(1.0, 17, 0.8);
+            drawLines(10.0, 13, 1.5);
+            drawLines(60.0, 10, 3.0);
         });
     }
 
     private void drawLines(double distance, int lineStart, double lineWidth) {
-        int startPosition = (int) timelineTitlesPane.getWidth() + 4;
-        if (startPosition < 0) {
-            startPosition = 0;
-        }
+        int startPosition = 4;
         int width = (int) timelineLabelCanvas.getWidth();
         int height = (int) timelineLabelCanvas.getHeight();
         GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
         double secondLength = timelineState.secondsToPixelsWithZoom(new TimelineLength(BigDecimal.valueOf(distance)));
 
-        TimelinePosition startTime = timelineState.getTimeAtLeftSide();
         if (secondLength > 3) {
-            double firstSecond = secondLength - (startTime.divide(BigDecimal.valueOf(distance)).decimalPart()
-                    .multiply(TimelineState.PIXEL_PER_SECOND)
-                    .multiply(BigDecimal.valueOf(distance))
-                    .getSeconds()
-                    .doubleValue());
-
             g.setStroke(Color.BLACK);
             g.setLineWidth(lineWidth);
-            for (double i = startPosition + firstSecond; i <= width; i += secondLength) {
+            for (double i = startPosition; i <= width; i += secondLength) {
                 g.strokeLine(i, lineStart, i, height);
             }
         }
