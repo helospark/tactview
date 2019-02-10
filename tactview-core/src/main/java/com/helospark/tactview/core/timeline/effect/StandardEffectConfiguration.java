@@ -35,6 +35,7 @@ import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeD
 import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
 import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErodeDilateImplementation;
 import com.helospark.tactview.core.timeline.effect.extend.ExtendClipWithBlurredImage;
+import com.helospark.tactview.core.timeline.effect.extend.FrameExtendEffect;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.glow.LightGlowEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
@@ -71,6 +72,7 @@ import com.helospark.tactview.core.timeline.effect.transform.SepiaEffect;
 import com.helospark.tactview.core.timeline.effect.transform.service.GenericMatrixTransformationService;
 import com.helospark.tactview.core.timeline.effect.vignette.VignetteEffect;
 import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
+import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -549,6 +551,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new BlendEffect(node, loadMetadata, strategies, scaleService, independentPixelOperation))
                 .withName("Blend")
                 .withSupportedEffectId("blendeffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory frameExtendEffect(FrameExtender frameExtender) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new FrameExtendEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), frameExtender))
+                .withRestoreFactory((node, loadMetadata) -> new FrameExtendEffect(node, loadMetadata, frameExtender))
+                .withName("Extend frame")
+                .withSupportedEffectId("extendframe")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

@@ -13,12 +13,12 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
-import com.helospark.tactview.core.timeline.TimelineManager;
-import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.render.FrameExtender;
+import com.helospark.tactview.core.timeline.render.FrameExtender.FrameExtendRequest;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
@@ -36,14 +36,14 @@ public class TimelineImagePatternService {
     private UiProjectRepository uiProjectRepository;
     private ByteBufferToImageConverter byteBufferToImageConverter;
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
-    private TimelineManager timelineManager;
+    private FrameExtender frameExtender;
 
     public TimelineImagePatternService(UiProjectRepository uiProjectRepository, ByteBufferToImageConverter byteBufferToImageConverter,
-            ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, TimelineManager timelineManager) {
+            ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, FrameExtender frameExtender) {
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
-        this.timelineManager = timelineManager;
+        this.frameExtender = frameExtender;
     }
 
     public Image createTimelinePattern(VisualTimelineClip videoClip, int timelineWidth) {
@@ -80,14 +80,16 @@ public class TimelineImagePatternService {
                     .build();
             ReadOnlyClipImage frame = videoClip.getFrame(frameRequest);
 
-            // TODO: Custom domain object
-            TimelineManagerFramesRequest expandFrameRequest = TimelineManagerFramesRequest.builder()
-                    .withPosition(position.add(videoClip.getInterval().getStartPosition()))
+            FrameExtendRequest extendFrameRequest = FrameExtendRequest.builder()
+                    .withClip(videoClip)
+                    .withFrameResult(frame)
                     .withPreviewWidth(uiProjectRepository.getPreviewWidth())
                     .withPreviewHeight(uiProjectRepository.getPreviewHeight())
                     .withScale(uiProjectRepository.getScaleFactor())
+                    .withTimelinePosition(position.add(videoClip.getInterval().getStartPosition()))
                     .build();
-            ClipImage expandedFrame = timelineManager.expandFrame(frame, videoClip, expandFrameRequest);
+
+            ClipImage expandedFrame = frameExtender.expandFrame(extendFrameRequest);
 
             BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(expandedFrame.getBuffer(), expandedFrame.getWidth(), expandedFrame.getHeight());
             java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);

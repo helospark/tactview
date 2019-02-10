@@ -194,11 +194,11 @@ public class UiTimeline {
         });
 
         timelineTimeLabelsScrollPane.setOnMouseClicked(e -> {
-            double xPosition = e.getX() - timelineTitles.getWidth();
+            double xPosition = e.getX();
             jumpTo(xPosition);
         });
         timelineTimeLabelsScrollPane.setOnMouseDragged(e -> {
-            double xPosition = e.getX() - timelineTitles.getWidth();
+            double xPosition = e.getX();
             jumpTo(xPosition);
         });
 
@@ -218,8 +218,7 @@ public class UiTimeline {
         Platform.runLater(() -> {
             System.out.println("Canvas width: " + timelineLabelCanvas.getWidth());
             GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
-            double scaleX = timelineLabelCanvas.scaleXProperty().get();
-            //            timelineLabelCanvas.setScaleX(scaleX);
+
             int width = (int) timelineLabelCanvas.getWidth();
             int height = (int) timelineLabelCanvas.getHeight();
             g.clearRect(0, 0, width, height);

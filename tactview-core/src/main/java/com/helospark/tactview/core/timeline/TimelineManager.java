@@ -47,6 +47,7 @@ import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
+import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -71,10 +72,11 @@ public class TimelineManager implements SaveLoadContributor {
     private ProjectRepository projectRepository;
     private EffectFactoryChain effectFactoryChain;
     private LinkClipRepository linkClipRepository;
+    private FrameExtender frameExtender;
 
     public TimelineManager(FrameBufferMerger frameBufferMerger,
             EffectFactoryChain effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
-            AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository, LinkClipRepository linkClipRepository) {
+            AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository, LinkClipRepository linkClipRepository, FrameExtender frameExtender) {
         this.effectFactoryChain = effectFactoryChain;
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
@@ -82,6 +84,7 @@ public class TimelineManager implements SaveLoadContributor {
         this.audioBufferMerger = audioBufferMerger;
         this.projectRepository = projectRepository;
         this.linkClipRepository = linkClipRepository;
+        this.frameExtender = frameExtender;
     }
 
     public TimelineClip addClip(AddClipRequest request) {
@@ -213,7 +216,7 @@ public class TimelineManager implements SaveLoadContributor {
                                 .build();
 
                         ReadOnlyClipImage frameResult = visualClip.getFrame(frameRequest);
-                        ReadOnlyClipImage expandedFrame = expandFrame(frameResult, visualClip, request);
+                        ReadOnlyClipImage expandedFrame = expandFrame(request, visualClip, frameResult);
 
                         BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
                         double alpha = visualClip.getAlpha(request.getPosition());
@@ -268,6 +271,18 @@ public class TimelineManager implements SaveLoadContributor {
         // TODO: audio effects
 
         return new AudioVideoFragment(finalResult, audioBuffer);
+    }
+
+    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult) {
+        FrameExtender.FrameExtendRequest frameExtendRequest = FrameExtender.FrameExtendRequest.builder()
+                .withClip(visualClip)
+                .withFrameResult(frameResult)
+                .withPreviewWidth(request.getPreviewWidth())
+                .withPreviewHeight(request.getPreviewHeight())
+                .withScale(request.getScale())
+                .withTimelinePosition(request.getPosition())
+                .build();
+        return frameExtender.expandFrame(frameExtendRequest);
     }
 
     private AudioFrameResult renderAudio(List<String> renderOrder, Map<String, AudioFrameResult> audioToFrames) {
@@ -355,47 +370,6 @@ public class TimelineManager implements SaveLoadContributor {
             currentLayer.add(element.clip);
             recursiveLayering(element.children, i + 1, layers);
         }
-    }
-
-    public ClipImage expandFrame(ReadOnlyClipImage frameResult, VisualTimelineClip clip, TimelineManagerFramesRequest request) {
-        int previewHeight = request.getPreviewHeight();
-        int previewWidth = request.getPreviewWidth();
-        TimelinePosition timelinePosition = request.getPosition();
-        ByteBuffer outputBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(previewHeight * previewWidth * 4);
-        ByteBuffer inputBuffer = frameResult.getBuffer();
-
-        int anchorOffsetX = clip.getHorizontalAlignment(timelinePosition).apply(frameResult.getWidth(), previewWidth);
-        int anchorOffsetY = clip.getVerticalAlignment(timelinePosition).apply(frameResult.getHeight(), previewHeight);
-
-        double scale = request.getScale();
-
-        int requestedXPosition = anchorOffsetX + clip.getXPosition(timelinePosition, scale);
-        int requestedYPosition = anchorOffsetY + clip.getYPosition(timelinePosition, scale);
-
-        int destinationStartX = Math.max(requestedXPosition, 0);
-        int destinationStartY = Math.max(requestedYPosition, 0);
-
-        int destinationEndX = Math.min(requestedXPosition + frameResult.getWidth(), previewWidth);
-        int destinationEndY = Math.min(requestedYPosition + frameResult.getHeight(), previewHeight);
-
-        int sourceX = Math.max(0, -requestedXPosition);
-        int sourceY = Math.max(0, -requestedYPosition);
-
-        int width = Math.max(0, destinationEndX - destinationStartX);
-        int height = Math.max(0, destinationEndY - destinationStartY);
-
-        int numberOfBytesInARow = width * 4;
-        byte[] tmpBuffer = new byte[numberOfBytesInARow];
-
-        int toY = sourceY + height;
-        for (int i = sourceY; i < toY; ++i) {
-            inputBuffer.position(i * frameResult.getWidth() * 4 + sourceX * 4);
-            inputBuffer.get(tmpBuffer, 0, numberOfBytesInARow);
-
-            outputBuffer.position((destinationStartY + i) * previewWidth * 4 + destinationStartX * 4);
-            outputBuffer.put(tmpBuffer, 0, numberOfBytesInARow);
-        }
-        return new ClipImage(outputBuffer, previewWidth, previewHeight);
     }
 
     private ReadOnlyClipImage executeGlobalEffectsOn(ReadOnlyClipImage finalImage) {
