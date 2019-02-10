@@ -60,8 +60,8 @@ public class PointProvider extends CompositeKeyframeableEffect {
     }
 
     public static PointProvider ofNormalizedImagePosition(double d, double e) {
-        return new PointProvider(new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.5)),
-                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.5)));
+        return new PointProvider(new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(d)),
+                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(e)));
     }
 
 }

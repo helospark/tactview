@@ -25,7 +25,7 @@ public class RectangleProviderFactory extends AbstractKeyframeableEffectDesSerFa
             points.add(point);
         }
 
-        return new RectangleProvider(points);
+        return new RectangleProvider(points, currentFieldValue.sizeFunction);
     }
 
 }

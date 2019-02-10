@@ -37,8 +37,8 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
 
     @Override
     protected EffectLine handle(PointProvider pointProvider, ValueProviderDescriptor descriptor) {
-        EffectLine xProvider = doublePropertyValueSetterChainItem.create(descriptor, pointProvider.getxProvider());
-        EffectLine yProvider = doublePropertyValueSetterChainItem.create(descriptor, pointProvider.getyProvider());
+        PrimitiveEffectLine xProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, pointProvider.getxProvider());
+        PrimitiveEffectLine yProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, pointProvider.getyProvider());
         Button button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.CROSSHAIRS));
 
         HBox box = new HBox();
@@ -59,6 +59,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     xProvider.getUpdateFromValue().accept(point.x);
                     yProvider.getUpdateFromValue().accept(point.y);
                 })
+                .withCurrentValueSupplier(() -> new Point(Double.valueOf(xProvider.currentValueProvider.get()), Double.valueOf(yProvider.currentValueProvider.get())))
                 .build();
 
         button.setOnMouseClicked(event -> inputModeRepository.requestPoint(point -> {

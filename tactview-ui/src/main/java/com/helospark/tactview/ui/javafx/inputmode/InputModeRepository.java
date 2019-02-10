@@ -9,6 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
 import com.helospark.tactview.ui.javafx.PlaybackController;
@@ -19,6 +20,7 @@ import com.helospark.tactview.ui.javafx.inputmode.strategy.InputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PolygonInputTypeStrategy;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.RectangleInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyKeyInput;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyMouseInput;
@@ -80,6 +82,13 @@ public class InputModeRepository implements CleanableMode {
     public void requestPolygon(Consumer<Polygon> consumer, SizeFunction sizeFunction) {
         InputTypeStrategy<Polygon> currentStrategy = new PolygonInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(Polygon.class, consumer, currentStrategy, sizeFunction);
+        inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+    }
+
+    public void requestRectangle(Consumer<Rectangle> consumer, List<Point> rectangle, SizeFunction sizeFunction) {
+        InputTypeStrategy<Rectangle> currentStrategy = new RectangleInputTypeStrategy(rectangle);
+        this.inputModeInput = new InputModeInput<>(Rectangle.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
         Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
     }

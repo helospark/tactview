@@ -17,8 +17,8 @@ import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProcedural
 import com.helospark.tactview.core.timeline.proceduralclip.particlesystem.ParticleSystemProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.pattern.CheckerBoardProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;

@@ -11,14 +11,16 @@ import com.helospark.tactview.core.util.DesSerFactory;
 
 public class RectangleProvider extends CompositeKeyframeableEffect {
     List<PointProvider> pointProviders;
+    SizeFunction sizeFunction;
 
-    public RectangleProvider(List<PointProvider> pointProviders) {
+    public RectangleProvider(List<PointProvider> pointProviders, SizeFunction sizeFunction) {
         super((List<KeyframeableEffect>) (Object) pointProviders);
         this.pointProviders = pointProviders;
+        this.sizeFunction = sizeFunction;
     }
 
     @Override
-    public Object getValueAt(TimelinePosition position) {
+    public Rectangle getValueAt(TimelinePosition position) {
         List<Point> points = pointProviders.stream()
                 .map(provider -> provider.getValueAt(position))
                 .collect(Collectors.toList());
@@ -40,11 +42,24 @@ public class RectangleProvider extends CompositeKeyframeableEffect {
         List<PointProvider> clonedList = pointProviders.stream()
                 .map(a -> a.deepClone())
                 .collect(Collectors.toList());
-        return new RectangleProvider(clonedList);
+        return new RectangleProvider(clonedList, sizeFunction);
     }
 
     @Override
     public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
         return RectangleProviderFactory.class;
+    }
+
+    public static RectangleProvider createDefaultFullImageWithNormalizedPosition() {
+        PointProvider a = PointProvider.ofNormalizedImagePosition(0.0, 0.0);
+        PointProvider b = PointProvider.ofNormalizedImagePosition(1.0, 0.0);
+        PointProvider c = PointProvider.ofNormalizedImagePosition(1.0, 1.0);
+        PointProvider d = PointProvider.ofNormalizedImagePosition(0.0, 1.0);
+        return new RectangleProvider(List.of(a, b, c, d), SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE);
+    }
+
+    @Override
+    public SizeFunction getSizeFunction() {
+        return sizeFunction;
     }
 }

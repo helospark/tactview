@@ -74,8 +74,10 @@ import com.helospark.tactview.core.timeline.effect.threshold.opencv.OpenCVThresh
 import com.helospark.tactview.core.timeline.effect.transform.SepiaEffect;
 import com.helospark.tactview.core.timeline.effect.transform.service.GenericMatrixTransformationService;
 import com.helospark.tactview.core.timeline.effect.vignette.VignetteEffect;
+import com.helospark.tactview.core.timeline.effect.warp.RectangleWarpEffect;
 import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonRenderService;
+import com.helospark.tactview.core.timeline.effect.warp.rasterizer.Simple2DRasterizer;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -591,6 +593,19 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new PolygonMaskEffect(node, loadMetadata, polygonRenderService, layerMaskApplier, layerMaskAlphaToAlpha))
                 .withName("Polygon mask")
                 .withSupportedEffectId("polygonMask")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory rectangleWarpEffect(PolygonRenderService polygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha,
+            Simple2DRasterizer simple2DRasterizer) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new RectangleWarpEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), simple2DRasterizer))
+                .withRestoreFactory((node, loadMetadata) -> new RectangleWarpEffect(node, loadMetadata, simple2DRasterizer))
+                .withName("Rectangle warp")
+                .withSupportedEffectId("rectangleWarp")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

@@ -20,7 +20,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PolygonProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonRenderService.PolygonRenderServiceRequest;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderServiceRequest;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class PolygonProceduralClip extends ProceduralVisualClip {

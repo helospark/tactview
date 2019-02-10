@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
@@ -16,6 +17,7 @@ import javafx.scene.Node;
 public class CompositeEffectLine extends EffectLine {
     private List<EffectLine> values;
     public Consumer<TimelinePosition> additionalUpdateUi;
+    public Supplier<Object> currentValueSupplier;
 
     @Generated("SparkTools")
     private CompositeEffectLine(Builder builder) {
@@ -27,6 +29,7 @@ public class CompositeEffectLine extends EffectLine {
         this.values = builder.values;
         this.additionalUpdateUi = builder.additionalUpdateUi;
         this.descriptor = builder.descriptor;
+        this.currentValueSupplier = builder.currentValueSupplier;
     }
 
     @Override
@@ -56,6 +59,10 @@ public class CompositeEffectLine extends EffectLine {
         }
     }
 
+    public Object getCurrentValue() {
+        return currentValueSupplier.get();
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -71,6 +78,7 @@ public class CompositeEffectLine extends EffectLine {
         private List<EffectLine> values = Collections.emptyList();
         private Consumer<TimelinePosition> additionalUpdateUi;
         private ValueProviderDescriptor descriptor;
+        private Supplier<Object> currentValueSupplier;
 
         private Builder() {
         }
@@ -112,6 +120,11 @@ public class CompositeEffectLine extends EffectLine {
 
         public Builder withDescriptor(ValueProviderDescriptor descriptor) {
             this.descriptor = descriptor;
+            return this;
+        }
+
+        public Builder withCurrentValueSupplier(Supplier<Object> currentValueSupplier) {
+            this.currentValueSupplier = currentValueSupplier;
             return this;
         }
 

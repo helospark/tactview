@@ -21,8 +21,8 @@ import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApply
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskAlphaToAlpha;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonRenderService;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonRenderService.PolygonRenderServiceRequest;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderServiceRequest;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class PolygonMaskEffect extends StatelessVideoEffect {
