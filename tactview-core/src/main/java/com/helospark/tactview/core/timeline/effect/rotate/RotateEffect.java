@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -14,18 +13,18 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
-import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateService.RotateServiceRequest;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RotateEffect extends StatelessVideoEffect {
     private DoubleProvider angleProvider;
 
-    private OpenCVRotateEffectImplementation implementation;
+    private RotateService rotateService;
 
-    public RotateEffect(TimelineInterval interval, OpenCVRotateEffectImplementation implementation) {
+    public RotateEffect(TimelineInterval interval, RotateService rotateService) {
         super(interval);
-        this.implementation = implementation;
+        this.rotateService = rotateService;
     }
 
     public RotateEffect(RotateEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
@@ -33,43 +32,23 @@ public class RotateEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public RotateEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVRotateEffectImplementation implementation2) {
+    public RotateEffect(JsonNode node, LoadMetadata loadMetadata, RotateService rotateService) {
         super(node, loadMetadata);
-        this.implementation = implementation2;
+        this.rotateService = rotateService;
     }
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         double degrees = angleProvider.getValueAt(request.getClipPosition());
 
-        int originalWidth = request.getCurrentFrame().getWidth();
-        int originalHeight = request.getCurrentFrame().getHeight();
+        RotateServiceRequest serviceRequest = RotateServiceRequest.builder()
+                .withAngle(degrees)
+                .withImage(request.getCurrentFrame())
+                .withCenterX(0.5)
+                .withCenterY(0.5)
+                .build();
 
-        // double radians = Math.toRadians(degrees);
-        // double sin = Math.sin(radians);
-        // double cos = Math.cos(radians);
-        // int newWidth = (int) ((originalHeight * Math.abs(sin)) + (originalWidth * Math.abs(cos)));
-        // int newHeight = (int) ((originalHeight * Math.abs(cos)) + (originalWidth * Math.abs(sin)));
-        int newWidth = (int) Math.sqrt(originalHeight * originalHeight + originalWidth * originalWidth);
-        int newHeight = newWidth;
-
-        int rotationCenterX = originalWidth / 2;
-        int rotationCenterY = originalHeight / 2;
-
-        OpenCVRotateRequest nativeRequest = new OpenCVRotateRequest();
-        nativeRequest.rotationDegrees = degrees;
-        nativeRequest.rotationPointX = rotationCenterX;
-        nativeRequest.rotationPointY = rotationCenterY;
-        nativeRequest.input = request.getCurrentFrame().getBuffer();
-        nativeRequest.originalWidth = originalWidth;
-        nativeRequest.originalHeight = originalHeight;
-        nativeRequest.output = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(newWidth * newHeight * 4);
-        nativeRequest.newWidth = newWidth;
-        nativeRequest.newHeight = newHeight;
-
-        implementation.rotateImage(nativeRequest);
-
-        return new ClipImage(nativeRequest.output, newWidth, newHeight);
+        return rotateService.rotate(serviceRequest);
     }
 
     @Override

@@ -15,14 +15,12 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 public class FrameExtender {
 
     public ClipImage expandFrame(FrameExtendRequest request) {
-        int previewHeight = request.getPreviewHeight();
-        int previewWidth = request.getPreviewWidth();
         ReadOnlyClipImage frameResult = request.getFrameResult();
         TimelinePosition timelinePosition = request.getTimelinePosition();
-        ByteBuffer outputBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(previewHeight * previewWidth * 4);
-        ByteBuffer inputBuffer = frameResult.getBuffer();
         VisualTimelineClip clip = request.getClip();
 
+        int previewHeight = request.getPreviewHeight();
+        int previewWidth = request.getPreviewWidth();
         int anchorOffsetX = clip.getHorizontalAlignment(timelinePosition).apply(frameResult.getWidth(), previewWidth);
         int anchorOffsetY = clip.getVerticalAlignment(timelinePosition).apply(frameResult.getHeight(), previewHeight);
 
@@ -30,6 +28,13 @@ public class FrameExtender {
 
         int requestedXPosition = anchorOffsetX + clip.getXPosition(timelinePosition, scale);
         int requestedYPosition = anchorOffsetY + clip.getYPosition(timelinePosition, scale);
+
+        return expandAndTranslate(frameResult, previewWidth, previewHeight, requestedXPosition, requestedYPosition);
+    }
+
+    public ClipImage expandAndTranslate(ReadOnlyClipImage frameResult, int previewWidth, int previewHeight, int requestedXPosition, int requestedYPosition) {
+        ByteBuffer outputBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(previewHeight * previewWidth * 4);
+        ByteBuffer inputBuffer = frameResult.getBuffer();
 
         int destinationStartX = Math.max(requestedXPosition, 0);
         int destinationStartY = Math.max(requestedYPosition, 0);
@@ -51,7 +56,7 @@ public class FrameExtender {
             inputBuffer.position(i * frameResult.getWidth() * 4 + sourceX * 4);
             inputBuffer.get(tmpBuffer, 0, numberOfBytesInARow);
 
-            outputBuffer.position((destinationStartY + i) * previewWidth * 4 + destinationStartX * 4);
+            outputBuffer.position((destinationStartY + (i - sourceY)) * previewWidth * 4 + destinationStartX * 4);
             outputBuffer.put(tmpBuffer, 0, numberOfBytesInARow);
         }
         return new ClipImage(outputBuffer, previewWidth, previewHeight);

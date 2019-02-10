@@ -54,11 +54,12 @@ import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorLineEffect;
 import com.helospark.tactview.core.timeline.effect.motionblur.GhostingEffect;
 import com.helospark.tactview.core.timeline.effect.mozaic.MozaicEffect;
+import com.helospark.tactview.core.timeline.effect.orthogonal.OrthogonalTransformationEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
 import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
-import com.helospark.tactview.core.timeline.effect.rotate.OpenCVRotateEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.effect.shadow.DropShadowEffect;
@@ -113,10 +114,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory rotateEffect(OpenCVRotateEffectImplementation implementation) {
+    public StandardEffectFactory rotateEffect(RotateService rotateService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new RotateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), implementation))
-                .withRestoreFactory((node, loadMetadata) -> new RotateEffect(node, loadMetadata, implementation))
+                .withFactory(request -> new RotateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), rotateService))
+                .withRestoreFactory((node, loadMetadata) -> new RotateEffect(node, loadMetadata, rotateService))
                 .withName("Rotate")
                 .withSupportedEffectId("rotate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -563,6 +564,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new FrameExtendEffect(node, loadMetadata, frameExtender))
                 .withName("Extend frame")
                 .withSupportedEffectId("extendframe")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory orthogonalTransformEffect(ScaleService scaleService, RotateService rotateService, FrameExtender frameExtender) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new OrthogonalTransformationEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService, rotateService, frameExtender))
+                .withRestoreFactory((node, loadMetadata) -> new OrthogonalTransformationEffect(node, loadMetadata, scaleService, rotateService, frameExtender))
+                .withName("Orthogonal transform")
+                .withSupportedEffectId("orthogonaltransform")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
