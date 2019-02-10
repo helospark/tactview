@@ -17,6 +17,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProcedural
 import com.helospark.tactview.core.timeline.proceduralclip.particlesystem.ParticleSystemProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.pattern.CheckerBoardProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
@@ -101,13 +102,13 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem polygonProceduralClip() {
+    public StandardProceduralClipFactoryChainItem polygonProceduralClip(PolygonRenderService polygonRenderService) {
         return new StandardProceduralClipFactoryChainItem("polygon", "Drawn polygon",
                 request -> {
-                    return new PolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                    return new PolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), polygonRenderService);
                 },
                 (node, loadMetadata) -> {
-                    return new PolygonProceduralClip(metadata, node, loadMetadata);
+                    return new PolygonProceduralClip(metadata, node, loadMetadata, polygonRenderService);
                 });
     }
 

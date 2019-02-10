@@ -44,8 +44,10 @@ import com.helospark.tactview.core.timeline.effect.histogramequization.Histogram
 import com.helospark.tactview.core.timeline.effect.histogramequization.opencv.OpenCVHistogramEquizerImplementation;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskEffect;
+import com.helospark.tactview.core.timeline.effect.layermask.PolygonMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlphaCalculator;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
+import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskAlphaToAlpha;
 import com.helospark.tactview.core.timeline.effect.levels.LevelsEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutProviderService;
@@ -73,6 +75,7 @@ import com.helospark.tactview.core.timeline.effect.transform.SepiaEffect;
 import com.helospark.tactview.core.timeline.effect.transform.service.GenericMatrixTransformationService;
 import com.helospark.tactview.core.timeline.effect.vignette.VignetteEffect;
 import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonRenderService;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -576,6 +579,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new OrthogonalTransformationEffect(node, loadMetadata, scaleService, rotateService, frameExtender))
                 .withName("Orthogonal transform")
                 .withSupportedEffectId("orthogonaltransform")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory polygonMaskEffect(PolygonRenderService polygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new PolygonMaskEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), polygonRenderService, layerMaskApplier, layerMaskAlphaToAlpha))
+                .withRestoreFactory((node, loadMetadata) -> new PolygonMaskEffect(node, loadMetadata, polygonRenderService, layerMaskApplier, layerMaskAlphaToAlpha))
+                .withName("Polygon mask")
+                .withSupportedEffectId("polygonMask")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
