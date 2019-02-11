@@ -41,6 +41,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 @Component
 public class UiTimeline {
@@ -222,28 +224,78 @@ public class UiTimeline {
             int width = (int) timelineLabelCanvas.getWidth();
             int height = (int) timelineLabelCanvas.getHeight();
             g.clearRect(0, 0, width, height);
-            drawLines(0.1, 27, 1.0);
-            drawLines(0.5, 22, 0.5);
-            drawLines(1.0, 17, 0.8);
-            drawLines(10.0, 13, 1.5);
-            drawLines(60.0, 10, 3.0);
+            drawLines(0.1, 29, 1.0, false);
+            drawLines(0.5, 27, 0.5, false);
+            drawLines(1.0, 24, 0.8, false);
+            drawLines(10.0, 20, 1.5, true);
+            drawLines(60.0, 16, 3.0, false);
         });
     }
 
-    private void drawLines(double distance, int lineStart, double lineWidth) {
+    private void drawLines(double time, int lineStart, double lineWidth, boolean addLabel) {
         int startPosition = 4;
         int width = (int) timelineLabelCanvas.getWidth();
         int height = (int) timelineLabelCanvas.getHeight();
         GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
-        double secondLength = timelineState.secondsToPixelsWithZoom(new TimelineLength(BigDecimal.valueOf(distance)));
+        double secondLength = timelineState.secondsToPixelsWithZoom(new TimelineLength(BigDecimal.valueOf(time)));
 
         if (secondLength > 3) {
             g.setStroke(Color.BLACK);
             g.setLineWidth(lineWidth);
-            for (double i = startPosition; i <= width; i += secondLength) {
+            for (double i = startPosition, j = 0; i <= width; i += secondLength, j += time) {
                 g.strokeLine(i, lineStart, i, height);
+                if (addLabel && secondLength > 30) {
+                    String text = formatSeconds(j);
+                    double textWidth = computeTextWidth(g.getFont(), text, 0);
+                    g.fillText(text, i - (textWidth / 2), lineStart - 7);
+                }
             }
         }
+    }
+
+    private String formatSeconds(double j) {
+        int allSeconds = (int) j;
+
+        int hours = allSeconds / (60 * 60);
+        int minutes = (allSeconds % 3600) / 60;
+        int seconds = (allSeconds % 60);
+
+        String result = "";
+
+        if (hours > 0) {
+            result += hours;
+        }
+        if (minutes > 0) {
+            if (!result.isEmpty()) {
+                result += ":";
+                result += String.format("%02d", minutes);
+            } else {
+                result += String.format("%d", minutes);
+            }
+        }
+
+        if (!result.isEmpty()) {
+            result += ":";
+            result += String.format("%02d", seconds);
+        } else {
+            result += String.format("%d", seconds);
+        }
+
+        return result;
+    }
+
+    private double computeTextWidth(Font font, String text, double wrappingWidth) {
+        Text helper = new Text();
+        helper.setFont(font);
+        helper.setText(text);
+        // Note that the wrapping width needs to be set to zero before
+        // getting the text's real preferred width.
+        helper.setWrappingWidth(0);
+        helper.setLineSpacing(0);
+        double w = Math.min(helper.prefWidth(-1), wrappingWidth);
+        helper.setWrappingWidth((int) Math.ceil(w));
+        double textWidth = Math.ceil(helper.getLayoutBounds().getWidth());
+        return textWidth;
     }
 
     private void jumpTo(double xPosition) {
