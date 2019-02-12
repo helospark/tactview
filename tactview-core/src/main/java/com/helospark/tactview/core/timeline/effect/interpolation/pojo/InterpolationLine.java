@@ -9,4 +9,8 @@ public class InterpolationLine {
         this.end = end;
     }
 
+    public InterpolationLine deepClone() {
+        return new InterpolationLine(start.deepClone(), end.deepClone());
+    }
+
 }

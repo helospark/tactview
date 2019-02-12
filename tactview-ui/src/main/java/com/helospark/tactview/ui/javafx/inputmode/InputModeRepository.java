@@ -72,8 +72,8 @@ public class InputModeRepository implements CleanableMode {
         Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
     }
 
-    public void requestLine(Consumer<InterpolationLine> consumer, SizeFunction sizeFunction) {
-        InputTypeStrategy<InterpolationLine> currentStrategy = new LineInputTypeStrategy();
+    public void requestLine(Consumer<InterpolationLine> consumer, InterpolationLine interpolationLine, SizeFunction sizeFunction) {
+        InputTypeStrategy<InterpolationLine> currentStrategy = new LineInputTypeStrategy(interpolationLine);
         this.inputModeInput = new InputModeInput<>(InterpolationLine.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
         Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
@@ -169,6 +169,7 @@ public class InputModeRepository implements CleanableMode {
                     reset();
                 }
             }
+            updateCanvas(e);
         };
     }
 

@@ -9,6 +9,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -38,8 +39,8 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
 
     @Override
     protected EffectLine handle(LineProvider lineProvider, ValueProviderDescriptor descriptor) {
-        EffectLine startPointProvider = pointProviderValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(0));
-        EffectLine endPointProvider = pointProviderValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(1));
+        CompositeEffectLine startPointProvider = (CompositeEffectLine) pointProviderValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(0));
+        CompositeEffectLine endPointProvider = (CompositeEffectLine) pointProviderValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(1));
         Button button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.SQUARE));
 
         VBox vbox = new VBox();
@@ -62,13 +63,14 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
                     startPointProvider.getUpdateFromValue().accept(line.start);
                     endPointProvider.getUpdateFromValue().accept(line.end);
                 })
+                .withCurrentValueSupplier(() -> new InterpolationLine((Point) startPointProvider.getCurrentValue(), (Point) endPointProvider.getCurrentValue()))
                 .build();
 
         button.setOnMouseClicked(event -> inputModeRepository.requestLine(line -> {
             startPointProvider.getUpdateFromValue().accept(line.start);
             endPointProvider.getUpdateFromValue().accept(line.end);
             result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-        }, lineProvider.getSizeFunction()));
+        }, (InterpolationLine) result.getCurrentValue(), lineProvider.getSizeFunction()));
 
         return result;
     }
