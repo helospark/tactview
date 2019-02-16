@@ -14,7 +14,7 @@ public class DefaultProjectMenuItemConfiguration {
     public static final String PROJECT_ROOT = "_Project";
 
     @Bean
-    @Order(1000)
+    @Order(2000)
     public MenuContribution renderContributionMenuItem(RenderDialogOpener renderService) {
         return new DefaultMenuContribution(List.of(PROJECT_ROOT, "_Render"), event -> renderService.render());
     }

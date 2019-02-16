@@ -10,11 +10,13 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.it.util.IntegrationTestUtil;
+import com.helospark.tactview.core.it.util.ui.FakeUi;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -29,18 +31,20 @@ public class CommonEffectTest {
         LightDiContext lightDi = IntegrationTestUtil.startContext();
         List<EffectFactory> effectFactories = lightDi.getListOfBeans(EffectFactory.class);
 
+        FakeUi fakeUi = lightDi.getBean(FakeUi.class);
+        VisualTimelineClip clip = (VisualTimelineClip) fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
+
         for (var effectFactory : effectFactories) {
             StatelessEffect effect = effectFactory.createEffect(new CreateEffectRequest(TimelinePosition.ofZero(), effectFactory.getEffectId(), TimelineClipType.VIDEO));
-            if (!(effect instanceof StatelessVideoEffect) || effectFactory.getEffectId().equals("lensdistort") /** trello.201, check why this occasionally fails */
-            ) {
+            if (!(effect instanceof StatelessVideoEffect) || effectFactory.getEffectId().equals("lensdistort")) { /** trello.201, check why this occasionally fails */
                 continue;
             }
 
-            ReadOnlyClipImage originalFrame = getFrame((StatelessVideoEffect) effect);
+            ReadOnlyClipImage originalFrame = getFrame((StatelessVideoEffect) effect, clip);
 
             StatelessVideoEffect clonedEffect = (StatelessVideoEffect) effect.cloneEffect(CloneRequestMetadata.ofDefault());
 
-            ReadOnlyClipImage clonedFrame = getFrame(clonedEffect);
+            ReadOnlyClipImage clonedFrame = getFrame(clonedEffect, clip);
 
             IntegrationTestUtil.assertFrameEquals(originalFrame, clonedFrame, effectFactory.getEffectId() + " is generating different image after clone");
 
@@ -55,22 +59,28 @@ public class CommonEffectTest {
         LightDiContext lightDi = IntegrationTestUtil.startContext();
         List<EffectFactory> effectFactories = lightDi.getListOfBeans(EffectFactory.class);
 
+        FakeUi fakeUi = lightDi.getBean(FakeUi.class);
+        VisualTimelineClip clip = (VisualTimelineClip) fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
+
         for (var effectFactory : effectFactories) {
             StatelessEffect effect = effectFactory.createEffect(new CreateEffectRequest(TimelinePosition.ofZero(), effectFactory.getEffectId(), TimelineClipType.VIDEO));
             if (!(effect instanceof StatelessVideoEffect)) {
                 continue;
             }
+            if (!(effect instanceof StatelessVideoEffect) || effectFactory.getEffectId().equals("lensdistort")) { /** trello.201, check why this occasionally fails */
+                continue;
+            }
 
-            ReadOnlyClipImage originalFrame = getFrame((StatelessVideoEffect) effect);
+            ReadOnlyClipImage originalFrame = getFrame((StatelessVideoEffect) effect, clip);
 
             Object savedEffect = effect.generateSavedContent();
             String saveData = StaticObjectMapper.objectMapper.writeValueAsString(savedEffect);
 
             JsonNode readData = StaticObjectMapper.objectMapper.readTree(saveData);
 
-            StatelessEffect restoredClip = effectFactory.restoreEffect(readData, new LoadMetadata("filepath"));
+            StatelessEffect restoredEffect = effectFactory.restoreEffect(readData, new LoadMetadata("filepath"));
 
-            ReadOnlyClipImage clonedFrame = getFrame((StatelessVideoEffect) restoredClip);
+            ReadOnlyClipImage clonedFrame = getFrame((StatelessVideoEffect) restoredEffect, clip);
 
             IntegrationTestUtil.assertFrameEquals(originalFrame, clonedFrame, effectFactory.getEffectId() + " is generating different image after save and restore");
 
@@ -80,7 +90,7 @@ public class CommonEffectTest {
         lightDi.close();
     }
 
-    private ReadOnlyClipImage getFrame(StatelessVideoEffect effect) {
+    private ReadOnlyClipImage getFrame(StatelessVideoEffect effect, VisualTimelineClip clip) {
         ClipImage clipImage = ClipImage.fromSize(600, 400);
 
         for (int i = 0; i < clipImage.getHeight(); ++i) {
@@ -97,7 +107,7 @@ public class CommonEffectTest {
                 .withCanvasHeight(400)
                 .withClipPosition(TimelinePosition.ofZero())
                 .withCurrentFrame(clipImage)
-                .withCurrentTimelineClip(null)
+                .withCurrentTimelineClip(clip)
                 .withEffectChannel(0)
                 .withEffectPosition(TimelinePosition.ofZero())
                 .withScale(1.0)

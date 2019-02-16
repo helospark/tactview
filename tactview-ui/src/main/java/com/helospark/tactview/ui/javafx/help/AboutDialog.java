@@ -23,7 +23,7 @@ public class AboutDialog {
         Scene dialog = new Scene(borderPane);
         stage = new Stage();
         stage.setWidth(500);
-        stage.setHeight(500);
+        stage.setHeight(400);
         dialog.getStylesheets().add("stylesheet.css");
 
         ScrollPane scrollPane = new ScrollPane();
