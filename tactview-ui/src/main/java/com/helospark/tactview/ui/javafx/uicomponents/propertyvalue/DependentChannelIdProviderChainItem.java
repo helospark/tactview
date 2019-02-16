@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Depend
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
@@ -22,15 +23,17 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
     private TimelineManager timelineManager;
     private NameToIdRepository nameToIdRepository;
     private UiTimelineManager uiTimelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public DependentChannelIdProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
-            TimelineManager timelineManager, NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager) {
+            TimelineManager timelineManager, NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(DependentChannelIdProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
         this.nameToIdRepository = nameToIdRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -42,18 +45,20 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
         browseButton.setContextMenu(contextMenu);
 
         browseButton.setOnMouseClicked(event -> {
-            contextMenu.getItems().clear();
-            timelineManager.getAllChannelIds()
-                    .stream()
-                    .forEach(id -> {
-                        String name = nameToIdRepository.getNameForId(id);
-                        MenuItem menuItem = new MenuItem(name);
-                        menuItem.setOnAction(e -> {
-                            textArea.setText(name);
+            if (event.isPrimaryButtonDown()) {
+                contextMenu.getItems().clear();
+                timelineManager.getAllChannelIds()
+                        .stream()
+                        .forEach(id -> {
+                            String name = nameToIdRepository.getNameForId(id);
+                            MenuItem menuItem = new MenuItem(name);
+                            menuItem.setOnAction(e -> {
+                                textArea.setText(name);
+                            });
+                            contextMenu.getItems().addAll(menuItem);
                         });
-                        contextMenu.getItems().addAll(menuItem);
-                    });
-            contextMenu.show(browseButton, event.getScreenX(), event.getScreenY());
+                contextMenu.show(browseButton, event.getScreenX(), event.getScreenY());
+            }
         });
 
         HBox hbox = new HBox();
@@ -75,6 +80,8 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
             result.sendKeyframe(uiTimelineManager.getCurrentPosition());
         });
+
+        contextMenuAppender.addContextMenu(result, stringProvider, descriptor, hbox);
 
         return result;
     }

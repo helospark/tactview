@@ -16,6 +16,7 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
@@ -37,12 +38,13 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
     private UiProjectRepository uiProjectRepository;
     private NameToIdRepository nameToIdRepository;
     private UiTimelineManager uiTimelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     private Image noLayerMaskImage;
 
     public DependentClipProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
             TimelineManager timelineManager, ByteBufferToJavaFxImageConverter imageConverter, UiProjectRepository uiProjectRepository,
-            NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager) {
+            NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(DependentClipProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
@@ -51,6 +53,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         this.uiProjectRepository = uiProjectRepository;
         this.nameToIdRepository = nameToIdRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.contextMenuAppender = contextMenuAppender;
 
         noLayerMaskImage = new Image(getClass().getResourceAsStream("/noLayerMask.png"));
     }
@@ -64,18 +67,20 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         browseButton.setContextMenu(contextMenu);
 
         browseButton.setOnMouseClicked(event -> {
-            contextMenu.getItems().clear();
-            timelineManager.getAllClipIds()
-                    .stream()
-                    .forEach(id -> {
-                        String name = nameToIdRepository.getNameForId(id);
-                        MenuItem menuItem = new MenuItem(name);
-                        menuItem.setOnAction(e -> {
-                            textArea.setText(name);
+            if (event.isPrimaryButtonDown()) {
+                contextMenu.getItems().clear();
+                timelineManager.getAllClipIds()
+                        .stream()
+                        .forEach(id -> {
+                            String name = nameToIdRepository.getNameForId(id);
+                            MenuItem menuItem = new MenuItem(name);
+                            menuItem.setOnAction(e -> {
+                                textArea.setText(name);
+                            });
+                            contextMenu.getItems().addAll(menuItem);
                         });
-                        contextMenu.getItems().addAll(menuItem);
-                    });
-            contextMenu.show(browseButton, event.getScreenX(), event.getScreenY());
+                contextMenu.show(browseButton, event.getScreenX(), event.getScreenY());
+            }
         });
 
         ImageView imageView = new ImageView();
@@ -103,6 +108,8 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
             result.sendKeyframe(uiTimelineManager.getCurrentPosition());
         });
+
+        contextMenuAppender.addContextMenu(result, stringProvider, descriptor, browseButton);
 
         return result;
     }

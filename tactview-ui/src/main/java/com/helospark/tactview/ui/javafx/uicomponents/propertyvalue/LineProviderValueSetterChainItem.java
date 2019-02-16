@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.LinePr
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -26,15 +27,17 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
     private UiTimelineManager uiTimelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public LineProviderValueSetterChainItem(PointProviderValueSetterChainItem pointProviderValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(LineProvider.class);
         this.pointProviderValueSetterChainItem = pointProviderValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.inputModeRepository = inputModeRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -66,11 +69,17 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
                 .withCurrentValueSupplier(() -> new InterpolationLine((Point) startPointProvider.getCurrentValue(), (Point) endPointProvider.getCurrentValue()))
                 .build();
 
-        button.setOnMouseClicked(event -> inputModeRepository.requestLine(line -> {
-            startPointProvider.getUpdateFromValue().accept(line.start);
-            endPointProvider.getUpdateFromValue().accept(line.end);
-            result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-        }, (InterpolationLine) result.getCurrentValue(), lineProvider.getSizeFunction()));
+        button.setOnMouseClicked(event -> {
+            if (event.isPrimaryButtonDown()) {
+                inputModeRepository.requestLine(line -> {
+                    startPointProvider.getUpdateFromValue().accept(line.start);
+                    endPointProvider.getUpdateFromValue().accept(line.end);
+                    result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                }, (InterpolationLine) result.getCurrentValue(), lineProvider.getSizeFunction());
+            }
+        });
+
+        contextMenuAppender.addContextMenu(result, lineProvider, descriptor, button);
 
         return result;
     }

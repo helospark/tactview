@@ -18,6 +18,7 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.control.ColorWheelPicker;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.Button;
@@ -31,22 +32,24 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager uiTimelineManager;
     private InputModeRepository inputModeRepository;
+    private ContextMenuAppender contextMenuAppender;
 
     public ColorProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, InputModeRepository inputModeRepository) {
+            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, InputModeRepository inputModeRepository, ContextMenuAppender contextMenuAppender) {
         super(ColorProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.uiTimelineManager = uiTimelineManager;
         this.inputModeRepository = inputModeRepository;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
-    protected EffectLine handle(ColorProvider lineProvider, ValueProviderDescriptor descriptor) {
-        PrimitiveEffectLine redProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(0));
-        PrimitiveEffectLine greenProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(1));
-        PrimitiveEffectLine blueProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, lineProvider.getChildren().get(2));
+    protected EffectLine handle(ColorProvider colorProvider, ValueProviderDescriptor descriptor) {
+        PrimitiveEffectLine redProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, colorProvider.getChildren().get(0));
+        PrimitiveEffectLine greenProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, colorProvider.getChildren().get(1));
+        PrimitiveEffectLine blueProvider = (PrimitiveEffectLine) doublePropertyValueSetterChainItem.create(descriptor, colorProvider.getChildren().get(2));
 
         Map<Object, Object> renderHints = descriptor.getRenderHints();
 
@@ -59,7 +62,7 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     .builder()
                     .withVisibleNode(control)
                     .withValues(List.of(redProvider, greenProvider, blueProvider))
-                    .withDescriptorId(lineProvider.getId())
+                    .withDescriptorId(colorProvider.getId())
                     .withEffectParametersRepository(effectParametersRepository)
                     .withCommandInterpreter(commandInterpreter)
                     .withDescriptor(descriptor)
@@ -83,6 +86,8 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 result.sendKeyframe(uiTimelineManager.getCurrentPosition());
             });
 
+            contextMenuAppender.addContextMenu(result, colorProvider, descriptor, control);
+
             return result;
         } else { // TODO: many duplications due to separate interfaces
             ColorPicker colorPicker = new ColorPicker();
@@ -97,7 +102,7 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     .builder()
                     .withVisibleNode(hbox)
                     .withValues(List.of(redProvider, greenProvider, blueProvider))
-                    .withDescriptorId(lineProvider.getId())
+                    .withDescriptorId(colorProvider.getId())
                     .withEffectParametersRepository(effectParametersRepository)
                     .withCommandInterpreter(commandInterpreter)
                     .withDescriptor(descriptor)
@@ -119,12 +124,18 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 blueProvider.updateFromValue.accept(color.getBlue());
                 result.sendKeyframe(uiTimelineManager.getCurrentPosition());
             });
-            colorPickerInputButton.setOnMouseClicked(event -> inputModeRepository.requestColor(color -> {
-                redProvider.updateFromValue.accept(color.red);
-                greenProvider.updateFromValue.accept(color.green);
-                blueProvider.updateFromValue.accept(color.blue);
-                result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-            }));
+            colorPickerInputButton.setOnMouseClicked(event -> {
+                if (event.isPrimaryButtonDown()) {
+                    inputModeRepository.requestColor(color -> {
+                        redProvider.updateFromValue.accept(color.red);
+                        greenProvider.updateFromValue.accept(color.green);
+                        blueProvider.updateFromValue.accept(color.blue);
+                        result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                    });
+                }
+            });
+
+            contextMenuAppender.addContextMenu(result, colorProvider, descriptor, hbox);
 
             return result;
         }

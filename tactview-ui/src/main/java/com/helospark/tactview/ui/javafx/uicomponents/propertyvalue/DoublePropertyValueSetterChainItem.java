@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Slider;
@@ -25,13 +26,15 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public DoublePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
         super(DoubleProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -90,6 +93,8 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         userChangedValueObservable.registerListener(newValue -> {
             result.sendKeyframeWithValue(timelineManager.getCurrentPosition(), newValue);
         });
+
+        contextMenuAppender.addContextMenu(result, doubleProvider, descriptor, hbox);
 
         return result;
 

@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.hint.SliderValu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Slider;
@@ -24,13 +25,15 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public IntegerPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
         super(IntegerProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -87,6 +90,8 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         userChangedValueObservable.registerListener(value -> {
             result.sendKeyframeWithValue(timelineManager.getCurrentPosition(), value);
         });
+
+        contextMenuAppender.addContextMenu(result, integerProvider, descriptor, result.visibleNode);
 
         return result;
 

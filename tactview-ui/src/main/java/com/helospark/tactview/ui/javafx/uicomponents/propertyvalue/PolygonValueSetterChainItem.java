@@ -51,15 +51,17 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
                 .build();
 
         button.setOnMouseClicked(event -> {
-            Polygon currentPolygon = (Polygon) effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition());
-            if (currentPolygon.getPoints().isEmpty()) {
-                inputModeRepository.requestPolygon(polygon -> {
-                    result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
-                }, polygonProvider.getSizeFunction());
-            } else {
-                inputModeRepository.requestPolygonPrefilled(polygon -> {
-                    result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
-                }, polygonProvider.getSizeFunction(), currentPolygon.getPoints());
+            if (event.isPrimaryButtonDown()) {
+                Polygon currentPolygon = (Polygon) effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition());
+                if (currentPolygon.getPoints().isEmpty()) {
+                    inputModeRepository.requestPolygon(polygon -> {
+                        result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
+                    }, polygonProvider.getSizeFunction());
+                } else {
+                    inputModeRepository.requestPolygonPrefilled(polygon -> {
+                        result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
+                    }, polygonProvider.getSizeFunction(), currentPolygon.getPoints());
+                }
             }
         });
 

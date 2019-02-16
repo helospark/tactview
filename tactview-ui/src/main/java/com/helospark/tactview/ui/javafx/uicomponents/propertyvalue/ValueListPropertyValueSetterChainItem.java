@@ -10,6 +10,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
@@ -23,13 +24,15 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public ValueListPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
         super(ValueListProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -83,6 +86,9 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         group.selectedToggleProperty().addListener((a, oldValue, newValue) -> {
             result.sendKeyframe(timelineManager.getCurrentPosition());
         });
+
+        contextMenuAppender.addContextMenu(result, typeFixedValueProvider, descriptor, box);
+
         return result;
     }
 
@@ -124,6 +130,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         comboBox.setOnAction(e -> {
             result.sendKeyframe(timelineManager.getCurrentPosition());
         });
+        contextMenuAppender.addContextMenu(result, typeFixedValueProvider, descriptor, comboBox);
         return result;
     }
 

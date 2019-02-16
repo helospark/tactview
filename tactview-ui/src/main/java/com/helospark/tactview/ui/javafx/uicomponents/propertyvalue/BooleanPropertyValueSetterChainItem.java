@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.CheckBox;
 
@@ -15,13 +16,15 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public BooleanPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
         super(BooleanProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -42,6 +45,7 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         checkbox.selectedProperty().addListener((a, b, c) -> {
             result.sendKeyframe(timelineManager.getCurrentPosition());
         });
+        contextMenuAppender.addContextMenu(result, booleanProvider, descriptor, checkbox);
 
         return result;
 

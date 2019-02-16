@@ -10,6 +10,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.FilePr
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -22,13 +23,15 @@ public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSett
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager uiTimelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public FilePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager uiTimelineManager) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(FileProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -66,6 +69,7 @@ public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSett
                 lineItem.sendKeyframe(uiTimelineManager.getCurrentPosition());
             }
         });
+        contextMenuAppender.addContextMenu(lineItem, fileProvider, descriptor, hbox);
 
         return lineItem;
     }

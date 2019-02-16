@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.TextArea;
 
@@ -15,13 +16,15 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public StringPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager) {
+            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
         super(StringProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -50,6 +53,8 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 result.sendKeyframe(position);
             }
         });
+
+        contextMenuAppender.addContextMenu(result, stringProvider, descriptor, textArea);
 
         return result;
     }

@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointP
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -24,15 +25,17 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
     private UiTimelineManager uiTimelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public PointProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(PointProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.inputModeRepository = inputModeRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -62,11 +65,17 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 .withCurrentValueSupplier(() -> new Point(Double.valueOf(xProvider.currentValueProvider.get()), Double.valueOf(yProvider.currentValueProvider.get())))
                 .build();
 
-        button.setOnMouseClicked(event -> inputModeRepository.requestPoint(point -> {
-            xProvider.getUpdateFromValue().accept(point.x);
-            yProvider.getUpdateFromValue().accept(point.y);
-            result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-        }, pointProvider.getSizeFunction()));
+        button.setOnMouseClicked(event -> {
+            if (event.isPrimaryButtonDown()) {
+                inputModeRepository.requestPoint(point -> {
+                    xProvider.getUpdateFromValue().accept(point.x);
+                    yProvider.getUpdateFromValue().accept(point.y);
+                    result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                }, pointProvider.getSizeFunction());
+            }
+        });
+
+        contextMenuAppender.addContextMenu(result, pointProvider, descriptor, button);
 
         return result;
     }

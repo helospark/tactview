@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRang
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleRangeProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.layout.HBox;
 
@@ -21,14 +22,16 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private UiTimelineManager timelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public DoubleRangeProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, UiTimelineManager timelineManager) {
+            EffectParametersRepository effectParametersRepository, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
         super(DoubleRangeProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -41,6 +44,8 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
         rangeSlider.setShowTickLabels(true);
 
         HBox box = new HBox();
+        box.getChildren().add(lowEndProvider.visibleNode);
+        box.getChildren().add(highEndProvider.visibleNode);
         box.getChildren().add(rangeSlider);
 
         CompositeEffectLine result = CompositeEffectLine
@@ -81,6 +86,7 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
                 highEndProvider.sendKeyframeWithValue(timelineManager.getCurrentPosition(), String.valueOf(newValue));
             }
         });
+        contextMenuAppender.addContextMenu(result, doubleRangeProvider, descriptor, rangeSlider);
 
         return result;
     }

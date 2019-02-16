@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Rectan
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -28,15 +29,17 @@ public class RectangleProviderValueSetterChainItem extends TypeBasedPropertyValu
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
     private UiTimelineManager uiTimelineManager;
+    private ContextMenuAppender contextMenuAppender;
 
     public RectangleProviderValueSetterChainItem(PointProviderValueSetterChainItem pointProviderValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(RectangleProvider.class);
         this.pointProviderValueSetterChainItem = pointProviderValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.inputModeRepository = inputModeRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.contextMenuAppender = contextMenuAppender;
     }
 
     @Override
@@ -71,12 +74,18 @@ public class RectangleProviderValueSetterChainItem extends TypeBasedPropertyValu
                 })
                 .build();
 
-        button.setOnMouseClicked(event -> inputModeRepository.requestRectangle(rectangle -> {
-            for (int i = 0; i < 4; ++i) {
-                pointProviders.get(i).getUpdateFromValue().accept(rectangle.points.get(i));
+        button.setOnMouseClicked(event -> {
+            if (event.isPrimaryButtonDown()) {
+                inputModeRepository.requestRectangle(rectangle -> {
+                    for (int i = 0; i < 4; ++i) {
+                        pointProviders.get(i).getUpdateFromValue().accept(rectangle.points.get(i));
+                    }
+                    result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                }, getCurrentValue(pointProviders), rectangleProvider.getSizeFunction());
             }
-            result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-        }, getCurrentValue(pointProviders), rectangleProvider.getSizeFunction()));
+        });
+
+        contextMenuAppender.addContextMenu(result, rectangleProvider, descriptor, button);
 
         return result;
     }

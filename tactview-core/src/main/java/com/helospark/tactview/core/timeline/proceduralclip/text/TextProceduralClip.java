@@ -78,33 +78,38 @@ public class TextProceduralClip extends ProceduralVisualClip {
         Font font = new Font(fontElement.getId(), fontHitsAt(relativePosition), (int) currentSize).deriveFont((float) currentSize);
         FontMetrics fontMetrics = getFontMetrics(font);
 
-        int maxWidth = 0;
-        int totalHeight = 0;
+        double maxWidth = 0;
+        double totalHeight = 0;
         for (var line : lines) {
-            int lineWidth = fontMetrics.stringWidth(line);
-            totalHeight += fontMetrics.getHeight();
+            double lineWidth = fontMetrics.getStringBounds(line, null).getWidth();
+            totalHeight += getLineHeight(font, fontMetrics);
             if (lineWidth > maxWidth) {
                 maxWidth = lineWidth;
             }
         }
 
-        BufferedImage bufferedImage = new BufferedImage(maxWidth, totalHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage bufferedImage = new BufferedImage((int) Math.ceil(maxWidth), (int) Math.ceil(totalHeight), BufferedImage.TYPE_4BYTE_ABGR);
         Graphics2D graphics = (Graphics2D) bufferedImage.getGraphics();
         graphics.setFont(font);
         graphics.setColor(new Color((float) color.red, (float) color.green, (float) color.blue));
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 
-        List<Integer> alignments = findXAlignmentsForLines(lines, alignmentElement.getId(), fontMetrics);
+        List<Double> alignments = findXAlignmentsForLines(lines, alignmentElement.getId(), fontMetrics);
 
         fontMetrics.stringWidth(currentText);
 
         float yPosition = fontMetrics.getHeight();
         for (int i = 0; i < lines.size(); ++i) {
-            graphics.drawString(lines.get(i), alignments.get(i), yPosition);
-            yPosition += fontMetrics.getHeight();
+            graphics.drawString(lines.get(i), alignments.get(i).floatValue(), yPosition);
+            yPosition += getLineHeight(font, fontMetrics);
         }
 
         return bufferedImageToClipFrameResultConverter.convertFromAbgr(bufferedImage);
+    }
+
+    private float getLineHeight(Font font, FontMetrics fontMetrics) {
+        return fontMetrics.getLeading() + fontMetrics.getDescent() + font.getSize2D();
     }
 
     private FontMetrics getFontMetrics(Font font) {
@@ -129,29 +134,29 @@ public class TextProceduralClip extends ProceduralVisualClip {
         return result;
     }
 
-    private List<Integer> findXAlignmentsForLines(List<String> lines, String alignmentId, FontMetrics fontMetrics) {
+    private List<Double> findXAlignmentsForLines(List<String> lines, String alignmentId, FontMetrics fontMetrics) {
         if (alignmentId.equals("left")) {
             return lines.stream()
-                    .map(line -> 0)
+                    .map(line -> 0.0)
                     .collect(Collectors.toList());
         } else if (alignmentId.equals("center")) {
-            List<Integer> lineLengths = findLineLengths(lines, fontMetrics);
-            int longestLength = Collections.max(lineLengths);
+            List<Double> lineLengths = findLineLengths(lines, fontMetrics);
+            double longestLength = Collections.max(lineLengths);
             return lineLengths.stream()
                     .map(length -> (longestLength - length) / 2)
                     .collect(Collectors.toList());
         } else {
-            List<Integer> lineLengths = findLineLengths(lines, fontMetrics);
-            int longestLength = Collections.max(lineLengths);
+            List<Double> lineLengths = findLineLengths(lines, fontMetrics);
+            double longestLength = Collections.max(lineLengths);
             return lineLengths.stream()
                     .map(length -> (longestLength - length))
                     .collect(Collectors.toList());
         }
     }
 
-    private List<Integer> findLineLengths(List<String> lines, FontMetrics fontMetrics) {
+    private List<Double> findLineLengths(List<String> lines, FontMetrics fontMetrics) {
         return lines.stream()
-                .map(line -> fontMetrics.stringWidth(line))
+                .map(line -> fontMetrics.getStringBounds(line, null).getWidth())
                 .collect(Collectors.toList());
     }
 
