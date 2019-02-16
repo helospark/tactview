@@ -18,13 +18,12 @@ import com.helospark.lightdi.LightDiContextConfiguration;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.save.DirtyRepository;
 import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
-import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
-import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
@@ -38,16 +37,11 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
@@ -95,49 +89,12 @@ public class JavaFXUiMain extends Application {
         Scene scene = new Scene(root, 650, 550, Color.GREY);
 
         root.getStylesheets().add("stylesheet.css");
-        MenuBar menuBar = new MenuBar();
-        Menu fileMenu = new Menu("_File");
-        Menu project = new Menu("_Project");
-        MenuItem exitItem = new MenuItem("Exit");
-        exitItem.setAccelerator(new KeyCodeCombination(KeyCode.F4, KeyCombination.ALT_DOWN));
-        exitItem.setOnAction(ae -> {
-            exitApplication(exitWithSaveService);
-        });
+
+        MenuBar menuBar = lightDi.getBean(MenuProcessor.class).createMenuBar();
+
         stage.setOnCloseRequest(e -> {
             exitApplication(exitWithSaveService);
         });
-        MenuItem loadItem = new MenuItem("_Load");
-        loadItem.setOnAction(a -> {
-            lightDi.getBean(UiLoadHandler.class).load();
-        });
-        MenuItem loadAutosaveItem = new MenuItem("Load _autosaved");
-        loadAutosaveItem.setOnAction(a -> {
-            lightDi.getBean(UiLoadHandler.class).loadAutosaved();
-        });
-        MenuItem saveItem = new MenuItem("_Save");
-        saveItem.setOnAction(a -> {
-            lightDi.getBean(UiSaveHandler.class).save();
-        });
-        MenuItem saveAsItem = new MenuItem("_Save as");
-        saveAsItem.setOnAction(a -> {
-            lightDi.getBean(UiSaveHandler.class).saveAs();
-        });
-
-        MenuItem render = new MenuItem("Render");
-        render.setOnAction(e -> {
-            renderService.render();
-        });
-
-        project.getItems().add(render);
-
-        fileMenu.getItems().add(loadItem);
-        fileMenu.getItems().add(loadAutosaveItem);
-        fileMenu.getItems().add(saveItem);
-        fileMenu.getItems().add(saveAsItem);
-        fileMenu.getItems().add(exitItem);
-
-        menuBar.getMenus().add(fileMenu);
-        menuBar.getMenus().add(project);
 
         root.setTop(menuBar);
         stage.setScene(scene);

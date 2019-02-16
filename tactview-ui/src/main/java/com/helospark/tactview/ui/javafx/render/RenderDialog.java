@@ -88,7 +88,7 @@ public class RenderDialog {
         borderPane.setCenter(gridPane);
 
         HBox buttonBar = new HBox();
-        button.getStyleClass().add("render-dialog-button-bar");
+        buttonBar.getStyleClass().add("render-dialog-button-bar");
 
         Button cancelButton = new Button("Close");
         cancelButton.setOnMouseClicked(e -> stage.close());

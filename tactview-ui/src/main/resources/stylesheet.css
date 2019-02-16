@@ -1,9 +1,10 @@
 
 * {
 	-fx-text-fill: white;
+	-fx-highlight-fill: white;
 }
 
-.timelinerow,#content-area {
+.timelinerow,#content-area,.dialog-root {
 	-fx-background-color: #333333;
 	-fx-background: #333333;
 }
@@ -330,4 +331,20 @@
 
 .timeline-effect.secondary-active {
    -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+}
+
+.markdown-title-one {
+    -fx-font-size: 30;
+    -fx-font-weight: bold;
+}
+
+.markdown-title-two {
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+}
+
+.markdown-text {
+    -fx-fill: white;
+    -fx-background-color: transparent ;
+    -fx-background-insets: 0px ;
 }
