@@ -26,6 +26,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 
 @Component
@@ -67,7 +68,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         browseButton.setContextMenu(contextMenu);
 
         browseButton.setOnMouseClicked(event -> {
-            if (event.isPrimaryButtonDown()) {
+            if (event.getButton() == MouseButton.PRIMARY) {
                 contextMenu.getItems().clear();
                 timelineManager.getAllClipIds()
                         .stream()

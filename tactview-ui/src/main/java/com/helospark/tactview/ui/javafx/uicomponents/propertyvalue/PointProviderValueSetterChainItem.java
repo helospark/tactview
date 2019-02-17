@@ -16,6 +16,7 @@ import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 
 @Component
@@ -66,7 +67,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 .build();
 
         button.setOnMouseClicked(event -> {
-            if (event.isPrimaryButtonDown()) {
+            if (event.getButton() == MouseButton.PRIMARY) {
                 inputModeRepository.requestPoint(point -> {
                     xProvider.getUpdateFromValue().accept(point.x);
                     yProvider.getUpdateFromValue().accept(point.y);

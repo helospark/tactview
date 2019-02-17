@@ -35,7 +35,7 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
 
     @Override
     public MenuItem createMenuItem(PropertyValueContextMenuRequest request) {
-        return createInterpolators(request.descriptor.getKeyframeableEffect().getId());
+        return createInterpolators(request.valueProvider.getId());
     }
 
     private Menu createInterpolators(String id) {

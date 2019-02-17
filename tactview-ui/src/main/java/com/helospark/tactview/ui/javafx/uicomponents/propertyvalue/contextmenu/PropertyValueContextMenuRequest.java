@@ -7,13 +7,13 @@ import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.EffectLine;
 
 public class PropertyValueContextMenuRequest {
     public KeyframeableEffect valueProvider;
-    public ValueProviderDescriptor descriptor;
+    public ValueProviderDescriptor containerDescriptor;
     public EffectLine effectLine;
     public TimelinePosition timelinePosition;
 
     public PropertyValueContextMenuRequest(KeyframeableEffect doubleProvider, ValueProviderDescriptor descriptor, EffectLine effectLine, TimelinePosition timelinePosition) {
         this.valueProvider = doubleProvider;
-        this.descriptor = descriptor;
+        this.containerDescriptor = descriptor;
         this.effectLine = effectLine;
         this.timelinePosition = timelinePosition;
     }

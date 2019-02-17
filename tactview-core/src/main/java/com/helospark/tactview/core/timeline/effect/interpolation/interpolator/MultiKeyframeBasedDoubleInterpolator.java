@@ -105,6 +105,7 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
         MultiKeyframeBasedDoubleInterpolator result = new MultiKeyframeBasedDoubleInterpolator(defaultValue);
         result.values = newValues;
         result.interpolatorImplementation = newInterpolatorImplementation;
+        result.useKeyframes = useKeyframes;
         return result;
     }
 

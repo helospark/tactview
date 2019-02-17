@@ -95,7 +95,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
             public MenuItem createMenuItem(PropertyValueContextMenuRequest request) {
                 MenuItem result = function.apply(request);
 
-                boolean isDisabled = request.descriptor.getEnabledIf()
+                boolean isDisabled = request.containerDescriptor.getEnabledIf()
                         .map(enabledIf -> !enabledIf.apply(request.timelinePosition))
                         .orElse(false);
                 if (isDisabled) {

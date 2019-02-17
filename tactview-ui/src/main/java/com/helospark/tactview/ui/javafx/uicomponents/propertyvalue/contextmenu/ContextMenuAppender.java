@@ -34,8 +34,6 @@ public class ContextMenuAppender {
                     .map(listItem -> listItem.createMenuItem(request))
                     .collect(Collectors.toList());
 
-            System.out.println(contextMenuItems);
-
             if (contextMenuList.size() > 0) {
                 contextMenu.getItems().clear();
                 contextMenu.getItems().addAll(contextMenuItems);

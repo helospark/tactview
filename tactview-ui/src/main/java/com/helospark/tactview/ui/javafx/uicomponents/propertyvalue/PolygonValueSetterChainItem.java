@@ -13,6 +13,7 @@ import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseButton;
 
 @Component
 public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<PolygonProvider> {
@@ -51,7 +52,7 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
                 .build();
 
         button.setOnMouseClicked(event -> {
-            if (event.isPrimaryButtonDown()) {
+            if (event.getButton() == MouseButton.PRIMARY) {
                 Polygon currentPolygon = (Polygon) effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition());
                 if (currentPolygon.getPoints().isEmpty()) {
                     inputModeRepository.requestPolygon(polygon -> {

@@ -17,6 +17,7 @@ import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -70,7 +71,7 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
                 .build();
 
         button.setOnMouseClicked(event -> {
-            if (event.isPrimaryButtonDown()) {
+            if (event.getButton() == MouseButton.PRIMARY) {
                 inputModeRepository.requestLine(line -> {
                     startPointProvider.getUpdateFromValue().accept(line.start);
                     endPointProvider.getUpdateFromValue().accept(line.end);

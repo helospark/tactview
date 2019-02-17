@@ -19,6 +19,7 @@ import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -75,7 +76,7 @@ public class RectangleProviderValueSetterChainItem extends TypeBasedPropertyValu
                 .build();
 
         button.setOnMouseClicked(event -> {
-            if (event.isPrimaryButtonDown()) {
+            if (event.getButton() == MouseButton.PRIMARY) {
                 inputModeRepository.requestRectangle(rectangle -> {
                     for (int i = 0; i < 4; ++i) {
                         pointProviders.get(i).getUpdateFromValue().accept(rectangle.points.get(i));

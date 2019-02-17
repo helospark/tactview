@@ -14,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 
 @Component
@@ -45,7 +46,7 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
         browseButton.setContextMenu(contextMenu);
 
         browseButton.setOnMouseClicked(event -> {
-            if (event.isPrimaryButtonDown()) {
+            if (event.getButton() == MouseButton.PRIMARY) {
                 contextMenu.getItems().clear();
                 timelineManager.getAllChannelIds()
                         .stream()

@@ -23,6 +23,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.C
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 
 @Component
@@ -125,7 +126,7 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 result.sendKeyframe(uiTimelineManager.getCurrentPosition());
             });
             colorPickerInputButton.setOnMouseClicked(event -> {
-                if (event.isPrimaryButtonDown()) {
+                if (event.getButton() == MouseButton.PRIMARY) {
                     inputModeRepository.requestColor(color -> {
                         redProvider.updateFromValue.accept(color.red);
                         greenProvider.updateFromValue.accept(color.green);
