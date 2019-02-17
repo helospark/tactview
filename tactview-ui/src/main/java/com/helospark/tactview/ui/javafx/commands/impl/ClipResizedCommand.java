@@ -22,6 +22,7 @@ public class ClipResizedCommand implements UiCommand {
     private boolean revertable;
 
     private boolean useSpecialPoints;
+    private boolean moreResizeExpected;
     private TimelineLength maximumJumpLength;
 
     @Generated("SparkTools")
@@ -34,6 +35,7 @@ public class ClipResizedCommand implements UiCommand {
         this.revertable = builder.revertable;
         this.useSpecialPoints = builder.useSpecialPoints;
         this.maximumJumpLength = builder.maximumJumpLength;
+        this.moreResizeExpected = builder.moreResizeExpected;
     }
 
     @Override
@@ -47,6 +49,7 @@ public class ClipResizedCommand implements UiCommand {
                 .withUseSpecialPoints(useSpecialPoints)
                 .withPosition(position)
                 .withMaximumJumpLength(maximumJumpLength)
+                .withMoreResizeExpected(moreResizeExpected)
                 .build();
 
         timelineManager.resizeClip(request);
@@ -86,6 +89,7 @@ public class ClipResizedCommand implements UiCommand {
         private TimelineInterval originalInterval;
         private boolean revertable;
         private boolean useSpecialPoints;
+        private boolean moreResizeExpected;
         private TimelineLength maximumJumpLength;
 
         private Builder() {
@@ -123,6 +127,11 @@ public class ClipResizedCommand implements UiCommand {
 
         public Builder withUseSpecialPoints(boolean useSpecialPoints) {
             this.useSpecialPoints = useSpecialPoints;
+            return this;
+        }
+
+        public Builder withMoreResizeExpected(boolean moreResizeExpected) {
+            this.moreResizeExpected = moreResizeExpected;
             return this;
         }
 

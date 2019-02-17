@@ -15,15 +15,17 @@ public class ClipMovedMessage implements AffectedModifiedIntervalAware {
     private Optional<ClosesIntervalChannel> specialPositionUsed;
     private TimelineInterval originalInterval;
     private TimelineInterval newInterval;
+    private boolean moreMoveExpected;
 
     public ClipMovedMessage(String clipId, TimelinePosition newPosition, String newChannelId, Optional<ClosesIntervalChannel> specialPositionUsed,
-            TimelineInterval originalInterval, TimelineInterval newInterval) {
+            TimelineInterval originalInterval, TimelineInterval newInterval, boolean moreMoveExpected) {
         this.clipId = clipId;
         this.newPosition = newPosition;
         this.channelId = newChannelId;
         this.specialPositionUsed = specialPositionUsed;
         this.originalInterval = originalInterval;
         this.newInterval = newInterval;
+        this.moreMoveExpected = moreMoveExpected;
     }
 
     public String getClipId() {
@@ -54,9 +56,14 @@ public class ClipMovedMessage implements AffectedModifiedIntervalAware {
         return specialPositionUsed;
     }
 
+    public boolean isMoreMoveExpected() {
+        return moreMoveExpected;
+    }
+
     @Override
     public String toString() {
-        return "ClipMovedMessage [clipId=" + clipId + ", newPosition=" + newPosition + ", channelId=" + channelId + ", specialPositionUsed=" + specialPositionUsed + "]";
+        return "ClipMovedMessage [clipId=" + clipId + ", newPosition=" + newPosition + ", channelId=" + channelId + ", specialPositionUsed=" + specialPositionUsed + ", originalInterval="
+                + originalInterval + ", newInterval=" + newInterval + ", moreMoveExpected=" + moreMoveExpected + "]";
     }
 
     @Override

@@ -115,6 +115,7 @@ public class TimelineDragAndDropHandler {
                 event.getDragboard().clear();
                 dragRepository.clearEffectDrag();
             }
+            timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
         });
 
     }
@@ -150,6 +151,7 @@ public class TimelineDragAndDropHandler {
                         .withNewChannelId(channelId)
                         .withTimelineManager(timelineManager)
                         .withEnableJumpingToSpecialPosition(true)
+                        .withMoreMoveExpected(!revertable)
                         .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                         .build();
 
@@ -158,7 +160,7 @@ public class TimelineDragAndDropHandler {
         }
     }
 
-    private void resizeClip(DragEvent event, boolean b) {
+    private void resizeClip(DragEvent event, boolean revertable) {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
@@ -168,9 +170,10 @@ public class TimelineDragAndDropHandler {
                     .withClipId(clipId)
                     .withLeft(dragRepository.getDragDirection().equals(DragRepository.DragDirection.LEFT))
                     .withPosition(position)
-                    .withRevertable(b)
+                    .withRevertable(revertable)
                     .withTimelineManager(timelineManager)
                     .withUseSpecialPoints(true)
+                    .withMoreResizeExpected(!revertable)
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                     .build();
             commandInterpreter.sendWithResult(command);

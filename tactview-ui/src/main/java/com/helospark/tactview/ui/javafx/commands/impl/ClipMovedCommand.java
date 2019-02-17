@@ -28,6 +28,8 @@ public class ClipMovedCommand implements UiCommand {
     private boolean enableJumpingToSpecialPosition;
     private TimelineLength maximumJumpLength;
 
+    private boolean moreMoveExpected;
+
     @Generated("SparkTools")
     private ClipMovedCommand(Builder builder) {
         this.isRevertable = builder.isRevertable;
@@ -40,6 +42,7 @@ public class ClipMovedCommand implements UiCommand {
         this.timelineManager = builder.timelineManager;
         this.enableJumpingToSpecialPosition = builder.enableJumpingToSpecialPosition;
         this.maximumJumpLength = builder.maximumJumpLength;
+        this.moreMoveExpected = builder.moreMoveExpected;
     }
 
     @Override
@@ -50,6 +53,7 @@ public class ClipMovedCommand implements UiCommand {
                 .withNewPosition(newPosition)
                 .withNewChannelId(newChannelId)
                 .withMaximumJump(maximumJumpLength)
+                .withMoreMoveExpected(moreMoveExpected)
                 .withEnableJumpingToSpecialPosition(enableJumpingToSpecialPosition)
                 .build();
 
@@ -76,7 +80,7 @@ public class ClipMovedCommand implements UiCommand {
     public String toString() {
         return "ClipMovedCommand [isRevertable=" + isRevertable + ", clipId=" + clipId + ", additionalClipIds=" + additionalClipIds + ", originalChannelId=" + originalChannelId + ", newChannelId="
                 + newChannelId + ", newPosition=" + newPosition + ", previousPosition=" + previousPosition + ", timelineManager=" + timelineManager + ", enableJumpingToSpecialPosition="
-                + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + "]";
+                + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + ", moreMoveExpected=" + moreMoveExpected + "]";
     }
 
     @Generated("SparkTools")
@@ -95,6 +99,7 @@ public class ClipMovedCommand implements UiCommand {
         private TimelinePosition previousPosition;
         private TimelineManager timelineManager;
         private boolean enableJumpingToSpecialPosition;
+        private boolean moreMoveExpected;
         private TimelineLength maximumJumpLength;
 
         private Builder() {
@@ -142,6 +147,11 @@ public class ClipMovedCommand implements UiCommand {
 
         public Builder withEnableJumpingToSpecialPosition(boolean enableJumpingToSpecialPosition) {
             this.enableJumpingToSpecialPosition = enableJumpingToSpecialPosition;
+            return this;
+        }
+
+        public Builder withMoreMoveExpected(boolean moreMoveExpected) {
+            this.moreMoveExpected = moreMoveExpected;
             return this;
         }
 

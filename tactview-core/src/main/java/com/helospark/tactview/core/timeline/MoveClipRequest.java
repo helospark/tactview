@@ -11,6 +11,7 @@ public class MoveClipRequest {
     public TimelinePosition newPosition;
     public String newChannelId;
     public boolean enableJumpingToSpecialPosition;
+    public boolean moreMoveExpected;
     public TimelineLength maximumJump;
 
     @Generated("SparkTools")
@@ -21,6 +22,7 @@ public class MoveClipRequest {
         this.newChannelId = builder.newChannelId;
         this.enableJumpingToSpecialPosition = builder.enableJumpingToSpecialPosition;
         this.maximumJump = builder.maximumJump;
+        this.moreMoveExpected = builder.moreMoveExpected;
     }
 
     @Generated("SparkTools")
@@ -35,6 +37,7 @@ public class MoveClipRequest {
         private TimelinePosition newPosition;
         private String newChannelId;
         private boolean enableJumpingToSpecialPosition;
+        private boolean moreMoveExpected;
         private TimelineLength maximumJump;
 
         private Builder() {
@@ -62,6 +65,11 @@ public class MoveClipRequest {
 
         public Builder withEnableJumpingToSpecialPosition(boolean enableJumpingToSpecialPosition) {
             this.enableJumpingToSpecialPosition = enableJumpingToSpecialPosition;
+            return this;
+        }
+
+        public Builder withMoreMoveExpected(boolean moreMoveExpected) {
+            this.moreMoveExpected = moreMoveExpected;
             return this;
         }
 

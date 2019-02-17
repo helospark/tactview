@@ -34,7 +34,7 @@ public class ClipResizedListener {
                         clipGroup.setLayoutX(startPosition);
                         ((Rectangle) clipGroup.getChildren().get(0)).setWidth(width);
 
-                        if (message.getSpecialPointUsed().isPresent()) {
+                        if (message.getSpecialPointUsed().isPresent() && message.isMoreResizeExpected()) {
                             drawSpecialPositionLine(message);
                         } else {
                             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);

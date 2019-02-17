@@ -566,7 +566,7 @@ public class TimelineManager implements SaveLoadContributor {
                                 newMovedChannel.addResource(clip);
 
                                 messagingService.sendAsyncMessage(new ClipMovedMessage(clip.getId(), clipNewPosition.getStartPosition(), newMovedChannel.getId(), finalSpecialPositionUsed,
-                                        clipCurrentInterval, clip.getGlobalInterval()));
+                                        clipCurrentInterval, clip.getGlobalInterval(), moveClipRequest.moreMoveExpected));
                             });
                 }
 
@@ -587,7 +587,8 @@ public class TimelineManager implements SaveLoadContributor {
                                 TimelinePosition clipNewPosition = clipCurrentInterval.getStartPosition().add(relativeMove);
                                 channel.moveClip(clip.getId(), clipNewPosition);
                                 messagingService.sendAsyncMessage(
-                                        new ClipMovedMessage(clip.getId(), clipNewPosition, channel.getId(), finalSpecialPositionUsed, clipCurrentInterval, clip.getGlobalInterval()));
+                                        new ClipMovedMessage(clip.getId(), clipNewPosition, channel.getId(), finalSpecialPositionUsed, clipCurrentInterval, clip.getGlobalInterval(),
+                                                moveClipRequest.moreMoveExpected));
                             });
 
                 }
@@ -689,6 +690,7 @@ public class TimelineManager implements SaveLoadContributor {
                     .withOriginalInterval(originalInterval)
                     .withNewInterval(renewedClip.getInterval())
                     .withSpecialPointUsed(specialPointUsed)
+                    .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
                     .build();
             messagingService.sendMessage(clipResizedMessage);
         }

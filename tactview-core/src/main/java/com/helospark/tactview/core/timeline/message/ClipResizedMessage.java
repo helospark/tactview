@@ -14,6 +14,7 @@ public class ClipResizedMessage implements AffectedModifiedIntervalAware {
     private TimelineInterval originalInterval;
     private TimelineInterval newInterval;
     private Optional<ClosesIntervalChannel> specialPointUsed;
+    private boolean moreResizeExpected;
 
     @Generated("SparkTools")
     private ClipResizedMessage(Builder builder) {
@@ -21,6 +22,7 @@ public class ClipResizedMessage implements AffectedModifiedIntervalAware {
         this.originalInterval = builder.originalInterval;
         this.newInterval = builder.newInterval;
         this.specialPointUsed = builder.specialPointUsed;
+        this.moreResizeExpected = builder.moreResizeExpected;
     }
 
     public String getClipId() {
@@ -40,6 +42,10 @@ public class ClipResizedMessage implements AffectedModifiedIntervalAware {
         return specialPointUsed;
     }
 
+    public boolean isMoreResizeExpected() {
+        return moreResizeExpected;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -51,6 +57,7 @@ public class ClipResizedMessage implements AffectedModifiedIntervalAware {
         private TimelineInterval originalInterval;
         private TimelineInterval newInterval;
         private Optional<ClosesIntervalChannel> specialPointUsed = Optional.empty();
+        private boolean moreResizeExpected;
 
         private Builder() {
         }
@@ -72,6 +79,11 @@ public class ClipResizedMessage implements AffectedModifiedIntervalAware {
 
         public Builder withSpecialPointUsed(Optional<ClosesIntervalChannel> specialPointUsed) {
             this.specialPointUsed = specialPointUsed;
+            return this;
+        }
+
+        public Builder withMoreResizeExpected(boolean moreResizeExpected) {
+            this.moreResizeExpected = moreResizeExpected;
             return this;
         }
 

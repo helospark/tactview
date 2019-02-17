@@ -8,6 +8,7 @@ public class ResizeClipRequest {
     private TimelinePosition position;
     private TimelineLength maximumJumpLength;
     private boolean useSpecialPoints;
+    private boolean moreResizeExpected;
 
     public TimelineClip getClip() {
         return clip;
@@ -29,6 +30,10 @@ public class ResizeClipRequest {
         return useSpecialPoints;
     }
 
+    public boolean isMoreResizeExpected() {
+        return moreResizeExpected;
+    }
+
     @Generated("SparkTools")
     private ResizeClipRequest(Builder builder) {
         this.clip = builder.clip;
@@ -36,6 +41,7 @@ public class ResizeClipRequest {
         this.position = builder.position;
         this.maximumJumpLength = builder.maximumJumpLength;
         this.useSpecialPoints = builder.useSpecialPoints;
+        this.moreResizeExpected = builder.moreResizeExpected;
     }
 
     @Generated("SparkTools")
@@ -50,6 +56,7 @@ public class ResizeClipRequest {
         private TimelinePosition position;
         private TimelineLength maximumJumpLength;
         private boolean useSpecialPoints;
+        private boolean moreResizeExpected;
 
         private Builder() {
         }
@@ -76,6 +83,11 @@ public class ResizeClipRequest {
 
         public Builder withUseSpecialPoints(boolean useSpecialPoints) {
             this.useSpecialPoints = useSpecialPoints;
+            return this;
+        }
+
+        public Builder withMoreResizeExpected(boolean moreResizeExpected) {
+            this.moreResizeExpected = moreResizeExpected;
             return this;
         }
 
