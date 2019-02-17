@@ -113,8 +113,9 @@ public class UiTimeline {
         //        Group timelineGroup = new Group();
         Group zoomGroup = new Group();
         timeLineScrollPane = new ZoomableScrollPane(zoomGroup, timelineState);
+        timelineState.setTimeLineScrollPane(timeLineScrollPane);
         VBox timelineBoxes = new VBox();
-        timelineBoxes.setPrefWidth(2000);
+        timelineBoxes.prefWidthProperty().bind(timelineState.getTimelineWidthProperty());
         timelineBoxes.setPadding(new Insets(0, 0, 0, -6));
         zoomGroup.getChildren().add(timelineBoxes);
 
@@ -157,6 +158,8 @@ public class UiTimeline {
         Group timelineCanvasGroup = new Group();
         timelineLabelCanvas = new Canvas(200, 35);
         timelineLabelCanvas.widthProperty().bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
+        timeLineScrollPane.hvalueProperty().bind(timelineState.getHscroll());
+        timeLineScrollPane.vvalueProperty().bind(timelineState.getVscroll());
 
         timelineLabelCanvas.widthProperty().addListener(newValue -> updateTimelineLabels());
         //        timelineLabelCanvas.scaleXProperty().addListener(newValue -> updateTimelineLabels());

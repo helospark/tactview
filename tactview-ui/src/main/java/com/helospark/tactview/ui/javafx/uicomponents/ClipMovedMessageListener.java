@@ -38,6 +38,15 @@ public class ClipMovedMessageListener {
         } else {
             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
         }
+        double leftPosition = timelineState.secondsToPixels(message.getAffectedIntervals().get(0).getEndPosition());
+        double currentWidth = timelineState.getTimelineWidthProperty().get();
+        if (currentWidth - leftPosition < 100) {
+            double newPosition = currentWidth + 50;
+            if (leftPosition > currentWidth) {
+                newPosition = leftPosition + 50;
+            }
+            timelineState.getTimelineWidthProperty().set(newPosition);
+        }
     }
 
     private void drawSpecialPositionLine(ClipMovedMessage message) {

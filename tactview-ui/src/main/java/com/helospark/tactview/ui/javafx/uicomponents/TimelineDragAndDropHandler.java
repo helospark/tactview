@@ -21,6 +21,7 @@ import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -94,6 +95,17 @@ public class TimelineDragAndDropHandler {
                 }
                 event.acceptTransferModes(TransferMode.LINK);
             }
+
+            ZoomableScrollPane pane = timelineState.getTimeLineScrollPane();
+            double x = event.getX();
+            double y = event.getY() + timeline.getLayoutY();
+
+            Bounds paneBounds = pane.getViewportBounds();
+
+            scrollRightWhenNeeded(x, paneBounds);
+            scrollLeftWhenNeeded(x, paneBounds);
+            scrollDownWhenNeeded(y, paneBounds);
+            scrollUpWhenNeeded(y, paneBounds);
         });
 
         timeline.setOnDragDropped(event -> {
@@ -118,6 +130,50 @@ public class TimelineDragAndDropHandler {
             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
         });
 
+    }
+
+    private void scrollRightWhenNeeded(double x, Bounds paneBounds) {
+        double rightX = -1.0 * paneBounds.getMinX() + paneBounds.getWidth();
+
+        double distance = (rightX - x);
+
+        if (distance < 50) {
+            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01;
+            timelineState.horizontalScroll(scrollStrength);
+        }
+    }
+
+    private void scrollLeftWhenNeeded(double x, Bounds paneBounds) {
+        double leftX = -1.0 * paneBounds.getMinX();
+
+        double distance = (x - leftX);
+
+        if (distance < 50) {
+            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01;
+            timelineState.horizontalScroll(-scrollStrength);
+        }
+    }
+
+    private void scrollUpWhenNeeded(double y, Bounds paneBounds) {
+        double topY = -1.0 * paneBounds.getMinY();
+
+        double distance = (y - topY);
+
+        if (distance < 30) {
+            double scrollStrength = (1.0 - (distance / 30.0)) * 0.01;
+            timelineState.verticalScroll(-scrollStrength);
+        }
+    }
+
+    private void scrollDownWhenNeeded(double y, Bounds paneBounds) {
+        double bottomY = -1.0 * paneBounds.getMinY() + paneBounds.getHeight();
+
+        double distance = (bottomY - y);
+
+        if (distance < 30) {
+            double scrollStrength = (1.0 - (distance / 30.0)) * 0.01;
+            timelineState.verticalScroll(scrollStrength);
+        }
     }
 
     private AddClipRequest addClipRequest(String channelId, List<File> dbFiles, String dbString, double currentX) {

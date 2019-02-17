@@ -36,11 +36,16 @@ public class TimelineState {
     private Map<String, Runnable> idToRemoveRunnable = new HashMap<>();
 
     // ZOOM
+    private SimpleDoubleProperty hscroll = new SimpleDoubleProperty(0);
+    private SimpleDoubleProperty vscroll = new SimpleDoubleProperty(0);
+    private SimpleDoubleProperty timelineWidthProperty = new SimpleDoubleProperty(2000.0);
     private SimpleDoubleProperty zoomValue = new SimpleDoubleProperty(1.0);
     private SimpleDoubleProperty translate = new SimpleDoubleProperty(0);
 
     private SimpleDoubleProperty linePosition = new SimpleDoubleProperty(0.0);
     private MoveSpecialPointLineProperties moveSpecialPointLineProperties = new MoveSpecialPointLineProperties();
+
+    private ZoomableScrollPane timeLineScrollPane;
 
     private MessagingService messagingService;
 
@@ -276,6 +281,10 @@ public class TimelineState {
         runnable.run();
     }
 
+    public SimpleDoubleProperty getHscroll() {
+        return hscroll;
+    }
+
     public double getChannelTitlesWidth() {
         if (channelHeaders.isEmpty()) {
             return 150;
@@ -289,6 +298,36 @@ public class TimelineState {
         double zoomedCurrentValue = zoomValue.get();
 
         return pixelsToSeconds(translatedCurrentValue);
+    }
+
+    public SimpleDoubleProperty getTimelineWidthProperty() {
+        return timelineWidthProperty;
+    }
+
+    public ZoomableScrollPane getTimeLineScrollPane() {
+        return timeLineScrollPane;
+    }
+
+    public void setTimeLineScrollPane(ZoomableScrollPane timeLineScrollPane) {
+        this.timeLineScrollPane = timeLineScrollPane;
+    }
+
+    public void horizontalScroll(double scrollStrength) {
+        double newScroll = hscroll.get() + scrollStrength;
+        if (newScroll >= 0 && newScroll < 1.0) {
+            hscroll.set(newScroll);
+        }
+    }
+
+    public SimpleDoubleProperty getVscroll() {
+        return vscroll;
+    }
+
+    public void verticalScroll(double scrollStrength) {
+        double newScroll = vscroll.get() + scrollStrength;
+        if (newScroll >= 0 && newScroll < 1.0) {
+            vscroll.set(newScroll);
+        }
     }
 
 }
