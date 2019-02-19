@@ -43,6 +43,7 @@ public class DraggableIconFactory {
 
             /* allow any transfer mode */
             Dragboard db = vbox.startDragAndDrop(TransferMode.ANY);
+            db.setDragView(image.getImage());
 
             /* put a string on dragboard */
             ClipboardContent content = new ClipboardContent();

@@ -16,6 +16,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
+import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
@@ -25,17 +26,20 @@ import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 
 @Component
 public class TimelineDragAndDropHandler {
+    private static final KeyCode SPECIAL_POSITION_DISABLE_KEY = KeyCode.ALT; // TODO: make switchable
     private static final int MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS = 30;
     private TimelineManager timelineManager;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineState timelineState;
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
+    private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
 
     @Slf4j
     private Logger logger;
@@ -43,12 +47,13 @@ public class TimelineDragAndDropHandler {
     private boolean isLoadingInprogress = false;
 
     public TimelineDragAndDropHandler(TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
-            DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository) {
+            DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
         this.timelineState = timelineState;
         this.dragRepository = dragRepository;
         this.selectedNodeRepository = selectedNodeRepository;
+        this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
     }
 
     public void addDragAndDrop(Node timeline, Pane timelineRow, String channelId) {
@@ -206,7 +211,7 @@ public class TimelineDragAndDropHandler {
                         .withOriginalChannelId(currentlyDraggedEffect.getOriginalChannelId())
                         .withNewChannelId(channelId)
                         .withTimelineManager(timelineManager)
-                        .withEnableJumpingToSpecialPosition(true)
+                        .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                         .withMoreMoveExpected(!revertable)
                         .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                         .build();
@@ -228,7 +233,7 @@ public class TimelineDragAndDropHandler {
                     .withPosition(position)
                     .withRevertable(revertable)
                     .withTimelineManager(timelineManager)
-                    .withUseSpecialPoints(true)
+                    .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                     .withMoreResizeExpected(!revertable)
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                     .build();
@@ -269,7 +274,7 @@ public class TimelineDragAndDropHandler {
         EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
                 .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
-                .withUseSpecialPoints(true)
+                .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                 .withGlobalPosition(timelineState.pixelsToSeconds(x))
                 .withRevertable(revertable)
@@ -290,7 +295,7 @@ public class TimelineDragAndDropHandler {
                 .withRevertable(revertable)
                 .withOriginalPosition(draggedEffect.getOriginalPosition())
                 .withTimelineManager(timelineManager)
-                .withEnableJumpingToSpecialPosition(true)
+                .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(20).getSeconds()))
                 .build();
         commandInterpreter.sendWithResult(command);
