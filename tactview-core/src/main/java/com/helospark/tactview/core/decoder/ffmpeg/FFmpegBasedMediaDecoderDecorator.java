@@ -60,7 +60,6 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
-
         // TODO: eliminate copypaste copy paste from below
 
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
@@ -75,7 +74,6 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
         String readId = request.getFile().getAbsolutePath();
         readId += metadata.getWidth() + "x" + metadata.getHeight();
-        readId += "x" + newStartFrame;
 
         Lock lock = duplicateReadLocks.get(readId);
 

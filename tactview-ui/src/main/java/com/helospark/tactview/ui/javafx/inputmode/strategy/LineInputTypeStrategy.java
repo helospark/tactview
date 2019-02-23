@@ -23,7 +23,7 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     public void onMouseDownEvent(StrategyMouseInput input) {
         if (input.mouseEvent.isSecondaryButtonDown()) {
             isFinished = true;
-        } else if (mouseCloseTo.isEmpty()) {
+        } else if (!mouseCloseTo.isPresent()) {
             result.start = new Point(input.x, input.y);
             result.end = new Point(input.x, input.y);
             mouseCloseTo = Optional.ofNullable(1);

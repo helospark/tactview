@@ -1,260 +1,345 @@
+#include <string>
+#include <map>
+#include <iostream>
 
 extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
+    #include <libavcodec/avcodec.h>
+    #include <libavformat/avformat.h>
+    #include <libswscale/swscale.h>
 
-#include <stdio.h>
+    #include <stdio.h>
 
-void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames) {
-  for(int y=0; y<height; y++) {
-    for (int i = 0; i < width; ++i) {
-        int id = y*pFrame->linesize[0] + i * 4;
-        frames[y * width * 4 + i * 4 + 0] = *(pFrame->data[0] + id + 2);
-        frames[y * width * 4 + i * 4 + 1] = *(pFrame->data[0] + id + 1);
-        frames[y * width * 4 + i * 4 + 2] = *(pFrame->data[0] + id + 0);
-        frames[y * width * 4 + i * 4 + 3] = *(pFrame->data[0] + id + 3);
+    struct DecodeStructure {
+        AVFormatContext   *pFormatCtx = NULL;
+        int               videoStream;
+        AVCodecContext    *pCodecCtxOrig = NULL;
+        AVCodecContext    *pCodecCtx = NULL;
+        AVCodec           *pCodec = NULL;
+        AVFrame           *pFrame = NULL;
+        AVFrame           *pFrameRGB = NULL;
+        AVPacket          packet;
+        uint8_t           *buffer = NULL;
+        struct SwsContext *sws_ctx = NULL;
+    };
+
+
+    std::map<std::string, DecodeStructure*> decodeStructureMap;
+
+    void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
+    {
+        for(int y=0; y<height; y++)
+        {
+            for (int i = 0; i < width; ++i)
+            {
+                int id = y*pFrame->linesize[0] + i * 4;
+                frames[y * width * 4 + i * 4 + 0] = *(pFrame->data[0] + id + 2);
+                frames[y * width * 4 + i * 4 + 1] = *(pFrame->data[0] + id + 1);
+                frames[y * width * 4 + i * 4 + 2] = *(pFrame->data[0] + id + 0);
+                frames[y * width * 4 + i * 4 + 3] = *(pFrame->data[0] + id + 3);
+            }
+        }
+
     }
-  }
 
+
+    struct MediaMetadata
+    {
+        double fps;
+        int width;
+        int height;
+        long long lengthInMicroseconds;
+
+        MediaMetadata()
+        {
+            fps = -1;
+            width = -1;
+            height = -1;
+            lengthInMicroseconds = -1;
+        }
+    };
+
+    MediaMetadata readMediaMetadata(const char* path)
+    {
+        // Initalizing these to NULL prevents segfaults!
+        AVFormatContext   *pFormatCtx = NULL;
+        int               i, videoStream;
+        AVCodecContext    *pCodecCtxOrig = NULL;
+        AVCodecContext    *pCodecCtx = NULL;
+        AVCodec           *pCodec = NULL;
+        AVFrame           *pFrame = NULL;
+        AVFrame           *pFrameRGB = NULL;
+        MediaMetadata mediaMetadata;
+
+        av_register_all();
+
+        if(avformat_open_input(&pFormatCtx, path, NULL, NULL)!=0)
+            return mediaMetadata;
+
+        if(avformat_find_stream_info(pFormatCtx, NULL)<0)
+            return mediaMetadata;
+
+        av_dump_format(pFormatCtx, 0, path, 0);
+
+        videoStream=-1;
+        for(i=0; i<pFormatCtx->nb_streams; i++)
+            if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+            {
+                videoStream=i;
+                break;
+            }
+        if(videoStream==-1)
+            return mediaMetadata;
+
+        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
+
+        pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
+        if(pCodec==NULL)
+        {
+            fprintf(stderr, "Unsupported codec!\n");
+            return mediaMetadata;
+        }
+
+        pCodecCtx = avcodec_alloc_context3(pCodec);
+
+        if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
+        {
+            fprintf(stderr, "Couldn't copy codec context");
+            return mediaMetadata;
+        }
+
+        if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
+            return mediaMetadata;
+
+        pFrame=av_frame_alloc();
+
+        pFrameRGB=av_frame_alloc();
+        if(pFrameRGB==NULL)
+            return mediaMetadata;
+
+        AVStream* st = pFormatCtx->streams[videoStream];
+
+        mediaMetadata.width = pCodecCtx->width;
+        mediaMetadata.height = pCodecCtx->height;
+        mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
+
+        AVRational framerate;
+
+        if (st->avg_frame_rate.den == 0)
+        {
+            framerate = st->r_frame_rate;
+        }
+        else
+        {
+            framerate = st->avg_frame_rate;
+        }
+
+        mediaMetadata.fps = framerate.num / (double)framerate.den;
+
+        std::cout << "Length 1=" << mediaMetadata.lengthInMicroseconds << "2=" << (st->duration / (AV_TIME_BASE / 1000000)) << std::endl;
+
+        av_frame_free(&pFrameRGB);
+
+        av_frame_free(&pFrame);
+
+        avcodec_close(pCodecCtx);
+        avcodec_close(pCodecCtxOrig);
+
+        avformat_close_input(&pFormatCtx);
+
+        return mediaMetadata;
+    }
+
+    typedef struct
+    {
+        char* data;
+    } FFMpegFrame;
+
+    typedef struct
+    {
+        int width;
+        int height;
+        int numberOfFrames;
+        long long startMicroseconds;
+        char* path;
+        FFMpegFrame* frames;
+    } FFmpegImageRequest;
+
+    std::string createKey(FFmpegImageRequest* request) {
+        return std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height);
+    }
+
+    DecodeStructure* openFile(FFmpegImageRequest* request);
+
+    void readFrames(FFmpegImageRequest* request)
+    {
+        std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(createKey(request));
+
+        DecodeStructure* element;
+
+        if (elementIterator == decodeStructureMap.end()) {
+            element = openFile(request);
+        } else {
+            element = elementIterator->second;
+        }
+
+        if (element == NULL) {
+            return;
+        }
+
+        int i = 0;
+        AVFormatContext   *pFormatCtx = element->pFormatCtx;
+        int               videoStream = element->videoStream;
+        AVCodecContext    *pCodecCtxOrig = element->pCodecCtxOrig;
+        AVCodecContext    *pCodecCtx = element->pCodecCtx;
+        AVCodec           *pCodec = element->pCodec;
+        AVFrame           *pFrame = element->pFrame;
+        AVFrame           *pFrameRGB = element->pFrameRGB;
+        AVPacket          packet = element->packet;
+        int               frameFinished = 0;
+        uint8_t           *buffer = element->buffer;
+        struct SwsContext *sws_ctx = element->sws_ctx;
+
+
+        int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rethink
+        seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);        
+        int64_t seek_distance = seek_target - packet.pts;
+        if (seek_distance > 5000 || seek_distance < 0) {
+          std::cout << "Seeking to " << request->startMicroseconds << " current position " << packet.pts << " distance " << seek_distance << std::endl;
+          av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
+          avcodec_flush_buffers(pCodecCtx);
+        } else {
+          std::cout << "No seek, distance " << seek_distance << std::endl;
+        }
+
+        while(av_read_frame(pFormatCtx, &packet)>=0 && i < request->numberOfFrames)
+        {
+            if(packet.stream_index==videoStream)
+            {
+                int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+
+                if (packet.pts < seek_target && frameFinished) {
+                  std::cout << "Skipping package " << packet.pts << std::endl;
+                }
+
+                if(frameFinished && packet.pts >= seek_target )
+                {
+                    sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
+                              pFrame->linesize, 0, pCodecCtx->height,
+                              pFrameRGB->data, pFrameRGB->linesize);
+
+                    copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
+                    ++i;
+                }
+            }
+            // Free the packet that was allocated by av_read_frame
+            av_free_packet(&packet);
+        }
+
+    }
+
+    DecodeStructure* openFile(FFmpegImageRequest* request) {
+        std::cout << "Opening file " << request->path << " " << request->width << " " << request->height << std::endl;
+
+        // Initalizing these to NULL prevents segfaults!
+        AVFormatContext   *pFormatCtx = NULL;
+        int               videoStream;
+        AVCodecContext    *pCodecCtxOrig = NULL;
+        AVCodecContext    *pCodecCtx = NULL;
+        AVCodec           *pCodec = NULL;
+        AVFrame           *pFrame = NULL;
+        AVFrame           *pFrameRGB = NULL;
+        AVPacket          packet;
+        uint8_t           *buffer = NULL;
+        struct SwsContext *sws_ctx = NULL;
+
+        av_register_all();
+
+        if(avformat_open_input(&pFormatCtx, request->path, NULL, NULL)!=0) {
+            std::cerr << "Cannot open input " << std::endl;
+            return NULL;
+        }
+
+        if(avformat_find_stream_info(pFormatCtx, NULL)<0) {
+            std::cerr << "Cannot find stream info " << std::endl;
+            return NULL;
+        }
+
+        videoStream=-1;
+        for(int i=0; i<pFormatCtx->nb_streams; i++)
+            if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+            {
+                videoStream=i;
+                break;
+            }
+        if(videoStream==-1) {
+            std::cerr << "No video stream found in " << request->path << std::endl;
+            return NULL;
+        }
+
+        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
+        pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
+        if(pCodec==NULL)
+        {
+            std::cerr << "Unsupported codec: " << pCodecCtxOrig->codec_id << std::endl;
+            return NULL;
+        }
+        std::cout << "Using codec " << pCodec->name << " for " << request->path << std::endl;
+
+        pCodecCtx = avcodec_alloc_context3(pCodec);
+
+        if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
+        {
+            std::cerr << "Couldn't copy codec context" << std::endl;
+            return NULL;
+        }
+
+        if(avcodec_open2(pCodecCtx, pCodec, NULL)<0) {
+            std::cerr << "Cannot open codec context" << std::endl;
+            return NULL;
+        }
+
+        pFrame=av_frame_alloc();
+
+        pFrameRGB=av_frame_alloc();
+        if(pFrameRGB == NULL || pFrame == NULL) {
+            std::cerr << "Cannot allocate RGB frame " << std::endl;
+            return NULL;
+        }
+
+        int numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, pCodecCtx->width,
+                                    pCodecCtx->height);
+        buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
+
+        avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
+                       pCodecCtx->width, pCodecCtx->height);
+
+        sws_ctx = sws_getContext(pCodecCtx->width,
+                                 pCodecCtx->height,
+                                 pCodecCtx->pix_fmt,
+                                 request->width,
+                                 request->height,
+                                 AV_PIX_FMT_BGRA,
+                                 SWS_BILINEAR,
+                                 NULL,
+                                 NULL,
+                                 NULL
+                                );
+
+        DecodeStructure* element = new DecodeStructure();
+        element->pFormatCtx = pFormatCtx;
+        element->videoStream = videoStream;
+        element->pCodecCtxOrig = pCodecCtxOrig;
+        element->pCodecCtx = pCodecCtx;
+        element->pCodec = pCodec;
+        element->pFrame = pFrame;
+        element->pFrameRGB = pFrameRGB;
+        element->packet = packet;
+        element->buffer = buffer;
+        element->sws_ctx = sws_ctx;
+
+        decodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(createKey(request), element));
+
+        return element;
+    }
 }
 
-
-struct MediaMetadata {
-    double fps;
-    int width;
-    int height;
-    long long lengthInMicroseconds;
-
-    MediaMetadata() {
-      fps = -1;
-      width = -1;
-      height = -1;
-      lengthInMicroseconds = -1;
-    }
-};
-
-MediaMetadata readMediaMetadata(const char* path) {
-  // Initalizing these to NULL prevents segfaults!
-  AVFormatContext   *pFormatCtx = NULL;
-  int               i, videoStream;
-  AVCodecContext    *pCodecCtxOrig = NULL;
-  AVCodecContext    *pCodecCtx = NULL;
-  AVCodec           *pCodec = NULL;
-  AVFrame           *pFrame = NULL;
-  AVFrame           *pFrameRGB = NULL;
-  AVPacket          packet;
-  int               frameFinished;
-  int               numBytes;
-  uint8_t           *buffer = NULL;
-  struct SwsContext *sws_ctx = NULL;
-  MediaMetadata mediaMetadata;
-
-  av_register_all();
-  
-  if(avformat_open_input(&pFormatCtx, path, NULL, NULL)!=0)
-    return mediaMetadata;
-  
-  if(avformat_find_stream_info(pFormatCtx, NULL)<0)
-    return mediaMetadata;
-  
-  av_dump_format(pFormatCtx, 0, path, 0);
-  
-  videoStream=-1;
-  for(i=0; i<pFormatCtx->nb_streams; i++)
-    if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO) {
-      videoStream=i;
-      break;
-    }
-  if(videoStream==-1)
-    return mediaMetadata;
-
-  pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
-
-  pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
-  if(pCodec==NULL) {
-    fprintf(stderr, "Unsupported codec!\n");
-    return mediaMetadata;
-  }
-
-  pCodecCtx = avcodec_alloc_context3(pCodec);
-
-  if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
-    fprintf(stderr, "Couldn't copy codec context");
-    return mediaMetadata;
-  }
-
-  if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
-    return mediaMetadata;
-
-  pFrame=av_frame_alloc();
-
-  pFrameRGB=av_frame_alloc();
-  if(pFrameRGB==NULL)
-    return mediaMetadata;
-
-  AVStream* st = pFormatCtx->streams[videoStream];
-
-  mediaMetadata.width = pCodecCtx->width;
-  mediaMetadata.height = pCodecCtx->height;
-  mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
-
-  AVRational framerate;
-
-  if (st->avg_frame_rate.den == 0) {
-    framerate = st->r_frame_rate;
-  } else {
-    framerate = st->avg_frame_rate;
-  }
-
-  mediaMetadata.fps = framerate.num / (double)framerate.den;
-
-    fprintf(stderr, "Length 1=%ldd 2=%ldd!\n", mediaMetadata.lengthInMicroseconds, (st->duration / (AV_TIME_BASE / 1000000)));
-
-  av_frame_free(&pFrameRGB);
-  
-  av_frame_free(&pFrame);
-  
-  avcodec_close(pCodecCtx);
-  avcodec_close(pCodecCtxOrig);
-
-  avformat_close_input(&pFormatCtx);
-
- // printf("%d %d %f\n", mediaMetadata.width, mediaMetadata.height, mediaMetadata.fps);
-
-  return mediaMetadata;
-}
-
-typedef struct {
-    char* data;
-} FFMpegFrame;
-
-typedef struct {
-    int width;
-    int height;
-    int numberOfFrames;
-    long long startMicroseconds;
-    char* path;
-    FFMpegFrame* frames;
-} FFmpegImageRequest;
-
-void readFrames(FFmpegImageRequest* request) {
-    fprintf(stderr, "Start!2 %s %d %d %d %llu\n", request->path, request->width, request->height, request->numberOfFrames, request->startMicroseconds);
-    fflush(stderr);
-  // Initalizing these to NULL prevents segfaults!
-  AVFormatContext   *pFormatCtx = NULL;
-  int               i, videoStream;
-  AVCodecContext    *pCodecCtxOrig = NULL;
-  AVCodecContext    *pCodecCtx = NULL;
-  AVCodec           *pCodec = NULL;
-  AVFrame           *pFrame = NULL;
-  AVFrame           *pFrameRGB = NULL;
-  AVPacket          packet;
-  int               frameFinished;
-  int               numBytes;
-  uint8_t           *buffer = NULL;
-  struct SwsContext *sws_ctx = NULL;
-
-  av_register_all();
-  
-  if(avformat_open_input(&pFormatCtx, request->path, NULL, NULL)!=0)
-    return;
-  
-  if(avformat_find_stream_info(pFormatCtx, NULL)<0)
-    return;
-  
- // av_dump_format(pFormatCtx, 0, request->path, 0);
-  
-  videoStream=-1;
-  for(i=0; i<pFormatCtx->nb_streams; i++)
-    if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO) {
-      videoStream=i;
-      break;
-    }
-  if(videoStream==-1)
-    return;
-  
-  pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
-  pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
-  if(pCodec==NULL) {
-    fprintf(stderr, "Unsupported codec!\n");
-    return;
-  }
-  printf("Using codec %s\n", pCodec->name);
-
-  pCodecCtx = avcodec_alloc_context3(pCodec);
-
-  if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
-    fprintf(stderr, "Couldn't copy codec context");
-    return;
-  }
-
-  if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
-    return;
-  
-  pFrame=av_frame_alloc();
-  
-  pFrameRGB=av_frame_alloc();
-  if(pFrameRGB==NULL)
-    return;
-
-  numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, pCodecCtx->width,
-			      pCodecCtx->height);
-  buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-  
-  avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
-		 pCodecCtx->width, pCodecCtx->height);
-  
-  sws_ctx = sws_getContext(pCodecCtx->width,
-			   pCodecCtx->height,
-			   pCodecCtx->pix_fmt,
-			   request->width,
-			   request->height,
-			   AV_PIX_FMT_BGRA,
-			   SWS_BILINEAR,
-			   NULL,
-			   NULL,
-			   NULL
-			   );
-
-  i=0;
-
-  fprintf(stderr, "Number of frames %d\n", numBytes);
-
-
-  int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rethink
-	seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
-  av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
-
-  while(av_read_frame(pFormatCtx, &packet)>=0 && i < request->numberOfFrames) {
-    if(packet.stream_index==videoStream) {
-      avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
-        //fprintf(stderr, "Seeking %llu -> %llu %d\n", packet.pts, seek_target, i);
-      if(frameFinished && packet.pts >= seek_target ) {
-	        sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
-		         pFrame->linesize, 0, pCodecCtx->height,
-		         pFrameRGB->data, pFrameRGB->linesize);
-
-	        copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
-          ++i;
-	    }
-    }
-    // Free the packet that was allocated by av_read_frame
-    av_free_packet(&packet);
-  }
-  
-  // Free the RGB image
-  av_free(buffer);
-  av_frame_free(&pFrameRGB);
-  
-  // Free the YUV frame
-  av_frame_free(&pFrame);
-  
-  // Close the codecs
-  avcodec_close(pCodecCtx);
-  avcodec_close(pCodecCtxOrig);
-
-  // Close the video file
-  avformat_close_input(&pFormatCtx);
-}
-}
