@@ -20,6 +20,7 @@ extern "C" {
         AVPacket          packet;
         uint8_t           *buffer = NULL;
         struct SwsContext *sws_ctx = NULL;
+        int64_t lastPts = -1;
     };
 
 
@@ -201,10 +202,17 @@ extern "C" {
 
 
         int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rethink
-        seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);        
-        int64_t seek_distance = seek_target - packet.pts;
-        if (seek_distance > 5000 || seek_distance < 0) {
-          std::cout << "Seeking to " << request->startMicroseconds << " current position " << packet.pts << " distance " << seek_distance << std::endl;
+        int64_t minimumTimeRequiredToSeek = 2 * 1000000 * (AV_TIME_BASE / 1000000); // Seek if distance is more than 2 seconds
+        seek_target = av_rescale_q(seek_target, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
+        minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
+        int64_t seek_distance = seek_target - element->lastPts;
+
+        std::cout << "Seek distance " << seek_distance << std::endl;
+        std::cout << "MIN TIME = " << minimumTimeRequiredToSeek << std::endl;
+        std::cout << "Want to read " << request->startMicroseconds << " current packet pts " << element->lastPts << std::endl;
+
+        if (seek_distance > minimumTimeRequiredToSeek || seek_distance <= 0) {
+          std::cout << "Seeking to " << request->startMicroseconds << " current position " << element->lastPts << " distance " << seek_distance << std::endl;
           av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
           avcodec_flush_buffers(pCodecCtx);
         } else {
@@ -228,6 +236,7 @@ extern "C" {
                               pFrameRGB->data, pFrameRGB->linesize);
 
                     copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
+                    element->lastPts = packet.pts;
                     ++i;
                 }
             }

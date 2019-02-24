@@ -168,16 +168,22 @@ public class JavaFXUiMain extends Application {
         playButton.setOnMouseClicked(e -> uiTimelineManager.startPlayback());
         Button stopButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STOP));
         stopButton.setOnMouseClicked(e -> uiTimelineManager.stopPlayback());
-        Button jumpBackButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FAST_BACKWARD));
+        Button jumpBackOnFrameButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STEP_BACKWARD));
+        jumpBackOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveBackOneFrame());
+        Button jumpForwardOnFrameButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STEP_FORWARD));
+        jumpForwardOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveForwardOneFrame());
+        Button jumpBackButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.BACKWARD));
         jumpBackButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(-10)));
-        Button jumpForwardButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FAST_FORWARD));
+        Button jumpForwardButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FORWARD));
         jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
 
         underVideoBar.getChildren().add(muteButton);
         underVideoBar.getChildren().add(fullscreenButton);
         underVideoBar.getChildren().add(jumpBackButton);
+        underVideoBar.getChildren().add(jumpBackOnFrameButton);
         underVideoBar.getChildren().add(playButton);
         underVideoBar.getChildren().add(stopButton);
+        underVideoBar.getChildren().add(jumpForwardOnFrameButton);
         underVideoBar.getChildren().add(jumpForwardButton);
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);

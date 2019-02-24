@@ -14,6 +14,8 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
+import javax.annotation.PostConstruct;
+
 import com.google.common.util.concurrent.Striped;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
@@ -23,8 +25,10 @@ import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
+import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
@@ -32,10 +36,17 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
+    private MessagingService messagingService;
 
-    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache) {
+    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
+        this.messagingService = messagingService;
+    }
+
+    @PostConstruct
+    public void init() {
+        messagingService.register(DropCachesMessage.class, message -> mediaCache.dropCaches());
     }
 
     @Override

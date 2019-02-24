@@ -2,6 +2,7 @@ package com.helospark.tactview.core.decoder.framecache;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -24,7 +25,7 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 
 @Component
 public class MediaCache {
-    private Map<String, NavigableMap<Integer, MediaHashValue>> backCache = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, NavigableMap<Integer, MediaHashValue>> backCache = new ConcurrentHashMap<>();
     private Set<CacheRemoveDomain> toRemove = new ConcurrentSkipListSet<>();
     private MemoryManager memoryManager;
 
@@ -194,6 +195,18 @@ public class MediaCache {
             return Long.compare(value.lastAccessed, other.value.lastAccessed);
         }
 
+    }
+
+    public void dropCaches() {
+        Map<String, NavigableMap<Integer, MediaHashValue>> copiedElements = new HashMap<>(backCache);
+        backCache.clear(); // we may loose some elements here
+        for (var cachedEntry : copiedElements.entrySet()) {
+            for (var cachedFrameSequence : cachedEntry.getValue().entrySet()) {
+                for (var frame : cachedFrameSequence.getValue().frames) {
+                    returnBuffer(frame);
+                }
+            }
+        }
     }
 
 }
