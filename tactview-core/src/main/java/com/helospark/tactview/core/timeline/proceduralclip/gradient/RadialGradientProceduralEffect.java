@@ -24,12 +24,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.LinePr
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientRequest;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RadialGradientProceduralEffect extends ProceduralVisualClip {
 
-    private IndependentPixelOperation independentPixelOperation;
+    private RadialGradientService radialGradientService;
 
     private ColorProvider startColorProvider;
     private ColorProvider endColorProvider;
@@ -37,9 +38,9 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
     private LineProvider lineProvider;
     private DoubleProvider innerSaturationDiameterProvider;
 
-    public RadialGradientProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public RadialGradientProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, RadialGradientService radialGradientService) {
         super(visualMediaMetadata, interval);
-        this.independentPixelOperation = independentPixelOperation;
+        this.radialGradientService = radialGradientService;
     }
 
     public RadialGradientProceduralEffect(RadialGradientProceduralEffect gradientProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
@@ -47,49 +48,34 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(gradientProceduralEffect, this);
     }
 
-    public RadialGradientProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public RadialGradientProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, RadialGradientService radialGradientService) {
         super(metadata, node, loadMetadata);
-        this.independentPixelOperation = independentPixelOperation2;
+        this.radialGradientService = radialGradientService;
     }
 
     @Override
     public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
-
         InterpolationLine line = lineProvider.getValueAt(relativePosition);
 
-        Point startPositionInPixels = line.start.multiply(result.getWidth(), result.getHeight());
-        Point endPositionInPixels = line.end.multiply(result.getWidth(), result.getHeight());
+        Point startPositionInPixels = line.start.multiply(request.getExpectedWidth(), request.getExpectedHeight());
+        Point endPositionInPixels = line.end.multiply(request.getExpectedWidth(), request.getExpectedHeight());
         Point center = startPositionInPixels.center(endPositionInPixels);
         double radius = startPositionInPixels.distanceFrom(center);
         Color startColor = startColorProvider.getValueAt(relativePosition);
         Color endColor = endColorProvider.getValueAt(relativePosition);
         double innerSaturation = innerSaturationDiameterProvider.getValueAt(relativePosition);
 
-        independentPixelOperation.executePixelTransformation(result.getWidth(), result.getHeight(), (x, y) -> {
-            double distance = center.distanceFrom(x, y);
-            if (distance > radius) {
-                setColor(result, x, y, endColor);
-            } else {
-                double factor = (distance / radius);
-                if (factor <= innerSaturation) {
-                    setColor(result, x, y, startColor);
-                } else {
-                    double realDistanceNormalized = 1.0 - innerSaturation;
-                    factor = (factor - innerSaturation) / realDistanceNormalized;
-                    Color newColor = startColor.interpolate(endColor, factor);
-                    setColor(result, x, y, newColor);
-                }
-            }
-        });
-        return result;
-    }
+        RadialGradientRequest gradientRequest = RadialGradientRequest.builder()
+                .withCenter(center)
+                .withEndColor(endColor)
+                .withHeight(request.getExpectedHeight())
+                .withInnerSaturation(innerSaturation)
+                .withRadius(radius)
+                .withStartColor(startColor)
+                .withWidth(request.getExpectedWidth())
+                .build();
 
-    private void setColor(ClipImage result, Integer x, Integer y, Color endColor) {
-        result.setRed((int) (endColor.red * 255), x, y);
-        result.setGreen((int) (endColor.green * 255), x, y);
-        result.setBlue((int) (endColor.blue * 255), x, y);
-        result.setAlpha(255, x, y);
+        return radialGradientService.createImageWithGradient(gradientRequest);
     }
 
     @Override

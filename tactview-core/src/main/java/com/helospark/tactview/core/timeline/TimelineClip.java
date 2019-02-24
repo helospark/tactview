@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import static com.helospark.tactview.core.util.StaticObjectMapper.toValue;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -317,6 +318,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
             TimelineInterval originalInterval = effect.getInterval();
             TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(localPositon) : originalInterval.butWithEndPosition(localPositon);
 
+            if (newInterval.getLength().getSeconds().compareTo(BigDecimal.ZERO) <= 0) {
+                return false;
+            }
             if (newInterval.getStartPosition().isLessThan(0)) {
                 return false;
             }

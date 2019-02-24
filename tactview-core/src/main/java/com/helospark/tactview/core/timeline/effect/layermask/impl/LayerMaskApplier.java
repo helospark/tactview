@@ -59,4 +59,30 @@ public class LayerMaskApplier {
         return result;
     }
 
+    public ClipImage mergeTwoImageWithLayerMask(LayerMaskBetweenTwoImageApplyRequest request) {
+        if (!request.getTopFrame().isSameSizeAs(request.getBottomFrame()) || !request.getTopFrame().isSameSizeAs(request.getMask())) {
+            throw new IllegalArgumentException("Different sizes not supported");
+        }
+
+        ClipImage result = ClipImage.sameSizeAs(request.getTopFrame());
+        LayerMaskAlphaCalculator calculator = request.getCalculator();
+        ReadOnlyClipImage maskToUse = request.getMask();
+
+        independentPixelOperation.executePixelTransformation(request.getTopFrame().getWidth(), request.getTopFrame().getHeight(), (x, y) -> {
+            int intensity = calculator.calculateAlpha(maskToUse, x, y);
+
+            double normalizedAlpha = intensity / 255.0;
+
+            for (int i = 0; i < 3; ++i) {
+                int foreground = request.getTopFrame().getColorComponentWithOffset(x, y, i);
+                int background = request.getBottomFrame().getColorComponentWithOffset(x, y, i);
+                int color = (int) ((foreground * normalizedAlpha) + (background * (1.0 - normalizedAlpha)));
+                result.setColorComponentByOffset(color, x, y, i);
+            }
+            result.setAlpha(intensity, x, y);
+        });
+
+        return result;
+    }
+
 }

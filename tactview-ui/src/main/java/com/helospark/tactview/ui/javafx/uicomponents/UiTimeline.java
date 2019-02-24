@@ -166,8 +166,8 @@ public class UiTimeline {
         Group timelineCanvasGroup = new Group();
         timelineLabelCanvas = new Canvas(200, 35);
         timelineLabelCanvas.widthProperty().bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
-        timeLineScrollPane.hvalueProperty().bind(timelineState.getHscroll());
-        timeLineScrollPane.vvalueProperty().bind(timelineState.getVscroll());
+        timeLineScrollPane.hvalueProperty().bindBidirectional(timelineState.getHscroll());
+        timeLineScrollPane.vvalueProperty().bindBidirectional(timelineState.getVscroll());
 
         timelineLabelCanvas.widthProperty().addListener(newValue -> updateTimelineLabels());
         //        timelineLabelCanvas.scaleXProperty().addListener(newValue -> updateTimelineLabels());

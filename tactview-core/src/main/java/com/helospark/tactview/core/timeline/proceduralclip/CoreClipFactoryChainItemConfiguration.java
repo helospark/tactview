@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.proceduralclip.channelcopy.ChannelCopyProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.GridProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.LineProceduralClip;
@@ -58,13 +59,13 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem gradientProceduralClip(IndependentPixelOperation independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem gradientProceduralClip(RadialGradientService radialGradientService) {
         return new StandardProceduralClipFactoryChainItem("radialgradient", "Radial gradient",
                 request -> {
-                    return new RadialGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                    return new RadialGradientProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), radialGradientService);
                 },
                 (node, loadMetadata) -> {
-                    return new RadialGradientProceduralEffect(metadata, node, loadMetadata, independentPixelOperation);
+                    return new RadialGradientProceduralEffect(metadata, node, loadMetadata, radialGradientService);
                 });
     }
 

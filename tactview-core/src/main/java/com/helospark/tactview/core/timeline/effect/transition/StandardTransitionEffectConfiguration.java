@@ -9,11 +9,15 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.StandardEffectFactory;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
+import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
+import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskGrayscaleToAlpha;
 import com.helospark.tactview.core.timeline.effect.transition.alphatransition.AlphaTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.blurtransition.BlurTransition;
 import com.helospark.tactview.core.timeline.effect.transition.chromadissolve.LightDissolveTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.flash.WhiteFlashTransition;
 import com.helospark.tactview.core.timeline.effect.transition.floatout.FloatOutTransitionEffect;
+import com.helospark.tactview.core.timeline.effect.transition.shape.CircleTransition;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Configuration
@@ -70,6 +74,18 @@ public class StandardTransitionEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new WhiteFlashTransition(node, loadMetadata, independentPixelOperation))
                 .withName("White flash")
                 .withSupportedEffectId("whiteflashtransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory circleTransitionEffect(RadialGradientService radialGradientService, LayerMaskApplier layerMaskApplier, LayerMaskGrayscaleToAlpha layerMaskGrayscaleToAlpha) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new CircleTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(2000)), radialGradientService, layerMaskApplier, layerMaskGrayscaleToAlpha))
+                .withRestoreFactory((node, loadMetadata) -> new CircleTransition(node, loadMetadata, radialGradientService, layerMaskApplier, layerMaskGrayscaleToAlpha))
+                .withName("Circle transition")
+                .withSupportedEffectId("circletransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
