@@ -160,6 +160,7 @@ extern "C" {
         int width;
         int height;
         int numberOfFrames;
+        int useApproximatePosition;
         long long startMicroseconds;
         char* path;
         FFMpegFrame* frames;
@@ -207,9 +208,9 @@ extern "C" {
         minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
         int64_t seek_distance = seek_target - element->lastPts;
 
-        std::cout << "Seek distance " << seek_distance << std::endl;
-        std::cout << "MIN TIME = " << minimumTimeRequiredToSeek << std::endl;
-        std::cout << "Want to read " << request->startMicroseconds << " current packet pts " << element->lastPts << std::endl;
+        //std::cout << "Seek distance " << seek_distance << std::endl;
+        //std::cout << "MIN TIME = " << minimumTimeRequiredToSeek << std::endl;
+        //std::cout << "Want to read " << request->startMicroseconds << " current packet pts " << element->lastPts << std::endl;
 
         if (seek_distance > minimumTimeRequiredToSeek || seek_distance <= 0) {
           std::cout << "Seeking to " << request->startMicroseconds << " current position " << element->lastPts << " distance " << seek_distance << std::endl;
@@ -229,7 +230,7 @@ extern "C" {
                   std::cout << "Skipping package " << packet.pts << std::endl;
                 }
 
-                if(frameFinished && packet.pts >= seek_target )
+                if(frameFinished && (packet.pts >= seek_target || request->useApproximatePosition) )
                 {
                     sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
                               pFrame->linesize, 0, pCodecCtx->height,

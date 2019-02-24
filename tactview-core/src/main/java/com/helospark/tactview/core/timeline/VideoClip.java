@@ -45,16 +45,19 @@ public class VideoClip extends VisualTimelineClip {
     }
 
     @Override
-    public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
+    public ByteBuffer requestFrame(RequestFrameParameter frameRequest) {
         VideoMediaDataRequest request = VideoMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
-                .withHeight(height)
-                .withWidth(width)
+                .withHeight(frameRequest.getHeight())
+                .withWidth(frameRequest.getWidth())
                 .withMetadata(mediaMetadata)
-                .withStart(position)
+                .withStart(frameRequest.getPosition())
                 .withNumberOfFrames(1)
+                .withUseApproximatePosition(frameRequest.useApproximatePosition())
                 .build();
-        return backingSource.decoder.readFrames(request).getFrames().get(0);
+        return backingSource.decoder.readFrames(request)
+                .getFrames()
+                .get(0);
     }
 
     @Override

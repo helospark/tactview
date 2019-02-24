@@ -34,6 +34,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -152,6 +155,11 @@ public class UiTimeline {
 
         //        timelineGroup.getChildren().add(zoomGroup);
         ScrollPane timelineTimeLabelsScrollPane = new ScrollPane();
+        timelineTimeLabelsScrollPane.addEventFilter(KeyEvent.ANY, e -> {
+            if (e.getCode().equals(KeyCode.LEFT) || e.getCode().equals(KeyCode.RIGHT)) {
+                e.consume();
+            }
+        });
         timelineTimeLabelsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         timelineTimeLabelsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
@@ -198,13 +206,11 @@ public class UiTimeline {
             timelineState.setTranslate(translate);
         });
 
-        timelineTimeLabelsScrollPane.setOnMouseClicked(e -> {
-            double xPosition = e.getX();
-            jumpTo(xPosition);
-        });
-        timelineTimeLabelsScrollPane.setOnMouseDragged(e -> {
-            double xPosition = e.getX();
-            jumpTo(xPosition);
+        timelineTimeLabelsScrollPane.addEventFilter(MouseEvent.ANY, e -> {
+            if (e.isPrimaryButtonDown()) {
+                double xPosition = e.getX();
+                jumpTo(xPosition);
+            }
         });
 
         //        timeLineScrollPane.setContent(timelineGroup);

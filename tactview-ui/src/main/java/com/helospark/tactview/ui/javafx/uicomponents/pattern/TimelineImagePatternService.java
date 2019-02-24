@@ -73,6 +73,7 @@ public class TimelineImagePatternService {
             TimelinePosition position = new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i)));
             GetFrameRequest frameRequest = GetFrameRequest.builder()
                     .withApplyEffects(false)
+                    .withUseApproximatePosition(true)
                     .withExpectedWidth(uiProjectRepository.getPreviewWidth())
                     .withExpectedHeight(uiProjectRepository.getPreviewHeight())
                     .withRelativePosition(position)

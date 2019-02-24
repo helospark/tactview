@@ -9,6 +9,7 @@ import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
+import com.helospark.tactview.core.timeline.RequestFrameParameter;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -31,7 +32,7 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
     }
 
     @Override
-    public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
+    public ByteBuffer requestFrame(RequestFrameParameter request) {
         // TODO something is very wrong here
         throw new IllegalStateException();
     }

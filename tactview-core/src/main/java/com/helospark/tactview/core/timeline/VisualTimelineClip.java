@@ -67,7 +67,14 @@ public abstract class VisualTimelineClip extends TimelineClip {
         int height = (int) (mediaMetadata.getHeight() * scale);
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
 
-        ByteBuffer frame = requestFrame(relativePosition.add(renderOffset), width, height);
+        RequestFrameParameter frameRequest = RequestFrameParameter.builder()
+                .withPosition(relativePosition.add(renderOffset))
+                .withWidth(width)
+                .withHeight(height)
+                .withUseApproximatePosition(request.useApproximatePosition())
+                .build();
+
+        ByteBuffer frame = requestFrame(frameRequest);
         ClipImage frameResult = new ClipImage(frame, width, height);
 
         return applyEffects(relativePosition, frameResult, request);
@@ -107,7 +114,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return frameResult;
     }
 
-    public abstract ByteBuffer requestFrame(TimelinePosition position, int width, int height);
+    public abstract ByteBuffer requestFrame(RequestFrameParameter request);
 
     @Override
     public List<NonIntersectingIntervalList<StatelessEffect>> getEffectChannels() {

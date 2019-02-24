@@ -7,6 +7,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 
 // https://stackoverflow.com/questions/39827911/javafx-8-scaling-zooming-scrollpane-relative-to-mouse-position
@@ -30,6 +32,12 @@ public class ZoomableScrollPane extends ScrollPane {
         setFitToWidth(true); //center
 
         updateScale();
+
+        addEventFilter(KeyEvent.ANY, e -> {
+            if (e.getCode().equals(KeyCode.LEFT) || e.getCode().equals(KeyCode.RIGHT)) {
+                e.consume();
+            }
+        });
     }
 
     private Node outerNode(Node node) {

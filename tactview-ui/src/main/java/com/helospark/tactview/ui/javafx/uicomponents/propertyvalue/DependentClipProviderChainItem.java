@@ -133,6 +133,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         if (clip instanceof VisualTimelineClip) {
             GetFrameRequest frameRequest = GetFrameRequest.builder()
                     .withApplyEffects(true)
+                    .withUseApproximatePosition(true)
                     .withExpectedWidth(IMAGE_PREVIEW_SIZE) // TODO: aspect ratio
                     .withExpectedHeight(27)
                     .withPosition(position)

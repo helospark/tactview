@@ -9,6 +9,7 @@ import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.timeline.RequestFrameParameter;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -40,11 +41,11 @@ public class ImageClip extends VisualTimelineClip {
     }
 
     @Override
-    public ByteBuffer requestFrame(TimelinePosition position, int width, int height) {
+    public ByteBuffer requestFrame(RequestFrameParameter frameRequest) {
         VideoMediaDataRequest request = VideoMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
-                .withWidth(width)
-                .withHeight(height)
+                .withWidth(frameRequest.getWidth())
+                .withHeight(frameRequest.getHeight())
                 .withNumberOfFrames(1)
                 .withMetadata(mediaMetadata)
                 .build(); // todo: cache and scale

@@ -9,12 +9,13 @@ public class FFmpegImageRequest extends Structure implements Structure.ByReferen
     public int width;
     public int height;
     public int numberOfFrames;
+    public int useApproximatePosition;
     public long startMicroseconds;
     public String path;
     public FFMpegFrame frames;
 
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("width", "height", "numberOfFrames", "startMicroseconds", "path", "frames");
+        return Arrays.asList("width", "height", "numberOfFrames", "useApproximatePosition", "startMicroseconds", "path", "frames");
     }
 }

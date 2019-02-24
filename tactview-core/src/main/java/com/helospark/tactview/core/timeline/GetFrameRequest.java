@@ -15,6 +15,7 @@ public class GetFrameRequest {
     private int expectedWidth;
     private int expectedHeight;
     private boolean applyEffects;
+    private boolean useApproximatePosition;
     private Optional<Integer> applyEffectsLessThanEffectChannel;
     private Map<String, ReadOnlyClipImage> requestedClips;
     private Map<String, ReadOnlyClipImage> requestedChannelClips;
@@ -27,6 +28,7 @@ public class GetFrameRequest {
         this.expectedWidth = builder.expectedWidth;
         this.expectedHeight = builder.expectedHeight;
         this.applyEffects = builder.applyEffects;
+        this.useApproximatePosition = builder.useApproximatePosition;
         this.applyEffectsLessThanEffectChannel = builder.applyEffectsLessThanEffectChannel;
         this.requestedClips = builder.requestedClips;
         this.requestedChannelClips = builder.requestedChannelClips;
@@ -68,6 +70,10 @@ public class GetFrameRequest {
         return applyEffectsLessThanEffectChannel;
     }
 
+    public boolean useApproximatePosition() {
+        return useApproximatePosition;
+    }
+
     public TimelinePosition calculateRelativePositionFrom(IntervalAware intervalAware) {
         if (relativePosition != null) {
             return relativePosition;
@@ -89,6 +95,7 @@ public class GetFrameRequest {
         private int expectedWidth;
         private int expectedHeight;
         private boolean applyEffects;
+        private boolean useApproximatePosition;
         private Optional<Integer> applyEffectsLessThanEffectChannel = Optional.empty();
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
@@ -123,6 +130,11 @@ public class GetFrameRequest {
 
         public Builder withApplyEffects(boolean applyEffects) {
             this.applyEffects = applyEffects;
+            return this;
+        }
+
+        public Builder withUseApproximatePosition(boolean useApproximatePosition) {
+            this.useApproximatePosition = useApproximatePosition;
             return this;
         }
 

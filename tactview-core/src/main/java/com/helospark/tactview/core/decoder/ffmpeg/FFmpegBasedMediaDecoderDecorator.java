@@ -115,7 +115,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
                 result.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4));
             }
             copyToResult(result, framesFromCache.values());
-        } else {
+        } else if (!request.useApproximatePosition()) {
             System.out.println("Reading " + startFrame + " " + numberOfFrames);
             // Always read in chunks to minimize overhead
             int additionalFramesToReadInBeginning = startFrame % CHUNK_SIZE;
@@ -130,13 +130,15 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
             }
 
             int newNumberOfFrame = newEndFrame - newStartFrame;
-            System.out.println("Reading in chunks: " + newNumberOfFrame + " " + newStartFrame);
+
             List<ByteBuffer> readFrames = Arrays.asList(readFromFile(request, newStartFrame, newNumberOfFrame, filePath));
 
             storeInCache(request, newStartFrame, filePath, readFrames);
 
             result = readResultBetweenIndices(readFrames, additionalFramesToReadInBeginning, numberOfFrames);
-            System.out.println("#############x Actually reading " + newStartFrame);
+        } else {
+            System.out.println("Reading without cache " + request);
+            result = Arrays.asList(readFromFile(request, startFrame, request.getNumberOfFrames(), filePath));
         }
         return new MediaDataResponse(result);
     }
@@ -200,6 +202,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         ffmpegRequest.height = request.getHeight();
         ffmpegRequest.width = request.getWidth();
         ffmpegRequest.path = filePath;
+        ffmpegRequest.useApproximatePosition = request.useApproximatePosition() ? 1 : 0;
 
         ffmpegRequest.startMicroseconds = frameToTimestamp(startFrame, ((VideoMetadata) request.getMetadata()).getFps())
                 .getSeconds()

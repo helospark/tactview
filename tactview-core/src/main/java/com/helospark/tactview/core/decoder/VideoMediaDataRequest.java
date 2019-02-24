@@ -16,6 +16,7 @@ public class VideoMediaDataRequest {
     private int numberOfFrames;
 
     private boolean shouldRescale;
+    private boolean useApproximatePosition;
     private int width;
     private int height;
 
@@ -27,6 +28,7 @@ public class VideoMediaDataRequest {
         this.length = builder.length;
         this.numberOfFrames = builder.numberOfFrames;
         this.shouldRescale = builder.shouldRescale;
+        this.useApproximatePosition = builder.useApproximatePosition;
         this.width = builder.width;
         this.height = builder.height;
     }
@@ -67,6 +69,16 @@ public class VideoMediaDataRequest {
         return numberOfFrames;
     }
 
+    public boolean useApproximatePosition() {
+        return useApproximatePosition;
+    }
+
+    @Override
+    public String toString() {
+        return "VideoMediaDataRequest [file=" + file + ", metadata=" + metadata + ", start=" + start + ", length=" + length + ", numberOfFrames=" + numberOfFrames + ", shouldRescale=" + shouldRescale
+                + ", useApproximatePosition=" + useApproximatePosition + ", width=" + width + ", height=" + height + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -80,6 +92,7 @@ public class VideoMediaDataRequest {
         private TimelineLength length;
         private int numberOfFrames;
         private boolean shouldRescale;
+        private boolean useApproximatePosition;
         private int width;
         private int height;
 
@@ -113,6 +126,11 @@ public class VideoMediaDataRequest {
 
         public Builder withShouldRescale(boolean shouldRescale) {
             this.shouldRescale = shouldRescale;
+            return this;
+        }
+
+        public Builder withUseApproximatePosition(boolean useApproximatePosition) {
+            this.useApproximatePosition = useApproximatePosition;
             return this;
         }
 
