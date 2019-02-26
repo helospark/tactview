@@ -17,6 +17,8 @@ import com.helospark.tactview.core.timeline.effect.transition.blurtransition.Blu
 import com.helospark.tactview.core.timeline.effect.transition.chromadissolve.LightDissolveTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.flash.WhiteFlashTransition;
 import com.helospark.tactview.core.timeline.effect.transition.floatout.FloatOutTransitionEffect;
+import com.helospark.tactview.core.timeline.effect.transition.random.RandomLineTransition;
+import com.helospark.tactview.core.timeline.effect.transition.random.ShuffledNumberService;
 import com.helospark.tactview.core.timeline.effect.transition.shape.CircleTransition;
 import com.helospark.tactview.core.timeline.effect.transition.shape.DiamondTransition;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
@@ -101,6 +103,18 @@ public class StandardTransitionEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new DiamondTransition(node, loadMetadata, polygonRenderService, layerMaskApplier, layerMaskAlphaToAlpha))
                 .withName("Diamond transition")
                 .withSupportedEffectId("diamondtransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory randomLineTransitionEffect(ShuffledNumberService shuffledNumberService) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new RandomLineTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(2000)), shuffledNumberService))
+                .withRestoreFactory((node, loadMetadata) -> new RandomLineTransition(node, loadMetadata, shuffledNumberService))
+                .withName("Random line transition")
+                .withSupportedEffectId("randomlinetransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
