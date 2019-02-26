@@ -10,6 +10,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.StandardEffectFactory;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
+import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskAlphaToAlpha;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskGrayscaleToAlpha;
 import com.helospark.tactview.core.timeline.effect.transition.alphatransition.AlphaTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.blurtransition.BlurTransition;
@@ -17,7 +18,9 @@ import com.helospark.tactview.core.timeline.effect.transition.chromadissolve.Lig
 import com.helospark.tactview.core.timeline.effect.transition.flash.WhiteFlashTransition;
 import com.helospark.tactview.core.timeline.effect.transition.floatout.FloatOutTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.shape.CircleTransition;
+import com.helospark.tactview.core.timeline.effect.transition.shape.DiamondTransition;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Configuration
@@ -86,6 +89,18 @@ public class StandardTransitionEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new CircleTransition(node, loadMetadata, radialGradientService, layerMaskApplier, layerMaskGrayscaleToAlpha))
                 .withName("Circle transition")
                 .withSupportedEffectId("circletransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory diamondTransitionEffect(PolygonRenderService polygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new DiamondTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(2000)), polygonRenderService, layerMaskApplier, layerMaskAlphaToAlpha))
+                .withRestoreFactory((node, loadMetadata) -> new DiamondTransition(node, loadMetadata, polygonRenderService, layerMaskApplier, layerMaskAlphaToAlpha))
+                .withName("Diamond transition")
+                .withSupportedEffectId("diamondtransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

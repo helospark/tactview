@@ -39,7 +39,11 @@ public class FakeUi {
     }
 
     public TimelineClip dragProceduralClipToFirstChannel(String proceduralClipId, TimelinePosition position) {
-        TimelineChannel channel = timelineManager.getChannels().get(0);
+        return dragProceduralClipToChannel(proceduralClipId, position, 0);
+    }
+
+    public TimelineClip dragProceduralClipToChannel(String proceduralClipId, TimelinePosition position, int channelIndex) {
+        TimelineChannel channel = timelineManager.getChannels().get(channelIndex);
 
         AddClipRequest request = AddClipRequest.builder()
                 .withChannelId(channel.getId())

@@ -49,4 +49,8 @@ public class Point {
         return new Point(x, y);
     }
 
+    public Point add(double x, double y) {
+        return new Point(this.x + x, this.y + y);
+    }
+
 }

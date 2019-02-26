@@ -54,17 +54,19 @@ public class PolygonRenderService {
                     nextValue = IMAGE_RIGHT;
                 }
                 for (int pixelX = currentValue; pixelX <= nextValue; pixelX++) {
-                    result.setRed((int) (color.red * 255.0), pixelX, pixelY);
-                    result.setGreen((int) (color.green * 255.0), pixelX, pixelY);
-                    result.setBlue((int) (color.blue * 255.0), pixelX, pixelY);
+                    if (result.inBounds(pixelX, pixelY)) {
+                        result.setRed((int) (color.red * 255.0), pixelX, pixelY);
+                        result.setGreen((int) (color.green * 255.0), pixelX, pixelY);
+                        result.setBlue((int) (color.blue * 255.0), pixelX, pixelY);
 
-                    int minDistance = Math.min(pixelX - currentValue, nextValue - pixelX);
-                    int alpha = (int) ((double) minDistance / fuzzyEdge * 255);
-                    if (alpha > 255) {
-                        alpha = 255;
+                        int minDistance = Math.min(pixelX - currentValue, nextValue - pixelX);
+                        int alpha = (int) ((double) minDistance / fuzzyEdge * 255);
+                        if (alpha > 255) {
+                            alpha = 255;
+                        }
+
+                        result.setAlpha(alpha, pixelX, pixelY);
                     }
-
-                    result.setAlpha(alpha, pixelX, pixelY);
                 }
             }
         }
@@ -99,16 +101,18 @@ public class PolygonRenderService {
                         nextValue = IMAGE_BOTTOM;
                     }
                     for (int pixelY = currentValue; pixelY <= nextValue; pixelY++) {
-                        int minDistance = Math.min(pixelY - currentValue, nextValue - pixelY);
-                        double verticalAlpha = ((double) minDistance / fuzzyEdge);
-                        if (verticalAlpha > 1.0) {
-                            verticalAlpha = 1.0;
+                        if (result.inBounds(pixelX, pixelY)) {
+                            int minDistance = Math.min(pixelY - currentValue, nextValue - pixelY);
+                            double verticalAlpha = ((double) minDistance / fuzzyEdge);
+                            if (verticalAlpha > 1.0) {
+                                verticalAlpha = 1.0;
+                            }
+                            double horizontalAlpha = result.getAlpha(pixelX, pixelY) / 255.0;
+
+                            double newAlpha = Math.min(horizontalAlpha, verticalAlpha);
+
+                            result.setAlpha((int) (newAlpha * 255.0), pixelX, pixelY);
                         }
-                        double horizontalAlpha = result.getAlpha(pixelX, pixelY) / 255.0;
-
-                        double newAlpha = Math.min(horizontalAlpha, verticalAlpha);
-
-                        result.setAlpha((int) (newAlpha * 255.0), pixelX, pixelY);
                     }
                 }
             }
