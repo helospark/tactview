@@ -18,6 +18,7 @@ import com.helospark.tactview.core.timeline.effect.transition.chromadissolve.Lig
 import com.helospark.tactview.core.timeline.effect.transition.flash.WhiteFlashTransition;
 import com.helospark.tactview.core.timeline.effect.transition.floatout.FloatOutTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.random.RandomLineTransition;
+import com.helospark.tactview.core.timeline.effect.transition.random.RandomPointTransition;
 import com.helospark.tactview.core.timeline.effect.transition.random.ShuffledNumberService;
 import com.helospark.tactview.core.timeline.effect.transition.shape.CircleTransition;
 import com.helospark.tactview.core.timeline.effect.transition.shape.DiamondTransition;
@@ -115,6 +116,18 @@ public class StandardTransitionEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new RandomLineTransition(node, loadMetadata, shuffledNumberService))
                 .withName("Random line transition")
                 .withSupportedEffectId("randomlinetransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory dissolveTransitionEffect(ShuffledNumberService shuffledNumberService) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new RandomPointTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(2000)), shuffledNumberService))
+                .withRestoreFactory((node, loadMetadata) -> new RandomPointTransition(node, loadMetadata, shuffledNumberService))
+                .withName("Dissolve transition")
+                .withSupportedEffectId("dissovlvetransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
