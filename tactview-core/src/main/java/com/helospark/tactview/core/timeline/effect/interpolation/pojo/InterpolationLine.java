@@ -13,4 +13,8 @@ public class InterpolationLine {
         return new InterpolationLine(start.deepClone(), end.deepClone());
     }
 
+    public double length() {
+        return end.distanceFrom(start);
+    }
+
 }

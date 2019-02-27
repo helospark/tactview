@@ -53,4 +53,12 @@ public class Point {
         return new Point(this.x + x, this.y + y);
     }
 
+    public Point subtract(Point other) {
+        return new Point(this.x - other.x, this.y - other.y);
+    }
+
+    public Point add(Point multiplyVector) {
+        return add(multiplyVector.x, multiplyVector.y);
+    }
+
 }

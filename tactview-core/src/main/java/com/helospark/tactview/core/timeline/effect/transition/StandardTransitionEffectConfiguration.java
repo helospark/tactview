@@ -22,6 +22,8 @@ import com.helospark.tactview.core.timeline.effect.transition.random.RandomPoint
 import com.helospark.tactview.core.timeline.effect.transition.random.ShuffledNumberService;
 import com.helospark.tactview.core.timeline.effect.transition.shape.CircleTransition;
 import com.helospark.tactview.core.timeline.effect.transition.shape.DiamondTransition;
+import com.helospark.tactview.core.timeline.effect.transition.shape.LinearGradientTransition;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.LinearGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -128,6 +130,19 @@ public class StandardTransitionEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new RandomPointTransition(node, loadMetadata, shuffledNumberService))
                 .withName("Dissolve transition")
                 .withSupportedEffectId("dissovlvetransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory linearGradientTransitionEffect(LinearGradientService linearGradientService, LayerMaskApplier layerMaskApplier, LayerMaskGrayscaleToAlpha layerMaskGrayscaleToAlpha) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new LinearGradientTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(2000)), linearGradientService, layerMaskApplier,
+                                layerMaskGrayscaleToAlpha))
+                .withRestoreFactory((node, loadMetadata) -> new LinearGradientTransition(node, loadMetadata, linearGradientService, layerMaskApplier, layerMaskGrayscaleToAlpha))
+                .withName("Linear gradient transition")
+                .withSupportedEffectId("lineargradienttransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }

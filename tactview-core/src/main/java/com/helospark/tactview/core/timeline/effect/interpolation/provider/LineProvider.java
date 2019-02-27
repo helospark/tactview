@@ -51,4 +51,8 @@ public class LineProvider extends CompositeKeyframeableEffect {
         return LineProviderFactory.class;
     }
 
+    public static LineProvider ofNormalizedScreenCoordinates(double x1, double y1, double x2, double y2) {
+        return new LineProvider(PointProvider.ofNormalizedImagePosition(x1, y1), PointProvider.ofNormalizedImagePosition(x2, y2));
+    }
+
 }

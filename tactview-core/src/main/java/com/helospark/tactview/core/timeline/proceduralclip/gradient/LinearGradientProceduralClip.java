@@ -4,9 +4,6 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.twod.Line;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
@@ -20,28 +17,27 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.LinearGradientRequest;
+import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.LinearGradientService;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class LinearGradientProceduralClip extends ProceduralVisualClip {
-
-    private IndependentPixelOperation independentPixelOperation;
+    private LinearGradientService linearGradientService;
 
     private ColorProvider startColorProvider;
     private ColorProvider endColorProvider;
 
     private LineProvider lineProvider;
 
-    public LinearGradientProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public LinearGradientProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, LinearGradientService linearGradientService) {
         super(visualMediaMetadata, interval);
-        this.independentPixelOperation = independentPixelOperation;
+        this.linearGradientService = linearGradientService;
     }
 
     public LinearGradientProceduralClip(LinearGradientProceduralClip linearProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
@@ -49,58 +45,27 @@ public class LinearGradientProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(linearProceduralEffect, this);
     }
 
-    public LinearGradientProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public LinearGradientProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, LinearGradientService linearGradientService) {
         super(metadata, node, loadMetadata);
-        this.independentPixelOperation = independentPixelOperation2;
+        this.linearGradientService = linearGradientService;
     }
 
     @Override
     public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
-
         InterpolationLine line = lineProvider.getValueAt(relativePosition);
-
-        Point startPositionInPixels = line.start.multiply(result.getWidth(), result.getHeight());
-        Point endPositionInPixels = line.end.multiply(result.getWidth(), result.getHeight());
-
-        Vector2D start = new Vector2D(startPositionInPixels.x, startPositionInPixels.y);
-        Vector2D originalEnd = new Vector2D(endPositionInPixels.x, endPositionInPixels.y);
-        double lineDistance = start.distance(originalEnd);
-
-        Line perpendicularLine = getPerpendicularLine(start, originalEnd);
 
         Color startColor = startColorProvider.getValueAt(relativePosition);
         Color endColor = endColorProvider.getValueAt(relativePosition);
 
-        independentPixelOperation.executePixelTransformation(result.getWidth(), result.getHeight(), (x, y) -> {
-            double pixelDistance = perpendicularLine.distance(new Vector2D(x, y)); // TODO: avoid new on every pixel
+        LinearGradientRequest linearGradientRequest = LinearGradientRequest.builder()
+                .withStartColor(startColor)
+                .withEndColor(endColor)
+                .withNormalizedLine(line)
+                .withWidth(request.getExpectedWidth())
+                .withHeight(request.getExpectedHeight())
+                .build();
 
-            if (pixelDistance > lineDistance) {
-                setColor(result, x, y, endColor);
-            } else {
-                double factor = pixelDistance / lineDistance;
-                Color newColor = startColor.interpolate(endColor, factor);
-                setColor(result, x, y, newColor);
-            }
-
-        });
-        return result;
-    }
-
-    private Line getPerpendicularLine(Vector2D start, Vector2D originalEnd) {
-        Vector2D direction = originalEnd.subtract(start);
-        Vector2D perpendicularDirection = new Vector2D(direction.getY(), -direction.getX()).normalize();
-        Vector2D end = start.add(perpendicularDirection);
-
-        Line perpendicularLine = new Line(start, end, 0.0001);
-        return perpendicularLine;
-    }
-
-    private void setColor(ClipImage result, Integer x, Integer y, Color endColor) {
-        result.setRed((int) (endColor.red * 255), x, y);
-        result.setGreen((int) (endColor.green * 255), x, y);
-        result.setBlue((int) (endColor.blue * 255), x, y);
-        result.setAlpha(255, x, y);
+        return linearGradientService.render(linearGradientRequest);
     }
 
     @Override
