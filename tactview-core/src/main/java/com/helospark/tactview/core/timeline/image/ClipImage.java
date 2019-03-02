@@ -173,4 +173,15 @@ public class ClipImage implements ReadOnlyClipImage {
         return this;
     }
 
+    public void copyColorFromTo(ReadOnlyClipImage from, int fromX, int fromY, ClipImage to, int toX, int toY) {
+        for (int i = 0; i < 4; ++i) {
+            byte component = from.getBuffer().get(fromY * width * 4 + fromX * 4 + i);
+            to.buffer.put(toY * to.width * 4 + toX * 4 + i, component);
+        }
+    }
+
+    public void returnBuffer() {
+        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
+    }
+
 }

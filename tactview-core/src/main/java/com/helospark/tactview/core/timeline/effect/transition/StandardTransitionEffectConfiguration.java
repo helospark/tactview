@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.StandardEffectFactory;
+import com.helospark.tactview.core.timeline.effect.blur.BlurService;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskAlphaToAlpha;
@@ -17,6 +18,7 @@ import com.helospark.tactview.core.timeline.effect.transition.blurtransition.Blu
 import com.helospark.tactview.core.timeline.effect.transition.chromadissolve.LightDissolveTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.flash.WhiteFlashTransition;
 import com.helospark.tactview.core.timeline.effect.transition.floatout.FloatOutTransitionEffect;
+import com.helospark.tactview.core.timeline.effect.transition.floatout.WhipPanTransition;
 import com.helospark.tactview.core.timeline.effect.transition.random.RandomLineTransition;
 import com.helospark.tactview.core.timeline.effect.transition.random.RandomPointTransition;
 import com.helospark.tactview.core.timeline.effect.transition.random.ShuffledNumberService;
@@ -143,6 +145,17 @@ public class StandardTransitionEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new LinearGradientTransition(node, loadMetadata, linearGradientService, layerMaskApplier, layerMaskGrayscaleToAlpha))
                 .withName("Linear gradient transition")
                 .withSupportedEffectId("lineargradienttransition")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory whipPanTransitionEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new WhipPanTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(250)), independentPixelOperation, blurService))
+                .withRestoreFactory((node, loadMetadata) -> new WhipPanTransition(node, loadMetadata, independentPixelOperation, blurService))
+                .withName("Whip pan transition")
+                .withSupportedEffectId("whippantransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .build();
     }
