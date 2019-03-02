@@ -10,6 +10,10 @@ public class MediaDataResponse {
         this.frames = videoFrames;
     }
 
+    public MediaDataResponse(ByteBuffer frame) {
+        frames = List.of(frame);
+    }
+
     public List<ByteBuffer> getFrames() {
         return frames;
     }

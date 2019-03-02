@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 import javafx.application.Platform;
@@ -19,14 +20,20 @@ public class UiTimelineManager {
     private List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
     private List<Consumer<TimelinePosition>> playbackConsumers = new ArrayList<>();
     private List<Consumer<PlaybackStatus>> statusChangeConsumers = new ArrayList<>();
-    private double fps = 30;
-    private long sleepTime = (long) (1 / fps * 1000);
-    private BigDecimal increment = new BigDecimal(1).divide(new BigDecimal(fps), 100, RoundingMode.HALF_DOWN);
+    //    private double fps = 30;
+    //    private long sleepTime = (long) (1 / fps * 1000);
+    //    private BigDecimal increment = new BigDecimal(1).divide(new BigDecimal(fps), 100, RoundingMode.HALF_DOWN);
 
     private volatile TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
     private volatile boolean isPlaying;
     private Thread runThread;
     private Object timelineLock = new Object();
+
+    private ProjectRepository projectRepository;
+
+    public UiTimelineManager(ProjectRepository projectRepository) {
+        this.projectRepository = projectRepository;
+    }
 
     public void registerUiPlaybackConsumer(Consumer<TimelinePosition> consumer) {
         this.uiPlaybackConsumers.add(consumer);
@@ -41,6 +48,10 @@ public class UiTimelineManager {
     }
 
     public void startPlayback() {
+        BigDecimal fps = projectRepository.getFps();
+        long sleepTime = BigDecimal.ONE.divide(fps, 4, RoundingMode.HALF_UP).longValue() * 1000;
+        BigDecimal increment = getIncrement();
+
         if (!isPlaying) {
             isPlaying = true;
             statusChangeConsumers.stream()
@@ -110,6 +121,7 @@ public class UiTimelineManager {
     }
 
     public List<TimelinePosition> expectedNextFrames(int number) {
+        BigDecimal increment = getIncrement();
         if (isPlaying) {
             List<TimelinePosition> result = new ArrayList<>();
             TimelinePosition position = currentPosition;
@@ -124,15 +136,16 @@ public class UiTimelineManager {
     }
 
     public void moveBackOneFrame() {
-        jumpRelative(increment.negate());
+        jumpRelative(getIncrement().negate());
     }
 
     public void moveForwardOneFrame() {
-        jumpRelative(increment);
+        jumpRelative(getIncrement());
     }
 
     public BigDecimal getIncrement() {
-        return increment;
+        BigDecimal fps = projectRepository.getFps();
+        return new BigDecimal(1).divide(fps, 100, RoundingMode.HALF_DOWN);
     }
 
     public boolean isPlaybackInProgress() {

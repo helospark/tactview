@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline.image;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,12 +42,12 @@ public class ImageClip extends VisualTimelineClip {
     @Override
     public ByteBuffer requestFrame(RequestFrameParameter frameRequest) {
         VideoMediaDataRequest request = VideoMediaDataRequest.builder()
-                .withFile(new File(backingSource.backingFile))
+                .withFilePath(backingSource.backingFile)
                 .withWidth(frameRequest.getWidth())
                 .withHeight(frameRequest.getHeight())
                 .withNumberOfFrames(1)
                 .withMetadata(mediaMetadata)
-                .build(); // todo: cache and scale
+                .build();
         MediaDataResponse result = backingSource.decoder.readFrames(request);
         return result.getFrames().get(0);
     }

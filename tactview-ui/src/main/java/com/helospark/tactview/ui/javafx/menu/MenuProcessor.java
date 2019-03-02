@@ -30,7 +30,8 @@ public class MenuProcessor {
             List<String> path = contribution.getPath();
             for (int i = 0; i < path.size() - 1; ++i) {
                 String currentPathName = path.get(i);
-                menuElement = addOrGetIntermediateElementFor(menuElements, currentPathName);
+                List<MenuElement> children = menuElement == null ? menuElements : menuElement.children;
+                menuElement = addOrGetIntermediateElementFor(children, currentPathName);
             }
             String leafMenuItem = path.get(path.size() - 1);
             menuElement.children.add(new LeafMenuItem(leafMenuItem, contribution));

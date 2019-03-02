@@ -7,6 +7,8 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.MenuContribution;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.importMenu.clip.ImportClipFileChooser;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.importMenu.imagesequence.ImageSequenceChooserDialogOpener;
 import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
@@ -15,6 +17,7 @@ import javafx.application.Platform;
 
 @Configuration
 public class DefaultFileMenuItemConfiguration {
+    private static final String IMPORT_SUBMENU_ITEM = "Import";
     public static final String FILE_ROOT = "_File";
 
     @Bean
@@ -39,6 +42,18 @@ public class DefaultFileMenuItemConfiguration {
     @Order(30)
     public MenuContribution saveAsContributionMenuItem(UiSaveHandler saveHandler) {
         return new DefaultMenuContribution(List.of(FILE_ROOT, "Save _As"), event -> saveHandler.saveAs());
+    }
+
+    @Bean
+    @Order(40)
+    public MenuContribution importVideoMenuItem(ImportClipFileChooser importFileChooser) {
+        return new DefaultMenuContribution(List.of(FILE_ROOT, IMPORT_SUBMENU_ITEM, "Audio or videoclip"), event -> importFileChooser.importClip());
+    }
+
+    @Bean
+    @Order(41)
+    public MenuContribution importImageSequenceMenuItem(ImageSequenceChooserDialogOpener imageSequenceImporter) {
+        return new DefaultMenuContribution(List.of(FILE_ROOT, IMPORT_SUBMENU_ITEM, "Image sequence"), event -> imageSequenceImporter.importImageSequence());
     }
 
     @Bean

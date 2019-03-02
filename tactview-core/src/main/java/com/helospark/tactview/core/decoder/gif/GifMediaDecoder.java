@@ -88,7 +88,6 @@ public class GifMediaDecoder implements VisualMediaDecoder {
         return scaledImage;
     }
 
-    @Override
     public GifVideoMetadata readMetadata(File file) {
         GifDecoder gifDecoder = gifFileReader.readFile(file.getAbsolutePath());
 

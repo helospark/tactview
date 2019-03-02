@@ -29,7 +29,6 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
         this.mediaCache = mediaCache;
     }
 
-    @Override
     @Cacheable
     public ImageMetadata readMetadata(File file) {
         ImageMetadataRequest request = new ImageMetadataRequest();

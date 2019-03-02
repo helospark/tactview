@@ -49,7 +49,6 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         messagingService.register(DropCachesMessage.class, message -> mediaCache.dropCaches());
     }
 
-    @Override
     @Cacheable
     public VideoMetadata readMetadata(File file) {
         if (!file.exists()) {

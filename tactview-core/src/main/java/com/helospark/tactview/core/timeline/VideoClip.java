@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline;
 
 import static com.helospark.tactview.core.timeline.TimelineClipType.VIDEO;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -14,8 +13,8 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class VideoClip extends VisualTimelineClip {
-    private VisualMediaMetadata mediaMetadata;
-    private TimelinePosition startPosition;
+    protected VisualMediaMetadata mediaMetadata;
+    protected TimelinePosition startPosition;
 
     public VideoClip(VisualMediaMetadata mediaMetadata, VisualMediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
         super(mediaMetadata, new TimelineInterval(startPosition, length), VIDEO);
@@ -47,7 +46,7 @@ public class VideoClip extends VisualTimelineClip {
     @Override
     public ByteBuffer requestFrame(RequestFrameParameter frameRequest) {
         VideoMediaDataRequest request = VideoMediaDataRequest.builder()
-                .withFile(new File(backingSource.backingFile))
+                .withFilePath(backingSource.backingFile)
                 .withHeight(frameRequest.getHeight())
                 .withWidth(frameRequest.getWidth())
                 .withMetadata(mediaMetadata)

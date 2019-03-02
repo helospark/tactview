@@ -8,7 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class VideoMediaDataRequest {
-    private File file;
+    private String filePath;
     private VisualMediaMetadata metadata;
 
     private TimelinePosition start;
@@ -22,7 +22,7 @@ public class VideoMediaDataRequest {
 
     @Generated("SparkTools")
     private VideoMediaDataRequest(Builder builder) {
-        this.file = builder.file;
+        this.filePath = builder.filePath;
         this.metadata = builder.metadata;
         this.start = builder.start;
         this.length = builder.length;
@@ -38,7 +38,11 @@ public class VideoMediaDataRequest {
     }
 
     public File getFile() {
-        return file;
+        return new File(filePath);
+    }
+
+    public String getFilePath() {
+        return filePath;
     }
 
     public VisualMediaMetadata getMetadata() {
@@ -75,7 +79,8 @@ public class VideoMediaDataRequest {
 
     @Override
     public String toString() {
-        return "VideoMediaDataRequest [file=" + file + ", metadata=" + metadata + ", start=" + start + ", length=" + length + ", numberOfFrames=" + numberOfFrames + ", shouldRescale=" + shouldRescale
+        return "VideoMediaDataRequest [filePath=" + filePath + ", metadata=" + metadata + ", start=" + start + ", length=" + length + ", numberOfFrames=" + numberOfFrames + ", shouldRescale="
+                + shouldRescale
                 + ", useApproximatePosition=" + useApproximatePosition + ", width=" + width + ", height=" + height + "]";
     }
 
@@ -86,7 +91,7 @@ public class VideoMediaDataRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private File file;
+        private String filePath;
         private VisualMediaMetadata metadata;
         private TimelinePosition start;
         private TimelineLength length;
@@ -99,8 +104,8 @@ public class VideoMediaDataRequest {
         private Builder() {
         }
 
-        public Builder withFile(File file) {
-            this.file = file;
+        public Builder withFilePath(String filePath) {
+            this.filePath = filePath;
             return this;
         }
 
