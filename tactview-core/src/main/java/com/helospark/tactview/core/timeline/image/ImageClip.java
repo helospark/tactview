@@ -45,11 +45,10 @@ public class ImageClip extends VisualTimelineClip {
                 .withFilePath(backingSource.backingFile)
                 .withWidth(frameRequest.getWidth())
                 .withHeight(frameRequest.getHeight())
-                .withNumberOfFrames(1)
                 .withMetadata(mediaMetadata)
                 .build();
         MediaDataResponse result = backingSource.decoder.readFrames(request);
-        return result.getFrames().get(0);
+        return result.getFrame();
     }
 
     @Override

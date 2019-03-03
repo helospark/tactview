@@ -134,34 +134,7 @@ public class TimelineManager implements SaveLoadContributor {
                 .findFirst();
     }
 
-    public AudioVideoFragment getFrames(TimelineManagerFramesRequest request) {
-        return getSingleFrame(request); // todo: multiple frames
-    }
-
-    static class TreeNode {
-        private TimelineClip clip;
-        private List<TreeNode> children = new ArrayList<>();
-
-        public TreeNode(TimelineClip clip) {
-            this.clip = clip;
-        }
-
-    }
-
-    static class RenderAudioFrameData {
-        List<ByteBuffer> channels;
-
-        public RenderAudioFrameData(List<ByteBuffer> channels) {
-            this.channels = channels;
-        }
-
-        public List<ByteBuffer> getChannels() {
-            return channels;
-        }
-
-    }
-
-    public AudioVideoFragment getSingleFrame(TimelineManagerFramesRequest request) {
+    public AudioVideoFragment getFrame(TimelineManagerFramesRequest request) {
         List<TimelineClip> allClips = channels
                 .stream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
@@ -271,6 +244,29 @@ public class TimelineManager implements SaveLoadContributor {
         // TODO: audio effects
 
         return new AudioVideoFragment(finalResult, audioBuffer);
+    }
+
+    static class TreeNode {
+        private TimelineClip clip;
+        private List<TreeNode> children = new ArrayList<>();
+
+        public TreeNode(TimelineClip clip) {
+            this.clip = clip;
+        }
+
+    }
+
+    static class RenderAudioFrameData {
+        List<ByteBuffer> channels;
+
+        public RenderAudioFrameData(List<ByteBuffer> channels) {
+            this.channels = channels;
+        }
+
+        public List<ByteBuffer> getChannels() {
+            return channels;
+        }
+
     }
 
     private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult) {

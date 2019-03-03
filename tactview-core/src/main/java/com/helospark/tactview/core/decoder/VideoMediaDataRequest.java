@@ -13,7 +13,6 @@ public class VideoMediaDataRequest {
 
     private TimelinePosition start;
     private TimelineLength length;
-    private int numberOfFrames;
 
     private boolean shouldRescale;
     private boolean useApproximatePosition;
@@ -26,7 +25,6 @@ public class VideoMediaDataRequest {
         this.metadata = builder.metadata;
         this.start = builder.start;
         this.length = builder.length;
-        this.numberOfFrames = builder.numberOfFrames;
         this.shouldRescale = builder.shouldRescale;
         this.useApproximatePosition = builder.useApproximatePosition;
         this.width = builder.width;
@@ -69,19 +67,14 @@ public class VideoMediaDataRequest {
         return height;
     }
 
-    public int getNumberOfFrames() {
-        return numberOfFrames;
-    }
-
     public boolean useApproximatePosition() {
         return useApproximatePosition;
     }
 
     @Override
     public String toString() {
-        return "VideoMediaDataRequest [filePath=" + filePath + ", metadata=" + metadata + ", start=" + start + ", length=" + length + ", numberOfFrames=" + numberOfFrames + ", shouldRescale="
-                + shouldRescale
-                + ", useApproximatePosition=" + useApproximatePosition + ", width=" + width + ", height=" + height + "]";
+        return "VideoMediaDataRequest [filePath=" + filePath + ", metadata=" + metadata + ", start=" + start + ", length=" + length + ", shouldRescale=" + shouldRescale + ", useApproximatePosition="
+                + useApproximatePosition + ", width=" + width + ", height=" + height + "]";
     }
 
     @Generated("SparkTools")
@@ -95,7 +88,6 @@ public class VideoMediaDataRequest {
         private VisualMediaMetadata metadata;
         private TimelinePosition start;
         private TimelineLength length;
-        private int numberOfFrames;
         private boolean shouldRescale;
         private boolean useApproximatePosition;
         private int width;
@@ -121,11 +113,6 @@ public class VideoMediaDataRequest {
 
         public Builder withLength(TimelineLength length) {
             this.length = length;
-            return this;
-        }
-
-        public Builder withNumberOfFrames(int numberOfFrames) {
-            this.numberOfFrames = numberOfFrames;
             return this;
         }
 

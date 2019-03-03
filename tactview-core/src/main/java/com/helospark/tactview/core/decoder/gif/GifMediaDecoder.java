@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
@@ -74,7 +73,7 @@ public class GifMediaDecoder implements VisualMediaDecoder {
         BufferedImage bufferedImage = gifDecoder.getFrame(i);
         BufferedImage scaledImage = scaleImage(bufferedImage, request.getWidth(), request.getHeight());
         ReadOnlyClipImage image = imageConverter.convertFromAbgr(scaledImage);
-        return new MediaDataResponse(List.of(image.getBuffer()));
+        return new MediaDataResponse(image.getBuffer());
     }
 
     private BufferedImage scaleImage(BufferedImage bufferedImage, int width, int height) {

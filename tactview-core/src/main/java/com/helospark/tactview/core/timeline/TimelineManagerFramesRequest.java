@@ -8,7 +8,6 @@ public class TimelineManagerFramesRequest {
     private boolean needVideo;
     private Integer previewWidth;
     private Integer previewHeight;
-    private Integer frameBufferSize;
     private TimelinePosition position;
 
     @Generated("SparkTools")
@@ -18,7 +17,6 @@ public class TimelineManagerFramesRequest {
         this.needVideo = builder.needVideo;
         this.previewWidth = builder.previewWidth;
         this.previewHeight = builder.previewHeight;
-        this.frameBufferSize = builder.frameBufferSize;
         this.position = builder.position;
     }
 
@@ -42,10 +40,6 @@ public class TimelineManagerFramesRequest {
         return previewHeight;
     }
 
-    public Integer getFrameBufferSize() {
-        return frameBufferSize;
-    }
-
     public TimelinePosition getPosition() {
         return position;
     }
@@ -62,7 +56,6 @@ public class TimelineManagerFramesRequest {
         private boolean needVideo = true;
         private Integer previewWidth;
         private Integer previewHeight;
-        private Integer frameBufferSize;
         private TimelinePosition position;
 
         private Builder() {
@@ -90,11 +83,6 @@ public class TimelineManagerFramesRequest {
 
         public Builder withPreviewHeight(Integer previewHeight) {
             this.previewHeight = previewHeight;
-            return this;
-        }
-
-        public Builder withFrameBufferSize(Integer frameBufferSize) {
-            this.frameBufferSize = frameBufferSize;
             return this;
         }
 

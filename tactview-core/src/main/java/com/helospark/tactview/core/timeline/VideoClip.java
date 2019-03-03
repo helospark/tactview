@@ -51,12 +51,10 @@ public class VideoClip extends VisualTimelineClip {
                 .withWidth(frameRequest.getWidth())
                 .withMetadata(mediaMetadata)
                 .withStart(frameRequest.getPosition())
-                .withNumberOfFrames(1)
                 .withUseApproximatePosition(frameRequest.useApproximatePosition())
                 .build();
         return backingSource.decoder.readFrames(request)
-                .getFrames()
-                .get(0);
+                .getFrame();
     }
 
     @Override

@@ -102,7 +102,6 @@ public class IntegrationTestUtil {
 
     public static Builder getDefaultFrameRequest() {
         return TimelineManagerFramesRequest.builder()
-                .withFrameBufferSize(1)
                 .withNeedSound(false)
                 .withPosition(TimelinePosition.ofZero())
                 .withPreviewWidth(600)

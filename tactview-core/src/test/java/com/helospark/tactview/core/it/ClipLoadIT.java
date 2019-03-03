@@ -85,7 +85,7 @@ public class ClipLoadIT {
     public void testOgvVideo(@DownloadedResourceName("earth.ogv") File testFile) {
         VideoClip videoClip = (VideoClip) fakeUi.dragFileToTimeline(testFile, TimelinePosition.ofZero());
 
-        ReadOnlyClipImage imageFrame = getFrame(timelineManager, videoClip.getMediaMetadata(), 0.1, TimelinePosition.ofSeconds(1));
+        ReadOnlyClipImage imageFrame = getFrame(timelineManager, videoClip.getMediaMetadata(), 0.1, new TimelinePosition(1.0));
 
         ClipImage expected = IntegrationTestUtil.loadTestClasspathImage("clipit/earth_ogv_at_1s.png");
         IntegrationTestUtil.assertFrameEquals(imageFrame, expected, "Video frames not equal");
@@ -93,14 +93,13 @@ public class ClipLoadIT {
 
     private ReadOnlyClipImage getFrame(TimelineManager timelineManager, VisualMediaMetadata metadata, double scale, TimelinePosition timelinePosition) {
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
-                .withFrameBufferSize(1)
                 .withNeedSound(false)
                 .withPosition(timelinePosition)
                 .withPreviewWidth((int) (scale * metadata.getWidth()))
                 .withPreviewHeight((int) (scale * metadata.getHeight()))
                 .withScale(scale)
                 .build();
-        var frame = timelineManager.getSingleFrame(frameRequest);
+        var frame = timelineManager.getFrame(frameRequest);
 
         ReadOnlyClipImage videoFrame = frame.getVideoResult();
         return videoFrame;

@@ -38,7 +38,6 @@ public class PlaybackController {
         Integer width = uiProjectRepository.getPreviewWidth();
         Integer height = uiProjectRepository.getPreviewHeight();
         TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
-                .withFrameBufferSize(1)
                 .withPosition(position)
                 .withScale(uiProjectRepository.getScaleFactor())
                 .withPreviewWidth(width)
@@ -46,7 +45,7 @@ public class PlaybackController {
                 .withNeedSound(false)
                 .withNeedVideo(true)
                 .build();
-        AudioVideoFragment frame = timelineManager.getFrames(request);
+        AudioVideoFragment frame = timelineManager.getFrame(request);
         Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame.getVideoResult().getBuffer(), width, height);
 
         frame.free();
@@ -61,7 +60,6 @@ public class PlaybackController {
                 Integer width = uiProjectRepository.getPreviewWidth();
                 Integer height = uiProjectRepository.getPreviewHeight();
                 TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
-                        .withFrameBufferSize(1)
                         .withPosition(position.add(projectRepository.getFrameTime().multiply(BigDecimal.valueOf(i))))
                         .withScale(uiProjectRepository.getScaleFactor())
                         .withPreviewWidth(width)
@@ -69,7 +67,7 @@ public class PlaybackController {
                         .withNeedSound(true)
                         .withNeedVideo(false)
                         .build();
-                AudioVideoFragment frame = timelineManager.getFrames(request);
+                AudioVideoFragment frame = timelineManager.getFrame(request);
                 byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), 2, 44100, 1); // move data to repository
 
                 frame.free();

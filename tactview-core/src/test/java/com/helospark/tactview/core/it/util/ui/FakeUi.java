@@ -90,7 +90,6 @@ public class FakeUi {
 
     public AudioVideoFragment requestPreviewVideoFrameWithScale(TimelinePosition position, double scale) {
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
-                .withFrameBufferSize(1)
                 .withNeedSound(false)
                 .withPosition(position)
                 .withPreviewWidth(600)
@@ -102,7 +101,7 @@ public class FakeUi {
     }
 
     public AudioVideoFragment requestFrame(TimelineManagerFramesRequest frameRequest) {
-        return timelineManager.getSingleFrame(frameRequest);
+        return timelineManager.getFrame(frameRequest);
     }
 
     public TimelineClip dragFileToTimeline(File testFile, TimelinePosition position) {

@@ -25,7 +25,9 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
 
     @Override
     public boolean doesSupport(AddClipRequest request) {
-        return request.containsFile() && FileTypeProberUtil.isImageByContentType(request.getFile());
+        return request.containsFile() &&
+                FileTypeProberUtil.isImageByContentType(request.getFile()) &&
+                !request.getFile().getName().endsWith(".gif");
     }
 
     @Override

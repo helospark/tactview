@@ -2,9 +2,7 @@ package com.helospark.tactview.core.decoder.opencv;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
@@ -64,17 +62,11 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
             mediaCache.cacheMedia(cacheKey, new MediaHashValue(0, 1, Collections.singletonList(image)));
         }
 
-        List<ByteBuffer> frames = new ArrayList<>();
+        ByteBuffer resultFrame = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4);
 
-        for (int i = 0; i < request.getNumberOfFrames(); ++i) {
-            frames.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4));
-        }
+        copyToResult(resultFrame, image);
 
-        for (int i = 0; i < request.getNumberOfFrames(); ++i) {
-            copyToResult(frames.get(i), image);
-        }
-
-        return new MediaDataResponse(frames);
+        return new MediaDataResponse(resultFrame);
     }
 
     private void copyToResult(ByteBuffer result, ByteBuffer fromCopy) {

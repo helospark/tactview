@@ -35,14 +35,13 @@ public abstract class AbstractRenderService implements RenderService {
 
     protected AudioVideoFragment queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition) {
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
-                .withFrameBufferSize(1)
                 .withPosition(currentPosition)
                 .withPreviewWidth(renderRequest.getWidth())
                 .withPreviewHeight(renderRequest.getHeight())
                 .withScale(1.0)
                 .build();
 
-        return timelineManager.getSingleFrame(frameRequest);
+        return timelineManager.getFrame(frameRequest);
     }
 
     protected abstract void renderInternal(RenderRequest renderRequest);

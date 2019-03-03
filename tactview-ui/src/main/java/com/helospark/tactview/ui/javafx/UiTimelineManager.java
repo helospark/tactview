@@ -49,7 +49,7 @@ public class UiTimelineManager {
 
     public void startPlayback() {
         BigDecimal fps = projectRepository.getFps();
-        long sleepTime = BigDecimal.ONE.divide(fps, 4, RoundingMode.HALF_UP).longValue() * 1000;
+        long sleepTime = BigDecimal.ONE.divide(fps, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(1000)).longValue();
         BigDecimal increment = getIncrement();
 
         if (!isPlaying) {
