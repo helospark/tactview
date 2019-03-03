@@ -1,6 +1,8 @@
 package com.helospark.tactview.ui.javafx.tabs;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
@@ -11,17 +13,16 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
+import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailDomain;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
 
-import javafx.geometry.Orientation;
-import javafx.scene.control.Tab;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
 @Component
 @Order(1)
-public class ProceduralClipTabFactory implements TabFactory {
+public class ProceduralClipTabFactory extends AbstractSearchableTabFactory {
     private static final String DEFAULT_URI = "classpath:/icons/effect/fallback.png";
     private LightDiContext lightDi;
     private DraggableIconFactory iconFactory;
@@ -31,6 +32,7 @@ public class ProceduralClipTabFactory implements TabFactory {
 
     public ProceduralClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepository localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
             TimelineManager timelineManager) {
+        super("clips", "clip-view");
         this.lightDi = lightDi;
         this.iconFactory = iconFactory;
         this.localizedDetailRepository = localizedDetailRepository;
@@ -39,27 +41,35 @@ public class ProceduralClipTabFactory implements TabFactory {
     }
 
     @Override
-    public Tab createTabContent() {
-        FlowPane proceduralClipTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
+    protected void fillFlowPane(FlowPane tabContent, String searchData) {
         List<ProceduralClipFactoryChainItem> proceduralClips = lightDi.getListOfBeans(ProceduralClipFactoryChainItem.class);
+        List<ScoredNodeHolder> icons = new ArrayList<>();
+
         proceduralClips.stream()
                 .forEach(chainItem -> {
-                    String iconUri = localizedDetailRepository.queryData("proceduralClipFactory:" + chainItem.getProceduralClipId())
-                            .flatMap(data -> data.getIconUrl())
-                            .orElse(DEFAULT_URI);
-                    VBox icon = iconFactory.createIcon("clip:" + chainItem.getProceduralClipId(),
-                            chainItem.getProceduralClipName(),
-                            iconUri);
-                    icon.setOnMouseClicked(e -> {
-                        addClipOnDoubleClick(e, chainItem.getProceduralClipId());
-                    });
-                    proceduralClipTabContent.getChildren().add(icon);
-                });
-        Tab proceduralClipTab = new Tab();
-        proceduralClipTab.setText("clips");
-        proceduralClipTab.setContent(proceduralClipTabContent);
+                    Optional<LocalizedDetailDomain> localizedDetail = localizedDetailRepository.queryData("proceduralClipFactory:" + chainItem.getProceduralClipId());
 
-        return proceduralClipTab;
+                    int score = getScore(localizedDetail, chainItem.getProceduralClipId(), chainItem.getProceduralClipName(), searchData);
+                    if (score > 0) {
+                        String iconUri = localizedDetail
+                                .flatMap(data -> data.getIconUrl())
+                                .orElse(DEFAULT_URI);
+                        VBox icon = iconFactory.createIcon("clip:" + chainItem.getProceduralClipId(),
+                                chainItem.getProceduralClipName(),
+                                iconUri);
+                        icon.setOnMouseClicked(e -> {
+                            addClipOnDoubleClick(e, chainItem.getProceduralClipId());
+                        });
+                        icons.add(new ScoredNodeHolder(icon, score));
+                    }
+                });
+
+        tabContent.getChildren().clear();
+        icons.stream()
+                .sorted()
+                .forEach(entry -> {
+                    tabContent.getChildren().add(entry.node);
+                });
     }
 
     private void addClipOnDoubleClick(MouseEvent e, String id) {
@@ -75,5 +85,4 @@ public class ProceduralClipTabFactory implements TabFactory {
             e.consume();
         }
     }
-
 }
