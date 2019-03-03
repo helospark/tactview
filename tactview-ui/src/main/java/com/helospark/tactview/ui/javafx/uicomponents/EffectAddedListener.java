@@ -23,6 +23,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectAddedListener {
+    private static final int DRAG_PIXEL_DISTANCE = 10;
     public static final int EFFECTS_OFFSET = 50;
     public static final int EFFECT_HEIGHT = 30;
     private UiMessagingService messagingService;
@@ -76,7 +77,9 @@ public class EffectAddedListener {
             EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
                     event.getX());
             if (isResizing(rectangle, currentX)) {
-                dragRepository.onEffectResized(dragInformation, isDraggingLeft(rectangle, currentX) ? DragDirection.LEFT : DragDirection.RIGHT);
+                DragDirection dragDirection = isDraggingLeft(rectangle, currentX) ? DragDirection.LEFT : DragDirection.RIGHT;
+                System.out.println("DragDirection: " + dragDirection);
+                dragRepository.onEffectResized(dragInformation, dragDirection);
                 content.putString("effectresized");
             } else {
                 dragRepository.onEffectDragged(dragInformation);
@@ -108,11 +111,11 @@ public class EffectAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX < 15;
+        return currentX < DRAG_PIXEL_DISTANCE;
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {
-        return rectangle.getWidth() - currentX < 15;
+        return rectangle.getWidth() - currentX < DRAG_PIXEL_DISTANCE;
     }
 
 }

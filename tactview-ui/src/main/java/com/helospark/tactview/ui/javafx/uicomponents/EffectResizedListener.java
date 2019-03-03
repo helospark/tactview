@@ -33,7 +33,8 @@ public class EffectResizedListener {
 
                         effectNode.setLayoutX(startPosition);
                         ((Rectangle) effectNode).setWidth(width);
-                        if (message.getSpecialPositionUsed().isPresent()) {
+
+                        if (message.getSpecialPositionUsed().isPresent() && message.isMoreResizeExpected()) {
                             specialPointLineDrawer.drawSpecialPointLineForEffect(message.getSpecialPositionUsed().get(), message.getClipId());
                         } else {
                             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);

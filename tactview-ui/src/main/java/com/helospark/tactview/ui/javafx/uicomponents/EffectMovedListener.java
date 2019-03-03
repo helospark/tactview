@@ -31,7 +31,7 @@ public class EffectMovedListener {
                     .ifPresent(effect -> {
                         effect.setLayoutX(position);
                         effect.setLayoutY(EFFECTS_OFFSET + EFFECT_HEIGHT * message.getNewChannelIndex());
-                        if (message.getSpecialPositionUsed().isPresent()) {
+                        if (message.getSpecialPositionUsed().isPresent() && message.isMoreMoveExpected()) {
                             drawSpecialPositionLine(message);
                         } else {
                             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);

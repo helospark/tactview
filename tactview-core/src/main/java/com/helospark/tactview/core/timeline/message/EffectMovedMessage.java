@@ -25,6 +25,7 @@ public class EffectMovedMessage implements AffectedModifiedIntervalAware {
     private TimelineInterval newInterval;
 
     private Optional<ClosesIntervalChannel> specialPositionUsed;
+    private boolean moreMoveExpected;
 
     @Generated("SparkTools")
     private EffectMovedMessage(Builder builder) {
@@ -37,6 +38,7 @@ public class EffectMovedMessage implements AffectedModifiedIntervalAware {
         this.originalInterval = builder.originalInterval;
         this.newInterval = builder.newInterval;
         this.specialPositionUsed = builder.specialPositionUsed;
+        this.moreMoveExpected = builder.moreMoveExpected;
     }
 
     public String getEffectId() {
@@ -72,11 +74,15 @@ public class EffectMovedMessage implements AffectedModifiedIntervalAware {
         return List.of(originalInterval, newInterval);
     }
 
+    public boolean isMoreMoveExpected() {
+        return moreMoveExpected;
+    }
+
     @Override
     public String toString() {
         return "EffectMovedMessage [effectId=" + effectId + ", originalClipId=" + originalClipId + ", oldPosition=" + oldPosition + ", newPosition=" + newPosition + ", oldChannelIndex="
                 + oldChannelIndex + ", newChannelIndex=" + newChannelIndex + ", originalInterval=" + originalInterval + ", newInterval=" + newInterval + ", specialPositionUsed=" + specialPositionUsed
-                + "]";
+                + ", moreMoveExpected=" + moreMoveExpected + "]";
     }
 
     @Generated("SparkTools")
@@ -95,6 +101,7 @@ public class EffectMovedMessage implements AffectedModifiedIntervalAware {
         private TimelineInterval originalInterval;
         private TimelineInterval newInterval;
         private Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
+        private boolean moreMoveExpected;
 
         private Builder() {
         }
@@ -141,6 +148,11 @@ public class EffectMovedMessage implements AffectedModifiedIntervalAware {
 
         public Builder withSpecialPositionUsed(Optional<ClosesIntervalChannel> specialPositionUsed) {
             this.specialPositionUsed = specialPositionUsed;
+            return this;
+        }
+
+        public Builder withMoreMoveExpected(boolean moreMoveExpected) {
+            this.moreMoveExpected = moreMoveExpected;
             return this;
         }
 

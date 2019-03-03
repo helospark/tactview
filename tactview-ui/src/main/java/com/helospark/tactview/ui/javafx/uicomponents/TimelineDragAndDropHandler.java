@@ -274,6 +274,7 @@ public class TimelineDragAndDropHandler {
         EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
                 .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
+                .withMoreResizeExpected(!revertable)
                 .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                 .withGlobalPosition(timelineState.pixelsToSeconds(x))
@@ -297,6 +298,7 @@ public class TimelineDragAndDropHandler {
                 .withTimelineManager(timelineManager)
                 .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(20).getSeconds()))
+                .withMoreMoveExpected(!revertable)
                 .build();
         commandInterpreter.sendWithResult(command);
     }

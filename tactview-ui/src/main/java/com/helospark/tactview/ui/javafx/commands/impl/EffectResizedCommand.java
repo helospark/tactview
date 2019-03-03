@@ -20,6 +20,7 @@ public class EffectResizedCommand implements UiCommand {
     private TimelineInterval originalInterval;
 
     private boolean revertable;
+    private boolean moreResizeExpected;
 
     private boolean useSpecialPoints;
     private TimelineLength maximumJumpLength;
@@ -32,6 +33,7 @@ public class EffectResizedCommand implements UiCommand {
         this.left = builder.left;
         this.originalInterval = builder.originalInterval;
         this.revertable = builder.revertable;
+        this.moreResizeExpected = builder.moreResizeExpected;
         this.useSpecialPoints = builder.useSpecialPoints;
         this.maximumJumpLength = builder.maximumJumpLength;
     }
@@ -46,6 +48,7 @@ public class EffectResizedCommand implements UiCommand {
                 .withLeft(left)
                 .withGlobalPosition(globalPosition)
                 .withUseSpecialPoints(useSpecialPoints)
+                .withMoreResizeExpected(moreResizeExpected)
                 .withMaximumJumpLength(maximumJumpLength)
                 .build();
 
@@ -75,7 +78,8 @@ public class EffectResizedCommand implements UiCommand {
     @Override
     public String toString() {
         return "EffectResizedCommand [timelineManager=" + timelineManager + ", effectId=" + effectId + ", globalPosition=" + globalPosition + ", left=" + left + ", originalInterval="
-                + originalInterval + ", revertable=" + revertable + ", useSpecialPoints=" + useSpecialPoints + ", maximumJumpLength=" + maximumJumpLength + "]";
+                + originalInterval + ", revertable=" + revertable + ", moreResizeExpected=" + moreResizeExpected + ", useSpecialPoints=" + useSpecialPoints + ", maximumJumpLength=" + maximumJumpLength
+                + "]";
     }
 
     @Generated("SparkTools")
@@ -91,6 +95,7 @@ public class EffectResizedCommand implements UiCommand {
         private boolean left;
         private TimelineInterval originalInterval;
         private boolean revertable;
+        private boolean moreResizeExpected;
         private boolean useSpecialPoints;
         private TimelineLength maximumJumpLength;
 
@@ -124,6 +129,11 @@ public class EffectResizedCommand implements UiCommand {
 
         public Builder withRevertable(boolean revertable) {
             this.revertable = revertable;
+            return this;
+        }
+
+        public Builder withMoreResizeExpected(boolean moreResizeExpected) {
+            this.moreResizeExpected = moreResizeExpected;
             return this;
         }
 

@@ -15,6 +15,7 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
     private TimelineInterval originalInterval;
     private TimelineInterval newInterval;
     private Optional<ClosesIntervalChannel> specialPositionUsed;
+    private boolean moreResizeExpected;
 
     @Generated("SparkTools")
     private EffectResizedMessage(Builder builder) {
@@ -23,6 +24,7 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
         this.originalInterval = builder.originalInterval;
         this.newInterval = builder.newInterval;
         this.specialPositionUsed = builder.specialPositionUsed;
+        this.moreResizeExpected = builder.moreResizeExpected;
     }
 
     public String getClipId() {
@@ -46,10 +48,14 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
         return specialPositionUsed;
     }
 
+    public boolean isMoreResizeExpected() {
+        return moreResizeExpected;
+    }
+
     @Override
     public String toString() {
         return "EffectResizedMessage [clipId=" + clipId + ", effectId=" + effectId + ", originalInterval=" + originalInterval + ", newInterval=" + newInterval + ", specialPositionUsed="
-                + specialPositionUsed + "]";
+                + specialPositionUsed + ", moreResizeExpected=" + moreResizeExpected + "]";
     }
 
     @Generated("SparkTools")
@@ -64,6 +70,7 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
         private TimelineInterval originalInterval;
         private TimelineInterval newInterval;
         private Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
+        private boolean moreResizeExpected;
 
         private Builder() {
         }
@@ -90,6 +97,11 @@ public class EffectResizedMessage implements AffectedModifiedIntervalAware {
 
         public Builder withSpecialPositionUsed(Optional<ClosesIntervalChannel> specialPositionUsed) {
             this.specialPositionUsed = specialPositionUsed;
+            return this;
+        }
+
+        public Builder withMoreResizeExpected(boolean moreResizeExpected) {
+            this.moreResizeExpected = moreResizeExpected;
             return this;
         }
 

@@ -71,10 +71,10 @@ public class ZoomableScrollPane extends ScrollPane {
         //        double valY = this.getVvalue() * (innerBounds.getHeight() - viewportBounds.getHeight());
 
         scaleValue = scaleValue * zoomFactor;
-        if (scaleValue < 0.9)
-            scaleValue = 0.9;
-        if (scaleValue > 50)
-            scaleValue = 50;
+        if (scaleValue < 0.2)
+            scaleValue = 0.2;
+        if (scaleValue > 20)
+            scaleValue = 20;
         updateScale();
         this.layout(); // refresh ScrollPane scroll positions & target bounds
 

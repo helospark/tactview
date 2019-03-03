@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.MoveEffectRequest;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -21,6 +22,7 @@ public class EffectMovedCommand implements UiCommand {
     private TimelineLength maximumJumpLength;
 
     private boolean revertable;
+    private boolean moreMoveExpected;
 
     private TimelineManager timelineManager;
 
@@ -33,6 +35,7 @@ public class EffectMovedCommand implements UiCommand {
         this.enableJumpingToSpecialPosition = builder.enableJumpingToSpecialPosition;
         this.maximumJumpLength = builder.maximumJumpLength;
         this.revertable = builder.revertable;
+        this.moreMoveExpected = builder.moreMoveExpected;
         this.timelineManager = builder.timelineManager;
     }
 
@@ -42,12 +45,25 @@ public class EffectMovedCommand implements UiCommand {
         if (enableJumpingToSpecialPosition) {
             jump = Optional.ofNullable(maximumJumpLength);
         }
-        timelineManager.moveEffect(effectId, globalNewPosition, jump);
+        MoveEffectRequest request = MoveEffectRequest.builder()
+                .withEffectId(effectId)
+                .withGlobalNewPosition(globalNewPosition)
+                .withMaximumJumpToSpecialPositions(jump)
+                .withMoreMoveExpected(moreMoveExpected)
+                .build();
+
+        timelineManager.moveEffect(request);
     }
 
     @Override
     public void revert() {
-        timelineManager.moveEffect(effectId, originalPosition, Optional.empty());
+        MoveEffectRequest request = MoveEffectRequest.builder()
+                .withEffectId(effectId)
+                .withGlobalNewPosition(originalPosition)
+                .withMaximumJumpToSpecialPositions(Optional.empty())
+                .withMoreMoveExpected(false)
+                .build();
+        timelineManager.moveEffect(request);
     }
 
     @Override
@@ -58,8 +74,8 @@ public class EffectMovedCommand implements UiCommand {
     @Override
     public String toString() {
         return "EffectMovedCommand [effectId=" + effectId + ", originalClipId=" + originalClipId + ", originalPosition=" + originalPosition + ", globalNewPosition=" + globalNewPosition
-                + ", enableJumpingToSpecialPosition=" + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + ", revertable=" + revertable + ", timelineManager="
-                + timelineManager + "]";
+                + ", enableJumpingToSpecialPosition=" + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + ", revertable=" + revertable + ", moreMoveExpected="
+                + moreMoveExpected + ", timelineManager=" + timelineManager + "]";
     }
 
     @Generated("SparkTools")
@@ -76,6 +92,7 @@ public class EffectMovedCommand implements UiCommand {
         private boolean enableJumpingToSpecialPosition;
         private TimelineLength maximumJumpLength;
         private boolean revertable;
+        private boolean moreMoveExpected;
         private TimelineManager timelineManager;
 
         private Builder() {
@@ -113,6 +130,11 @@ public class EffectMovedCommand implements UiCommand {
 
         public Builder withRevertable(boolean revertable) {
             this.revertable = revertable;
+            return this;
+        }
+
+        public Builder withMoreMoveExpected(boolean moreMoveExpected) {
+            this.moreMoveExpected = moreMoveExpected;
             return this;
         }
 

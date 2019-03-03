@@ -7,6 +7,7 @@ public class ResizeEffectRequest {
     private boolean left;
     private TimelinePosition globalPosition;
     private boolean useSpecialPoints;
+    private boolean moreResizeExpected;
     private TimelineLength maximumJumpLength;
 
     @Generated("SparkTools")
@@ -15,6 +16,7 @@ public class ResizeEffectRequest {
         this.left = builder.left;
         this.globalPosition = builder.globalPosition;
         this.useSpecialPoints = builder.useSpecialPoints;
+        this.moreResizeExpected = builder.moreResizeExpected;
         this.maximumJumpLength = builder.maximumJumpLength;
     }
 
@@ -28,6 +30,10 @@ public class ResizeEffectRequest {
 
     public TimelinePosition getGlobalPosition() {
         return globalPosition;
+    }
+
+    public boolean isMoreResizeExpected() {
+        return moreResizeExpected;
     }
 
     public boolean isUseSpecialPoints() {
@@ -49,6 +55,7 @@ public class ResizeEffectRequest {
         private boolean left;
         private TimelinePosition globalPosition;
         private boolean useSpecialPoints;
+        private boolean moreResizeExpected;
         private TimelineLength maximumJumpLength;
 
         private Builder() {
@@ -71,6 +78,11 @@ public class ResizeEffectRequest {
 
         public Builder withUseSpecialPoints(boolean useSpecialPoints) {
             this.useSpecialPoints = useSpecialPoints;
+            return this;
+        }
+
+        public Builder withMoreResizeExpected(boolean moreResizeExpected) {
+            this.moreResizeExpected = moreResizeExpected;
             return this;
         }
 

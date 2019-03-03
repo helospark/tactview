@@ -605,14 +605,15 @@ public class TimelineManager implements SaveLoadContributor {
         return clipItemMatch;
     }
 
-    public boolean moveEffect(String effectId, TimelinePosition globalNewPosition, Optional<TimelineLength> maximumJumpToSpecialPositions) {
-        TimelineClip currentClip = findClipForEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
-        StatelessEffect effect = currentClip.getEffect(effectId).orElseThrow(() -> new IllegalArgumentException("Effect not found"));
+    public boolean moveEffect(MoveEffectRequest request) {
+        TimelinePosition globalNewPosition = request.getGlobalNewPosition();
+        TimelineClip currentClip = findClipForEffect(request.getEffectId()).orElseThrow(() -> new IllegalArgumentException("Clip not found"));
+        StatelessEffect effect = currentClip.getEffect(request.getEffectId()).orElseThrow(() -> new IllegalArgumentException("Effect not found"));
         TimelineInterval interval = effect.getInterval();
 
         Optional<ClosesIntervalChannel> specialPosition = Optional.empty();
-        if (maximumJumpToSpecialPositions.isPresent()) {
-            specialPosition = calculateSpecialPositionAround(globalNewPosition, maximumJumpToSpecialPositions.get(), effect.getGlobalInterval(), List.of(effectId))
+        if (request.getMaximumJumpToSpecialPositions().isPresent()) {
+            specialPosition = calculateSpecialPositionAround(globalNewPosition, request.getMaximumJumpToSpecialPositions().get(), effect.getGlobalInterval(), List.of(request.getEffectId()))
                     .stream()
                     .findFirst();
             globalNewPosition = specialPosition.map(a -> a.getSpecialPosition()).orElse(globalNewPosition);
@@ -621,12 +622,13 @@ public class TimelineManager implements SaveLoadContributor {
         int newChannel = currentClip.moveEffect(effect, globalNewPosition);
 
         EffectMovedMessage message = EffectMovedMessage.builder()
-                .withEffectId(effectId)
+                .withEffectId(request.getEffectId())
                 .withOriginalClipId(currentClip.getId())
                 .withOldPosition(interval.getStartPosition())
                 .withNewPosition(effect.getInterval().getStartPosition())
                 .withNewChannelIndex(newChannel)
                 .withOriginalInterval(interval)
+                .withMoreMoveExpected(request.isMoreMoveExpected())
                 .withNewInterval(effect.getInterval())
                 .withSpecialPositionUsed(specialPosition)
                 .build();
@@ -709,7 +711,13 @@ public class TimelineManager implements SaveLoadContributor {
                     .stream()
                     .findFirst();
             if (specialPointUsed.isPresent()) {
-                newPosition = specialPointUsed.get().getSpecialPosition();
+                TimelinePosition specialPosition = specialPointUsed.get().getSpecialPosition();
+
+                if (!wouldResultInZeroLength(effect, left, specialPosition)) {
+                    newPosition = specialPosition;
+                } else {
+                    specialPointUsed = Optional.empty();
+                }
             }
         }
 
@@ -723,9 +731,15 @@ public class TimelineManager implements SaveLoadContributor {
                     .withNewInterval(renewedClip.getInterval())
                     .withOriginalInterval(originalInterval)
                     .withSpecialPositionUsed(specialPointUsed)
+                    .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
                     .build();
             messagingService.sendMessage(clipResizedMessage);
         }
+    }
+
+    private boolean wouldResultInZeroLength(StatelessEffect effect, boolean left, TimelinePosition specialPosition) {
+        return (left && specialPosition.equals(effect.getInterval().getEndPosition()) ||
+                !left && specialPosition.equals(effect.getInterval().getStartPosition()));
     }
 
     public List<TimelineClip> cutClip(String clipId, TimelinePosition globalTimelinePosition) {
@@ -861,7 +875,14 @@ public class TimelineManager implements SaveLoadContributor {
 
             messagingService.sendAsyncMessage(message);
 
-            moveEffect(originalEffect.getId(), newPosition.add(newClip.getInterval().getStartPosition()), Optional.empty());
+            MoveEffectRequest moveEffectRequest = MoveEffectRequest.builder()
+                    .withEffectId(originalEffect.getId())
+                    .withGlobalNewPosition(newPosition.add(newClip.getInterval().getStartPosition()))
+                    .withMoreMoveExpected(false)
+                    .withMaximumJumpToSpecialPositions(Optional.empty())
+                    .build();
+
+            moveEffect(moveEffectRequest);
         }
     }
 
