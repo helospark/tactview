@@ -297,7 +297,11 @@ public class TimelineState {
         double translatedCurrentValue = translate.get();
         double zoomedCurrentValue = zoomValue.get();
 
-        return pixelsToSeconds(translatedCurrentValue);
+        BigDecimal position = new BigDecimal(translatedCurrentValue)
+                .divide(new BigDecimal(zoomedCurrentValue), 10, RoundingMode.HALF_UP)
+                .divide(PIXEL_PER_SECOND, 10, RoundingMode.HALF_UP);
+
+        return new TimelinePosition(position);
     }
 
     public SimpleDoubleProperty getTimelineWidthProperty() {

@@ -15,7 +15,6 @@ import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
@@ -24,6 +23,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
@@ -54,7 +54,6 @@ public class UiTimeline {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManager timelineManager;
     private UiTimelineManager uiTimelineManager;
-    private UiPlaybackPreferenceRepository playbackPreferenceRepository;
 
     private Line positionIndicatorLine;
 
@@ -65,12 +64,11 @@ public class UiTimeline {
 
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
-            TimelineManager timelineManager, UiTimelineManager uiTimelineManager, UiPlaybackPreferenceRepository playbackPreferenceRepository) {
+            TimelineManager timelineManager, UiTimelineManager uiTimelineManager) {
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
         this.uiTimelineManager = uiTimelineManager;
-        this.playbackPreferenceRepository = playbackPreferenceRepository;
     }
 
     public Node createTimeline(VBox lower, BorderPane root) {
@@ -129,6 +127,8 @@ public class UiTimeline {
         positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.endXProperty().bind(timelineState.getLinePosition());
         positionIndicatorLine.setId("timeline-position-line");
+        positionIndicatorLine.setStrokeWidth(1.0);
+        positionIndicatorLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
         zoomGroup.getChildren().add(positionIndicatorLine);
 
         Line specialPositionLine = new Line();
@@ -138,6 +138,7 @@ public class UiTimeline {
         specialPositionLine.visibleProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEnabledProperty());
         specialPositionLine.endYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEndY());
         specialPositionLine.setId("special-position-line");
+        specialPositionLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
         zoomGroup.getChildren().add(specialPositionLine);
 
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
