@@ -26,4 +26,6 @@ public interface EffectFactory {
 
     List<TimelineClipType> getSupportedTypes();
 
+    TimelineEffectType getEffectType();
+
 }

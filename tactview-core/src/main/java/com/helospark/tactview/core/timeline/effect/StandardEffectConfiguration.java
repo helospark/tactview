@@ -93,6 +93,7 @@ public class StandardEffectConfiguration {
                 .withName("Gaussian blur")
                 .withSupportedEffectId("gaussianblur")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -104,6 +105,7 @@ public class StandardEffectConfiguration {
                 .withName("Desaturize")
                 .withSupportedEffectId("desaturize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -115,6 +117,7 @@ public class StandardEffectConfiguration {
                 .withName("Scale")
                 .withSupportedEffectId("scale")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -126,6 +129,7 @@ public class StandardEffectConfiguration {
                 .withName("Rotate")
                 .withSupportedEffectId("rotate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -137,6 +141,7 @@ public class StandardEffectConfiguration {
                 .withName("Brightness")
                 .withSupportedEffectId("brightesscontrast")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -148,6 +153,7 @@ public class StandardEffectConfiguration {
                 .withName("Gamma")
                 .withSupportedEffectId("gamma")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -159,6 +165,7 @@ public class StandardEffectConfiguration {
                 .withName("Invert")
                 .withSupportedEffectId("invert")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -170,6 +177,7 @@ public class StandardEffectConfiguration {
                 .withName("Denoise")
                 .withSupportedEffectId("denoise")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -181,6 +189,7 @@ public class StandardEffectConfiguration {
                 .withName("Adaptive threshold")
                 .withSupportedEffectId("adaptivethreshold")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -192,6 +201,7 @@ public class StandardEffectConfiguration {
                 .withName("Threshold")
                 .withSupportedEffectId("threshold")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -203,6 +213,7 @@ public class StandardEffectConfiguration {
                 .withName("Mirror")
                 .withSupportedEffectId("mirror")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -214,6 +225,7 @@ public class StandardEffectConfiguration {
                 .withName("Colorize")
                 .withSupportedEffectId("colorize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -225,6 +237,7 @@ public class StandardEffectConfiguration {
                 .withName("Pixelize")
                 .withSupportedEffectId("pixelize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -236,6 +249,7 @@ public class StandardEffectConfiguration {
                 .withName("Erode/Dilate")
                 .withSupportedEffectId("erodedilate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -247,6 +261,7 @@ public class StandardEffectConfiguration {
                 .withName("Edge detect")
                 .withSupportedEffectId("edgedetect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -258,6 +273,7 @@ public class StandardEffectConfiguration {
                 .withName("Green screen")
                 .withSupportedEffectId("greenscreen")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -269,6 +285,7 @@ public class StandardEffectConfiguration {
                 .withName("Equize histogram")
                 .withSupportedEffectId("equize histogram")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -280,6 +297,7 @@ public class StandardEffectConfiguration {
                 .withName("Cartoon")
                 .withSupportedEffectId("cartoon")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -291,6 +309,7 @@ public class StandardEffectConfiguration {
                 .withName("Pencil")
                 .withSupportedEffectId("pencil")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -302,6 +321,7 @@ public class StandardEffectConfiguration {
                 .withName("Warp")
                 .withSupportedEffectId("warp")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -313,6 +333,7 @@ public class StandardEffectConfiguration {
                 .withName("Television RGB")
                 .withSupportedEffectId("televisionrgb")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -324,6 +345,7 @@ public class StandardEffectConfiguration {
                 .withName("Light glow")
                 .withSupportedEffectId("lightglow")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -335,6 +357,7 @@ public class StandardEffectConfiguration {
                 .withName("Vignette")
                 .withSupportedEffectId("vignette")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -346,6 +369,7 @@ public class StandardEffectConfiguration {
                 .withName("Colorchannel change")
                 .withSupportedEffectId("colorchannelchange")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -357,6 +381,7 @@ public class StandardEffectConfiguration {
                 .withName("Displacement map")
                 .withSupportedEffectId("displacementmap")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -368,6 +393,7 @@ public class StandardEffectConfiguration {
                 .withName("Layer mask")
                 .withSupportedEffectId("layermaskeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -379,6 +405,7 @@ public class StandardEffectConfiguration {
                 .withName("Crop")
                 .withSupportedEffectId("cropeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -391,6 +418,7 @@ public class StandardEffectConfiguration {
                 .withName("Color balance")
                 .withSupportedEffectId("colorbalance")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -402,6 +430,7 @@ public class StandardEffectConfiguration {
                 .withName("LUT")
                 .withSupportedEffectId("lut")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -413,6 +442,7 @@ public class StandardEffectConfiguration {
                 .withName("ghosting")
                 .withSupportedEffectId("ghosting")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -424,6 +454,7 @@ public class StandardEffectConfiguration {
                 .withName("Drop Shadow")
                 .withSupportedEffectId("dropshadow")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -435,6 +466,7 @@ public class StandardEffectConfiguration {
                 .withName("Sepia")
                 .withSupportedEffectId("sepia")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -446,6 +478,7 @@ public class StandardEffectConfiguration {
                 .withName("Sharpen")
                 .withSupportedEffectId("sharpen")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -457,6 +490,7 @@ public class StandardEffectConfiguration {
                 .withName("Mirror line")
                 .withSupportedEffectId("mirrorline")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -468,6 +502,7 @@ public class StandardEffectConfiguration {
                 .withName("Median effect")
                 .withSupportedEffectId("medianeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -479,6 +514,7 @@ public class StandardEffectConfiguration {
                 .withName("Exclusive desaturize")
                 .withSupportedEffectId("exclusivedesaturize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -490,6 +526,7 @@ public class StandardEffectConfiguration {
                 .withName("Max rgb")
                 .withSupportedEffectId("maximumrgbeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -501,6 +538,7 @@ public class StandardEffectConfiguration {
                 .withName("Levels")
                 .withSupportedEffectId("levelseffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -512,6 +550,7 @@ public class StandardEffectConfiguration {
                 .withName("Mozaic")
                 .withSupportedEffectId("mozaiceffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -523,6 +562,7 @@ public class StandardEffectConfiguration {
                 .withName("Lens distort")
                 .withSupportedEffectId("lensdistort")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -534,6 +574,7 @@ public class StandardEffectConfiguration {
                 .withName("Polar coordinate")
                 .withSupportedEffectId("polarcoordinate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -546,6 +587,7 @@ public class StandardEffectConfiguration {
                 .withName("Blurzoom extend")
                 .withSupportedEffectId("blurzoomextend")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -558,6 +600,7 @@ public class StandardEffectConfiguration {
                 .withName("Blend")
                 .withSupportedEffectId("blendeffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -570,6 +613,7 @@ public class StandardEffectConfiguration {
                 .withName("Extend frame")
                 .withSupportedEffectId("extendframe")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -582,6 +626,7 @@ public class StandardEffectConfiguration {
                 .withName("Orthogonal transform")
                 .withSupportedEffectId("orthogonaltransform")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -594,6 +639,7 @@ public class StandardEffectConfiguration {
                 .withName("Polygon mask")
                 .withSupportedEffectId("polygonMask")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 
@@ -607,6 +653,7 @@ public class StandardEffectConfiguration {
                 .withName("Rectangle warp")
                 .withSupportedEffectId("rectangleWarp")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
     }
 }

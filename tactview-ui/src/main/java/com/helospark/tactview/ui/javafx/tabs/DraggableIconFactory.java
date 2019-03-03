@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.tabs;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 
@@ -20,6 +21,10 @@ import javafx.scene.layout.VBox;
 public class DraggableIconFactory {
 
     public VBox createIcon(String effectId, String name, String iconUri) {
+        return createIcon(effectId, name, iconUri, Optional.empty());
+    }
+
+    public VBox createIcon(String effectId, String name, String iconUri, Optional<String> description) {
         ImageView image = loadImageFromUri(iconUri);
         image.setPreserveRatio(true);
         image.setFitWidth(50);
@@ -34,7 +39,13 @@ public class DraggableIconFactory {
         vbox.setPadding(new Insets(10));
         vbox.setAlignment(Pos.CENTER);
 
-        Tooltip tooltip = new Tooltip(name);
+        String tooltipText = name;
+
+        if (description.isPresent()) {
+            tooltipText += "\n" + description.get();
+        }
+
+        Tooltip tooltip = new Tooltip(tooltipText);
         Tooltip.install(vbox, tooltip);
 
         vbox.setOnDragDetected(event -> {

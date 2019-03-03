@@ -9,6 +9,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.audioeffect.volume.VolumeAudioEffect;
 import com.helospark.tactview.core.timeline.effect.StandardEffectFactory;
+import com.helospark.tactview.core.timeline.effect.TimelineEffectType;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -23,6 +24,7 @@ public class AudioStandardEffectConfiguration {
                 .withName("Volume")
                 .withSupportedEffectId("volume")
                 .withSupportedClipTypes(List.of(TimelineClipType.AUDIO))
+                .withEffectType(TimelineEffectType.AUDIO_EFFECT)
                 .build();
     }
 }

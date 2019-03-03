@@ -15,6 +15,7 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class StandardEffectFactory implements EffectFactory {
     protected List<TimelineClipType> supportedClipTypes;
+    protected TimelineEffectType effectType;
 
     private String supportedEffectId;
     private String name;
@@ -24,10 +25,16 @@ public class StandardEffectFactory implements EffectFactory {
     @Generated("SparkTools")
     private StandardEffectFactory(Builder builder) {
         this.supportedClipTypes = builder.supportedClipTypes;
+        this.effectType = builder.effectType;
         this.supportedEffectId = builder.supportedEffectId;
         this.name = builder.name;
         this.factory = builder.factory;
         this.restoreFactory = builder.restoreFactory;
+    }
+
+    @Override
+    public TimelineEffectType getEffectType() {
+        return effectType;
     }
 
     @Override
@@ -73,6 +80,7 @@ public class StandardEffectFactory implements EffectFactory {
     @Generated("SparkTools")
     public static final class Builder {
         private List<TimelineClipType> supportedClipTypes = Collections.emptyList();
+        private TimelineEffectType effectType;
         private String supportedEffectId;
         private String name;
         private Function<CreateEffectRequest, StatelessEffect> factory;
@@ -83,6 +91,11 @@ public class StandardEffectFactory implements EffectFactory {
 
         public Builder withSupportedClipTypes(List<TimelineClipType> supportedClipTypes) {
             this.supportedClipTypes = supportedClipTypes;
+            return this;
+        }
+
+        public Builder withEffectType(TimelineEffectType effectType) {
+            this.effectType = effectType;
             return this;
         }
 

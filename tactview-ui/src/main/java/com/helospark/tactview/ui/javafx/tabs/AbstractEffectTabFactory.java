@@ -5,28 +5,31 @@ import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.LightDiContext;
-import com.helospark.lightdi.annotation.Component;
-import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
+import com.helospark.tactview.core.timeline.effect.TimelineEffectType;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailDomain;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
 
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
-@Component
-@Order(0)
-public class EffectTabFactory extends AbstractSearchableTabFactory {
+//@Component
+//@Order(0)
+public abstract class AbstractEffectTabFactory extends AbstractSearchableTabFactory {
     private static final String DEFAULT_URI = "classpath:/icons/effect/fallback.png";
     private LightDiContext lightDi;
     private DraggableIconFactory iconFactory;
     private LocalizedDetailRepository localizedDetailRepository;
 
-    public EffectTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepository localizedDetailRepository) {
-        super("effects", "effect-view");
+    private TimelineEffectType effectType;
+
+    public AbstractEffectTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepository localizedDetailRepository, TimelineEffectType effectType, String tabName,
+            String className) {
+        super(tabName, className);
         this.lightDi = lightDi;
         this.iconFactory = iconFactory;
         this.localizedDetailRepository = localizedDetailRepository;
+        this.effectType = effectType;
     }
 
     @Override
@@ -36,6 +39,7 @@ public class EffectTabFactory extends AbstractSearchableTabFactory {
         List<ScoredNodeHolder> icons = new ArrayList<>();
 
         effects.stream()
+                .filter(factory -> factory.getEffectType().equals(effectType))
                 .forEach(factory -> {
                     Optional<LocalizedDetailDomain> localizedDetail = localizedDetailRepository.queryData(factory.getEffectId());
                     int score = getScore(localizedDetail, factory.getId(), factory.getEffectName(), searchData);
@@ -43,9 +47,11 @@ public class EffectTabFactory extends AbstractSearchableTabFactory {
                         String iconUri = localizedDetail
                                 .flatMap(data -> data.getIconUrl())
                                 .orElse(DEFAULT_URI);
+                        Optional<String> description = localizedDetail.map(a -> a.getDescription());
                         VBox icon = iconFactory.createIcon("effect:" + factory.getEffectId(),
                                 factory.getEffectName(),
-                                iconUri);
+                                iconUri,
+                                description);
                         icons.add(new ScoredNodeHolder(icon, score));
                     }
                 });

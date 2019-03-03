@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.StandardEffectFactory;
+import com.helospark.tactview.core.timeline.effect.TimelineEffectType;
 import com.helospark.tactview.core.timeline.effect.blur.BlurService;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
@@ -41,6 +42,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Alpha transition")
                 .withSupportedEffectId("alphatransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -52,6 +54,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Float out")
                 .withSupportedEffectId("floatout")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -63,6 +66,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Blur transition")
                 .withSupportedEffectId("blurtransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -74,6 +78,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Light dissolve transition")
                 .withSupportedEffectId("lightdissolvetransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -85,6 +90,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("White flash")
                 .withSupportedEffectId("whiteflashtransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -97,6 +103,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Circle transition")
                 .withSupportedEffectId("circletransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -109,6 +116,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Diamond transition")
                 .withSupportedEffectId("diamondtransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -121,6 +129,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Random line transition")
                 .withSupportedEffectId("randomlinetransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -133,6 +142,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Dissolve transition")
                 .withSupportedEffectId("dissovlvetransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -146,6 +156,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Linear gradient transition")
                 .withSupportedEffectId("lineargradienttransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 
@@ -157,6 +168,7 @@ public class StandardTransitionEffectConfiguration {
                 .withName("Whip pan transition")
                 .withSupportedEffectId("whippantransition")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_TRANSITION)
                 .build();
     }
 }

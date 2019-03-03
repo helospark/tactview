@@ -32,7 +32,7 @@ public class ProceduralClipTabFactory extends AbstractSearchableTabFactory {
 
     public ProceduralClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepository localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
             TimelineManager timelineManager) {
-        super("clips", "clip-view");
+        super("video clips", "clip-view");
         this.lightDi = lightDi;
         this.iconFactory = iconFactory;
         this.localizedDetailRepository = localizedDetailRepository;
@@ -54,9 +54,11 @@ public class ProceduralClipTabFactory extends AbstractSearchableTabFactory {
                         String iconUri = localizedDetail
                                 .flatMap(data -> data.getIconUrl())
                                 .orElse(DEFAULT_URI);
+                        Optional<String> description = localizedDetail.map(a -> a.getDescription());
                         VBox icon = iconFactory.createIcon("clip:" + chainItem.getProceduralClipId(),
                                 chainItem.getProceduralClipName(),
-                                iconUri);
+                                iconUri,
+                                description);
                         icon.setOnMouseClicked(e -> {
                             addClipOnDoubleClick(e, chainItem.getProceduralClipId());
                         });
