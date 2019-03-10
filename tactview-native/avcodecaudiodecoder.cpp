@@ -129,7 +129,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
     };
 
     int readAudio(AVCodecAudioRequest* request) {
-        std::cout << "Audio size: " << request->bufferSize << " " << request->path << " " << request->startMicroseconds << " " << request->numberOfChannels << std::endl;
+        //std::cout << "Audio size: " << request->bufferSize << " " << request->path << " " << request->startMicroseconds << " " << request->numberOfChannels << std::endl;
 
         av_register_all();
 
@@ -152,7 +152,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 break;
             }
         }
-        std::cout << "Stream index: " << stream_index << std::endl;
+        //std::cout << "Stream index: " << stream_index << std::endl;
         if (stream_index == -1) {
             fprintf(stderr, "Could not retrieve audio stream from file '%s'\n", request->path);
             return -1;
@@ -194,7 +194,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
           av_opt_set_sample_fmt(swrContext, "out_sample_fmt",     RESAMPLE_FORMAT,     0);
           av_opt_set_channel_layout(swrContext, "out_channel_layout", codec->channel_layout,  0);
 
-          std::cout << "Initializing SWR" << std::endl;
+          //std::cout << "Initializing SWR" << std::endl;
           if ((swr_init(swrContext)) < 0) {
               fprintf(stderr, "Failed to initialize the resampling context\n");
               exit(1);
@@ -232,7 +232,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 if (!gotFrame) {
                     continue;
                 }
-                std::cout << "Got frame" << std::endl;
+                //std::cout << "Got frame" << std::endl;
 
                 AVFrame* frameToUse = frame;
                 if (needsResampling) {
@@ -250,7 +250,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                   frameToUse = tmp_frame;
                 }
 
-                std::cout << "Preparing to read " << isPlanar << " " << sampleSize << " " << totalNumberOfSamplesRead << " " << frameToUse->nb_samples << " " << std::endl;
+                //std::cout << "Preparing to read " << isPlanar << " " << sampleSize << " " << totalNumberOfSamplesRead << " " << frameToUse->nb_samples << " " << std::endl;
 
                 if (isPlanar) {
                     int actuallyWrittenSamples = 0;
@@ -267,7 +267,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                             }
                             if (running && channel==0) actuallyWrittenSamples++;
                         }
-                        std::cout << "\nChannel done" << channel << std::endl;
+                        //std::cout << "\nChannel done" << channel << std::endl;
                     }
                     totalNumberOfSamplesRead += actuallyWrittenSamples * sampleSize;
                 } else {

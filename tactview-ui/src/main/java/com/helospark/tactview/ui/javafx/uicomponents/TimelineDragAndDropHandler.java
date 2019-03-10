@@ -121,7 +121,9 @@ public class TimelineDragAndDropHandler {
                     moveClip(event, channelId, true);
                 }
                 event.getDragboard().clear();
+                event.setDropCompleted(true);
                 dragRepository.clearClipDrag();
+                event.consume();
             }
             if (dragRepository.currentEffectDragInformation() != null) {
                 if (dragRepository.isResizing()) {
@@ -130,7 +132,9 @@ public class TimelineDragAndDropHandler {
                     moveEffect(event, true);
                 }
                 event.getDragboard().clear();
+                event.setDropCompleted(true);
                 dragRepository.clearEffectDrag();
+                event.consume();
             }
             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
         });

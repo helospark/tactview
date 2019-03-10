@@ -101,7 +101,7 @@ public class AudioImagePatternService {
             result += (sample * sample);
         }
         double rms = Math.sqrt((double) result / (frame.getNumberSamples()));
-        System.out.println(rms);
+        //System.out.println(rms);
         return Math.min((int) ((rms / SAMPLE_MAX_VALUE) * channelHeight), channelHeight);
 
     }

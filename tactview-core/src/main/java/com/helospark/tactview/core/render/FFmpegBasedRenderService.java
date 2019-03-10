@@ -86,7 +86,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
 
         int frameIndex = 0;
-        while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())) {
+        while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
             AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition);
 
             FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();

@@ -55,7 +55,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
         BigDecimal position = startSeconds;
         int startFrame = startSeconds.multiply(renderRequest.getStep()).intValue();
-        while (position.compareTo(endSeconds) < 0) {
+        while (position.compareTo(endSeconds) < 0 && !renderRequest.getIsCancelledSupplier().get()) {
             BigDecimal finalPosition = position;
             int finalStartFrame = startFrame;
 

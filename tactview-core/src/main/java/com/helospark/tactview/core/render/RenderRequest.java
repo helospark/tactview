@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
@@ -20,6 +21,7 @@ public class RenderRequest {
     private int height;
     private String fileName;
     private Map<String, OptionProvider<?>> options;
+    private Supplier<Boolean> isCancelledSupplier;
 
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
@@ -31,6 +33,7 @@ public class RenderRequest {
         this.height = builder.height;
         this.fileName = builder.fileName;
         this.options = builder.options;
+        this.isCancelledSupplier = builder.isCancelledSupplier;
     }
 
     public String getRenderId() {
@@ -69,6 +72,10 @@ public class RenderRequest {
         return options;
     }
 
+    public Supplier<Boolean> getIsCancelledSupplier() {
+        return isCancelledSupplier;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -84,6 +91,7 @@ public class RenderRequest {
         private int height;
         private String fileName;
         private Map<String, OptionProvider<?>> options = Collections.emptyMap();
+        private Supplier<Boolean> isCancelledSupplier;
 
         private Builder() {
         }
@@ -125,6 +133,11 @@ public class RenderRequest {
 
         public Builder withOptions(Map<String, OptionProvider<?>> options) {
             this.options = options;
+            return this;
+        }
+
+        public Builder withIsCancelledSupplier(Supplier<Boolean> isCancelledSupplier) {
+            this.isCancelledSupplier = isCancelledSupplier;
             return this;
         }
 

@@ -170,7 +170,14 @@ public class MemoryManager {
         }
         for (int i = 0; i < remainingElements; ++i) {
             currentSize.addAndGet(bytes);
-            ByteBuffer resultBuffer = ByteBuffer.allocateDirect(bytes);
+            ByteBuffer resultBuffer;
+            try {
+                resultBuffer = ByteBuffer.allocateDirect(bytes);
+            } catch (OutOfMemoryError e) {
+                logger.warn("No more memory left, trying to free some", e);
+                doForcefulCleanup();
+                resultBuffer = ByteBuffer.allocateDirect(bytes);
+            }
             resultBuffer.order(ByteOrder.nativeOrder());
             result.add(resultBuffer);
         }

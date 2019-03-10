@@ -33,6 +33,7 @@ import javafx.stage.Stage;
 
 public class RenderDialog {
     private Stage stage;
+    private boolean isRenderCancelled = false;
     private RenderService previousRenderService = null;
     private Map<String, OptionProvider<?>> optionProviders = Map.of();
 
@@ -91,7 +92,10 @@ public class RenderDialog {
         buttonBar.getStyleClass().add("render-dialog-button-bar");
 
         Button cancelButton = new Button("Close");
-        cancelButton.setOnMouseClicked(e -> stage.close());
+        cancelButton.setOnMouseClicked(e -> {
+            isRenderCancelled = true;
+            stage.close();
+        });
         buttonBar.getChildren().add(cancelButton);
 
         Region emptyRegion = new Region();
@@ -100,7 +104,7 @@ public class RenderDialog {
 
         Button okButton = new Button("Render");
         okButton.setOnMouseClicked(e -> {
-            cancelButton.setDisable(true);
+            cancelButton.setText("Cancel render");
             okButton.setDisable(true);
 
             RenderRequest request = RenderRequest.builder()
@@ -112,6 +116,7 @@ public class RenderDialog {
                     .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
                     .withFileName(fileNameTextField.getText())
                     .withOptions(optionProviders)
+                    .withIsCancelledSupplier(() -> isRenderCancelled)
                     .build();
 
             String id = request.getRenderId();
@@ -139,6 +144,7 @@ public class RenderDialog {
                     .withStartPosition(new TimelinePosition(new BigDecimal(startPositionTextField.getText())))
                     .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
                     .withFileName(fileNameTextField.getText())
+                    .withIsCancelledSupplier(() -> isRenderCancelled)
                     .build();
 
             RenderService currentRenderService = renderService.getRenderer(request);
