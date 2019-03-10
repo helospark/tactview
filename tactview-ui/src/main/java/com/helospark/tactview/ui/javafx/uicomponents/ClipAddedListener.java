@@ -18,10 +18,10 @@ import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.clip.ClipContextMenuFactory;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
-import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
 import javafx.scene.Cursor;
@@ -40,7 +40,7 @@ public class ClipAddedListener {
     private TimelineState timelineState;
     private EffectDragAdder effectDragAdder;
     private ProjectRepository projectRepository;
-    private UiProjectRepository uiProjectRepository;
+    private ProjectSizeInitializer projectSizeInitializer;
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
     private NameToIdRepository nameToIdRepository;
@@ -51,13 +51,13 @@ public class ClipAddedListener {
 
     public ClipAddedListener(UiMessagingService messagingService, TimelineState timelineState, EffectDragAdder effectDragAdder,
             ProjectRepository projectRepository,
-            UiProjectRepository uiProjectRepository, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository,
+            ProjectSizeInitializer projectSizeInitializer, DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository,
             NameToIdRepository nameToIdRepository, ClipContextMenuFactory clipContextMenuAdder) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.effectDragAdder = effectDragAdder;
         this.projectRepository = projectRepository;
-        this.uiProjectRepository = uiProjectRepository;
+        this.projectSizeInitializer = projectSizeInitializer;
         this.dragRepository = dragRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.nameToIdRepository = nameToIdRepository;
@@ -81,22 +81,11 @@ public class ClipAddedListener {
         if (!projectRepository.isInitialized() && clip instanceof VisualTimelineClip) {
             VisualTimelineClip visualClip = (VisualTimelineClip) clip;
             VisualMediaMetadata metadata = visualClip.getMediaMetadata();
-            projectRepository.initializer()
-                    .withWidth(visualClip.getMediaMetadata().getWidth())
-                    .withHeight(visualClip.getMediaMetadata().getHeight())
-                    .withFps(metadata instanceof VideoMetadata ? new BigDecimal(((VideoMetadata) metadata).getFps()) : new BigDecimal("30"))
-                    .withIsInitialized(true)
-                    .init();
-            double horizontalScaleFactor = 320.0 / projectRepository.getWidth();
-            double verticalScaleFactor = 260.0 / projectRepository.getHeight();
-            double scale = Math.min(horizontalScaleFactor, verticalScaleFactor);
-            double aspectRatio = ((double) visualClip.getMediaMetadata().getWidth()) / ((double) visualClip.getMediaMetadata().getHeight());
-            int previewWidth = (int) (scale * visualClip.getMediaMetadata().getWidth());
-            int previewHeight = (int) (scale * visualClip.getMediaMetadata().getHeight());
-            uiProjectRepository.setScaleFactor(scale);
-            uiProjectRepository.setPreviewWidth(previewWidth);
-            uiProjectRepository.setPreviewHeight(previewHeight);
-            uiProjectRepository.setAspectRatio(aspectRatio);
+            int width = visualClip.getMediaMetadata().getWidth();
+            int height = visualClip.getMediaMetadata().getHeight();
+            BigDecimal fps = metadata instanceof VideoMetadata ? new BigDecimal(((VideoMetadata) metadata).getFps()) : new BigDecimal("30");
+
+            projectSizeInitializer.initializeProjectSize(width, height, fps);
         }
     }
 

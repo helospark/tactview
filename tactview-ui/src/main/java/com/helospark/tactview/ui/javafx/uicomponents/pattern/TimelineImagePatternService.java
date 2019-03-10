@@ -17,6 +17,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.timeline.render.FrameExtender.FrameExtendRequest;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
@@ -69,34 +70,44 @@ public class TimelineImagePatternService {
         graphics.setColor(Color.BLACK);
         graphics.fillRect(0, 0, timelineWidth, FILM_TAPE_SIZE);
 
+        boolean isDynamicallyGenerated = videoClip instanceof ProceduralVisualClip;
         for (int i = 0; i < numberOfFrames; ++i) {
             TimelinePosition position = new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i)));
+            int width = isDynamicallyGenerated ? uiProjectRepository.getPreviewWidth() : videoClip.getMediaMetadata().getWidth();
+            int height = isDynamicallyGenerated ? uiProjectRepository.getPreviewHeight() : videoClip.getMediaMetadata().getHeight();
             GetFrameRequest frameRequest = GetFrameRequest.builder()
                     .withApplyEffects(false)
                     .withUseApproximatePosition(true)
-                    .withExpectedWidth(uiProjectRepository.getPreviewWidth())
-                    .withExpectedHeight(uiProjectRepository.getPreviewHeight())
+                    .withExpectedWidth(width)
+                    .withExpectedHeight(height)
                     .withRelativePosition(position)
                     .withScale(uiProjectRepository.getScaleFactor())
                     .build();
             ReadOnlyClipImage frame = videoClip.getFrame(frameRequest);
 
-            FrameExtendRequest extendFrameRequest = FrameExtendRequest.builder()
-                    .withClip(videoClip)
-                    .withFrameResult(frame)
-                    .withPreviewWidth(uiProjectRepository.getPreviewWidth())
-                    .withPreviewHeight(uiProjectRepository.getPreviewHeight())
-                    .withScale(uiProjectRepository.getScaleFactor())
-                    .withTimelinePosition(position.add(videoClip.getInterval().getStartPosition()))
-                    .build();
+            if (isDynamicallyGenerated) {
+                FrameExtendRequest extendFrameRequest = FrameExtendRequest.builder()
+                        .withClip(videoClip)
+                        .withFrameResult(frame)
+                        .withPreviewWidth(uiProjectRepository.getPreviewWidth())
+                        .withPreviewHeight(uiProjectRepository.getPreviewHeight())
+                        .withScale(uiProjectRepository.getScaleFactor())
+                        .withTimelinePosition(position.add(videoClip.getInterval().getStartPosition()))
+                        .build();
 
-            ClipImage expandedFrame = frameExtender.expandFrame(extendFrameRequest);
+                ClipImage expandedFrame = frameExtender.expandFrame(extendFrameRequest);
 
-            BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(expandedFrame.getBuffer(), expandedFrame.getWidth(), expandedFrame.getHeight());
-            java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
-            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
-            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(expandedFrame.getBuffer());
-            graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
+                BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(expandedFrame.getBuffer(), expandedFrame.getWidth(), expandedFrame.getHeight());
+                java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(expandedFrame.getBuffer());
+                graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
+            } else {
+                BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
+                java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
+                graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
+            }
         }
 
         dragFilmEffect(timelineWidth, graphics);

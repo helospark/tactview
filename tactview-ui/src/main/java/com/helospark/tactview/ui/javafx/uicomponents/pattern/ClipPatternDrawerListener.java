@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
@@ -24,6 +25,7 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMe
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllReviewsMessage;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
@@ -43,15 +45,17 @@ public class ClipPatternDrawerListener {
     private TimelineImagePatternService timelineImagePatternService;
     private AudioImagePatternService audioImagePatternService;
     private TimelineState timelineState;
+    private TimelineManager timelineManager;
     @Slf4j
     private Logger logger;
 
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
-            TimelineState timelineState, AudioImagePatternService audioImagePatternService) {
+            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManager timelineManager) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
         this.timelineState = timelineState;
         this.audioImagePatternService = audioImagePatternService;
+        this.timelineManager = timelineManager;
     }
 
     @PostConstruct
@@ -83,6 +87,12 @@ public class ClipPatternDrawerListener {
                 updateRequests.add(new ClipPatternUpdateRequest(message.getContainerId()));
             }
         });
+        messagingService.register(RegenerateAllReviewsMessage.class, message -> {
+            updateRequests.clear();
+            timelineManager.getAllClipIds()
+                    .stream()
+                    .forEach(clipId -> updateRequests.add(new ClipPatternUpdateRequest(clipId)));
+        });
     }
 
     @PreDestroy
@@ -96,11 +106,13 @@ public class ClipPatternDrawerListener {
                 try {
                     ThreadSleep.sleep(1000);
                     Set<ClipPatternUpdateRequest> clonedRequests = new HashSet<ClipPatternUpdateRequest>(updateRequests);
-                    updateRequests.clear();
+                    updateRequests.removeAll(clonedRequests);
                     for (var request : clonedRequests) {
                         if (clipsToUpdate.containsKey(request.clipId)) {
                             logger.info("Updating timeline image pattern for {}", request.clipId);
                             updatePattern(request);
+                        } else {
+                            logger.info("No clip to update with id {}", request.clipId);
                         }
                     }
                     double currentZoomLevel = timelineState.getZoom();
