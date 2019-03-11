@@ -31,7 +31,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineSe
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
-public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
+public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip {
     private PointProvider topLeftProvider;
     private PointProvider bottomRightProvider;
     private IntegerProvider brushSizeProvider;
@@ -42,19 +42,19 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
     private DrawLineService drawLineService;
     private BresenhemPixelProvider bresenhemPixelProvider;
 
-    public DrawnHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public DrawnEllipseHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;
 
     }
 
-    public DrawnHighlightProceduralEffect(DrawnHighlightProceduralEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+    public DrawnEllipseHighlightProceduralEffect(DrawnEllipseHighlightProceduralEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DrawnHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {
+    public DrawnEllipseHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {
         super(metadata, node, loadMetadata);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider2;
@@ -163,7 +163,7 @@ public class DrawnHighlightProceduralEffect extends ProceduralVisualClip {
 
     @Override
     public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
-        return new DrawnHighlightProceduralEffect(this, cloneRequestMetadata);
+        return new DrawnEllipseHighlightProceduralEffect(this, cloneRequestMetadata);
     }
 
 }

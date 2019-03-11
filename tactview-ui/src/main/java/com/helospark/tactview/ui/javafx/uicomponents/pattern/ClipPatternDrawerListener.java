@@ -25,7 +25,7 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMe
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
-import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllReviewsMessage;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllImagePatternsMessage;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
@@ -87,7 +87,7 @@ public class ClipPatternDrawerListener {
                 updateRequests.add(new ClipPatternUpdateRequest(message.getContainerId()));
             }
         });
-        messagingService.register(RegenerateAllReviewsMessage.class, message -> {
+        messagingService.register(RegenerateAllImagePatternsMessage.class, message -> {
             updateRequests.clear();
             timelineManager.getAllClipIds()
                     .stream()
@@ -133,7 +133,8 @@ public class ClipPatternDrawerListener {
         ClipPatternUpdateDomain clipsToUpdateDomain = clipsToUpdate.get(request.clipId);
         double zoom = timelineState.getZoom();
 
-        int width = (int) (clip.getWidth() * zoom);
+        int pixelWidth = timelineState.secondsToPixels(timelineManager.findClipById(request.clipId).map(cl -> cl.getInterval().getLength()).get());
+        int width = (int) (pixelWidth * zoom);
         Rectangle rectangle = (Rectangle) clip.getChildren().get(0);
 
         TimelineClip clipToUpdate = clipsToUpdateDomain.videoClip;

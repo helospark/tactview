@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -83,7 +84,8 @@ public class BresenhemPixelProvider {
             y2 = tmp;
         }
 
-        if (x1 > x2) {
+        boolean swapDirection = x1 > x2;
+        if (swapDirection) {
             int tmp = x1;
             x1 = x2;
             x2 = tmp;
@@ -114,6 +116,9 @@ public class BresenhemPixelProvider {
                 y += ystep;
                 error += dx;
             }
+        }
+        if (swapDirection) {
+            Collections.reverse(result);
         }
 
         return result;

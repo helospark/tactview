@@ -10,7 +10,8 @@ import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradie
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.LinearGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
-import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnHighlightProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnEllipseHighlightProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnRectangleHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.GridProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.LineProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
@@ -94,12 +95,23 @@ public class CoreClipFactoryChainItemConfiguration {
 
     @Bean
     public StandardProceduralClipFactoryChainItem drawnHighlightProceduralEffect(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
-        return new StandardProceduralClipFactoryChainItem("drawnhighlight", "Drawn highlight",
+        return new StandardProceduralClipFactoryChainItem("drawnhighlight", "Drawn ellipse highlight",
                 request -> {
-                    return new DrawnHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
+                    return new DrawnEllipseHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
                 },
                 (node, loadMetadata) -> {
-                    return new DrawnHighlightProceduralEffect(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
+                    return new DrawnEllipseHighlightProceduralEffect(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem drawnRectangleHighlightProceduralEffect(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+        return new StandardProceduralClipFactoryChainItem("drawnrectanglehighlight", "Drawn rectangle highlight",
+                request -> {
+                    return new DrawnRectangleHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
+                },
+                (node, loadMetadata) -> {
+                    return new DrawnRectangleHighlightProceduralEffect(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
                 });
     }
 

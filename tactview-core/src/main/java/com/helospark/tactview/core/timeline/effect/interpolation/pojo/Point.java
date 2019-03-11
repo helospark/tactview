@@ -13,6 +13,10 @@ public class Point {
         return distanceFrom(other.x, other.y);
     }
 
+    public double length() {
+        return Math.sqrt(x * x + y * y);
+    }
+
     public Point center(Point point) {
         double centerX = centerBetween(point.x, x);
         double centerY = centerBetween(point.y, y);
@@ -59,6 +63,15 @@ public class Point {
 
     public Point add(Point multiplyVector) {
         return add(multiplyVector.x, multiplyVector.y);
+    }
+
+    public Point normalize() {
+        double length = length();
+        return new Point(x / length, y / length);
+    }
+
+    public Point invert() {
+        return new Point(-x, -y);
     }
 
 }

@@ -58,6 +58,14 @@ public class RectangleProvider extends CompositeKeyframeableEffect {
         return new RectangleProvider(List.of(a, b, c, d), SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE);
     }
 
+    public static RectangleProvider createDefaultFullImageWithNormalizedCenterAndSize(Point center, double width, double height) {
+        PointProvider a = PointProvider.ofNormalizedImagePosition(center.x - width, center.y - height);
+        PointProvider b = PointProvider.ofNormalizedImagePosition(center.x + width, center.y - height);
+        PointProvider c = PointProvider.ofNormalizedImagePosition(center.x + width, center.y + height);
+        PointProvider d = PointProvider.ofNormalizedImagePosition(center.x - width, center.y + height);
+        return new RectangleProvider(List.of(a, b, c, d), SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE);
+    }
+
     @Override
     public SizeFunction getSizeFunction() {
         return sizeFunction;

@@ -33,6 +33,13 @@ public class Rectangle {
         return result;
     }
 
+    public double getLength() {
+        return points.get(0).distanceFrom(points.get(1)) +
+                points.get(1).distanceFrom(points.get(2)) +
+                points.get(2).distanceFrom(points.get(3)) +
+                points.get(3).distanceFrom(points.get(0));
+    }
+
     @Override
     public String toString() {
         return serializeToString();

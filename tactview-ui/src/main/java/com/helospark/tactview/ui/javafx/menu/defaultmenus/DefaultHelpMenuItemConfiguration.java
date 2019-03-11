@@ -10,6 +10,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.help.AboutDialogOpener;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.MenuContribution;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllImagePatternsMessage;
 
 @Configuration
 public class DefaultHelpMenuItemConfiguration {
@@ -20,6 +21,14 @@ public class DefaultHelpMenuItemConfiguration {
     public MenuContribution dropCachesContributionMenuItem(MessagingService messagingService) {
         return new DefaultMenuContribution(List.of(HELP_ROOT, "Drop caches"), e -> {
             messagingService.sendAsyncMessage(new DropCachesMessage());
+        });
+    }
+
+    @Bean
+    @Order(4991)
+    public MenuContribution regenerateImagePatternsContributionMenuItem(MessagingService messagingService) {
+        return new DefaultMenuContribution(List.of(HELP_ROOT, "Regenerate clip patterns"), e -> {
+            messagingService.sendAsyncMessage(new RegenerateAllImagePatternsMessage());
         });
     }
 
