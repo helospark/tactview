@@ -38,7 +38,7 @@ public class DrawLineService {
             for (int i = 0; i < pixels.size() * progress; i += spacing) {
                 int x = (int) pixels.get(i).getX();
                 int y = (int) pixels.get(i).getY();
-                alphaBlitService.alphaBlitImageIntoResult(result, brushImage.get(), x, y, normalBlendModeStrategy, 1.0);
+                alphaBlitService.alphaBlitImageIntoResultWithoutPremultiply(result, brushImage.get(), x, y, normalBlendModeStrategy, 1.0);
             }
         }
     }

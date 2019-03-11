@@ -11,17 +11,17 @@ import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.blendmode.impl.Multiply2BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.RectangleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineRequest;
@@ -29,34 +29,32 @@ import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineSe
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
-public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualClip {
-    private RectangleProvider rectangleProvider;
+public class HighlightPenProceduralEffect extends ProceduralVisualClip {
+    private LineProvider lineProvider;
     private IntegerProvider brushSizeProvider;
     private DoubleProvider endPositionProvider;
-    private DoubleProvider overshootProvider;
     private ColorProvider colorProvider;
     private FileProvider brushFileProvider;
 
     private DrawLineService drawLineService;
     private BresenhemPixelProvider bresenhemPixelProvider;
 
-    public DrawnRectangleHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public HighlightPenProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;
 
     }
 
-    public DrawnRectangleHighlightProceduralEffect(DrawnRectangleHighlightProceduralEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+    public HighlightPenProceduralEffect(HighlightPenProceduralEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DrawnRectangleHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {
+    public HighlightPenProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
         super(metadata, node, loadMetadata);
         this.drawLineService = drawLineService;
-        this.bresenhemPixelProvider = bresenhemPixelProvider2;
-
+        this.bresenhemPixelProvider = bresenhemPixelProvider;
     }
 
     @Override
@@ -72,12 +70,7 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
             progress = 1.0;
         }
 
-        Rectangle rectangle = rectangleProvider.getValueAt(relativePosition);
-
-        double overshoot = overshootProvider.getValueAt(relativePosition);
-        double totalLength = rectangle.getLength() * (1.0 + overshoot * 2 * 4);
-
-        double lengthToDraw = progress * totalLength;
+        InterpolationLine line = lineProvider.getValueAt(relativePosition).multiply(request.getExpectedWidth(), request.getExpectedHeight());
 
         int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition) * request.getScale());
         if (brushSize < 1) {
@@ -88,33 +81,16 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
 
         Color color = colorProvider.getValueAt(relativePosition);
 
-        for (int i = 0; i < 4 && lengthToDraw > 0.0; ++i) { // 0->1, 1->2, 2->3, 3->0
-            Point start = rectangle.points.get(i);
-            Point end = rectangle.points.get((i + 1) % 4);
+        DrawLineRequest drawLineRequest = DrawLineRequest.builder()
+                .withBrushFilePath(brushFilePath)
+                .withBrushSize(brushSize)
+                .withColor(color)
+                .withPixels(bresenhemPixelProvider.linePixels(line.start, line.end))
+                .withProgress(progress)
+                .withResult(result)
+                .build();
 
-            Point overshootOffsetVector = end.subtract(start).normalize().scalarMultiply(overshoot);
-
-            start = start.subtract(overshootOffsetVector);
-            end = end.add(overshootOffsetVector);
-
-            double distance = start.distanceFrom(end);
-            double lineProgress = lengthToDraw > distance ? 1.0 : lengthToDraw / distance;
-
-            Point startInPixels = start.multiply(request.getExpectedWidth(), request.getExpectedHeight());
-            Point endInPixels = end.multiply(request.getExpectedWidth(), request.getExpectedHeight());
-            DrawLineRequest drawLineRequest = DrawLineRequest.builder()
-                    .withBrushFilePath(brushFilePath)
-                    .withBrushSize(brushSize)
-                    .withColor(color)
-                    .withPixels(bresenhemPixelProvider.linePixels(startInPixels, endInPixels))
-                    .withProgress(lineProgress)
-                    .withResult(result)
-                    .build();
-
-            drawLineService.drawLine(drawLineRequest);
-
-            lengthToDraw -= distance;
-        }
+        drawLineService.drawLine(drawLineRequest);
 
         return result;
     }
@@ -123,13 +99,13 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
-        rectangleProvider = RectangleProvider.createDefaultFullImageWithNormalizedCenterAndSize(new Point(0.5, 0.5), 0.1, 0.1);
-        colorProvider = ColorProvider.fromDefaultValue(0, 0, 0);
-        brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
+        lineProvider = LineProvider.ofNormalizedScreenCoordinates(0.3, 0.4, 0.8, 0.4);
+        colorProvider = ColorProvider.fromDefaultValue(1.0, 1.0, 0);
+        brushSizeProvider = new IntegerProvider(10, 500, new MultiKeyframeBasedDoubleInterpolator(70.0));
         endPositionProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(2.0));
-        overshootProvider = new DoubleProvider(0.0, 0.2, new MultiKeyframeBasedDoubleInterpolator(0.02));
         brushFileProvider = new FileProvider("gbr", new StepStringInterpolator());
 
+        blendModeProvider.keyframeAdded(TimelinePosition.ofZero(), Multiply2BlendModeStrategy.ID);
     }
 
     @Override
@@ -137,8 +113,8 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         ValueProviderDescriptor areaProvider = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(rectangleProvider)
-                .withName("Area")
+                .withKeyframeableEffect(lineProvider)
+                .withName("Line")
                 .build();
         ValueProviderDescriptor colorProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(colorProvider)
@@ -152,10 +128,6 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
                 .withKeyframeableEffect(endPositionProvider)
                 .withName("animation length")
                 .build();
-        ValueProviderDescriptor overshootProviderDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(overshootProvider)
-                .withName("overshoot")
-                .build();
         ValueProviderDescriptor brushProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(brushFileProvider)
                 .withName("brush")
@@ -165,7 +137,6 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
         result.add(colorProviderDescriptor);
         result.add(brushSizeProviderDescriptor);
         result.add(endPositionProviderDesctiptor);
-        result.add(overshootProviderDescriptor);
         result.add(brushProviderDescriptor);
 
         return result;
@@ -173,7 +144,7 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
 
     @Override
     public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
-        return new DrawnRectangleHighlightProceduralEffect(this, cloneRequestMetadata);
+        return new HighlightPenProceduralEffect(this, cloneRequestMetadata);
     }
 
 }

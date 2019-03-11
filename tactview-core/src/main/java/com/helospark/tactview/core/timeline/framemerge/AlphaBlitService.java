@@ -71,4 +71,35 @@ public class AlphaBlitService {
         }
     }
 
+    // TODO: avoid duplication
+    public void alphaBlitImageIntoResultWithoutPremultiply(ClipImage result, ReadOnlyClipImage toBlit, int blitToX, int blitToY, BlendModeStrategy blendMode, double globalAlpha) {
+        int[] forground = new int[4];
+        int[] blendedForground = new int[4];
+        int[] background = new int[4];
+        int[] resultPixel = new int[4];
+        for (int y = 0; y < toBlit.getHeight(); ++y) {
+            for (int x = 0; x < toBlit.getWidth(); ++x) {
+                int resultX = blitToX + x;
+                int resultY = blitToY + y;
+
+                if (resultX >= result.getWidth() || resultY >= result.getHeight() || resultX < 0 || resultY < 0) {
+                    continue;
+                }
+
+                result.getPixelComponents(background, resultX, resultY);
+                toBlit.getPixelComponents(forground, x, y);
+
+                blendMode.computeColor(forground, background, blendedForground);
+
+                double backgroundAlpha = background[3] / 255.0; // maybe the previous layer's alpha needs to be taken into account?
+                resultPixel[0] = (blendedForground[0]);
+                resultPixel[1] = (blendedForground[1]);
+                resultPixel[2] = (blendedForground[2]);
+                resultPixel[3] = (int) (background[3] + (1.0 - backgroundAlpha) * blendedForground[3]);
+
+                result.setPixel(resultPixel, resultX, resultY);
+            }
+        }
+    }
+
 }

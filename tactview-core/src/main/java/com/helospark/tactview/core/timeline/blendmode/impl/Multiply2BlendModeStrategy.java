@@ -5,9 +5,10 @@ import com.helospark.tactview.core.timeline.blendmode.SeparateRgbComponentBlendM
 
 @Component
 public class Multiply2BlendModeStrategy extends SeparateRgbComponentBlendMode {
+    public static final String ID = "multiply2";
 
     public Multiply2BlendModeStrategy() {
-        super("multiply2");
+        super(ID);
     }
 
     @Override

@@ -40,7 +40,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected ValueListProvider<AlignmentValueListElement> horizontallyCenteredProvider;
 
     protected VisualMediaSource backingSource;
-    private ValueListProvider<BlendModeValueListElement> blendModeProvider;
+    protected ValueListProvider<BlendModeValueListElement> blendModeProvider;
 
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);

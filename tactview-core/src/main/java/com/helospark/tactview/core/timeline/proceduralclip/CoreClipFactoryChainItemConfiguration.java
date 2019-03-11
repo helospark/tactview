@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.Line
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnEllipseHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnRectangleHighlightProceduralEffect;
+import com.helospark.tactview.core.timeline.proceduralclip.highlight.HighlightPenProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.GridProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.LineProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
@@ -112,6 +113,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new DrawnRectangleHighlightProceduralEffect(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem highlighterPenProceduralEffect(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+        return new StandardProceduralClipFactoryChainItem("highlighterpen", "Highlighter pen",
+                request -> {
+                    return new HighlightPenProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
+                },
+                (node, loadMetadata) -> {
+                    return new HighlightPenProceduralEffect(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
                 });
     }
 

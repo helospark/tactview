@@ -17,4 +17,13 @@ public class InterpolationLine {
         return end.distanceFrom(start);
     }
 
+    public InterpolationLine multiply(int width, int height) {
+        return new InterpolationLine(start.multiply(width, height), end.multiply(width, height));
+    }
+
+    @Override
+    public String toString() {
+        return "InterpolationLine [start=" + start + ", end=" + end + "]";
+    }
+
 }
