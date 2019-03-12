@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -19,7 +21,7 @@ public class ZoomableScrollPane extends ScrollPane {
     private Node target;
     private Node zoomNode;
 
-    public ZoomableScrollPane(Node target, TimelineState timelineState) {
+    public ZoomableScrollPane(Node target, TimelineState timelineState, UiTimelineManager uiTimelineManager) {
         this.timelineState = timelineState;
         this.target = target;
         this.zoomNode = new Group(target);
@@ -34,7 +36,12 @@ public class ZoomableScrollPane extends ScrollPane {
         updateScale();
 
         addEventFilter(KeyEvent.ANY, e -> {
-            if (e.getCode().equals(KeyCode.LEFT) || e.getCode().equals(KeyCode.RIGHT)) {
+            if (e.getCode().equals(KeyCode.LEFT)) {
+                uiTimelineManager.moveBackOneFrame();
+                e.consume();
+            }
+            if (e.getCode().equals(KeyCode.RIGHT)) {
+                uiTimelineManager.moveForwardOneFrame();
                 e.consume();
             }
         });
@@ -43,8 +50,10 @@ public class ZoomableScrollPane extends ScrollPane {
     private Node outerNode(Node node) {
         Node outerNode = centeredNode(node);
         outerNode.setOnScroll(e -> {
-            e.consume();
-            onScroll(e.getDeltaY(), new Point2D(e.getX(), e.getY()));
+            if (e.isControlDown()) {
+                e.consume();
+                onScroll(e.getDeltaY(), new Point2D(e.getX(), e.getY()));
+            }
         });
         return outerNode;
     }

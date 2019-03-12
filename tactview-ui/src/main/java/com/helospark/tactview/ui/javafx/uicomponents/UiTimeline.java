@@ -113,7 +113,7 @@ public class UiTimeline {
 
         //        Group timelineGroup = new Group();
         Group zoomGroup = new Group();
-        timeLineScrollPane = new ZoomableScrollPane(zoomGroup, timelineState);
+        timeLineScrollPane = new ZoomableScrollPane(zoomGroup, timelineState, uiTimelineManager);
         timelineState.setTimeLineScrollPane(timeLineScrollPane);
         VBox timelineBoxes = new VBox();
         timelineBoxes.prefWidthProperty().bind(timelineState.getTimelineWidthProperty());
@@ -157,7 +157,12 @@ public class UiTimeline {
         //        timelineGroup.getChildren().add(zoomGroup);
         ScrollPane timelineTimeLabelsScrollPane = new ScrollPane();
         timelineTimeLabelsScrollPane.addEventFilter(KeyEvent.ANY, e -> {
-            if (e.getCode().equals(KeyCode.LEFT) || e.getCode().equals(KeyCode.RIGHT)) {
+            if (e.getCode().equals(KeyCode.LEFT)) {
+                uiTimelineManager.moveBackOneFrame();
+                e.consume();
+            }
+            if (e.getCode().equals(KeyCode.RIGHT)) {
+                uiTimelineManager.moveForwardOneFrame();
                 e.consume();
             }
         });
