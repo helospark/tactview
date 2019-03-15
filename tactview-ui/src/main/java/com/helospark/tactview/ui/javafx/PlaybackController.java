@@ -17,6 +17,9 @@ import javafx.scene.image.Image;
 
 @Component
 public class PlaybackController {
+    public static final int CHANNELS = 2;
+    public static final int FREQUENCY = 44100;
+    public static final int BYTES = 2;
     private TimelineManager timelineManager;
     private UiProjectRepository uiProjectRepository;
     private ProjectRepository projectRepository;
@@ -57,27 +60,33 @@ public class PlaybackController {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             for (int i = 0; i < samples; ++i) {
-                Integer width = uiProjectRepository.getPreviewWidth();
-                Integer height = uiProjectRepository.getPreviewHeight();
-                TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
-                        .withPosition(position.add(projectRepository.getFrameTime().multiply(BigDecimal.valueOf(i))))
-                        .withScale(uiProjectRepository.getScaleFactor())
-                        .withPreviewWidth(width)
-                        .withPreviewHeight(height)
-                        .withNeedSound(true)
-                        .withNeedVideo(false)
-                        .build();
-                AudioVideoFragment frame = timelineManager.getFrame(request);
-                byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), 2, 44100, 1); // move data to repository
+                AudioVideoFragment frame = getSingleAudioFrameAtPosition(position.add(projectRepository.getFrameTime().multiply(BigDecimal.valueOf(i))));
+                byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), BYTES, FREQUENCY, CHANNELS); // move data to repository
 
                 frame.free();
 
                 baos.write(buffer);
             }
+
             return baos.toByteArray();
         } catch (Exception e) {
             e.printStackTrace();
             return new byte[0];
         }
+    }
+
+    public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position) {
+        Integer width = uiProjectRepository.getPreviewWidth();
+        Integer height = uiProjectRepository.getPreviewHeight();
+        TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
+                .withPosition(position)
+                .withScale(uiProjectRepository.getScaleFactor())
+                .withPreviewWidth(width)
+                .withPreviewHeight(height)
+                .withNeedSound(true)
+                .withNeedVideo(false)
+                .build();
+        AudioVideoFragment frame = timelineManager.getFrame(request);
+        return frame;
     }
 }

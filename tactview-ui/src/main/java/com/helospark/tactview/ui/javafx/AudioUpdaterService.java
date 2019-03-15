@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
+import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
 @Component
 public class AudioUpdaterService {
@@ -23,16 +24,19 @@ public class AudioUpdaterService {
     private PlaybackController playbackController;
     private AudioStreamService audioStreamService;
     private MessagingService messagingService;
+    private AudioVisualizationComponent audioVisualizationComponent;
 
     private LinkedHashMap<BigDecimal, AudioData> buffer = new LinkedHashMap<>();
 
     private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-    public AudioUpdaterService(UiTimelineManager uiTimelineManager, PlaybackController playbackController, AudioStreamService audioStreamService, MessagingService messagingService) {
+    public AudioUpdaterService(UiTimelineManager uiTimelineManager, PlaybackController playbackController, AudioStreamService audioStreamService, MessagingService messagingService,
+            AudioVisualizationComponent audioVisualizationComponent) {
         this.uiTimelineManager = uiTimelineManager;
         this.playbackController = playbackController;
         this.audioStreamService = audioStreamService;
         this.messagingService = messagingService;
+        this.audioVisualizationComponent = audioVisualizationComponent;
     }
 
     @PostConstruct
@@ -48,8 +52,9 @@ public class AudioUpdaterService {
 
             AudioData currentData = buffer.get(normalizedStartPosition);
             if (currentData != null && currentData.hasData()) {
-                System.out.println("Served " + normalizedStartPosition + " from audiocache");
-                audioStreamService.streamAudio(currentData.get());
+                byte[] bytes = currentData.get();
+                audioStreamService.streamAudio(bytes);
+                audioVisualizationComponent.updateAudioComponent(position);
             } else {
                 System.out.println("Key " + currentData + " " + " is not ready at " + normalizedStartPosition);
             }
@@ -68,6 +73,8 @@ public class AudioUpdaterService {
 
             buffer.entrySet()
                     .removeIf(e -> e.getKey().compareTo(normalizedStartPosition) < 0);
+        } else {
+            audioVisualizationComponent.clearCanvas();
         }
     }
 

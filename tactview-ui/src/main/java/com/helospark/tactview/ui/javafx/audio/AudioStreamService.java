@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.ui.javafx.PlaybackController;
 
 @Component
 public class AudioStreamService {
@@ -23,7 +24,7 @@ public class AudioStreamService {
     @PostConstruct
     public void init() {
         try {
-            AudioFormat format = new AudioFormat(48000, 16, 1, true, true);
+            AudioFormat format = new AudioFormat(PlaybackController.FREQUENCY, PlaybackController.BYTES * 8, PlaybackController.CHANNELS, true, true);
             dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
             sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
             sourceDataLine.open(format);

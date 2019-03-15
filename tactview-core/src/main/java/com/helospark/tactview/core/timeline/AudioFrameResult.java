@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,18 @@ public class AudioFrameResult {
 
     public int getNumberSamples() {
         return channels.get(0).capacity() / bytesPerSample;
+    }
+
+    public AudioFrameResult makeHeapCopy() {
+        List<ByteBuffer> heapChannels = new ArrayList<>();
+        for (int i = 0; i < channels.size(); ++i) {
+            ByteBuffer buffer = ByteBuffer.allocate(channels.get(i).capacity());
+            for (int j = 0; j < channels.get(i).capacity(); ++j) {
+                buffer.put(channels.get(i).get(j));
+            }
+            heapChannels.add(buffer);
+        }
+        return new AudioFrameResult(heapChannels, samples, bytesPerSample);
     }
 
     public int getSampleAt(int channelIndex, int sampleIndex) {

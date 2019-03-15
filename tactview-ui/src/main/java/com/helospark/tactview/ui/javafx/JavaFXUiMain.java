@@ -28,6 +28,7 @@ import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
+import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -146,6 +147,7 @@ public class JavaFXUiMain extends Application {
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
         rightVBox.getChildren().add(canvas);
+        rightVBox.getChildren().add(lightDi.getBean(AudioVisualizationComponent.class).getCanvas());
 
         videoTimestampLabel = new Label("00:00:00.000");
         videoTimestampLabel.setId("video-timestamp-label");
