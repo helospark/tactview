@@ -15,11 +15,32 @@ import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddScaleCommand;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
 
 import javafx.scene.control.MenuItem;
 
 @Configuration
 public class StandardClipContextMenuChainItemConfiguration {
+
+    @Bean
+    @Order(95)
+    public ClipContextMenuChainItem cutCurrentClip(ClipCutService clipCutService) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem copyClip = new MenuItem("Cut clip");
+            copyClip.setOnAction(e -> clipCutService.cutClip(request.getPrimaryClip().getId(), true));
+            return copyClip;
+        });
+    }
+
+    @Bean
+    @Order(96)
+    public ClipContextMenuChainItem cutWithUnlinkCurrentClip(ClipCutService clipCutService) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem copyClip = new MenuItem("Cut only this clip");
+            copyClip.setOnAction(e -> clipCutService.cutClip(request.getPrimaryClip().getId(), false));
+            return copyClip;
+        });
+    }
 
     @Bean
     @Order(100)

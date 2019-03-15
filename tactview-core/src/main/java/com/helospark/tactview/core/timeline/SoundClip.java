@@ -27,6 +27,13 @@ public class SoundClip extends AudibleTimelineClip {
         this.startPosition = startPosition;
     }
 
+    public SoundClip(SoundClip soundClip, CloneRequestMetadata cloneRequestMetadata) {
+        super(soundClip, cloneRequestMetadata);
+        this.mediaDecoder = soundClip.mediaDecoder;
+        this.backingSource = soundClip.backingSource;
+        this.startPosition = soundClip.startPosition;
+    }
+
     public SoundClip(AudioMediaMetadata metadata, AVCodecAudioMediaDecoderDecorator mediaDecoder, AudioMediaSource videoSource, JsonNode savedClip, LoadMetadata loadMetadata) {
         super(metadata, savedClip, loadMetadata);
         this.mediaDecoder = mediaDecoder;
@@ -64,7 +71,7 @@ public class SoundClip extends AudibleTimelineClip {
 
     @Override
     public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
-        return new SoundClip(mediaMetadata, mediaDecoder, backingSource, interval.getStartPosition(), interval.getLength());
+        return new SoundClip(this, cloneRequestMetadata);
     }
 
     @Override

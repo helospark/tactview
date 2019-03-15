@@ -4,20 +4,18 @@ import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelComman
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
-import com.helospark.tactview.ui.javafx.commands.UiCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
 
@@ -54,6 +52,7 @@ public class UiTimeline {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManager timelineManager;
     private UiTimelineManager uiTimelineManager;
+    private LinkClipRepository linkClipRepository;
 
     private Line positionIndicatorLine;
 
@@ -64,11 +63,13 @@ public class UiTimeline {
 
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
-            TimelineManager timelineManager, UiTimelineManager uiTimelineManager) {
+            TimelineManager timelineManager, UiTimelineManager uiTimelineManager,
+            LinkClipRepository linkClipRepository) {
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
         this.uiTimelineManager = uiTimelineManager;
+        this.linkClipRepository = linkClipRepository;
     }
 
     public Node createTimeline(VBox lower, BorderPane root) {
@@ -86,18 +87,14 @@ public class UiTimeline {
             TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
             List<String> intersectingClips = timelineManager.findIntersectingClips(currentPosition);
 
-            List<CutClipCommand> clipsToCut = intersectingClips.stream()
-                    .map(clipId -> {
-                        return CutClipCommand.builder()
-                                .withClipId(clipId)
-                                .withGlobalTimelinePosition(currentPosition)
-                                .withTimelineManager(timelineManager)
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-
-            if (clipsToCut.size() > 0) {
-                commandInterpreter.sendWithResult(new CompositeCommand(clipsToCut.toArray(new UiCommand[0])));
+            if (intersectingClips.size() > 0) {
+                CutClipCommand command = CutClipCommand.builder()
+                        .withClipIds(intersectingClips)
+                        .withGlobalTimelinePosition(currentPosition)
+                        .withLinkedClipRepository(linkClipRepository)
+                        .withTimelineManager(timelineManager)
+                        .build();
+                commandInterpreter.sendWithResult(command);
             }
         });
 
@@ -175,7 +172,9 @@ public class UiTimeline {
         timeLineScrollPane.hvalueProperty().bindBidirectional(timelineState.getHscroll());
         timeLineScrollPane.vvalueProperty().bindBidirectional(timelineState.getVscroll());
 
-        timelineLabelCanvas.widthProperty().addListener(newValue -> updateTimelineLabels());
+        timelineLabelCanvas.widthProperty().addListener(newValue ->
+
+        updateTimelineLabels());
         //        timelineLabelCanvas.scaleXProperty().addListener(newValue -> updateTimelineLabels());
 
         timelineCanvasGroup.getChildren().add(timelineLabelCanvas);

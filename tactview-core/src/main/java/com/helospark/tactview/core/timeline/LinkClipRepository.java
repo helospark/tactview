@@ -67,7 +67,7 @@ public class LinkClipRepository implements SaveLoadContributor {
                 .forEach(clip -> linkClip(clipId, clip));
     }
 
-    private void removeClip(String elementId) {
+    public void removeClip(String elementId) {
         linkedClips.remove(elementId);
         for (var entry : linkedClips.entrySet()) {
             entry.getValue().remove(elementId);
