@@ -33,6 +33,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisuali
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -135,6 +136,7 @@ public class JavaFXUiMain extends Application {
                 });
 
         VBox rightVBox = new VBox(5);
+        rightVBox.setAlignment(Pos.TOP_CENTER);
         rightVBox.setPrefWidth(300);
         rightVBox.setId("clip-view");
 
@@ -147,7 +149,9 @@ public class JavaFXUiMain extends Application {
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
         rightVBox.getChildren().add(canvas);
-        rightVBox.getChildren().add(lightDi.getBean(AudioVisualizationComponent.class).getCanvas());
+        AudioVisualizationComponent audioVisualazationComponent = lightDi.getBean(AudioVisualizationComponent.class);
+        rightVBox.getChildren().add(audioVisualazationComponent.getCanvas());
+        audioVisualazationComponent.clearCanvas();
 
         videoTimestampLabel = new Label("00:00:00.000");
         videoTimestampLabel.setId("video-timestamp-label");

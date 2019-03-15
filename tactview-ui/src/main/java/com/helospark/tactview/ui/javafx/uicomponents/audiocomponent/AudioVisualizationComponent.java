@@ -34,7 +34,7 @@ public class AudioVisualizationComponent {
     private PlaybackController playbackController;
 
     public AudioVisualizationComponent(PlaybackController playbackController) {
-        canvas = new Canvas(NUMBER_OF_BARS * (BAR_WIDTH + BAR_SPACE_WIDTH), CHANNEL_HEIGHT * EXPECTED_NUMBER_OF_CHANNELS + 10);
+        canvas = new Canvas(NUMBER_OF_BARS * (BAR_WIDTH + BAR_SPACE_WIDTH), (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS);
         this.playbackController = playbackController;
     }
 
@@ -71,7 +71,8 @@ public class AudioVisualizationComponent {
 
     public void clearCanvas() {
         GraphicsContext graphics = canvas.getGraphicsContext2D();
-        graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        graphics.setFill(Color.rgb(60, 60, 60));
+        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
     private void updateUiForChannel(int channel, double value) {
@@ -81,7 +82,7 @@ public class AudioVisualizationComponent {
         for (int i = 0; i < NUMBER_OF_BARS; ++i) {
             if (i * increment < normalizedValue) {
                 graphics.setFill(startColor.interpolate(endColor, i * increment));
-                graphics.fillRoundRect(i * (BAR_WIDTH + BAR_SPACE_WIDTH), channel * (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP), BAR_WIDTH, CHANNEL_HEIGHT, BAR_RADIUS, BAR_RADIUS);
+                graphics.fillRoundRect(i * (BAR_WIDTH + BAR_SPACE_WIDTH), channel * (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) + CHANNEL_HEIGHT_GAP, BAR_WIDTH, CHANNEL_HEIGHT, BAR_RADIUS, BAR_RADIUS);
             } else {
                 break;
             }

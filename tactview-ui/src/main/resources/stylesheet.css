@@ -348,3 +348,7 @@
     -fx-background-color: transparent ;
     -fx-background-insets: 0px ;
 }
+
+.timeline-title-channel-name-label {
+    -fx-pref-width: 100px;
+}

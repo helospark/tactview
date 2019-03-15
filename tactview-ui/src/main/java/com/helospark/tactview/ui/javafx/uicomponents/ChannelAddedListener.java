@@ -14,8 +14,10 @@ import com.helospark.tactview.ui.javafx.commands.impl.DisableChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.MuteChannelCommand;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 
-import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -50,14 +52,30 @@ public class ChannelAddedListener {
         System.out.println("Generated channel " + generatedName);
 
         HBox timeline = new HBox();
-        timeline.setMinHeight(50);
+        timeline.setMinHeight(60);
         timeline.getStyleClass().add("timelinerow");
         timeline.setPrefWidth(2000);
         timeline.setMinWidth(2000);
 
         VBox timelineTitle = new VBox();
-        Label timelineTitleChannelNameLabel = new Label(generatedName);
+        TextField timelineTitleChannelNameLabel = new TextField(generatedName);
         timelineTitleChannelNameLabel.getStyleClass().add("timeline-title-channel-name-label");
+        timelineTitleChannelNameLabel.setTooltip(new Tooltip("Change channel name"));
+
+        timelineTitleChannelNameLabel.setOnKeyReleased(e -> {
+            if (e.getCode().equals(KeyCode.ENTER)) {
+                nameToIdRepository.addNameForId(e.getText(), message.getChannelId());
+            }
+            if (e.getCode().equals(KeyCode.ESCAPE)) {
+                timelineTitleChannelNameLabel.setText(nameToIdRepository.getNameForId(message.getChannelId()));
+            }
+        });
+        timelineTitleChannelNameLabel.focusedProperty().addListener((value, oldValue, newValue) -> {
+            if (oldValue == true && newValue == false) {
+                nameToIdRepository.addNameForId(timelineTitleChannelNameLabel.getText(), message.getChannelId());
+            }
+        });
+
         timelineTitle.getChildren().add(timelineTitleChannelNameLabel);
 
         HBox buttonBar = new HBox();
@@ -90,7 +108,7 @@ public class ChannelAddedListener {
 
         Pane timelineRow = new Pane();
         timelineRow.minWidth(2000);
-        timelineRow.minHeight(50);
+        timelineRow.minHeight(60);
         timelineRow.getStyleClass().add("timeline-clips");
         timeline.getChildren().add(timelineRow);
 
