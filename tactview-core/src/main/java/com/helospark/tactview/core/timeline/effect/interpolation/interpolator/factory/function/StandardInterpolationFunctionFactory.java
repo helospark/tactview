@@ -20,10 +20,10 @@ public class StandardInterpolationFunctionFactory implements DoubleInterpolatorF
 
     @Override
     public DoubleInterpolator createInterpolator(DoubleProvider previousInterpolator) {
-        if (previousInterpolator.getInterpolator() instanceof MultiKeyframeBasedDoubleInterpolator) {
+        if (previousInterpolator.getInterpolatorClone() instanceof MultiKeyframeBasedDoubleInterpolator) {
             UnivariateInterpolator newInterpolator = factory.get();
 
-            MultiKeyframeBasedDoubleInterpolator multiKeyframeBasedDoubleInterpolator = (MultiKeyframeBasedDoubleInterpolator) previousInterpolator.getInterpolator();
+            MultiKeyframeBasedDoubleInterpolator multiKeyframeBasedDoubleInterpolator = (MultiKeyframeBasedDoubleInterpolator) previousInterpolator.getInterpolatorClone();
             MultiKeyframeBasedDoubleInterpolator clone = multiKeyframeBasedDoubleInterpolator.deepClone();
             clone.setInterpolatorFunction(newInterpolator);
             return clone;

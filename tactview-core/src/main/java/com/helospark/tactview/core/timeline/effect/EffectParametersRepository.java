@@ -185,7 +185,7 @@ public class EffectParametersRepository {
 
     public Object getCurrentInterpolator(String descriptorId) {
         EffectStore effectStore = primitiveEffectIdToEffectMap.get(descriptorId);
-        return effectStore.effect.getInterpolator();
+        return effectStore.effect.getInterpolatorClone();
     }
 
     public void changeInterpolator(String descriptorId, String newInterpolatorId) {

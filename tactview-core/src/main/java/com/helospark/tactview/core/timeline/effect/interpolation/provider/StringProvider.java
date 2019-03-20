@@ -71,7 +71,7 @@ public class StringProvider extends KeyframeableEffect {
     }
 
     @Override
-    public StringInterpolator getInterpolator() {
+    public StringInterpolator getInterpolatorClone() {
         return this.stringInterpolator;
     }
 }

@@ -17,7 +17,7 @@ public class StandardStringInterpolatorFactoryConfiguration {
     @Bean
     public StandardStringInterpolatorFactory stringStepInterpolatorFactory() {
         return new StandardStringInterpolatorFactory("stringStepInterpolator", previous -> {
-            return new StepStringInterpolator(previous.getInterpolator().getDefaultValue(), getValues(previous.getInterpolator()), previous.getInterpolator().useKeyframes());
+            return new StepStringInterpolator(previous.getInterpolatorClone().getDefaultValue(), getValues(previous.getInterpolatorClone()), previous.getInterpolatorClone().useKeyframes());
         });
     }
 
@@ -25,7 +25,7 @@ public class StandardStringInterpolatorFactoryConfiguration {
     public StandardStringInterpolatorFactory typingStringInterpolatorFactory() {
         return new StandardStringInterpolatorFactory("typingStringInterpolator", previous -> {
             return new TypingStringInterpolator(
-                    new StepStringInterpolator(previous.getInterpolator().getDefaultValue(), getValues(previous.getInterpolator()), previous.getInterpolator().useKeyframes()));
+                    new StepStringInterpolator(previous.getInterpolatorClone().getDefaultValue(), getValues(previous.getInterpolatorClone()), previous.getInterpolatorClone().useKeyframes()));
         });
     }
 

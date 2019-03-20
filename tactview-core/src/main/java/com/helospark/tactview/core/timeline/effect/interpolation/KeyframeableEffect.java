@@ -59,6 +59,10 @@ public abstract class KeyframeableEffect implements StatefulCloneable<Keyframeab
         return getValues().containsKey(position);
     }
 
+    public EffectInterpolator getInterpolatorClone() {
+        return null;
+    }
+
     public EffectInterpolator getInterpolator() {
         return null;
     }

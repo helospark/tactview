@@ -32,8 +32,8 @@ public class EasingInterpolatorContextMenuItem implements PropertyValueContextMe
     public boolean supports(PropertyValueContextMenuRequest request) {
         return request.valueProvider.keyframesEnabled()
                 && request.valueProvider instanceof DoubleProvider
-                && ((DoubleProvider) request.valueProvider).getInterpolator() instanceof MixedDoubleInterpolator
-                && ((MixedDoubleInterpolator) ((DoubleProvider) request.valueProvider).getInterpolator()).hasEasingFunctionAt(request.timelinePosition);
+                && ((DoubleProvider) request.valueProvider).getInterpolatorClone() instanceof MixedDoubleInterpolator
+                && ((MixedDoubleInterpolator) ((DoubleProvider) request.valueProvider).getInterpolatorClone()).hasEasingFunctionAt(request.timelinePosition);
     }
 
     @Override

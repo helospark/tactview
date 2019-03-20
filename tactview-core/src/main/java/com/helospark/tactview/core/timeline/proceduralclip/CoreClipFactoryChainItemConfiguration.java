@@ -15,6 +15,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnRectan
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.HighlightPenProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.GridProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.LineProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.lines.LinesProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProceduralClip;
@@ -223,6 +224,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new ChannelCopyProceduralClip(metadata, node, loadMetadata);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem linesProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("lines", "vertical/horizontal lines",
+                request -> {
+                    return new LinesProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                },
+                (node, loadMetadata) -> {
+                    return new LinesProceduralClip(metadata, node, loadMetadata);
                 });
     }
 }

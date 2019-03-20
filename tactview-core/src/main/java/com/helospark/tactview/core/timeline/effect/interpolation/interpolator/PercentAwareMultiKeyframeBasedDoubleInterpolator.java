@@ -71,6 +71,7 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
         MultiKeyframeBasedDoubleInterpolator result = new PercentAwareMultiKeyframeBasedDoubleInterpolator(defaultValue, length);
         result.values = newValues;
         result.interpolatorImplementation = newInterpolatorImplementation;
+        result.useKeyframes = useKeyframes;
         return result;
     }
 

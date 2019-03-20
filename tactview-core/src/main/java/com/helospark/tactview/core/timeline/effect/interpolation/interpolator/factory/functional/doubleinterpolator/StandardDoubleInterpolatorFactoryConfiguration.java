@@ -30,13 +30,13 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
     public StandardDoubleInterpolatorFactory mixedDoubleInterpolator() {
         return new StandardDoubleInterpolatorFactory("mixedDoubleInterpolator", previous -> {
             TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> values = new TreeMap<>();
-            if (previous.getInterpolator() instanceof KeyframeSupportingDoubleInterpolator) {
+            if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 for (var entry : previous.getValues().entrySet()) {
                     values.put(entry.getKey(), new MixedDoubleInterpolatorElement((Double) entry.getValue(), EaseFunction.LINEAR));
                 }
             }
             MixedDoubleInterpolator result = new MixedDoubleInterpolator(values);
-            if (previous.getInterpolator() instanceof KeyframeSupportingDoubleInterpolator) {
+            if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 result.setUseKeyframes(previous.keyframesEnabled());
             }
             return result;

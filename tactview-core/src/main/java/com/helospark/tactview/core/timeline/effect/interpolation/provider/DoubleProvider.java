@@ -102,8 +102,13 @@ public class DoubleProvider extends KeyframeableEffect {
     }
 
     @Override
-    public EffectInterpolator getInterpolator() {
+    public EffectInterpolator getInterpolatorClone() {
         return interpolator.deepClone();
+    }
+
+    @Override
+    public EffectInterpolator getInterpolator() {
+        return interpolator;
     }
 
     @Override
