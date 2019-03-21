@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.proceduralclip;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,10 +15,16 @@ import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public abstract class ProceduralVisualClip extends VisualTimelineClip {
     private String proceduralFactoryId;
+
+    private DoubleProvider widthMultiplierProvider;
+    private DoubleProvider heightMultiplierProvider;
 
     public ProceduralVisualClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval) {
         super(visualMediaMetadata, interval, TimelineClipType.IMAGE);
@@ -42,8 +49,17 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
     @Override
     public ReadOnlyClipImage getFrameInternal(GetFrameRequest request) {
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-        ReadOnlyClipImage result = createProceduralFrame(request, relativePosition);
-        return applyEffects(relativePosition, result, request);
+
+        double widthMultiplier = widthMultiplierProvider.getValueAt(relativePosition);
+        double heightMultiplier = heightMultiplierProvider.getValueAt(relativePosition);
+
+        GetFrameRequest newFrameRequest = GetFrameRequest.builderFrom(request)
+                .withExpectedWidth((int) (widthMultiplier * request.getExpectedWidth()))
+                .withExpectedHeight((int) (heightMultiplier * request.getExpectedHeight()))
+                .build();
+
+        ReadOnlyClipImage result = createProceduralFrame(newFrameRequest, relativePosition);
+        return applyEffects(relativePosition, result, newFrameRequest);
     }
 
     @Override
@@ -69,4 +85,30 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
         this.proceduralFactoryId = proceduralFactoryId;
     }
 
+    @Override
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
+
+        widthMultiplierProvider = new DoubleProvider(0.0, 10.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        heightMultiplierProvider = new DoubleProvider(0.0, 10.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+
+        ValueProviderDescriptor expectedWidthMultiplierDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(widthMultiplierProvider)
+                .withName("Width multiplier")
+                .build();
+        ValueProviderDescriptor expectedHeightMultiplierDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(widthMultiplierProvider)
+                .withName("Height multiplier")
+                .build();
+
+        result.add(expectedWidthMultiplierDescriptor);
+        result.add(expectedHeightMultiplierDescriptor);
+
+        return result;
+    }
 }

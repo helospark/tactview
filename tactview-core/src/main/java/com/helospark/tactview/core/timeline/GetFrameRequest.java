@@ -88,6 +88,11 @@ public class GetFrameRequest {
     }
 
     @Generated("SparkTools")
+    public static Builder builderFrom(GetFrameRequest getFrameRequest) {
+        return new Builder(getFrameRequest);
+    }
+
+    @Generated("SparkTools")
     public static final class Builder {
         private TimelinePosition position;
         private TimelinePosition relativePosition;
@@ -101,6 +106,19 @@ public class GetFrameRequest {
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
 
         private Builder() {
+        }
+
+        private Builder(GetFrameRequest getFrameRequest) {
+            this.position = getFrameRequest.position;
+            this.relativePosition = getFrameRequest.relativePosition;
+            this.scale = getFrameRequest.scale;
+            this.expectedWidth = getFrameRequest.expectedWidth;
+            this.expectedHeight = getFrameRequest.expectedHeight;
+            this.applyEffects = getFrameRequest.applyEffects;
+            this.useApproximatePosition = getFrameRequest.useApproximatePosition;
+            this.applyEffectsLessThanEffectChannel = getFrameRequest.applyEffectsLessThanEffectChannel;
+            this.requestedClips = getFrameRequest.requestedClips;
+            this.requestedChannelClips = getFrameRequest.requestedChannelClips;
         }
 
         public Builder withPosition(TimelinePosition position) {
