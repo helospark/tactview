@@ -17,6 +17,7 @@ public class ValueProviderDescriptor {
     private List<ActivePredicate> showPredicate;
     private Map<Object, Object> renderHints;
     private Optional<Function<TimelinePosition, Boolean>> enabledIf;
+    private Optional<String> group;
 
     @Generated("SparkTools")
     private ValueProviderDescriptor(Builder builder) {
@@ -26,6 +27,7 @@ public class ValueProviderDescriptor {
         this.showPredicate = builder.showPredicate;
         this.renderHints = builder.renderHints;
         this.enabledIf = builder.enabledIf;
+        this.group = builder.group;
     }
 
     public String getName() {
@@ -52,10 +54,14 @@ public class ValueProviderDescriptor {
         return enabledIf;
     }
 
+    public Optional<String> getGroup() {
+        return group;
+    }
+
     @Override
     public String toString() {
         return "ValueProviderDescriptor [name=" + name + ", keyframeableEffect=" + keyframeableEffect + ", activePredicate=" + activePredicate + ", showPredicate=" + showPredicate + ", renderHints="
-                + renderHints + "]";
+                + renderHints + ", enabledIf=" + enabledIf + ", group=" + group + "]";
     }
 
     @Generated("SparkTools")
@@ -71,6 +77,7 @@ public class ValueProviderDescriptor {
         private List<ActivePredicate> showPredicate = Collections.emptyList();
         private Map<Object, Object> renderHints = Collections.emptyMap();
         private Optional<Function<TimelinePosition, Boolean>> enabledIf = Optional.empty();
+        private Optional<String> group = Optional.empty();
 
         private Builder() {
         }
@@ -100,8 +107,13 @@ public class ValueProviderDescriptor {
             return this;
         }
 
-        public Builder withEnabledIf(Function<TimelinePosition, Boolean> enabledIf) {
-            this.enabledIf = Optional.ofNullable(enabledIf);
+        public Builder withEnabledIf(Optional<Function<TimelinePosition, Boolean>> enabledIf) {
+            this.enabledIf = enabledIf;
+            return this;
+        }
+
+        public Builder withGroup(String group) {
+            this.group = Optional.ofNullable(group);
             return this;
         }
 

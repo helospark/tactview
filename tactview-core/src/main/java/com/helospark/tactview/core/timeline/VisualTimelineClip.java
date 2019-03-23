@@ -175,29 +175,35 @@ public abstract class VisualTimelineClip extends TimelineClip {
         ValueProviderDescriptor translateDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translatePointProvider)
                 .withName("translate")
+                .withGroup("common")
                 .build();
         ValueProviderDescriptor centerVerticallyDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(verticallyCenteredProvider)
                 .withName("vertical alignment")
+                .withGroup("common")
                 .build();
         ValueProviderDescriptor centerHorizontallyDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(horizontallyCenteredProvider)
                 .withName("horizontal alignment")
+                .withGroup("common")
                 .build();
 
         ValueProviderDescriptor globalClipAlphaDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(globalClipAlphaProvider)
                 .withName("Global clip alpha")
+                .withGroup("common")
                 .build();
 
         ValueProviderDescriptor enabledDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(enabledProvider)
                 .withName("Enabled")
+                .withGroup("common")
                 .build();
 
         ValueProviderDescriptor blendModeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(blendModeProvider)
                 .withName("Blend mode")
+                .withGroup("common")
                 .build();
 
         result.add(translateDescriptor);

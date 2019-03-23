@@ -42,6 +42,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -147,6 +148,13 @@ public class PropertyView {
                 .map(a -> a.getKeyframeEnabledConsumer().get(effectId));
     }
 
+    static class LocalTitledPaneData {
+        int localGridIndex = 0;
+        GridPane createdGroup = null;
+        TitledPane createdTitledPane = null;
+        String createdGroupName = null;
+    }
+
     private EffectPropertyPage createBox(List<ValueProviderDescriptor> descriptors, String id) {
         GridPane grid = new GridPane();
         grid.getStyleClass().add("effect-property-grid");
@@ -156,10 +164,56 @@ public class PropertyView {
 
         addNameField(id, result);
 
+        int globalGridIndex = 1;
+        LocalTitledPaneData currentPropertyGroup = null;
+
         for (int i = 0; i < descriptors.size(); ++i) {
-            addElement(descriptors.get(i), result, i + 1);
+            ValueProviderDescriptor currentDescriptor = descriptors.get(i);
+            Optional<String> groupName = currentDescriptor.getGroup();
+
+            int indexToAddNewNode;
+            GridPane gridToAddNewNode;
+
+            if (hasPropertyGroup(groupName)) {
+                if (currentPropertyGroup != null && currentPropertyGroup.createdGroupName.equals(groupName.get())) {
+                    // do nothing
+                } else if (currentPropertyGroup != null && !currentPropertyGroup.createdGroupName.equals(groupName.get())) {
+                    grid.add(currentPropertyGroup.createdTitledPane, 0, globalGridIndex++, 2, 1);
+                    currentPropertyGroup = createTitledPaneDataWithGroupName(groupName.get());
+                } else if (currentPropertyGroup == null) {
+                    currentPropertyGroup = createTitledPaneDataWithGroupName(groupName.get());
+                }
+
+                gridToAddNewNode = currentPropertyGroup.createdGroup;
+                indexToAddNewNode = currentPropertyGroup.localGridIndex++;
+            } else {
+                if (currentPropertyGroup != null) {
+                    grid.add(currentPropertyGroup.createdTitledPane, 0, globalGridIndex++, 2, 1);
+                    currentPropertyGroup = null;
+                }
+
+                gridToAddNewNode = grid;
+                indexToAddNewNode = globalGridIndex;
+                globalGridIndex++;
+            }
+            addElement(currentDescriptor, result, indexToAddNewNode, gridToAddNewNode);
         }
         return result.build();
+    }
+
+    private boolean hasPropertyGroup(Optional<String> group) {
+        return group.isPresent();
+    }
+
+    private LocalTitledPaneData createTitledPaneDataWithGroupName(String groupName) {
+        LocalTitledPaneData titledPaneData = new LocalTitledPaneData();
+        titledPaneData.createdGroup = new GridPane();
+        titledPaneData.createdGroup.getStyleClass().add("effect-property-grid");
+        titledPaneData.createdGroupName = groupName;
+        titledPaneData.createdTitledPane = new TitledPane(titledPaneData.createdGroupName, titledPaneData.createdGroup);
+        titledPaneData.createdTitledPane.getStyleClass().add("effect-property-group");
+        titledPaneData.localGridIndex = 0;
+        return titledPaneData;
     }
 
     private void addNameField(String id, Builder result) {
@@ -185,7 +239,7 @@ public class PropertyView {
         });
     }
 
-    private void addElement(ValueProviderDescriptor descriptor, Builder result, int line) {
+    private void addElement(ValueProviderDescriptor descriptor, Builder result, int line, GridPane currentGridLocation) {
         System.out.println("Adding " + descriptor);
         HBox labelBox = new HBox(10);
         Label label = new Label(descriptor.getName());
@@ -209,8 +263,8 @@ public class PropertyView {
             }
         });
 
-        result.getBox().add(labelBox, 0, line);
-        result.getBox().add(key, 1, line);
+        currentGridLocation.add(labelBox, 0, line);
+        currentGridLocation.add(key, 1, line);
 
         result.addUpdateFunctions(currentTime -> Platform.runLater(() -> {
             keyframeChange.updateUi(currentTime);
@@ -242,10 +296,6 @@ public class PropertyView {
 
     private EffectLine createKeyframeUi(ValueProviderDescriptor descriptor) {
         return propertyValueSetterChain.create(descriptor);
-    }
-
-    private void addContextMenuIfRequired(EffectLine result) {
-
     }
 
     public FlowPane getPropertyWindow() {

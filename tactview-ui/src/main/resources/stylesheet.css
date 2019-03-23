@@ -352,3 +352,14 @@
 .timeline-title-channel-name-label {
     -fx-pref-width: 100px;
 }
+
+.effect-property-group .title {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(10,10,10,0.2);
+}
+
+.effect-property-group .content {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(10,10,10,0.2);
+    -fx-padding: 0 0 0 20
+}

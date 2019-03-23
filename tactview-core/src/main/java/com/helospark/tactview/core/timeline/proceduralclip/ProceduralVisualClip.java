@@ -100,10 +100,12 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
         ValueProviderDescriptor expectedWidthMultiplierDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(widthMultiplierProvider)
                 .withName("Width multiplier")
+                .withGroup("procedural clip size")
                 .build();
         ValueProviderDescriptor expectedHeightMultiplierDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(widthMultiplierProvider)
                 .withName("Height multiplier")
+                .withGroup("procedural clip size")
                 .build();
 
         result.add(expectedWidthMultiplierDescriptor);
