@@ -15,6 +15,7 @@ import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussi
 import com.helospark.tactview.core.timeline.effect.cartoon.CartoonEffect;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.colorchannelchange.ColorChannelChangeEffect;
+import com.helospark.tactview.core.timeline.effect.colorchannelchange.FloodFillEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorBalanceEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeService;
@@ -652,6 +653,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new RectangleWarpEffect(node, loadMetadata, simple2DRasterizer))
                 .withName("Rectangle warp")
                 .withSupportedEffectId("rectangleWarp")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory floodFillEffect() {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new FloodFillEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000))))
+                .withRestoreFactory((node, loadMetadata) -> new FloodFillEffect(node, loadMetadata))
+                .withName("Flood fill")
+                .withSupportedEffectId("floodfill")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
