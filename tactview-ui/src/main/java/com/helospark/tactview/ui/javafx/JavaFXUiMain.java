@@ -28,6 +28,7 @@ import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
+import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
 import javafx.application.Application;
@@ -194,12 +195,19 @@ public class JavaFXUiMain extends Application {
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 
+        BorderPane rightBorderPane = new BorderPane();
+        Label underVideoLabel = new Label();
+        underVideoLabel.setWrapText(true);
+        underVideoLabel.textProperty().bind(lightDi.getBean(VideoStatusBarUpdater.class).getTextProperty());
+        rightBorderPane.setBottom(underVideoLabel);
+        rightBorderPane.setCenter(rightVBox);
+
         FlowPane propertyBox = effectPropertyView.getPropertyWindow();
         ScrollPane propertyBoxScrollPane = new ScrollPane(propertyBox);
         propertyBoxScrollPane.setFitToWidth(true);
         upper.add(propertyBoxScrollPane, 0, 0);
         upper.add(tabPane, 1, 0);
-        upper.add(rightVBox, 2, 0);
+        upper.add(rightBorderPane, 2, 0);
 
         VBox lower = new VBox(5);
         lower.setPrefWidth(scene.getWidth());

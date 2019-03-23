@@ -4,6 +4,8 @@ import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
+
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 
@@ -14,6 +16,7 @@ public class StrategyMouseInput {
     public double unscaledY;
     public MouseEvent mouseEvent;
     public Supplier<Image> canvasImage;
+    public CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
 
     @Generated("SparkTools")
     private StrategyMouseInput(Builder builder) {
@@ -23,6 +26,7 @@ public class StrategyMouseInput {
         this.unscaledY = builder.unscaledY;
         this.mouseEvent = builder.mouseEvent;
         this.canvasImage = builder.canvasImage;
+        this.currentlyPressedKeyRepository = builder.currentlyPressedKeyRepository;
     }
 
     @Generated("SparkTools")
@@ -38,6 +42,7 @@ public class StrategyMouseInput {
         private double unscaledY;
         private MouseEvent mouseEvent;
         private Supplier<Image> canvasImage;
+        private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
 
         private Builder() {
         }
@@ -69,6 +74,11 @@ public class StrategyMouseInput {
 
         public Builder withCanvasImage(Supplier<Image> canvasImage) {
             this.canvasImage = canvasImage;
+            return this;
+        }
+
+        public Builder withCurrentlyPressedKeyRepository(CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
+            this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
             return this;
         }
 

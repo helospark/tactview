@@ -24,14 +24,16 @@ import com.helospark.tactview.ui.javafx.inputmode.strategy.RectangleInputTypeStr
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyKeyInput;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyMouseInput;
+import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 
 @Component
@@ -43,16 +45,21 @@ public class InputModeRepository implements CleanableMode {
     private InputModeInput<?> inputModeInput;
     private PlaybackController playbackController;
     private UiTimelineManager timelineManager;
+    private VideoStatusBarUpdater videoStatusBarUpdater;
+    private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
     private List<Consumer<Boolean>> inputModeConsumer = new ArrayList<>();
 
     public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService,
             SizeFunctionImplementation sizeFunctionImplementation, PlaybackController playbackController,
-            UiTimelineManager timelineManager) {
+            UiTimelineManager timelineManager, VideoStatusBarUpdater videoStatusBarUpdater,
+            CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
         this.projectRepository = projectRepository;
         this.displayUpdaterService = displayUpdaterService;
         this.sizeFunctionImplementation = sizeFunctionImplementation;
         this.playbackController = playbackController;
         this.timelineManager = timelineManager;
+        this.videoStatusBarUpdater = videoStatusBarUpdater;
+        this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
     }
 
     // TODO: should this be in DI framework?
@@ -111,7 +118,8 @@ public class InputModeRepository implements CleanableMode {
         canvas.setOnMousePressed(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDownEvent(input)));
         canvas.setOnMouseReleased(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseUpEvent(input)));
         canvas.setOnMouseDragged(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDraggedEvent(input)));
-        canvas.setOnKeyReleased(createKeyHandler(input -> inputModeInput.currentStrategy.onKeyReleasedEvent(input)));
+        currentlyPressedKeyRepository.onKeyDown(createKeyHandler(input -> inputModeInput.currentStrategy.onKeyPressedEvent(input)));
+
         EventHandler<? super MouseEvent> mouseMoveHandler = createMouseHandler(input -> inputModeInput.currentStrategy.onMouseMovedEvent(input));
         canvas.setOnMouseMoved(e -> {
             mouseMoveHandler.handle(e);
@@ -158,6 +166,7 @@ public class InputModeRepository implements CleanableMode {
                         .withCanvasImage(() -> {
                             return playbackController.getVideoFrameAt(timelineManager.getCurrentPosition()).getImage();
                         })
+                        .withCurrentlyPressedKeyRepository(currentlyPressedKeyRepository)
                         .build();
 
                 function.accept(strategyInput);
@@ -173,7 +182,7 @@ public class InputModeRepository implements CleanableMode {
         };
     }
 
-    private EventHandler<? super KeyEvent> createKeyHandler(Consumer<StrategyKeyInput> function) {
+    private Consumer<KeyCode> createKeyHandler(Consumer<StrategyKeyInput> function) {
         return e -> {
             if (inputModeInput != null) {
                 StrategyKeyInput strategyInput = new StrategyKeyInput(e);
@@ -196,14 +205,19 @@ public class InputModeRepository implements CleanableMode {
         commonType.consumer.accept(commonType.currentStrategy.getResult());
     }
 
-    private void inputModeChanged(boolean b) {
+    private void inputModeChanged(boolean active) {
         inputModeConsumer.stream()
-                .forEach(consumer -> consumer.accept(b));
+                .forEach(consumer -> consumer.accept(active));
+        if (active) {
+            String statusMessage = inputModeInput.currentStrategy.getStatusMessage();
+            videoStatusBarUpdater.setText(statusMessage);
+        }
     }
 
     public void reset() {
         inputModeInput = null;
         inputModeChanged(false);
+        videoStatusBarUpdater.setText("");
     }
 
     @Override

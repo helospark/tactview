@@ -6,6 +6,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Interpolat
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 
 public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLine> {
@@ -34,13 +35,38 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     public void onMouseDraggedEvent(StrategyMouseInput input) {
         if (mouseCloseTo.isPresent()) {
             Point currentPoint = new Point(input.x, input.y);
+
             Integer activeIndex = mouseCloseTo.get();
             if (activeIndex.equals(START_POINT_ID)) {
                 result.start = currentPoint;
+
+                if (shouldKeepDiagonal(input)) {
+                    double xDiff = result.end.x - result.start.x;
+                    double yDiff = result.end.y - result.start.y;
+                    double distance = Math.max(Math.abs(xDiff), Math.abs(yDiff));
+
+                    result.start.x = result.end.x - Math.signum(xDiff) * distance;
+                    result.start.y = result.end.y - Math.signum(yDiff) * distance;
+                }
+
             } else if (activeIndex.equals(ENDPOINT_ID)) {
                 result.end = currentPoint;
+
+                if (shouldKeepDiagonal(input)) {
+                    double xDiff = result.end.x - result.start.x;
+                    double yDiff = result.end.y - result.start.y;
+                    double distance = Math.max(Math.abs(xDiff), Math.abs(yDiff));
+
+                    result.end.x = result.start.x + Math.signum(xDiff) * distance;
+                    result.end.y = result.start.y + Math.signum(yDiff) * distance;
+                }
+
             }
         }
+    }
+
+    private boolean shouldKeepDiagonal(StrategyMouseInput input) {
+        return input.currentlyPressedKeyRepository.isKeyDown(KeyCode.CONTROL);
     }
 
     private boolean isTwoPointsClose(Point point, Point currentPoint) {
@@ -94,4 +120,15 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
         return result;
     }
 
+    @Override
+    public void onKeyPressedEvent(StrategyKeyInput input) {
+        if (input.getKeyCode().equals(KeyCode.ENTER)) {
+            isFinished = true;
+        }
+    }
+
+    @Override
+    public String getStatusMessage() {
+        return InputTypeStrategy.super.getStatusMessage() + "\nCtrl to keep diagonal";
+    }
 }

@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 
 public class RectangleInputTypeStrategy implements InputTypeStrategy<Rectangle> {
@@ -73,6 +74,13 @@ public class RectangleInputTypeStrategy implements InputTypeStrategy<Rectangle> 
     public void onMouseMovedEvent(StrategyMouseInput input) {
         isMouseCloseToFirstPoint = isCloseToFirstPoint(new Point(input.x, input.y));
         mouseCloseTo = findPointNear(new Point(input.x, input.y));
+    }
+
+    @Override
+    public void onKeyPressedEvent(StrategyKeyInput input) {
+        if (input.getKeyCode().equals(KeyCode.ENTER)) {
+            isFinished = true;
+        }
     }
 
     private boolean isTwoPointsClose(Point point, Point currentPoint) {

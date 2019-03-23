@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 
 public class PolygonInputTypeStrategy implements InputTypeStrategy<Polygon> {
@@ -155,6 +156,13 @@ public class PolygonInputTypeStrategy implements InputTypeStrategy<Polygon> {
     @Override
     public Polygon getResult() {
         return new Polygon(result);
+    }
+
+    @Override
+    public void onKeyPressedEvent(StrategyKeyInput input) {
+        if (input.getKeyCode().equals(KeyCode.ENTER)) {
+            isFinished = true;
+        }
     }
 
 }

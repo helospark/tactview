@@ -1,15 +1,15 @@
 package com.helospark.tactview.ui.javafx.inputmode.strategy;
 
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 
 public class StrategyKeyInput {
-    private KeyEvent keyEvent;
+    private KeyCode keyEvent;
 
-    public StrategyKeyInput(KeyEvent keyEvent) {
+    public StrategyKeyInput(KeyCode keyEvent) {
         this.keyEvent = keyEvent;
     }
 
-    public KeyEvent getKeyEvent() {
+    public KeyCode getKeyCode() {
         return keyEvent;
     }
 
