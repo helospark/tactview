@@ -107,8 +107,8 @@ public class ValueProviderDescriptor {
             return this;
         }
 
-        public Builder withEnabledIf(Optional<Function<TimelinePosition, Boolean>> enabledIf) {
-            this.enabledIf = enabledIf;
+        public Builder withEnabledIf(Function<TimelinePosition, Boolean> enabledIf) {
+            this.enabledIf = Optional.ofNullable(enabledIf);
             return this;
         }
 

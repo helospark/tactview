@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.pojo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Polygon {
     private List<Point> points;
@@ -43,6 +44,13 @@ public class Polygon {
 
     public List<Point> getPoints() {
         return points;
+    }
+
+    public Polygon multiplyPoints(Point point) {
+        List<Point> newPoints = points.stream()
+                .map(p -> p.multiply(point))
+                .collect(Collectors.toList());
+        return new Polygon(newPoints);
     }
 
 }

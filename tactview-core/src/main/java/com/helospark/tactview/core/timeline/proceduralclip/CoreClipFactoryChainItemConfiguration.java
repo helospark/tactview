@@ -21,6 +21,8 @@ import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoisePr
 import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.particlesystem.ParticleSystemProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.pattern.CheckerBoardProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.DrawnNurbsProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.DrawnPolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
@@ -129,8 +131,8 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem polygonProceduralClip(PolygonRenderService polygonRenderService) {
-        return new StandardProceduralClipFactoryChainItem("polygon", "Drawn polygon",
+    public StandardProceduralClipFactoryChainItem fillPolygonProceduralClip(PolygonRenderService polygonRenderService) {
+        return new StandardProceduralClipFactoryChainItem("fillpolygon", "Fill polygon",
                 request -> {
                     return new PolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), polygonRenderService);
                 },
@@ -235,6 +237,28 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new LinesProceduralClip(metadata, node, loadMetadata);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem drawnPolygonProceduralClip(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+        return new StandardProceduralClipFactoryChainItem("drawnpolygon", "Drawn polygon",
+                request -> {
+                    return new DrawnPolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
+                },
+                (node, loadMetadata) -> {
+                    return new DrawnPolygonProceduralClip(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem drawnNurbsProceduralClip(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+        return new StandardProceduralClipFactoryChainItem("drawnnurbs", "NURBS",
+                request -> {
+                    return new DrawnNurbsProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
+                },
+                (node, loadMetadata) -> {
+                    return new DrawnNurbsProceduralClip(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
                 });
     }
 }

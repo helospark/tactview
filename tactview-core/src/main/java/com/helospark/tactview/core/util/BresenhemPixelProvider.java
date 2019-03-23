@@ -7,8 +7,16 @@ import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
+import com.graphbuilder.curve.BinaryCurveApproximationAlgorithm;
+import com.graphbuilder.curve.ControlPath;
+import com.graphbuilder.curve.GroupIterator;
+import com.graphbuilder.curve.MultiPath;
+import com.graphbuilder.curve.NURBSpline;
+import com.graphbuilder.curve.ValueVector;
+import com.graphbuilder.geom.PointFactory;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
@@ -122,6 +130,72 @@ public class BresenhemPixelProvider {
         }
 
         return result;
+    }
+
+    @Cacheable
+    public List<Vector2D> polygonPixels(Polygon polygon) {
+        List<Vector2D> result = new ArrayList<>();
+
+        List<Point> points = polygon.getPoints();
+
+        if (points.size() <= 1) {
+            return Collections.emptyList();
+        }
+
+        for (int i = 0; i < points.size() - 1; ++i) {
+            result.addAll(linePixels(points.get(i), points.get(i + 1)));
+        }
+        result.addAll(linePixels(points.get(points.size() - 1), points.get(0)));
+
+        return result;
+    }
+
+    @Cacheable
+    public List<Vector2D> nurbsPixels(Polygon polygon, boolean connect) {
+        ControlPath controlPath = new ControlPath();
+
+        if (connect && polygon.getPoints().size() < 3) {
+            return Collections.emptyList();
+        }
+        if (!connect && polygon.getPoints().size() < 4) {
+            return Collections.emptyList();
+        }
+
+        for (int i = 0; i < polygon.getPoints().size(); ++i) {
+            controlPath.addPoint(convert(polygon.getPoints().get(i)));
+        }
+        if (connect) {
+            controlPath.addPoint(convert(polygon.getPoints().get(0)));
+        }
+
+        GroupIterator gi = new GroupIterator("0:n-1", controlPath.numPoints());
+        NURBSpline bspline = new NURBSpline(controlPath, gi);
+
+        double[] weightVector = new double[controlPath.numPoints()];
+        for (int i = 0; i < controlPath.numPoints(); ++i) {
+            weightVector[i] = 3.0;
+        }
+        bspline.setWeightVector(new ValueVector(weightVector, weightVector.length));
+
+        MultiPath result = new MultiPath(2);
+        bspline.appendTo(new MultiPath(2)); // WHY??????
+        BinaryCurveApproximationAlgorithm.genPts(bspline, 0, 1.0, result);
+
+        List<Vector2D> resultPoints = new ArrayList<>();
+
+        for (int i = 0; i < result.getNumPoints() - 1; ++i) {
+            resultPoints.addAll(linePixels(convert(result.get(i)), convert(result.get(i + 1))));
+        }
+
+        return resultPoints;
+    }
+
+    private Point convert(double[] ds) {
+        return new Point(ds[0], ds[1]);
+    }
+
+    private com.graphbuilder.curve.Point convert(Point point) {
+        return PointFactory.create(point.x, point.y);
     }
 
 }
