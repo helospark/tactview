@@ -126,7 +126,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     if (selectedClipIds.isEmpty()) {
                         copyPasteRepository.pasteWithoutAdditionalInfo();
                     } else {
-                        copyPasteRepository.pasteOnExistingEffect(selectedClipIds.get(0));
+                        copyPasteRepository.pasteOnExistingClip(selectedClipIds.get(0));
                     }
                 }));
     }

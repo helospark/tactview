@@ -49,43 +49,52 @@ public class CopyPasteRepository {
         if (clipboardContent == null) {
             return;
         }
-        tryPasteClip();
+        pasteWithoutInfo();
     }
 
-    public void pasteOnExistingEffect(String clipId) {
+    public void pasteOnExistingClip(String clipId) {
         if (clipboardContent == null) {
             return;
         }
-        if (!tryPasteClip()) {
-            tryPasteEffect(clipId);
-        }
+        pasteWithSelectedClip(clipId);
     }
 
-    private void tryPasteEffect(String clipId) {
-        if (clipboardContent instanceof EffectCopyPasteDomain) {
-            TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow();
-            AddExistingEffectRequest request = AddExistingEffectRequest.builder()
-                    .withClipToAdd(clip)
-                    .withEffect(((EffectCopyPasteDomain) clipboardContent).effect.cloneEffect(CloneRequestMetadata.ofDefault()))
-                    .build();
-            AddExistingEffectCommand addExistingEffectCommand = new AddExistingEffectCommand(request, timelineManager);
-
-            commandInterpreter.sendWithResult(addExistingEffectCommand);
-        }
-    }
-
-    private boolean tryPasteClip() {
+    private void pasteWithSelectedClip(String clipId) {
         if (clipboardContent instanceof ClipCopyPasteDomain) {
-            AddExistingClipRequest request = AddExistingClipRequest.builder()
-                    .withChannel(((ClipCopyPasteDomain) clipboardContent).timelineChannel)
-                    .withClipToAdd(((ClipCopyPasteDomain) clipboardContent).clipboardContent.cloneClip(CloneRequestMetadata.ofDefault())) // multiple ctrl+v
-                    .build();
-            AddExistingClipsCommand addClipCommand = new AddExistingClipsCommand(request, timelineManager);
-
-            commandInterpreter.sendWithResult(addClipCommand);
-            return true;
+            pasteClip();
+        } else if (clipboardContent instanceof EffectCopyPasteDomain) {
+            TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow();
+            pasteEffectToClip(clip);
         }
-        return false;
+    }
+
+    private void pasteWithoutInfo() {
+        if (clipboardContent instanceof ClipCopyPasteDomain) {
+            pasteClip();
+        } else if (clipboardContent instanceof EffectCopyPasteDomain) {
+            TimelineClip clip = timelineManager.findClipById(((EffectCopyPasteDomain) clipboardContent).clipboardContent.getId()).orElseThrow();
+            pasteEffectToClip(clip);
+        }
+    }
+
+    private void pasteEffectToClip(TimelineClip clip) {
+        AddExistingEffectRequest request = AddExistingEffectRequest.builder()
+                .withClipToAdd(clip)
+                .withEffect(((EffectCopyPasteDomain) clipboardContent).effect.cloneEffect(CloneRequestMetadata.ofDefault()))
+                .build();
+        AddExistingEffectCommand addExistingEffectCommand = new AddExistingEffectCommand(request, timelineManager);
+
+        commandInterpreter.sendWithResult(addExistingEffectCommand);
+    }
+
+    private void pasteClip() {
+        AddExistingClipRequest request = AddExistingClipRequest.builder()
+                .withChannel(((ClipCopyPasteDomain) clipboardContent).timelineChannel)
+                .withClipToAdd(((ClipCopyPasteDomain) clipboardContent).clipboardContent.cloneClip(CloneRequestMetadata.ofDefault())) // multiple ctrl+v
+                .build();
+        AddExistingClipsCommand addClipCommand = new AddExistingClipsCommand(request, timelineManager);
+
+        commandInterpreter.sendWithResult(addClipCommand);
     }
 
 }
