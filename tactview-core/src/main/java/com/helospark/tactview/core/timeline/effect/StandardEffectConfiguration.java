@@ -11,7 +11,11 @@ import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.blend.BlendEffect;
 import com.helospark.tactview.core.timeline.effect.blur.BlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.BlurService;
+import com.helospark.tactview.core.timeline.effect.blur.LinearBlurEffect;
+import com.helospark.tactview.core.timeline.effect.blur.RadialBlurEffect;
 import com.helospark.tactview.core.timeline.effect.blur.opencv.OpenCVBasedGaussianBlur;
+import com.helospark.tactview.core.timeline.effect.blur.service.LinearBlurService;
+import com.helospark.tactview.core.timeline.effect.blur.service.RadialBlurService;
 import com.helospark.tactview.core.timeline.effect.cartoon.CartoonEffect;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.colorchannelchange.ColorChannelChangeEffect;
@@ -31,6 +35,7 @@ import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementM
 import com.helospark.tactview.core.timeline.effect.distort.LensDistortEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PolarCoordinateEffect;
 import com.helospark.tactview.core.timeline.effect.distort.impl.OpenCVBasedLensDistort;
+import com.helospark.tactview.core.timeline.effect.distort.service.PolarService;
 import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
 import com.helospark.tactview.core.timeline.effect.edgedetect.opencv.OpenCVEdgeDetectImplementation;
 import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect;
@@ -568,10 +573,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory polarCoordinateEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory polarCoordinateEffect(PolarService polarService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new PolarCoordinateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
-                .withRestoreFactory((node, loadMetadata) -> new PolarCoordinateEffect(node, loadMetadata, independentPixelOperation))
+                .withFactory(request -> new PolarCoordinateEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), polarService))
+                .withRestoreFactory((node, loadMetadata) -> new PolarCoordinateEffect(node, loadMetadata, polarService))
                 .withName("Polar coordinate")
                 .withSupportedEffectId("polarcoordinate")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -665,6 +670,30 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new FloodFillEffect(node, loadMetadata))
                 .withName("Flood fill")
                 .withSupportedEffectId("floodfill")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory radialBlurEffect(RadialBlurService radialBlurService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new RadialBlurEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), radialBlurService))
+                .withRestoreFactory((node, loadMetadata) -> new RadialBlurEffect(node, loadMetadata, radialBlurService))
+                .withName("Radial blur")
+                .withSupportedEffectId("radialblur")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory linearBlurEffect(LinearBlurService linearBlurService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new LinearBlurEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), linearBlurService))
+                .withRestoreFactory((node, loadMetadata) -> new LinearBlurEffect(node, loadMetadata, linearBlurService))
+                .withName("Linear blur")
+                .withSupportedEffectId("linearblur")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
