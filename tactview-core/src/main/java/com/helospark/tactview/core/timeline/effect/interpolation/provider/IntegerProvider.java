@@ -39,7 +39,7 @@ public class IntegerProvider extends KeyframeableEffect {
     @Override
     public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
         if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
-            ((KeyframeSupportingDoubleInterpolator) interpolator).valueAdded(globalTimelinePosition, value);
+            ((KeyframeSupportingDoubleInterpolator) interpolator).valueAddedInternal(globalTimelinePosition, value);
         }
     }
 
@@ -51,7 +51,7 @@ public class IntegerProvider extends KeyframeableEffect {
     @Override
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
         if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
-            ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemoved(globalTimelinePosition);
+            ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemovedInternal(globalTimelinePosition);
         }
     }
 

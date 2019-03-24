@@ -25,11 +25,11 @@ public class BooleanProvider extends KeyframeableEffect {
         if (doubleInterpolator instanceof KeyframeSupportingDoubleInterpolator) {
             KeyframeSupportingDoubleInterpolator keyframeInterpolator = ((KeyframeSupportingDoubleInterpolator) doubleInterpolator);
             if (value.equalsIgnoreCase("true")) {
-                keyframeInterpolator.valueAdded(globalTimelinePosition, "1.0");
+                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, "1.0");
             } else if (value.equalsIgnoreCase("false")) {
-                keyframeInterpolator.valueAdded(globalTimelinePosition, "0.0");
+                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, "0.0");
             } else {
-                keyframeInterpolator.valueAdded(globalTimelinePosition, value);
+                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, value);
             }
         }
     }

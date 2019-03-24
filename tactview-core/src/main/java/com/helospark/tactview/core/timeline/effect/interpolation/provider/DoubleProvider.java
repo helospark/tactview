@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class DoubleProvider extends KeyframeableEffect {
     @Override
     public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
         if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
-            ((KeyframeSupportingDoubleInterpolator) interpolator).valueAdded(globalTimelinePosition, value);
+            ((KeyframeSupportingDoubleInterpolator) interpolator).valueAddedInternal(globalTimelinePosition, value);
         }
     }
 
@@ -70,7 +71,7 @@ public class DoubleProvider extends KeyframeableEffect {
     @Override
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
         if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
-            ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemoved(globalTimelinePosition);
+            ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemovedInternal(globalTimelinePosition);
         }
     }
 
@@ -145,6 +146,10 @@ public class DoubleProvider extends KeyframeableEffect {
 
     public void setDefaultValue(double defaultValue) {
         ((KeyframeSupportingDoubleInterpolator) interpolator).setDefaultValue(defaultValue);
+    }
+
+    public BigDecimal integrate(TimelinePosition from, TimelinePosition to) {
+        return interpolator.integrate(from, to);
     }
 
 }

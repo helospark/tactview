@@ -10,7 +10,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingDoubleInterpolator, KeyframeSupportingInterpolator {
+public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoubleInterpolator {
     protected TreeMap<TimelinePosition, Double> values;
     protected UnivariateInterpolator interpolatorImplementation = new LinearInterpolator();
     protected double defaultValue;
@@ -71,7 +71,7 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
     }
 
     @Override
-    public void valueAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void valueAddedInternal(TimelinePosition globalTimelinePosition, String value) {
         Double valueToSet = Double.valueOf(value);
         if (!useKeyframes) {
             defaultValue = valueToSet;
@@ -81,7 +81,7 @@ public class MultiKeyframeBasedDoubleInterpolator implements KeyframeSupportingD
     }
 
     @Override
-    public void valueRemoved(TimelinePosition globalTimelinePosition) {
+    public void valueRemovedInternal(TimelinePosition globalTimelinePosition) {
         values.remove(globalTimelinePosition);
     }
 

@@ -88,4 +88,8 @@ public class TimelineLength implements SecondsAware {
         return new TimelinePosition(this.seconds);
     }
 
+    public static TimelineLength ofOne() {
+        return new TimelineLength(BigDecimal.ONE);
+    }
+
 }

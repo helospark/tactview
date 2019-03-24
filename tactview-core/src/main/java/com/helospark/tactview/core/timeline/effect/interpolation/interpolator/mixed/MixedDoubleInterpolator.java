@@ -10,10 +10,9 @@ import java.util.TreeMap;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class MixedDoubleInterpolator implements KeyframeSupportingDoubleInterpolator, KeyframeSupportingInterpolator {
+public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolator {
     protected TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> values;
     protected double defaultValue;
     protected boolean useKeyframes;
@@ -97,7 +96,7 @@ public class MixedDoubleInterpolator implements KeyframeSupportingDoubleInterpol
     }
 
     @Override
-    public void valueAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void valueAddedInternal(TimelinePosition globalTimelinePosition, String value) {
         Double valueToSet = Double.valueOf(value);
         if (!useKeyframes) {
             defaultValue = valueToSet;
@@ -107,7 +106,7 @@ public class MixedDoubleInterpolator implements KeyframeSupportingDoubleInterpol
     }
 
     @Override
-    public void valueRemoved(TimelinePosition globalTimelinePosition) {
+    public void valueRemovedInternal(TimelinePosition globalTimelinePosition) {
         values.remove(globalTimelinePosition);
     }
 

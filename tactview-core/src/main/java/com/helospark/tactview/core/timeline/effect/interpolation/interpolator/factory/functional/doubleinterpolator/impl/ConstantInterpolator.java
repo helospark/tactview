@@ -8,7 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ef
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolator {
+public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
     private double value;
 
     public ConstantInterpolator(double defaultValue) {
@@ -21,12 +21,12 @@ public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolato
     }
 
     @Override
-    public void valueAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void valueAddedInternal(TimelinePosition globalTimelinePosition, String value) {
         this.value = Double.valueOf(value);
     }
 
     @Override
-    public void valueRemoved(TimelinePosition globalTimelinePosition) {
+    public void valueRemovedInternal(TimelinePosition globalTimelinePosition) {
         // not supported
     }
 
@@ -48,6 +48,16 @@ public class ConstantInterpolator implements KeyframeSupportingDoubleInterpolato
     @Override
     public void setDefaultValue(double defaultValue) {
         this.value = defaultValue;
+    }
+
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        // Not supported
+    }
+
+    @Override
+    public boolean isUsingKeyframes() {
+        return false;
     }
 
 }

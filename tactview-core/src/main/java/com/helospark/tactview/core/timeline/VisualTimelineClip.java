@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     protected PointProvider translatePointProvider;
     protected DoubleProvider globalClipAlphaProvider;
+    protected DoubleProvider timeScaleProvider;
     protected BooleanProvider enabledProvider;
     protected ValueListProvider<AlignmentValueListElement> verticallyCenteredProvider;
     protected ValueListProvider<AlignmentValueListElement> horizontallyCenteredProvider;
@@ -65,10 +67,10 @@ public abstract class VisualTimelineClip extends TimelineClip {
         double scale = request.getScale();
         int width = (int) (mediaMetadata.getWidth() * scale);
         int height = (int) (mediaMetadata.getHeight() * scale);
-        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
+        TimelinePosition rateAdjustedPosition = calculatePositionToRender(request);
 
         RequestFrameParameter frameRequest = RequestFrameParameter.builder()
-                .withPosition(relativePosition.add(renderOffset))
+                .withPosition(rateAdjustedPosition)
                 .withWidth(width)
                 .withHeight(height)
                 .withUseApproximatePosition(request.useApproximatePosition())
@@ -77,7 +79,15 @@ public abstract class VisualTimelineClip extends TimelineClip {
         ByteBuffer frame = requestFrame(frameRequest);
         ClipImage frameResult = new ClipImage(frame, width, height);
 
-        return applyEffects(relativePosition, frameResult, request);
+        return applyEffects(rateAdjustedPosition, frameResult, request);
+    }
+
+    protected TimelinePosition calculatePositionToRender(GetFrameRequest request) {
+        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
+        TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
+        BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
+        TimelinePosition rateAdjustedPosition = new TimelinePosition(integrated);
+        return rateAdjustedPosition;
     }
 
     protected ReadOnlyClipImage applyEffects(TimelinePosition relativePosition, ReadOnlyClipImage frameResult, GetFrameRequest frameRequest) {
@@ -152,6 +162,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         blendModeProvider = new ValueListProvider<>(createBlendModes(), new StepStringInterpolator("normal"));
         horizontallyCenteredProvider = new ValueListProvider<>(createHorizontalAlignments(), new StepStringInterpolator("left"));
         verticallyCenteredProvider = new ValueListProvider<>(createVerticalAlignments(), new StepStringInterpolator("top"));
+        timeScaleProvider = new DoubleProvider(0.05, 10, new MultiKeyframeBasedDoubleInterpolator(1.0));
     }
 
     private List<AlignmentValueListElement> createVerticalAlignments() {
@@ -193,6 +204,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withName("Global clip alpha")
                 .withGroup("common")
                 .build();
+        ValueProviderDescriptor timeScaleProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(timeScaleProvider)
+                .withName("time scale")
+                .withGroup("common")
+                .build();
 
         ValueProviderDescriptor enabledDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(enabledProvider)
@@ -212,6 +228,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         result.add(globalClipAlphaDescriptor);
         result.add(enabledDescriptor);
         result.add(blendModeDescriptor);
+        result.add(timeScaleProviderDescriptor);
 
         return result;
     }
@@ -242,4 +259,13 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected void generateSavedContentInternal(Map<String, Object> savedContent) {
         savedContent.put("backingFile", backingSource.getBackingFile());
     }
+
+    @Override
+    public TimelineInterval getInterval() {
+        TimelineInterval originalInterval = this.interval;
+        TimelinePosition originalStartPosition = originalInterval.getStartPosition();
+        BigDecimal newArea = timeScaleProvider.integrate(renderOffset.toPosition(), originalInterval.getLength().toPosition());
+        return new TimelineInterval(originalStartPosition, originalStartPosition.add(newArea));
+    }
+
 }
