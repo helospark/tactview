@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.proceduralclip.text;
 
+import java.awt.BasicStroke;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Font;
@@ -7,6 +8,10 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,7 +47,10 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 public class TextProceduralClip extends ProceduralVisualClip {
     private StringProvider textProvider;
     private IntegerProvider sizeProvider;
+    private DoubleProvider lineHeightMultiplierProvider;
     private ColorProvider colorProvider;
+    private ColorProvider outlineColorProvider;
+    private DoubleProvider outlineWidthProvider;
     private ValueListProvider<ValueListElement> fontProvider;
     private ValueListProvider<ValueListElement> alignmentProvider;
     private BooleanProvider italicProvider;
@@ -80,9 +88,10 @@ public class TextProceduralClip extends ProceduralVisualClip {
 
         double maxWidth = 0;
         double totalHeight = 0;
+        float lineHeightMultiplier = lineHeightMultiplierProvider.getValueAt(relativePosition).floatValue();
         for (var line : lines) {
             double lineWidth = fontMetrics.getStringBounds(line, null).getWidth();
-            totalHeight += getLineHeight(font, fontMetrics);
+            totalHeight += getLineHeight(font, fontMetrics, lineHeightMultiplier);
             if (lineWidth > maxWidth) {
                 maxWidth = lineWidth;
             }
@@ -94,22 +103,51 @@ public class TextProceduralClip extends ProceduralVisualClip {
         graphics.setColor(new Color((float) color.red, (float) color.green, (float) color.blue));
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         List<Double> alignments = findXAlignmentsForLines(lines, alignmentElement.getId(), fontMetrics);
 
         fontMetrics.stringWidth(currentText);
 
-        float yPosition = fontMetrics.getHeight();
+        double outlineWidth = outlineWidthProvider.getValueAt(relativePosition) * request.getScale();
+        var outlineColor = outlineColorProvider.getValueAt(relativePosition);
+
+        float yPosition = fontMetrics.getHeight() * lineHeightMultiplier;
         for (int i = 0; i < lines.size(); ++i) {
-            graphics.drawString(lines.get(i), alignments.get(i).floatValue(), yPosition);
-            yPosition += getLineHeight(font, fontMetrics);
+            String stringToPrint = lines.get(i);
+            float xPosition = alignments.get(i).floatValue();
+            drawString(graphics, stringToPrint, xPosition, yPosition, outlineWidth, outlineColor, color);
+            yPosition += getLineHeight(font, fontMetrics, lineHeightMultiplier);
         }
 
         return bufferedImageToClipFrameResultConverter.convertFromAbgr(bufferedImage);
     }
 
-    private float getLineHeight(Font font, FontMetrics fontMetrics) {
-        return fontMetrics.getLeading() + fontMetrics.getDescent() + font.getSize2D();
+    private void drawString(Graphics2D graphics, String stringToPrint, float xPosition, float yPosition, double outlineWidth,
+            com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color outlineColor, com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color textColor) {
+        AffineTransform original = graphics.getTransform();
+        AffineTransform transform = new AffineTransform();
+        transform.translate(xPosition, yPosition);
+        graphics.setTransform(transform);
+
+        FontRenderContext frc = graphics.getFontRenderContext();
+        TextLayout tl = new TextLayout(stringToPrint, graphics.getFont(), frc);
+        Shape shape = tl.getOutline(null);
+
+        if (outlineWidth > 0) {
+            graphics.setColor(new Color((float) outlineColor.red, (float) outlineColor.green, (float) outlineColor.blue));
+            graphics.setStroke(new BasicStroke((float) outlineWidth));
+            graphics.draw(shape);
+        }
+        graphics.setColor(new Color((float) textColor.red, (float) textColor.green, (float) textColor.blue));
+        graphics.setTransform(original);
+
+        graphics.drawString(stringToPrint, xPosition, yPosition);
+    }
+
+    private float getLineHeight(Font font, FontMetrics fontMetrics, float lineHeightMultiplier) {
+        return (fontMetrics.getLeading() + fontMetrics.getDescent() + font.getSize2D()) * lineHeightMultiplier;
     }
 
     private FontMetrics getFontMetrics(Font font) {
@@ -165,7 +203,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
         super.initializeValueProvider();
 
         textProvider = new StringProvider(new StepStringInterpolator());
-        sizeProvider = new IntegerProvider(0, 500, new MultiKeyframeBasedDoubleInterpolator(100.0));
+        sizeProvider = new IntegerProvider(0, 700, new MultiKeyframeBasedDoubleInterpolator(250.0));
         sizeProvider.setScaleDependent();
         colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
@@ -174,6 +212,9 @@ public class TextProceduralClip extends ProceduralVisualClip {
         alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StepStringInterpolator("center"));
         italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
         boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
+        lineHeightMultiplierProvider = new DoubleProvider(0.0, 10.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        outlineWidthProvider = new DoubleProvider(0.0, 100.0, new MultiKeyframeBasedDoubleInterpolator(0.0));
+        outlineColorProvider = ColorProvider.fromDefaultValue(0.0, 0.0, 0.0);
     }
 
     @Override
@@ -187,35 +228,59 @@ public class TextProceduralClip extends ProceduralVisualClip {
         ValueProviderDescriptor sizeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(sizeProvider)
                 .withName("Size")
+                .withGroup("font")
                 .build();
         ValueProviderDescriptor colorDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(colorProvider)
                 .withName("color")
+                .withGroup("font")
                 .build();
         ValueProviderDescriptor fontDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(fontProvider)
                 .withName("font")
+                .withGroup("font")
+                .build();
+        ValueProviderDescriptor lineHeightMultiplierDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(lineHeightMultiplierProvider)
+                .withName("line height multiplier")
+                .withGroup("multiline")
                 .build();
         ValueProviderDescriptor alignmentDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(alignmentProvider)
                 .withName("alignment")
+                .withGroup("multiline")
                 .build();
         ValueProviderDescriptor boldDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(boldProvider)
                 .withName("bold")
+                .withGroup("font")
                 .build();
         ValueProviderDescriptor italicDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(italicProvider)
                 .withName("italic")
+                .withGroup("font")
+                .build();
+        ValueProviderDescriptor outlineWidthProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(outlineWidthProvider)
+                .withName("outline width")
+                .withGroup("outline")
+                .build();
+        ValueProviderDescriptor outlineColorProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(outlineColorProvider)
+                .withName("outline color")
+                .withGroup("outline")
                 .build();
 
         result.add(textDescriptor);
         result.add(sizeDescriptor);
-        result.add(alignmentDescriptor);
         result.add(colorDescriptor);
         result.add(fontDescriptor);
         result.add(boldDescriptor);
         result.add(italicDescriptor);
+        result.add(lineHeightMultiplierDescriptor);
+        result.add(alignmentDescriptor);
+        result.add(outlineWidthProviderDescriptor);
+        result.add(outlineColorProviderDescriptor);
 
         return result;
     }

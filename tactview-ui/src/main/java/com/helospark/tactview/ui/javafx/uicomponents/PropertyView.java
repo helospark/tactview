@@ -198,6 +198,9 @@ public class PropertyView {
             }
             addElement(currentDescriptor, result, indexToAddNewNode, gridToAddNewNode);
         }
+        if (currentPropertyGroup != null) {
+            grid.add(currentPropertyGroup.createdTitledPane, 0, globalGridIndex++, 2, 1);
+        }
         return result.build();
     }
 

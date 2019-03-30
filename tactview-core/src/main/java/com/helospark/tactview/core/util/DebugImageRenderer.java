@@ -32,4 +32,15 @@ public class DebugImageRenderer {
         render(image.getBuffer(), image.getWidth(), image.getHeight());
     }
 
+    public static void render(BufferedImage image) {
+        try {
+            String filename = "/tmp/debug_" + System.currentTimeMillis();
+            File outputfile = new File(filename);
+            ImageIO.write(image, "png", outputfile);
+            System.out.println(filename);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
