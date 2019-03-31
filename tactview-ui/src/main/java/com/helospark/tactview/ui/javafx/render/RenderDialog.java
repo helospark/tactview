@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.joda.time.Period;
+import org.joda.time.format.PeriodFormat;
+
 import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.render.RenderService;
@@ -29,6 +32,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -85,8 +90,14 @@ public class RenderDialog {
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress(0);
         progressBar.prefWidthProperty().bind(dialog.widthProperty());
-        GridPane.setColumnSpan(progressBar, 2);
-        gridPane.add(progressBar, 0, linePosition++);
+
+        Text progressText = new Text();
+
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().addAll(progressBar, progressText);
+
+        GridPane.setColumnSpan(stackPane, 2);
+        gridPane.add(stackPane, 0, linePosition++);
 
         borderPane.setCenter(gridPane);
 
@@ -126,7 +137,12 @@ public class RenderDialog {
 
             ProgressAdvancer progressAdvancer = new ProgressAdvancer(messagingService, id);
             stage.setTitle("Rendering inprogress...");
-            progressAdvancer.updateProgress(progress -> progressBar.setProgress(progress), () -> {
+            progressAdvancer.updateProgress(info -> {
+                progressBar.setProgress(info.percent);
+                String formattedRemaining = PeriodFormat.getDefault().print(new Period(info.expectedMilliseconds).withMillis(0));
+
+                progressText.setText(String.format("%d%% (remaining: %s, fps: %.3f)", (int) (info.percent * 100.0), formattedRemaining, info.jobsPerSecond));
+            }, () -> {
                 stage.close();
             });
 
