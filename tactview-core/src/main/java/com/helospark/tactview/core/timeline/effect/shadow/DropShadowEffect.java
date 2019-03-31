@@ -131,8 +131,8 @@ public class DropShadowEffect extends StatelessVideoEffect {
         shadowBlurYProvider = new DoubleProvider(1, 100, new MultiKeyframeBasedDoubleInterpolator(40.0));
         shadowMultiplierProvider = new DoubleProvider(0.1, 3, new MultiKeyframeBasedDoubleInterpolator(1.5));
 
-        shiftXProvider = new DoubleProvider(1, 300, new MultiKeyframeBasedDoubleInterpolator(20.0));
-        shiftYProvider = new DoubleProvider(1, 300, new MultiKeyframeBasedDoubleInterpolator(20.0));
+        shiftXProvider = new DoubleProvider(-300, 300, new MultiKeyframeBasedDoubleInterpolator(20.0));
+        shiftYProvider = new DoubleProvider(-300, 300, new MultiKeyframeBasedDoubleInterpolator(20.0));
         maximumAlphaProvider = new DoubleProvider(0, 1, new MultiKeyframeBasedDoubleInterpolator(0.7));
         shadowColorProvider = createColorProvider(0, 0, 0);
     }

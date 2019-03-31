@@ -3,8 +3,15 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.StatelessEffect;
+import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
 import com.helospark.tactview.ui.javafx.effect.EffectContextMenuFactory;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
@@ -23,6 +30,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectAddedListener {
+    private static final int LAYOUT_FIXER_HACK = 7; // TODO!!! mouseMove and mouseDrag returns different values
     private static final int DRAG_PIXEL_DISTANCE = 10;
     public static final int EFFECTS_OFFSET = 50;
     public static final int EFFECT_HEIGHT = 30;
@@ -32,17 +40,23 @@ public class EffectAddedListener {
     private DragRepository dragRepository;
     private NameToIdRepository nameToIdRepository;
     private EffectContextMenuFactory effectContextMenuFactory;
+    private TimelineManagerAccessor timelineManagerAccessor;
+    private UiCommandInterpreterService commandInterpreterService;
 
     public EffectAddedListener(UiMessagingService messagingService, TimelineState timelineState, SelectedNodeRepository selectedNodeRepository,
             DragRepository dragRepository,
             EffectDragAdder effectDragAdder, NameToIdRepository nameToIdRepository,
-            EffectContextMenuFactory effectContextMenuFactory) {
+            EffectContextMenuFactory effectContextMenuFactory,
+            TimelineManagerAccessor timelineManagerAccessor,
+            UiCommandInterpreterService commandInterpreterService) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.selectedNodeRepository = selectedNodeRepository;
         this.dragRepository = dragRepository;
         this.nameToIdRepository = nameToIdRepository;
         this.effectContextMenuFactory = effectContextMenuFactory;
+        this.timelineManagerAccessor = timelineManagerAccessor;
+        this.commandInterpreterService = commandInterpreterService;
     }
 
     @PostConstruct
@@ -67,7 +81,11 @@ public class EffectAddedListener {
         rectangle.getStyleClass().add("timeline-effect");
 
         rectangle.setOnMouseClicked(event -> {
-            selectedNodeRepository.setOnlySelectedEffect(rectangle);
+            if (event.getClickCount() == 1) {
+                selectedNodeRepository.setOnlySelectedEffect(rectangle);
+            } else {
+                extendClipToClipSize(effectAddedMessage.getClipId(), effectAddedMessage.getEffect());
+            }
         });
 
         rectangle.setOnDragDetected(event -> {
@@ -76,8 +94,10 @@ public class EffectAddedListener {
             double currentX = event.getX();
             EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
                     event.getX());
-            if (isResizing(rectangle, currentX)) {
-                DragDirection dragDirection = isDraggingLeft(rectangle, currentX) ? DragDirection.LEFT : DragDirection.RIGHT;
+            boolean isResizing = isResizing(rectangle, currentX - LAYOUT_FIXER_HACK) || isResizing(rectangle, currentX + LAYOUT_FIXER_HACK);
+            //            System.out.println("IS RESIZING=" + isResizing + " " + currentX);
+            if (isResizing) {
+                DragDirection dragDirection = isDraggingLeft(rectangle, currentX - LAYOUT_FIXER_HACK) ? DragDirection.LEFT : DragDirection.RIGHT;
                 System.out.println("DragDirection: " + dragDirection);
                 dragRepository.onEffectResized(dragInformation, dragDirection);
                 content.putString("effectresized");
@@ -90,7 +110,9 @@ public class EffectAddedListener {
 
         rectangle.setOnMouseMoved(event -> {
             double currentX = event.getX();
-            if (isResizing(rectangle, currentX)) {
+            boolean isResizing = isResizing(rectangle, currentX);
+            //            System.out.println("Move IS_RESIZING=" + isResizing + " " + currentX);
+            if (isResizing) {
                 rectangle.setCursor(Cursor.H_RESIZE);
             } else {
                 rectangle.setCursor(Cursor.HAND);
@@ -103,6 +125,36 @@ public class EffectAddedListener {
         });
 
         return rectangle;
+    }
+
+    private void extendClipToClipSize(String clipId, StatelessEffect statelessEffect) {
+        TimelineClip clip = timelineManagerAccessor.findClipById(clipId).get();
+
+        EffectResizedCommand moveLeft = EffectResizedCommand.builder()
+                .withEffectId(statelessEffect.getId())
+                .withLeft(true)
+                .withMoreResizeExpected(false)
+                .withGlobalPosition(TimelinePosition.ofZero())
+                .withRevertable(true)
+                .withTimelineManager(timelineManagerAccessor)
+                .withUseSpecialPoints(false)
+                .build();
+
+        TimelinePosition clipLength = clip.getInterval().getEndPosition().from(clip.getInterval().getStartPosition());
+
+        EffectResizedCommand moveRight = EffectResizedCommand.builder()
+                .withEffectId(statelessEffect.getId())
+                .withLeft(false)
+                .withMoreResizeExpected(false)
+                .withGlobalPosition(clipLength)
+                .withRevertable(true)
+                .withTimelineManager(timelineManagerAccessor)
+                .withUseSpecialPoints(false)
+                .build();
+
+        CompositeCommand compositeCommand = new CompositeCommand(moveLeft, moveRight);
+
+        commandInterpreterService.sendWithResult(compositeCommand);
     }
 
     private boolean isResizing(Rectangle rectangle, double currentX) {
