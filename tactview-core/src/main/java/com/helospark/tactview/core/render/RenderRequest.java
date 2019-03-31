@@ -19,6 +19,7 @@ public class RenderRequest {
     private int fps;
     private int width;
     private int height;
+    private BigDecimal upscale;
     private String fileName;
     private Map<String, OptionProvider<?>> options;
     private Supplier<Boolean> isCancelledSupplier;
@@ -31,6 +32,7 @@ public class RenderRequest {
         this.fps = builder.fps;
         this.width = builder.width;
         this.height = builder.height;
+        this.upscale = builder.upscale;
         this.fileName = builder.fileName;
         this.options = builder.options;
         this.isCancelledSupplier = builder.isCancelledSupplier;
@@ -68,6 +70,10 @@ public class RenderRequest {
         return fps;
     }
 
+    public BigDecimal getUpscale() {
+        return upscale;
+    }
+
     public Map<String, OptionProvider<?>> getOptions() {
         return options;
     }
@@ -89,6 +95,7 @@ public class RenderRequest {
         private int fps;
         private int width;
         private int height;
+        private BigDecimal upscale;
         private String fileName;
         private Map<String, OptionProvider<?>> options = Collections.emptyMap();
         private Supplier<Boolean> isCancelledSupplier;
@@ -123,6 +130,11 @@ public class RenderRequest {
 
         public Builder withHeight(int height) {
             this.height = height;
+            return this;
+        }
+
+        public Builder withUpscale(BigDecimal upscale) {
+            this.upscale = upscale;
             return this;
         }
 

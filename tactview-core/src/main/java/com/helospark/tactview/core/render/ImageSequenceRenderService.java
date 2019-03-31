@@ -22,6 +22,7 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -37,8 +38,9 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
     private ByteBufferToImageConverter byteBufferToImageConverter;
 
-    public ImageSequenceRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService) {
-        super(timelineManager, messagingService);
+    public ImageSequenceRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService,
+            ScaleService scaleService) {
+        super(timelineManager, messagingService, scaleService);
         this.byteBufferToImageConverter = byteBufferToImageConverter;
     }
 
