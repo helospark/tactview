@@ -8,7 +8,7 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.AddClipRequest;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -28,10 +28,10 @@ public class ProceduralClipTabFactory extends AbstractSearchableTabFactory {
     private DraggableIconFactory iconFactory;
     private LocalizedDetailRepository localizedDetailRepository;
     private UiCommandInterpreterService commandInterpreter;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     public ProceduralClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepository localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
-            TimelineManager timelineManager) {
+            TimelineManagerAccessor timelineManager) {
         super("video clips", "clip-view");
         this.lightDi = lightDi;
         this.iconFactory = iconFactory;

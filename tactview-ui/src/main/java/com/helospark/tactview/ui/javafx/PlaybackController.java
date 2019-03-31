@@ -6,8 +6,8 @@ import java.math.BigDecimal;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
-import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
@@ -20,14 +20,14 @@ public class PlaybackController {
     public static final int CHANNELS = 2;
     public static final int FREQUENCY = 44100;
     public static final int BYTES = 2;
-    private TimelineManager timelineManager;
+    private TimelineManagerRenderService timelineManager;
     private UiProjectRepository uiProjectRepository;
     private ProjectRepository projectRepository;
     private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
     private JavaByteArrayConverter javaByteArrayConverter;
     private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
 
-    public PlaybackController(TimelineManager timelineManager, UiProjectRepository uiProjectRepository, ProjectRepository projectRepository,
+    public PlaybackController(TimelineManagerRenderService timelineManager, UiProjectRepository uiProjectRepository, ProjectRepository projectRepository,
             ByteBufferToJavaFxImageConverter byteBufferToImageConverter, JavaByteArrayConverter javaByteArrayConverter,
             UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
         this.timelineManager = timelineManager;

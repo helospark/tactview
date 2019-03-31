@@ -1,11 +1,11 @@
 package com.helospark.tactview.ui.javafx.commands.impl;
 
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class MoveEffectToChannelCommand implements UiCommand {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     private String effectId;
     private int newChannelIndex;
@@ -13,7 +13,7 @@ public class MoveEffectToChannelCommand implements UiCommand {
     private int originalChannelIndex;
     private TimelineClip clip;
 
-    public MoveEffectToChannelCommand(TimelineManager timelineManager, String effectId, int newChannelIndex) {
+    public MoveEffectToChannelCommand(TimelineManagerAccessor timelineManager, String effectId, int newChannelIndex) {
         this.timelineManager = timelineManager;
         this.effectId = effectId;
         this.newChannelIndex = newChannelIndex;

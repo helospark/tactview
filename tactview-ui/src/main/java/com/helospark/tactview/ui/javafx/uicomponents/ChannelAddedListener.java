@@ -6,7 +6,7 @@ import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
@@ -29,10 +29,10 @@ public class ChannelAddedListener {
     private TimelineDragAndDropHandler timelineDragAndDropHandler;
     private NameToIdRepository nameToIdRepository;
     private UiCommandInterpreterService commandInterpreterService;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     public ChannelAddedListener(UiMessagingService messagingService, TimelineState timelineState, TimelineDragAndDropHandler timelineDragAndDropHandler, NameToIdRepository nameToIdRepository,
-            UiCommandInterpreterService commandInterpreterService, TimelineManager timelineManager) {
+            UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.timelineDragAndDropHandler = timelineDragAndDropHandler;

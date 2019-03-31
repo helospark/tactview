@@ -1,7 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddEffectCommand;
@@ -13,12 +13,12 @@ import javafx.scene.input.Dragboard;
 
 @Component
 public class EffectDragAdder {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private DragRepository dragRepository;
 
-    public EffectDragAdder(TimelineManager timelineManager, TimelineState timelineState, UiCommandInterpreterService commandInterpreter, DragRepository dragRepository) {
+    public EffectDragAdder(TimelineManagerAccessor timelineManager, TimelineState timelineState, UiCommandInterpreterService commandInterpreter, DragRepository dragRepository) {
         this.timelineManager = timelineManager;
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;

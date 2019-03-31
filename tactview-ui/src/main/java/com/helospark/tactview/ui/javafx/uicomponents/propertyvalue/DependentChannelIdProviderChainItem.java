@@ -1,7 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentChannelIdProvider;
@@ -21,13 +21,13 @@ import javafx.scene.layout.HBox;
 public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueSetterChainItem<DependentChannelIdProvider> {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private NameToIdRepository nameToIdRepository;
     private UiTimelineManager uiTimelineManager;
     private ContextMenuAppender contextMenuAppender;
 
     public DependentChannelIdProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
-            TimelineManager timelineManager, NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
+            TimelineManagerAccessor timelineManager, NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(DependentChannelIdProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;

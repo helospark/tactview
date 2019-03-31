@@ -13,8 +13,9 @@ import com.helospark.tactview.core.it.util.IntegrationTestUtil;
 import com.helospark.tactview.core.it.util.parameterresolver.DownloadedResourceName;
 import com.helospark.tactview.core.it.util.parameterresolver.TestResourceParameterResolver;
 import com.helospark.tactview.core.it.util.ui.FakeUi;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -25,13 +26,15 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 public class ClipLoadIT {
     private LightDiContext lightDi;
     private FakeUi fakeUi;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
+    private TimelineManagerRenderService timelineManagerRenderService;
 
     @BeforeEach
     public void init() {
         lightDi = IntegrationTestUtil.startContext();
         fakeUi = lightDi.getBean(FakeUi.class);
-        timelineManager = lightDi.getBean(TimelineManager.class);
+        timelineManager = lightDi.getBean(TimelineManagerAccessor.class);
+        timelineManagerRenderService = lightDi.getBean(TimelineManagerRenderService.class);
     }
 
     @AfterEach
@@ -91,7 +94,7 @@ public class ClipLoadIT {
         IntegrationTestUtil.assertFrameEquals(imageFrame, expected, "Video frames not equal");
     }
 
-    private ReadOnlyClipImage getFrame(TimelineManager timelineManager, VisualMediaMetadata metadata, double scale, TimelinePosition timelinePosition) {
+    private ReadOnlyClipImage getFrame(TimelineManagerAccessor timelineManager, VisualMediaMetadata metadata, double scale, TimelinePosition timelinePosition) {
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
                 .withNeedSound(false)
                 .withPosition(timelinePosition)
@@ -99,7 +102,7 @@ public class ClipLoadIT {
                 .withPreviewHeight((int) (scale * metadata.getHeight()))
                 .withScale(scale)
                 .build();
-        var frame = timelineManager.getFrame(frameRequest);
+        var frame = timelineManagerRenderService.getFrame(frameRequest);
 
         ReadOnlyClipImage videoFrame = frame.getVideoResult();
         return videoFrame;

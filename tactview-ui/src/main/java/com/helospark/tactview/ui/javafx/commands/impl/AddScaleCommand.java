@@ -5,7 +5,7 @@ import javax.annotation.Generated;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClipType;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class AddScaleCommand implements UiCommand {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private EffectFactory scaleEffectFactory;
     private ProjectRepository projectRepository;
 
@@ -59,7 +59,7 @@ public class AddScaleCommand implements UiCommand {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private TimelineManager timelineManager;
+        private TimelineManagerAccessor timelineManager;
         private EffectFactory scaleEffectFactory;
         private ProjectRepository projectRepository;
         private String clipId;
@@ -67,7 +67,7 @@ public class AddScaleCommand implements UiCommand {
         private Builder() {
         }
 
-        public Builder withTimelineManager(TimelineManager timelineManager) {
+        public Builder withTimelineManager(TimelineManagerAccessor timelineManager) {
             this.timelineManager = timelineManager;
             return this;
         }

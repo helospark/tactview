@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -34,7 +34,7 @@ import javafx.scene.layout.Pane;
 public class TimelineDragAndDropHandler {
     private static final KeyCode SPECIAL_POSITION_DISABLE_KEY = KeyCode.ALT; // TODO: make switchable
     private static final int MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS = 30;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineState timelineState;
     private DragRepository dragRepository;
@@ -46,7 +46,7 @@ public class TimelineDragAndDropHandler {
 
     private boolean isLoadingInprogress = false;
 
-    public TimelineDragAndDropHandler(TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
+    public TimelineDragAndDropHandler(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
             DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;

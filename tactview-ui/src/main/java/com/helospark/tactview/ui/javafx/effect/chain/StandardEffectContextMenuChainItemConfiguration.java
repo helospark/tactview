@@ -5,7 +5,7 @@ import java.util.function.Function;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.MoveEffectToChannelCommand;
@@ -18,7 +18,7 @@ public class StandardEffectContextMenuChainItemConfiguration {
 
     @Bean
     @Order(90)
-    public EffectContextMenuChainItem moveUpItem(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager) {
+    public EffectContextMenuChainItem moveUpItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager) {
         return alwaysSupportedContextMenuItem(request -> {
             MenuItem moveUpClip = new MenuItem("Move up");
             int index = timelineManager.findEffectChannel(request.getEffect().getId());
@@ -34,7 +34,7 @@ public class StandardEffectContextMenuChainItemConfiguration {
 
     @Bean
     @Order(91)
-    public EffectContextMenuChainItem moveDownItem(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager) {
+    public EffectContextMenuChainItem moveDownItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager) {
         return alwaysSupportedContextMenuItem(request -> {
             MenuItem moveDownClip = new MenuItem("Move down");
             int index = timelineManager.findEffectChannel(request.getEffect().getId());

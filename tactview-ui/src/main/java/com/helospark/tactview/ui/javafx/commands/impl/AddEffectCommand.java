@@ -1,7 +1,7 @@
 package com.helospark.tactview.ui.javafx.commands.impl;
 
 import com.helospark.tactview.core.timeline.StatelessEffect;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
@@ -10,11 +10,11 @@ public class AddEffectCommand implements UiCommand {
     private final String effectId;
     private final TimelinePosition position;
 
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     private String addedEffectId;
 
-    public AddEffectCommand(String clipId, String effectId, TimelinePosition position, TimelineManager timelineManager) {
+    public AddEffectCommand(String clipId, String effectId, TimelinePosition position, TimelineManagerAccessor timelineManager) {
         this.clipId = clipId;
         this.effectId = effectId;
         this.position = position;

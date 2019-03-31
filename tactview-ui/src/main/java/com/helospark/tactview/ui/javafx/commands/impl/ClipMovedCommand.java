@@ -7,7 +7,7 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.MoveClipRequest;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
@@ -23,7 +23,7 @@ public class ClipMovedCommand implements UiCommand {
     private TimelinePosition newPosition;
     private TimelinePosition previousPosition;
 
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     private boolean enableJumpingToSpecialPosition;
     private TimelineLength maximumJumpLength;
@@ -97,7 +97,7 @@ public class ClipMovedCommand implements UiCommand {
         private String newChannelId;
         private TimelinePosition newPosition;
         private TimelinePosition previousPosition;
-        private TimelineManager timelineManager;
+        private TimelineManagerAccessor timelineManager;
         private boolean enableJumpingToSpecialPosition;
         private boolean moreMoveExpected;
         private TimelineLength maximumJumpLength;
@@ -140,7 +140,7 @@ public class ClipMovedCommand implements UiCommand {
             return this;
         }
 
-        public Builder withTimelineManager(TimelineManager timelineManager) {
+        public Builder withTimelineManager(TimelineManagerAccessor timelineManager) {
             this.timelineManager = timelineManager;
             return this;
         }

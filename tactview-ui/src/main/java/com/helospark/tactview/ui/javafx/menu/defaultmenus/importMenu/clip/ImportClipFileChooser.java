@@ -4,7 +4,7 @@ import java.io.File;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AddClipRequest;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -16,10 +16,10 @@ import javafx.stage.FileChooser;
 
 @Component
 public class ImportClipFileChooser {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private UiCommandInterpreterService commandInterpreterService;
 
-    public ImportClipFileChooser(TimelineManager timelineManager, UiCommandInterpreterService commandInterpreterService) {
+    public ImportClipFileChooser(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService) {
         this.timelineManager = timelineManager;
         this.commandInterpreterService = commandInterpreterService;
     }

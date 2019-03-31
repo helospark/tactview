@@ -1,17 +1,17 @@
 package com.helospark.tactview.ui.javafx.commands.impl;
 
 import com.helospark.tactview.core.timeline.TimelineChannel;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class CreateChannelCommand implements UiCommand {
     public static final int LAST_INDEX = -1;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private int index;
 
     private String channelId;
 
-    public CreateChannelCommand(TimelineManager timelineManager, int index) {
+    public CreateChannelCommand(TimelineManagerAccessor timelineManager, int index) {
         this.timelineManager = timelineManager;
         this.index = index;
     }

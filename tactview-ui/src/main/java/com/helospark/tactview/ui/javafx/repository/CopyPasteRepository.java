@@ -7,7 +7,7 @@ import com.helospark.tactview.core.timeline.AddExistingEffectRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddExistingClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.AddExistingEffectCommand;
@@ -16,12 +16,12 @@ import com.helospark.tactview.ui.javafx.repository.copypaste.EffectCopyPasteDoma
 
 @Component
 public class CopyPasteRepository {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private UiCommandInterpreterService commandInterpreter;
 
     private Object clipboardContent;
 
-    public CopyPasteRepository(TimelineManager timelineManager, UiCommandInterpreterService commandInterpreter) {
+    public CopyPasteRepository(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreter) {
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
     }

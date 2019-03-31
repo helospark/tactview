@@ -7,7 +7,7 @@ import java.util.Map;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
 
 import javafx.scene.Node;
@@ -17,12 +17,12 @@ import javafx.scene.layout.GridPane;
 
 @Component
 public class DetailsGridChain {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private LocalizedDetailRepository localizedDetailRepository;
     private List<ClipDetailGridChainElement> clipDetailChainElements;
     private List<EffectDetailGridChainElement> effectDetailChainElements;
 
-    public DetailsGridChain(TimelineManager timelineManager, LocalizedDetailRepository localizedDetailRepository,
+    public DetailsGridChain(TimelineManagerAccessor timelineManager, LocalizedDetailRepository localizedDetailRepository,
             List<ClipDetailGridChainElement> chainElements, List<EffectDetailGridChainElement> effectDetailChainElements) {
         this.timelineManager = timelineManager;
         this.localizedDetailRepository = localizedDetailRepository;

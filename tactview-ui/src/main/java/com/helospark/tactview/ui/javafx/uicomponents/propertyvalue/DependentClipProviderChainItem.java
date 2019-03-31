@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
@@ -34,7 +34,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
     private static final int IMAGE_PREVIEW_SIZE = 35;
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private ByteBufferToJavaFxImageConverter imageConverter;
     private UiProjectRepository uiProjectRepository;
     private NameToIdRepository nameToIdRepository;
@@ -44,7 +44,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
     private Image noLayerMaskImage;
 
     public DependentClipProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
-            TimelineManager timelineManager, ByteBufferToJavaFxImageConverter imageConverter, UiProjectRepository uiProjectRepository,
+            TimelineManagerAccessor timelineManager, ByteBufferToJavaFxImageConverter imageConverter, UiProjectRepository uiProjectRepository,
             NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(DependentClipProvider.class);
         this.commandInterpreter = commandInterpreter;

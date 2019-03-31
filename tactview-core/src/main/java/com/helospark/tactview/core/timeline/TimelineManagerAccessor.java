@@ -1,8 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,29 +8,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
-import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
-import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
-import com.helospark.tactview.core.timeline.framemerge.RenderFrameData;
-import com.helospark.tactview.core.timeline.image.ClipImage;
-import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelSettingUpdatedMessage;
@@ -47,19 +33,12 @@ import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
-import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
-public class TimelineManager implements SaveLoadContributor {
-    private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    private Object fullLock = new Object();
-
-    // state
-    private List<StatelessVideoEffect> globalEffects;
-    private CopyOnWriteArrayList<TimelineChannel> channels = new CopyOnWriteArrayList<>();
+public class TimelineManagerAccessor implements SaveLoadContributor {
 
     @Slf4j
     private Logger logger;
@@ -67,24 +46,17 @@ public class TimelineManager implements SaveLoadContributor {
     // stateless
     private MessagingService messagingService;
     private ClipFactoryChain clipFactoryChain;
-    private FrameBufferMerger frameBufferMerger;
-    private AudioBufferMerger audioBufferMerger;
-    private ProjectRepository projectRepository;
     private EffectFactoryChain effectFactoryChain;
     private LinkClipRepository linkClipRepository;
-    private FrameExtender frameExtender;
+    private TimelineChannelsState timelineChannelsState;
 
-    public TimelineManager(FrameBufferMerger frameBufferMerger,
-            EffectFactoryChain effectFactoryChain, MessagingService messagingService, ClipFactoryChain clipFactoryChain,
-            AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository, LinkClipRepository linkClipRepository, FrameExtender frameExtender) {
-        this.effectFactoryChain = effectFactoryChain;
+    public TimelineManagerAccessor(MessagingService messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
+            TimelineChannelsState timelineChannelsState) {
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
-        this.frameBufferMerger = frameBufferMerger;
-        this.audioBufferMerger = audioBufferMerger;
-        this.projectRepository = projectRepository;
+        this.effectFactoryChain = effectFactoryChain;
         this.linkClipRepository = linkClipRepository;
-        this.frameExtender = frameExtender;
+        this.timelineChannelsState = timelineChannelsState;
     }
 
     public TimelineClip addClip(AddClipRequest request) {
@@ -94,13 +66,13 @@ public class TimelineManager implements SaveLoadContributor {
         Integer channelIndex = findChannelIndex(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
         for (var clip : clips) {
             linkClipRepository.linkClips(clip.getId(), clips);
-            if (channelIndex >= channels.size()) {
+            if (channelIndex >= timelineChannelsState.channels.size()) {
                 createChannel(channelIndex);
             }
-            if (!channels.get(channelIndex).canAddResourceAt(clip.getInterval().getStartPosition(), clip.getInterval().getLength())) {
+            if (!timelineChannelsState.channels.get(channelIndex).canAddResourceAt(clip.getInterval().getStartPosition(), clip.getInterval().getLength())) {
                 createChannel(channelIndex);
             }
-            TimelineChannel channelToAddResourceTo = channels.get(channelIndex);
+            TimelineChannel channelToAddResourceTo = timelineChannelsState.channels.get(channelIndex);
             addClip(channelToAddResourceTo, clip);
             ++channelIndex;
         }
@@ -128,248 +100,10 @@ public class TimelineManager implements SaveLoadContributor {
 
     }
 
-    private Optional<TimelineChannel> findChannelWithId(String channelId) {
-        return channels.stream()
+    public Optional<TimelineChannel> findChannelWithId(String channelId) {
+        return timelineChannelsState.channels.stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findFirst();
-    }
-
-    public AudioVideoFragment getFrame(TimelineManagerFramesRequest request) {
-        List<TimelineClip> allClips = channels
-                .stream()
-                .map(channel -> channel.getDataAt(request.getPosition()))
-                .flatMap(Optional::stream)
-                .collect(Collectors.toList());
-
-        Map<String, TimelineClip> clipsToRender = allClips
-                .stream()
-                .collect(Collectors.toMap(a -> a.getId(), a -> a));
-
-        List<String> renderOrder = allClips.stream()
-                .filter(a -> a.isEnabled(request.getPosition()))
-                .map(a -> a.getId())
-                .collect(Collectors.toList());
-
-        List<TreeNode> tree = buildRenderTree(clipsToRender, request.getPosition());
-
-        List<List<TimelineClip>> layers = new ArrayList<>();
-        recursiveLayering(tree, 0, layers);
-
-        Map<String, RenderFrameData> clipsToFrames = new ConcurrentHashMap<>();
-        Map<String, AudioFrameResult> audioToFrames = new ConcurrentHashMap<>();
-
-        for (int i = 0; i < layers.size(); ++i) {
-            List<CompletableFuture<Void>> futures = new ArrayList<>();
-            for (var clip : layers.get(i)) {
-                if (clip instanceof VisualTimelineClip && request.isNeedVideo()) { // TODO: rest later
-                    VisualTimelineClip visualClip = (VisualTimelineClip) clip;
-
-                    futures.add(CompletableFuture.supplyAsync(() -> {
-                        Map<String, ReadOnlyClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
-                                .stream()
-                                .filter(a -> clipsToFrames.containsKey(a))
-                                .map(a -> clipsToFrames.get(a))
-                                .collect(Collectors.toMap(a -> a.id, a -> a.clipFrameResult));
-                        Map<String, ReadOnlyClipImage> channelCopiedClips = visualClip.getChannelDependency(request.getPosition())
-                                .stream()
-                                .flatMap(channelId -> findChannelWithId(channelId).stream())
-                                .flatMap(channel -> channel.getDataAt(request.getPosition()).stream())
-                                .filter(a -> clipsToFrames.containsKey(a.getId()))
-                                .map(a -> clipsToFrames.get(a.getId()))
-                                .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult));
-
-                        GetFrameRequest frameRequest = GetFrameRequest.builder()
-                                .withScale(request.getScale())
-                                .withPosition(request.getPosition())
-                                .withExpectedWidth(request.getPreviewWidth())
-                                .withExpectedHeight(request.getPreviewHeight())
-                                .withApplyEffects(true)
-                                .withRequestedClips(requiredClips)
-                                .withRequestedChannelClips(channelCopiedClips)
-                                .build();
-
-                        ReadOnlyClipImage frameResult = visualClip.getFrame(frameRequest);
-                        ReadOnlyClipImage expandedFrame = expandFrame(request, visualClip, frameResult);
-
-                        BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
-                        double alpha = visualClip.getAlpha(request.getPosition());
-
-                        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
-
-                        String channelId = findChannelForClipId(visualClip.getId()).get().getId();
-                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame, clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class),
-                                channelId);
-                    }, executorService).thenAccept(a -> {
-                        clipsToFrames.put(visualClip.getId(), a);
-                    }).exceptionally(e -> {
-                        logger.error("Unable to render", e);
-                        return null;
-                    }));
-                } else if (clip instanceof AudibleTimelineClip && request.isNeedSound()) {
-                    AudibleTimelineClip audibleClip = (AudibleTimelineClip) clip;
-
-                    futures.add(CompletableFuture.supplyAsync(() -> {
-                        AudioRequest audioRequest = AudioRequest.builder()
-                                .withApplyEffects(true)
-                                .withPosition(request.getPosition())
-                                .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 100, RoundingMode.HALF_DOWN)))
-                                .build();
-
-                        return audibleClip.requestAudioFrame(audioRequest);
-
-                    }, executorService).exceptionally(e -> {
-                        logger.error("Unable to get audio", e);
-                        return null;
-                    }).thenAccept(a -> {
-                        audioToFrames.put(audibleClip.getId(), a);
-                    }));
-
-                }
-            }
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
-        }
-
-        ReadOnlyClipImage finalImage = renderVideo(request, renderOrder, clipsToFrames);
-        AudioFrameResult audioBuffer = renderAudio(renderOrder, audioToFrames);
-
-        clipsToFrames.values()
-                .stream()
-                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a.clipFrameResult.getBuffer()));
-        audioToFrames.values()
-                .stream()
-                .flatMap(a -> a.getChannels().stream())
-                .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
-
-        ReadOnlyClipImage finalResult = executeGlobalEffectsOn(finalImage);
-        // TODO: audio effects
-
-        return new AudioVideoFragment(finalResult, audioBuffer);
-    }
-
-    static class TreeNode {
-        private TimelineClip clip;
-        private List<TreeNode> children = new ArrayList<>();
-
-        public TreeNode(TimelineClip clip) {
-            this.clip = clip;
-        }
-
-    }
-
-    static class RenderAudioFrameData {
-        List<ByteBuffer> channels;
-
-        public RenderAudioFrameData(List<ByteBuffer> channels) {
-            this.channels = channels;
-        }
-
-        public List<ByteBuffer> getChannels() {
-            return channels;
-        }
-
-    }
-
-    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult) {
-        FrameExtender.FrameExtendRequest frameExtendRequest = FrameExtender.FrameExtendRequest.builder()
-                .withClip(visualClip)
-                .withFrameResult(frameResult)
-                .withPreviewWidth(request.getPreviewWidth())
-                .withPreviewHeight(request.getPreviewHeight())
-                .withScale(request.getScale())
-                .withTimelinePosition(request.getPosition())
-                .build();
-        return frameExtender.expandFrame(frameExtendRequest);
-    }
-
-    private AudioFrameResult renderAudio(List<String> renderOrder, Map<String, AudioFrameResult> audioToFrames) {
-        List<AudioFrameResult> audioFrames = renderOrder.stream()
-                .filter(clipId -> {
-                    TimelineChannel channelContainingCurrentClip = findChannelForClipId(clipId).get();
-                    return !channelContainingCurrentClip.isDisabled() && !channelContainingCurrentClip.isMute();
-                })
-                .map(a -> audioToFrames.get(a))
-                .filter(a -> a != null)
-                .collect(Collectors.toList());
-
-        AudioFrameResult audioBuffer = audioBufferMerger.mergeBuffers(audioFrames);
-        return audioBuffer;
-    }
-
-    private ReadOnlyClipImage renderVideo(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> clipsToFrames) {
-        List<RenderFrameData> frames = renderOrder.stream()
-                .filter(clipId -> {
-                    TimelineChannel channelContainingCurrentClip = findChannelForClipId(clipId).get();
-                    return !channelContainingCurrentClip.isDisabled();
-                })
-                .map(a -> clipsToFrames.get(a))
-                .filter(a -> a != null)
-                .collect(Collectors.toList());
-
-        ReadOnlyClipImage finalImage = frameBufferMerger.alphaMergeFrames(frames, request);
-        return finalImage;
-    }
-
-    private List<TreeNode> buildRenderTree(Map<String, TimelineClip> clipsToRender, TimelinePosition position) {
-        List<TreeNode> tree = new ArrayList<>();
-
-        for (var clip : clipsToRender.values()) {
-            if (clip.getClipDependency(position).isEmpty() && clip.getChannelDependency(position).isEmpty()) {
-                tree.add(new TreeNode(clip));
-            }
-        }
-        List<TreeNode> treeNodeToUpdate = new ArrayList<>(tree);
-        List<TreeNode> treeNodeToUpdateTmp = new ArrayList<>();
-        int safetyLoopEscape = 0;
-        while (!treeNodeToUpdate.isEmpty() && safetyLoopEscape < 1000) {
-            for (var node : treeNodeToUpdate) {
-                List<TreeNode> nodesDependentOnCurrentNode = findNodesDependentOn(clipsToRender, node.clip.id, position);
-                if (!nodesDependentOnCurrentNode.isEmpty()) {
-                    treeNodeToUpdateTmp.addAll(nodesDependentOnCurrentNode);
-                    node.children.addAll(nodesDependentOnCurrentNode);
-                    // TODO: cycle check
-                }
-            }
-            treeNodeToUpdate.clear();
-            treeNodeToUpdate.addAll(treeNodeToUpdateTmp);
-            treeNodeToUpdateTmp.clear();
-            ++safetyLoopEscape;
-        }
-        if (safetyLoopEscape >= 1000) {
-            throw new IllegalStateException("Unexpected cycle in clips");
-        }
-        return tree;
-    }
-
-    private List<TreeNode> findNodesDependentOn(Map<String, TimelineClip> clipsToRender, String dependentClipId, TimelinePosition position) {
-        List<TreeNode> result = new ArrayList<>();
-        String dependentClipChannel = findChannelForClipId(dependentClipId).map(channel -> channel.getId()).get();
-        for (TimelineClip clip : clipsToRender.values()) {
-            if (clip.getClipDependency(position).contains(dependentClipId) || clip.getChannelDependency(position).contains(dependentClipChannel)) {
-                result.add(new TreeNode(clip));
-            }
-        }
-        return result;
-    }
-
-    private void recursiveLayering(List<TreeNode> tree, int i, List<List<TimelineClip>> layers) {
-        if (tree.isEmpty()) {
-            return;
-        }
-        List<TimelineClip> currentLayer;
-        if (layers.size() < i) {
-            currentLayer = layers.get(i);
-        } else {
-            currentLayer = new ArrayList<>();
-            layers.add(currentLayer);
-        }
-        for (var element : tree) {
-            currentLayer.add(element.clip);
-            recursiveLayering(element.children, i + 1, layers);
-        }
-    }
-
-    private ReadOnlyClipImage executeGlobalEffectsOn(ReadOnlyClipImage finalImage) {
-        return finalImage; // todo: do implementation
     }
 
     public StatelessEffect addEffectForClip(String id, String effectId, TimelinePosition position) {
@@ -409,7 +143,7 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     public Optional<TimelineClip> findClipById(String id) {
-        return channels
+        return timelineChannelsState.channels
                 .stream()
                 .map(channel -> channel.findClipById(id))
                 .filter(Optional::isPresent)
@@ -418,7 +152,7 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     public Optional<TimelineChannel> findChannelForClipId(String id) {
-        return channels
+        return timelineChannelsState.channels
                 .stream()
                 .filter(channel -> channel.findClipById(id).isPresent())
                 .findFirst();
@@ -431,18 +165,18 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     private void createChannel(int index, TimelineChannel channelToInsert) {
-        synchronized (fullLock) {
-            if (index >= 0 && index < channels.size()) {
-                channels.add(index, channelToInsert);
+        synchronized (timelineChannelsState.fullLock) {
+            if (index >= 0 && index < timelineChannelsState.channels.size()) {
+                timelineChannelsState.channels.add(index, channelToInsert);
             } else {
-                channels.add(channelToInsert);
+                timelineChannelsState.channels.add(channelToInsert);
             }
         }
-        messagingService.sendMessage(new ChannelAddedMessage(channelToInsert.getId(), channels.indexOf(channelToInsert), channelToInsert.isDisabled(), channelToInsert.isMute()));
+        messagingService.sendMessage(new ChannelAddedMessage(channelToInsert.getId(), timelineChannelsState.channels.indexOf(channelToInsert), channelToInsert.isDisabled(), channelToInsert.isMute()));
     }
 
     public void removeChannel(String channelId) {
-        synchronized (fullLock) {
+        synchronized (timelineChannelsState.fullLock) {
             TimelineChannel channel = findChannelWithId(channelId).orElseThrow();
 
             channel.getAllClipId()
@@ -451,14 +185,14 @@ public class TimelineManager implements SaveLoadContributor {
 
             findChannelIndex(channelId)
                     .ifPresent(index -> {
-                        channels.remove(index.intValue());
+                        timelineChannelsState.channels.remove(index.intValue());
                         messagingService.sendMessage(new ChannelRemovedMessage(channelId));
                     });
         }
     }
 
     public Optional<TimelineClip> findClipForEffect(String effectId) {
-        return channels.stream()
+        return timelineChannelsState.channels.stream()
                 .map(channel -> channel.findClipContainingEffect(effectId))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -519,15 +253,15 @@ public class TimelineManager implements SaveLoadContributor {
         int relativeChannelMove = findChannelIndex(newChannelId).orElseThrow() - findChannelIndex(originalChannel.getId()).orElseThrow();
         Optional<ClosesIntervalChannel> finalSpecialPositionUsed = specialPositionUsed;
 
-        synchronized (fullLock) {
+        synchronized (timelineChannelsState.fullLock) {
             if (!originalChannel.getId().equals(newChannelId)) {
 
                 boolean canMove = linkedClips.stream()
                         .allMatch(clip -> {
                             int currentIndex = findChannelIndexForClipId(clip.getId()).get() + relativeChannelMove;
 
-                            if (currentIndex < channels.size()) {
-                                TimelineChannel movedChannel = channels.get(currentIndex);
+                            if (currentIndex < timelineChannelsState.channels.size()) {
+                                TimelineChannel movedChannel = timelineChannelsState.channels.get(currentIndex);
                                 TimelineInterval clipCurrentInterval = clip.getInterval();
                                 TimelineInterval clipNewInterval = clipCurrentInterval.butAddOffset(relativeMove);
                                 return movedChannel.canAddResourceAtExcluding(clipNewInterval, linkedClipIds);
@@ -541,7 +275,7 @@ public class TimelineManager implements SaveLoadContributor {
                             .forEach(clip -> {
                                 int currentIndex = findChannelIndexForClipId(clip.getId()).get() + relativeChannelMove;
 
-                                for (int i = channels.size(); i < currentIndex; ++i) {
+                                for (int i = timelineChannelsState.channels.size(); i < currentIndex; ++i) {
                                     createChannel(i);
                                 }
                             });
@@ -551,8 +285,8 @@ public class TimelineManager implements SaveLoadContributor {
                                 int originalIndex = findChannelIndexForClipId(clip.getId()).get();
                                 int currentIndex = originalIndex + relativeChannelMove;
 
-                                TimelineChannel originalMovedChannel = channels.get(originalIndex);
-                                TimelineChannel newMovedChannel = channels.get(currentIndex);
+                                TimelineChannel originalMovedChannel = timelineChannelsState.channels.get(originalIndex);
+                                TimelineChannel newMovedChannel = timelineChannelsState.channels.get(currentIndex);
 
                                 TimelineInterval clipCurrentInterval = clip.getInterval();
                                 TimelineInterval clipNewPosition = clipCurrentInterval.butAddOffset(relativeMove);
@@ -759,7 +493,7 @@ public class TimelineManager implements SaveLoadContributor {
     @Override
     public void generateSavedContent(Map<String, Object> generatedContent) {
         List<Object> channelContent = new ArrayList<>();
-        for (TimelineChannel channel : channels) {
+        for (TimelineChannel channel : timelineChannelsState.channels) {
             channelContent.add(channel.generateSavedContent());
         }
         generatedContent.put("channels", channelContent);
@@ -767,7 +501,7 @@ public class TimelineManager implements SaveLoadContributor {
 
     @Override
     public void loadFrom(JsonNode tree, LoadMetadata loadMetadata) {
-        for (var channelToRemove : channels) {
+        for (var channelToRemove : timelineChannelsState.channels) {
             removeChannel(channelToRemove.getId());
         }
         JsonNode savedChannels = tree.get("channels");
@@ -815,7 +549,7 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     private Set<ClosesIntervalChannel> findSpecialPositionAround(TimelinePosition position, TimelineLength length, List<String> ignoredIds) {
-        return channels.stream()
+        return timelineChannelsState.channels.stream()
                 .flatMap(channel -> {
                     List<TimelineInterval> spec = channel.findSpecialPositionsAround(position, length, ignoredIds);
                     return findClosesIntervalForChannel(spec, position, channel, length).stream();
@@ -848,13 +582,13 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     public List<String> getAllClipIds() {
-        return channels.stream()
+        return timelineChannelsState.channels.stream()
                 .flatMap(channel -> channel.getAllClipId().stream())
                 .collect(Collectors.toList());
     }
 
     public List<String> getAllChannelIds() {
-        return channels.stream()
+        return timelineChannelsState.channels.stream()
                 .map(channel -> channel.getId())
                 .collect(Collectors.toList());
     }
@@ -862,7 +596,7 @@ public class TimelineManager implements SaveLoadContributor {
     public void changeClipForEffect(StatelessEffect originalEffect, String newClipId, TimelinePosition newPosition) {
         TimelineClip originalClip = findClipForEffect(originalEffect.getId()).orElseThrow();
         TimelineClip newClip = findClipById(newClipId).orElseThrow();
-        synchronized (fullLock) {
+        synchronized (timelineChannelsState.fullLock) {
             originalClip.removeEffectById(originalEffect.getId());
             newClip.addEffectAtAnyChannel(originalEffect);
 
@@ -892,8 +626,8 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     private Optional<Integer> findChannelIndex(String channelId) {
-        for (int i = 0; i < channels.size(); ++i) {
-            if (channels.get(i).getId().equals(channelId)) {
+        for (int i = 0; i < timelineChannelsState.channels.size(); ++i) {
+            if (timelineChannelsState.channels.get(i).getId().equals(channelId)) {
                 return Optional.of(i);
             }
         }
@@ -914,7 +648,7 @@ public class TimelineManager implements SaveLoadContributor {
 
     public TimelinePosition findEndPosition() {
         TimelinePosition endPosition = TimelinePosition.ofZero();
-        for (var channel : channels) {
+        for (var channel : timelineChannelsState.channels) {
             TimelinePosition channelEndPosition = channel.findMaximumEndPosition();
             if (channelEndPosition.isGreaterThan(endPosition)) {
                 endPosition = channelEndPosition;
@@ -984,7 +718,7 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     public List<String> findIntersectingClips(TimelinePosition currentPosition) {
-        return channels
+        return timelineChannelsState.channels
                 .stream()
                 .map(channel -> channel.getDataAt(currentPosition))
                 .flatMap(Optional::stream)
@@ -993,7 +727,7 @@ public class TimelineManager implements SaveLoadContributor {
     }
 
     public CopyOnWriteArrayList<TimelineChannel> getChannels() {
-        return channels;
+        return timelineChannelsState.channels;
     }
 
 }

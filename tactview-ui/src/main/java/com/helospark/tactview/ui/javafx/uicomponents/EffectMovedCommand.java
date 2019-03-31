@@ -6,7 +6,7 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.MoveEffectRequest;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
@@ -24,7 +24,7 @@ public class EffectMovedCommand implements UiCommand {
     private boolean revertable;
     private boolean moreMoveExpected;
 
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     @Generated("SparkTools")
     private EffectMovedCommand(Builder builder) {
@@ -93,7 +93,7 @@ public class EffectMovedCommand implements UiCommand {
         private TimelineLength maximumJumpLength;
         private boolean revertable;
         private boolean moreMoveExpected;
-        private TimelineManager timelineManager;
+        private TimelineManagerAccessor timelineManager;
 
         private Builder() {
         }
@@ -138,7 +138,7 @@ public class EffectMovedCommand implements UiCommand {
             return this;
         }
 
-        public Builder withTimelineManager(TimelineManager timelineManager) {
+        public Builder withTimelineManager(TimelineManagerAccessor timelineManager) {
             this.timelineManager = timelineManager;
             return this;
         }

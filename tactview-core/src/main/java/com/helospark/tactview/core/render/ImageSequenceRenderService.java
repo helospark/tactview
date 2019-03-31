@@ -20,7 +20,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
@@ -37,7 +37,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
     private ByteBufferToImageConverter byteBufferToImageConverter;
 
-    public ImageSequenceRenderService(TimelineManager timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService) {
+    public ImageSequenceRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService) {
         super(timelineManager, messagingService);
         this.byteBufferToImageConverter = byteBufferToImageConverter;
     }

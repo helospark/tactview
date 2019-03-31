@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
@@ -45,12 +45,12 @@ public class ClipPatternDrawerListener {
     private TimelineImagePatternService timelineImagePatternService;
     private AudioImagePatternService audioImagePatternService;
     private TimelineState timelineState;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     @Slf4j
     private Logger logger;
 
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
-            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManager timelineManager) {
+            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
         this.timelineState = timelineState;

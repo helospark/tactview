@@ -6,12 +6,12 @@ import com.helospark.tactview.core.timeline.ResizeClipRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class ClipResizedCommand implements UiCommand {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     private String clipId;
     private TimelinePosition position;
@@ -82,7 +82,7 @@ public class ClipResizedCommand implements UiCommand {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private TimelineManager timelineManager;
+        private TimelineManagerAccessor timelineManager;
         private String clipId;
         private TimelinePosition position;
         private boolean left;
@@ -95,7 +95,7 @@ public class ClipResizedCommand implements UiCommand {
         private Builder() {
         }
 
-        public Builder withTimelineManager(TimelineManager timelineManager) {
+        public Builder withTimelineManager(TimelineManagerAccessor timelineManager) {
             this.timelineManager = timelineManager;
             return this;
         }

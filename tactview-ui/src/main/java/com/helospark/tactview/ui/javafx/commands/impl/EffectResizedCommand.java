@@ -6,12 +6,12 @@ import com.helospark.tactview.core.timeline.ResizeEffectRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class EffectResizedCommand implements UiCommand {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
     private String effectId;
     private TimelinePosition globalPosition;
@@ -89,7 +89,7 @@ public class EffectResizedCommand implements UiCommand {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private TimelineManager timelineManager;
+        private TimelineManagerAccessor timelineManager;
         private String effectId;
         private TimelinePosition globalPosition;
         private boolean left;
@@ -102,7 +102,7 @@ public class EffectResizedCommand implements UiCommand {
         private Builder() {
         }
 
-        public Builder withTimelineManager(TimelineManager timelineManager) {
+        public Builder withTimelineManager(TimelineManagerAccessor timelineManager) {
             this.timelineManager = timelineManager;
             return this;
         }

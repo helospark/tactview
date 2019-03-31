@@ -8,7 +8,7 @@ import com.helospark.lightdi.annotation.Order;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
@@ -64,7 +64,7 @@ public class StandardClipContextMenuChainItemConfiguration {
 
     @Bean
     @Order(0)
-    public ClipContextMenuChainItem scaleToFrameMenuItem(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager, ProjectRepository projectRepository,
+    public ClipContextMenuChainItem scaleToFrameMenuItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager, ProjectRepository projectRepository,
             @Qualifier("scaleEffect") EffectFactory scaleFactory) {
         return typeSupportingContextMenuItem(VisualTimelineClip.class, request -> {
             MenuItem scaleToImageMenuItem = new MenuItem("Scale to frame");

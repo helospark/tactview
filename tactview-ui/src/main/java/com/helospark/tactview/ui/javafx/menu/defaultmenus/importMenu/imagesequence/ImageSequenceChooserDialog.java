@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AddClipRequestMetaDataKey;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
@@ -32,7 +32,7 @@ import javafx.stage.Stage;
 public class ImageSequenceChooserDialog {
     private Stage stage;
 
-    public ImageSequenceChooserDialog(TimelineManager timelineManager, UiCommandInterpreterService commandInterpreterService, ProjectRepository projectRepository) {
+    public ImageSequenceChooserDialog(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, ProjectRepository projectRepository) {
         BorderPane borderPane = new BorderPane();
 
         Scene dialog = new Scene(borderPane);

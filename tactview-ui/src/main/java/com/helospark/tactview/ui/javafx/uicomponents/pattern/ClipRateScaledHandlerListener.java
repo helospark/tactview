@@ -5,7 +5,7 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -18,9 +18,9 @@ import javafx.scene.shape.Rectangle;
 public class ClipRateScaledHandlerListener {
     private MessagingService messagingService;
     private TimelineState timelineState;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
-    public ClipRateScaledHandlerListener(MessagingService messagingService, TimelineState timelineState, TimelineManager timelineManager) {
+    public ClipRateScaledHandlerListener(MessagingService messagingService, TimelineState timelineState, TimelineManagerAccessor timelineManager) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.timelineManager = timelineManager;

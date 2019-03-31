@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.clip.chain.ClipContextMenuChainItem;
 import com.helospark.tactview.ui.javafx.clip.chain.ClipContextMenuChainItemRequest;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
@@ -18,9 +18,9 @@ import javafx.scene.control.MenuItem;
 public class ClipContextMenuFactory {
     private List<ClipContextMenuChainItem> chainItems;
     private SelectedNodeRepository selectedNodeRepository;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
-    public ClipContextMenuFactory(List<ClipContextMenuChainItem> chainItems, SelectedNodeRepository selectedNodeRepository, TimelineManager timelineManager) {
+    public ClipContextMenuFactory(List<ClipContextMenuChainItem> chainItems, SelectedNodeRepository selectedNodeRepository, TimelineManagerAccessor timelineManager) {
         this.chainItems = chainItems;
         this.selectedNodeRepository = selectedNodeRepository;
         this.timelineManager = timelineManager;

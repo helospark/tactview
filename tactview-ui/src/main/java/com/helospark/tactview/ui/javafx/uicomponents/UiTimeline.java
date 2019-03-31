@@ -11,7 +11,7 @@ import org.controlsfx.glyphfont.Glyph;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -50,7 +50,7 @@ public class UiTimeline {
 
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private UiTimelineManager uiTimelineManager;
     private LinkClipRepository linkClipRepository;
 
@@ -63,7 +63,7 @@ public class UiTimeline {
 
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
-            TimelineManager timelineManager, UiTimelineManager uiTimelineManager,
+            TimelineManagerAccessor timelineManager, UiTimelineManager uiTimelineManager,
             LinkClipRepository linkClipRepository) {
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;

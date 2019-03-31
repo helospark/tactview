@@ -18,7 +18,7 @@ import com.helospark.tactview.core.render.ffmpeg.QueryCodecRequest;
 import com.helospark.tactview.core.render.ffmpeg.RenderFFMpegFrame;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
@@ -29,7 +29,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     private static final int MAX_NUMBER_OF_CODECS = 400;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
 
-    public FFmpegBasedRenderService(TimelineManager timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService) {
+    public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService) {
         super(timelineManager, messagingService);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
     }

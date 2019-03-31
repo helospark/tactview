@@ -4,19 +4,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
-import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 public abstract class AbstractRenderService implements RenderService {
-    protected TimelineManager timelineManager;
+    protected TimelineManagerRenderService timelineManagerRenderService;
     protected MessagingService messagingService;
 
-    public AbstractRenderService(TimelineManager timelineManager, MessagingService messagingService) {
-        this.timelineManager = timelineManager;
+    public AbstractRenderService(TimelineManagerRenderService timelineManagerRenderService, MessagingService messagingService) {
+        this.timelineManagerRenderService = timelineManagerRenderService;
         this.messagingService = messagingService;
     }
 
@@ -41,7 +41,7 @@ public abstract class AbstractRenderService implements RenderService {
                 .withScale(1.0)
                 .build();
 
-        return timelineManager.getFrame(frameRequest);
+        return timelineManagerRenderService.getFrame(frameRequest);
     }
 
     protected abstract void renderInternal(RenderRequest renderRequest);

@@ -1,15 +1,15 @@
 package com.helospark.tactview.ui.javafx.commands.impl;
 
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class MuteChannelCommand implements UiCommand {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private String channelId;
     private boolean isMute;
     private boolean hasChanged;
 
-    public MuteChannelCommand(TimelineManager timelineManager, String channelId, boolean isMute) {
+    public MuteChannelCommand(TimelineManagerAccessor timelineManager, String channelId, boolean isMute) {
         this.timelineManager = timelineManager;
         this.isMute = isMute;
         this.channelId = channelId;

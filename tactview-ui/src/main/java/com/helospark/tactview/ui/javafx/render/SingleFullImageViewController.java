@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
-import com.helospark.tactview.core.timeline.TimelineManager;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -25,16 +25,16 @@ import javafx.stage.Stage;
 @Component
 public class SingleFullImageViewController {
     private UiTimelineManager uiTimelineManager;
-    private TimelineManager timelineManager;
+    private TimelineManagerRenderService timelineManagerRenderService;
     private ProjectRepository projectRepository;
     private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
     @Slf4j
     private Logger logger;
 
-    public SingleFullImageViewController(UiTimelineManager uiTimelineManager, TimelineManager timelineManager, ProjectRepository projectRepository,
+    public SingleFullImageViewController(UiTimelineManager uiTimelineManager, TimelineManagerRenderService timelineManagerRenderService, ProjectRepository projectRepository,
             ByteBufferToJavaFxImageConverter byteBufferToImageConverter) {
         this.uiTimelineManager = uiTimelineManager;
-        this.timelineManager = timelineManager;
+        this.timelineManagerRenderService = timelineManagerRenderService;
         this.projectRepository = projectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
     }
@@ -53,7 +53,7 @@ public class SingleFullImageViewController {
                 .build();
 
         CompletableFuture.supplyAsync(() -> {
-            ByteBuffer image = timelineManager.getFrame(frameRequest).getVideoResult().getBuffer();
+            ByteBuffer image = timelineManagerRenderService.getFrame(frameRequest).getVideoResult().getBuffer();
             return byteBufferToImageConverter.convertToJavafxImage(image, width, height);
         }).exceptionally(e -> {
             logger.error("Error rendering image", e);

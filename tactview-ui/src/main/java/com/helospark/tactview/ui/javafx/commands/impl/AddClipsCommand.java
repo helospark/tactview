@@ -2,19 +2,19 @@ package com.helospark.tactview.ui.javafx.commands.impl;
 
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class AddClipsCommand implements UiCommand {
     private final AddClipRequest request;
 
-    private final TimelineManager timelineManager;
+    private final TimelineManagerAccessor timelineManager;
 
     private String addedClipId = null;
 
     public AddClipsCommand(AddClipRequest request,
-            TimelineManager timelineManager) {
+            TimelineManagerAccessor timelineManager) {
         this.request = request;
 
         this.timelineManager = timelineManager;

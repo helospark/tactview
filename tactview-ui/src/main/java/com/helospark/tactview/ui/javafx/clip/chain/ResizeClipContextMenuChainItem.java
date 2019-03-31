@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -23,11 +23,11 @@ import javafx.scene.control.TextInputDialog;
 @Order(91)
 public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem {
     private UiCommandInterpreterService commandInterpreter;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     @Slf4j
     private Logger logger;
 
-    public ResizeClipContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManager timelineManager) {
+    public ResizeClipContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager) {
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
     }

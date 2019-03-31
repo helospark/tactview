@@ -12,7 +12,7 @@ import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.render.RenderService;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
@@ -37,7 +37,7 @@ public class RenderDialog {
     private RenderService previousRenderService = null;
     private Map<String, OptionProvider<?>> optionProviders = Map.of();
 
-    public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManager timelineManager) {
+    public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager) {
         BorderPane borderPane = new BorderPane();
 
         Scene dialog = new Scene(borderPane);

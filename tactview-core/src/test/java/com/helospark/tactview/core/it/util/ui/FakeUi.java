@@ -10,8 +10,9 @@ import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
@@ -22,19 +23,21 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FakeUi {
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManagerAccessor;
+    private TimelineManagerRenderService timelineManagerRenderService;
     private MessagingService messagingService;
     private EffectParametersRepository parametersRepository;
 
-    public FakeUi(TimelineManager timelineManager, EffectParametersRepository parametersRepository) {
-        this.timelineManager = timelineManager;
+    public FakeUi(TimelineManagerAccessor timelineManager, TimelineManagerRenderService timelineManagerRenderService, EffectParametersRepository parametersRepository) {
+        this.timelineManagerAccessor = timelineManager;
+        this.timelineManagerRenderService = timelineManagerRenderService;
         this.parametersRepository = parametersRepository;
     }
 
     @PostConstruct
     public void init() {
         for (int i = 0; i < 4; ++i) {
-            timelineManager.createChannel(i);
+            timelineManagerAccessor.createChannel(i);
         }
     }
 
@@ -43,7 +46,7 @@ public class FakeUi {
     }
 
     public TimelineClip dragProceduralClipToChannel(String proceduralClipId, TimelinePosition position, int channelIndex) {
-        TimelineChannel channel = timelineManager.getChannels().get(channelIndex);
+        TimelineChannel channel = timelineManagerAccessor.getChannels().get(channelIndex);
 
         AddClipRequest request = AddClipRequest.builder()
                 .withChannelId(channel.getId())
@@ -52,7 +55,7 @@ public class FakeUi {
                 .withProceduralClipId(proceduralClipId)
                 .build();
 
-        return timelineManager.addClip(request);
+        return timelineManagerAccessor.addClip(request);
     }
 
     public void enableKeyframesFor(String clipId, String descriptorName) {
@@ -101,11 +104,11 @@ public class FakeUi {
     }
 
     public AudioVideoFragment requestFrame(TimelineManagerFramesRequest frameRequest) {
-        return timelineManager.getFrame(frameRequest);
+        return timelineManagerRenderService.getFrame(frameRequest);
     }
 
     public TimelineClip dragFileToTimeline(File testFile, TimelinePosition position) {
-        TimelineChannel channel = timelineManager.getChannels().get(0);
+        TimelineChannel channel = timelineManagerAccessor.getChannels().get(0);
 
         AddClipRequest request = AddClipRequest.builder()
                 .withChannelId(channel.getId())
@@ -113,7 +116,7 @@ public class FakeUi {
                 .withPosition(position)
                 .build();
 
-        return timelineManager.addClip(request);
+        return timelineManagerAccessor.addClip(request);
     }
 
 }

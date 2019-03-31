@@ -12,7 +12,7 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
@@ -20,7 +20,7 @@ public class CutClipCommand implements UiCommand {
     private List<String> clipIds;
     private TimelinePosition globalTimelinePosition;
 
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
     private LinkClipRepository linkClipRepository;
 
     private List<TimelineClip> originalCuttedClip = new ArrayList<>();
@@ -94,7 +94,7 @@ public class CutClipCommand implements UiCommand {
     public static final class Builder {
         private List<String> clipIds;
         private TimelinePosition globalTimelinePosition;
-        private TimelineManager timelineManager;
+        private TimelineManagerAccessor timelineManager;
         private LinkClipRepository linkClipRepository;
 
         private Builder() {
@@ -115,7 +115,7 @@ public class CutClipCommand implements UiCommand {
             return this;
         }
 
-        public Builder withTimelineManager(TimelineManager timelineManager) {
+        public Builder withTimelineManager(TimelineManagerAccessor timelineManager) {
             this.timelineManager = timelineManager;
             return this;
         }

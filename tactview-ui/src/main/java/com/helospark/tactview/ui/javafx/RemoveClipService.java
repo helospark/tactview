@@ -3,15 +3,15 @@ package com.helospark.tactview.ui.javafx;
 import java.util.Collection;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.TimelineManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveClipCommand;
 
 @Component
 public class RemoveClipService {
     private UiCommandInterpreterService commandInterpreterService;
-    private TimelineManager timelineManager;
+    private TimelineManagerAccessor timelineManager;
 
-    public RemoveClipService(UiCommandInterpreterService commandInterpreterService, TimelineManager timelineManager) {
+    public RemoveClipService(UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager) {
         this.commandInterpreterService = commandInterpreterService;
         this.timelineManager = timelineManager;
     }
