@@ -32,6 +32,8 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
 
     public ProceduralVisualClip(ProceduralVisualClip proceduralVisualClip, CloneRequestMetadata cloneRequestMetadata) {
         super(proceduralVisualClip, cloneRequestMetadata);
+        this.widthMultiplierProvider = proceduralVisualClip.widthMultiplierProvider.deepClone();
+        this.heightMultiplierProvider = proceduralVisualClip.heightMultiplierProvider.deepClone();
     }
 
     public ProceduralVisualClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata) {

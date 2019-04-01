@@ -6,23 +6,21 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
+import com.helospark.tactview.core.timeline.effect.displacementmap.service.ApplyDisplacementMapRequest;
+import com.helospark.tactview.core.timeline.effect.displacementmap.service.DisplacementMapService;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
-import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
-import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class DisplacementMapEffect extends StatelessVideoEffect {
@@ -30,13 +28,11 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
     private DoubleProvider verticalDisplacementMultiplierProvider;
     private DoubleProvider horizontalDisplacementMultiplierProvider;
 
-    private IndependentPixelOperation independentPixelOperation;
-    private ScaleService scaleService;
+    private DisplacementMapService displacementService;
 
-    public DisplacementMapEffect(TimelineInterval interval, ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
+    public DisplacementMapEffect(TimelineInterval interval, DisplacementMapService displacementService) {
         super(interval);
-        this.scaleService = scaleService;
-        this.independentPixelOperation = independentPixelOperation;
+        this.displacementService = displacementService;
     }
 
     public DisplacementMapEffect(DisplacementMapEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
@@ -44,68 +40,33 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DisplacementMapEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2, IndependentPixelOperation independentPixelOperation2) {
+    public DisplacementMapEffect(JsonNode node, LoadMetadata loadMetadata, DisplacementMapService displacementService) {
         super(node, loadMetadata);
-        this.independentPixelOperation = independentPixelOperation2;
+        this.displacementService = displacementService;
     }
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         Optional<ReadOnlyClipImage> optionalDisplacementMap = displacementMapProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
 
+        double verticalMultiplier = verticalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
+        double horizontalMultiplier = horizontalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
+
         if (optionalDisplacementMap.isPresent()) {
-            return applyDisplacementMap(optionalDisplacementMap.get(), request);
+            ApplyDisplacementMapRequest displacementMapRequest = ApplyDisplacementMapRequest.builder()
+                    .withCurrentFrame(currentFrame)
+                    .withDisplacementMap(optionalDisplacementMap.get())
+                    .withHorizontalMultiplier(horizontalMultiplier)
+                    .withVerticalMultiplier(verticalMultiplier)
+                    .build();
+
+            return displacementService.applyDisplacementMap(displacementMapRequest);
         } else {
             ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
             result.copyFrom(request.getCurrentFrame());
             return result;
         }
-    }
-
-    private ClipImage applyDisplacementMap(ReadOnlyClipImage displacementMap, StatelessEffectRequest request) {
-        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
-
-        if (!currentFrame.isSameSizeAs(displacementMap)) {
-            ScaleRequest scaleRequest = ScaleRequest.builder()
-                    .withImage(displacementMap)
-                    .withNewWidth(currentFrame.getWidth())
-                    .withNewHeight(currentFrame.getHeight())
-                    .build();
-            ReadOnlyClipImage scaledImage = scaleService.createScaledImage(scaleRequest);
-            ClipImage result = applyDisplacementMapOnSameDisplacementMapSize(currentFrame, scaledImage, request);
-            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(scaledImage.getBuffer());
-            return result;
-        } else {
-            return applyDisplacementMapOnSameDisplacementMapSize(currentFrame, displacementMap, request);
-        }
-
-    }
-
-    private ClipImage applyDisplacementMapOnSameDisplacementMapSize(ReadOnlyClipImage currentFrame, ReadOnlyClipImage displacementMap, StatelessEffectRequest request) {
-        ClipImage result = ClipImage.sameSizeAs(currentFrame);
-        double verticalMultiplier = verticalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
-        double horizontalMultiplier = horizontalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
-
-        independentPixelOperation.executePixelTransformation(result.getWidth(), result.getHeight(), (x, y) -> {
-            int displacedX = clip(x + (((displacementMap.getRed(x, y) - 128) / 128.0) * horizontalMultiplier), 0, result.getWidth() - 1);
-            int displacedY = clip(y + (((displacementMap.getGreen(x, y) - 128) / 128.0) * verticalMultiplier), 0, result.getHeight() - 1);
-
-            for (int i = 0; i < 4; ++i) {
-                int component = currentFrame.getColorComponentWithOffset(displacedX, displacedY, i);
-                result.setColorComponentByOffset(component, x, y, i);
-            }
-        });
-        return result;
-    }
-
-    private int clip(double value, int min, int max) {
-        if (value > max) {
-            return max;
-        }
-        if (value < min) {
-            return min;
-        }
-        return (int) value;
     }
 
     @Override
@@ -124,10 +85,7 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
     public void initializeValueProvider() {
         displacementMapProvider = new DependentClipProvider(new StepStringInterpolator());
         verticalDisplacementMultiplierProvider = new DoubleProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(30.0));
-        verticalDisplacementMultiplierProvider.setScaleDependent();
-
         horizontalDisplacementMultiplierProvider = new DoubleProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(30.0));
-        horizontalDisplacementMultiplierProvider.setScaleDependent();
     }
 
     @Override

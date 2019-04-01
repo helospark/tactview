@@ -18,7 +18,9 @@ import com.helospark.tactview.core.timeline.proceduralclip.lines.LineProceduralC
 import com.helospark.tactview.core.timeline.proceduralclip.lines.LinesProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.GaussianNoiseProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.noise.GradientPerturbationProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.noise.service.PerturbationNoiseService;
 import com.helospark.tactview.core.timeline.proceduralclip.particlesystem.ParticleSystemProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.pattern.CheckerBoardProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.DrawnNurbsProceduralClip;
@@ -259,6 +261,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new DrawnNurbsProceduralClip(metadata, node, loadMetadata, drawLineService, bresenhemPixelProvider);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem gradientPerturbationProceduralClip(PerturbationNoiseService perturbationNoiseService) {
+        return new StandardProceduralClipFactoryChainItem("gradientperturbation", "Perturbation",
+                request -> {
+                    return new GradientPerturbationProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), perturbationNoiseService);
+                },
+                (node, loadMetadata) -> {
+                    return new GradientPerturbationProceduralClip(metadata, node, loadMetadata, perturbationNoiseService);
                 });
     }
 }

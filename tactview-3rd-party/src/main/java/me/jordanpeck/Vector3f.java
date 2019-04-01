@@ -1,7 +1,7 @@
 package me.jordanpeck;
 
 // https://github.com/Auburns/FastNoise_Java
-class Vector3f {
+public class Vector3f {
     public float x, y, z;
 
     public Vector3f() {

@@ -32,7 +32,9 @@ import com.helospark.tactview.core.timeline.effect.denoise.opencv.OpenCVBasedDen
 import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.ExclusiveDesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementMapEffect;
+import com.helospark.tactview.core.timeline.effect.displacementmap.service.DisplacementMapService;
 import com.helospark.tactview.core.timeline.effect.distort.LensDistortEffect;
+import com.helospark.tactview.core.timeline.effect.distort.PerturbationDistortEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PolarCoordinateEffect;
 import com.helospark.tactview.core.timeline.effect.distort.impl.OpenCVBasedLensDistort;
 import com.helospark.tactview.core.timeline.effect.distort.service.PolarService;
@@ -83,6 +85,7 @@ import com.helospark.tactview.core.timeline.effect.vignette.VignetteEffect;
 import com.helospark.tactview.core.timeline.effect.warp.RectangleWarpEffect;
 import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
 import com.helospark.tactview.core.timeline.effect.warp.rasterizer.Simple2DRasterizer;
+import com.helospark.tactview.core.timeline.proceduralclip.noise.service.PerturbationNoiseService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -380,10 +383,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory displacementMapEffect(ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory displacementMapEffect(DisplacementMapService displacementMapService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new DisplacementMapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService, independentPixelOperation))
-                .withRestoreFactory((node, loadMetadata) -> new DisplacementMapEffect(node, loadMetadata, scaleService, independentPixelOperation))
+                .withFactory(request -> new DisplacementMapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), displacementMapService))
+                .withRestoreFactory((node, loadMetadata) -> new DisplacementMapEffect(node, loadMetadata, displacementMapService))
                 .withName("Displacement map")
                 .withSupportedEffectId("displacementmap")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -694,6 +697,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new LinearBlurEffect(node, loadMetadata, linearBlurService))
                 .withName("Linear blur")
                 .withSupportedEffectId("linearblur")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory perturbationDistortEffect(DisplacementMapService displacementMapService, PerturbationNoiseService perturbationNoiseService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new PerturbationDistortEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), perturbationNoiseService, displacementMapService))
+                .withRestoreFactory((node, loadMetadata) -> new PerturbationDistortEffect(node, loadMetadata, perturbationNoiseService, displacementMapService))
+                .withName("Perturbation distort")
+                .withSupportedEffectId("perturbationdistorteffect")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
