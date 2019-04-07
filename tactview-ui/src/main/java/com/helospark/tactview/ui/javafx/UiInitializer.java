@@ -3,9 +3,9 @@ package com.helospark.tactview.ui.javafx;
 import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
-import com.helospark.tactview.ui.javafx.save.DirtyRepository;
 
 @Component
 public class UiInitializer {

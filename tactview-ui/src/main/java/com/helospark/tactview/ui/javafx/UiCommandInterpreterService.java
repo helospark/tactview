@@ -7,9 +7,9 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
-import com.helospark.tactview.ui.javafx.save.DirtyRepository;
 
 @Component
 public class UiCommandInterpreterService {

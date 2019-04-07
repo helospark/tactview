@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.save.SaveRequest;
 import com.helospark.tactview.core.util.logger.Slf4j;

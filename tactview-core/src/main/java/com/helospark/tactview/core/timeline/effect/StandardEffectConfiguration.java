@@ -36,6 +36,7 @@ import com.helospark.tactview.core.timeline.effect.displacementmap.service.Displ
 import com.helospark.tactview.core.timeline.effect.distort.LensDistortEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PerturbationDistortEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PolarCoordinateEffect;
+import com.helospark.tactview.core.timeline.effect.distort.ShearEffect;
 import com.helospark.tactview.core.timeline.effect.distort.impl.OpenCVBasedLensDistort;
 import com.helospark.tactview.core.timeline.effect.distort.service.PolarService;
 import com.helospark.tactview.core.timeline.effect.edgedetect.EdgeDetectEffect;
@@ -709,6 +710,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new PerturbationDistortEffect(node, loadMetadata, perturbationNoiseService, displacementMapService))
                 .withName("Perturbation distort")
                 .withSupportedEffectId("perturbationdistorteffect")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory shearEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ShearEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new ShearEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Shear")
+                .withSupportedEffectId("shear")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();

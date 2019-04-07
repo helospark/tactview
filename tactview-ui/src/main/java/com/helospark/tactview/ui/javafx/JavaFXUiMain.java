@@ -15,6 +15,7 @@ import org.controlsfx.glyphfont.Glyph;
 import com.helospark.lightdi.LightDi;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
+import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
@@ -22,7 +23,6 @@ import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
-import com.helospark.tactview.ui.javafx.save.DirtyRepository;
 import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
@@ -103,12 +103,14 @@ public class JavaFXUiMain extends Application {
         stage.setScene(scene);
         stage.setTitle("TactView - Video editor");
         dirtyRepository.addUiChangeListener(value -> {
-            String title = "";
-            if (value) {
-                title += "* ";
-            }
-            title += "TactView - Video editor";
-            stage.setTitle(title);
+            Platform.runLater(() -> {
+                String title = "";
+                if (value) {
+                    title += "* ";
+                }
+                title += "TactView - Video editor";
+                stage.setTitle(title);
+            });
         });
         stage.setMaximized(true);
 

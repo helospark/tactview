@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Value;
+import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.util.logger.Slf4j;
 
 import javafx.scene.control.Alert;
