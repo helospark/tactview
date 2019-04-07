@@ -60,4 +60,9 @@ public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
         return false;
     }
 
+    @Override
+    public boolean supportsKeyframes() {
+        return false; // this is most likely on the wrong interface
+    }
+
 }

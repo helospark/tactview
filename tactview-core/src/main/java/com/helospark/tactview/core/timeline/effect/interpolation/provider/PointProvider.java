@@ -64,4 +64,9 @@ public class PointProvider extends CompositeKeyframeableEffect {
                 new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(e)));
     }
 
+    public static PointProvider of(double x, double y) {
+        return new PointProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(x)),
+                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(y)));
+    }
+
 }

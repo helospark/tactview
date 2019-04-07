@@ -23,6 +23,7 @@ import com.helospark.tactview.core.timeline.effect.colorchannelchange.FloodFillE
 import com.helospark.tactview.core.timeline.effect.colorize.ColorBalanceEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeService;
+import com.helospark.tactview.core.timeline.effect.colorize.CurvesEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.MaximumRgbEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrightnessContrassEffect;
 import com.helospark.tactview.core.timeline.effect.contractbrightness.BrignessContrastService;
@@ -45,6 +46,7 @@ import com.helospark.tactview.core.timeline.effect.erodedilate.ErodeDilateEffect
 import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErodeDilateImplementation;
 import com.helospark.tactview.core.timeline.effect.extend.ExtendClipWithBlurredImage;
 import com.helospark.tactview.core.timeline.effect.extend.FrameExtendEffect;
+import com.helospark.tactview.core.timeline.effect.framehold.FrameHoldEffect;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.glow.LightGlowEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
@@ -722,6 +724,30 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new ShearEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Shear")
                 .withSupportedEffectId("shear")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory frameHoldEffect() {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new FrameHoldEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000))))
+                .withRestoreFactory((node, loadMetadata) -> new FrameHoldEffect(node, loadMetadata))
+                .withName("Frame hold")
+                .withSupportedEffectId("framehold")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory curvesEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new CurvesEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new CurvesEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Curves")
+                .withSupportedEffectId("curves")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();

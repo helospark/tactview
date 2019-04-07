@@ -92,4 +92,8 @@ public class TimelineLength implements SecondsAware {
         return new TimelineLength(BigDecimal.ONE);
     }
 
+    public TimelineLength multiply(BigDecimal newLengthMultiplier) {
+        return new TimelineLength(this.seconds.multiply(newLengthMultiplier));
+    }
+
 }

@@ -51,7 +51,7 @@ public class BooleanProvider extends KeyframeableEffect {
 
     @Override
     public boolean supportsKeyframes() {
-        return doubleInterpolator instanceof KeyframeSupportingInterpolator;
+        return (doubleInterpolator instanceof KeyframeSupportingInterpolator && ((KeyframeSupportingDoubleInterpolator) doubleInterpolator).supportsKeyframes());
     }
 
     @Override

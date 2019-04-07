@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
@@ -36,6 +38,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     protected PointProvider translatePointProvider;
     protected DoubleProvider globalClipAlphaProvider;
+    protected BooleanProvider changeClipLengthProvider;
     protected DoubleProvider timeScaleProvider;
     protected BooleanProvider enabledProvider;
     protected ValueListProvider<AlignmentValueListElement> verticallyCenteredProvider;
@@ -162,7 +165,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
         blendModeProvider = new ValueListProvider<>(createBlendModes(), new StepStringInterpolator("normal"));
         horizontallyCenteredProvider = new ValueListProvider<>(createHorizontalAlignments(), new StepStringInterpolator("left"));
         verticallyCenteredProvider = new ValueListProvider<>(createVerticalAlignments(), new StepStringInterpolator("top"));
-        timeScaleProvider = new DoubleProvider(0.05, 10, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        timeScaleProvider = new DoubleProvider(0, 5, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        changeClipLengthProvider = new BooleanProvider(new ConstantInterpolator(1.0));
     }
 
     private List<AlignmentValueListElement> createVerticalAlignments() {
@@ -204,22 +208,26 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withName("Global clip alpha")
                 .withGroup("common")
                 .build();
-        ValueProviderDescriptor timeScaleProviderDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(timeScaleProvider)
-                .withName("time scale")
-                .withGroup("common")
-                .build();
 
         ValueProviderDescriptor enabledDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(enabledProvider)
                 .withName("Enabled")
                 .withGroup("common")
                 .build();
-
         ValueProviderDescriptor blendModeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(blendModeProvider)
                 .withName("Blend mode")
                 .withGroup("common")
+                .build();
+        ValueProviderDescriptor timeScaleProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(timeScaleProvider)
+                .withName("time scale")
+                .withGroup("speed")
+                .build();
+        ValueProviderDescriptor changeClipLengthProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(changeClipLengthProvider)
+                .withName("time scale")
+                .withGroup("speed")
                 .build();
 
         result.add(translateDescriptor);
@@ -229,6 +237,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         result.add(enabledDescriptor);
         result.add(blendModeDescriptor);
         result.add(timeScaleProviderDescriptor);
+        result.add(changeClipLengthProviderDescriptor);
 
         return result;
     }
@@ -262,10 +271,20 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     @Override
     public TimelineInterval getInterval() {
-        TimelineInterval originalInterval = this.interval;
-        TimelinePosition originalStartPosition = originalInterval.getStartPosition();
-        BigDecimal newArea = timeScaleProvider.integrate(renderOffset.toPosition(), originalInterval.getLength().toPosition());
-        return new TimelineInterval(originalStartPosition, originalStartPosition.add(newArea));
+        Boolean changeClipLength = changeClipLengthProvider.getValueAt(TimelinePosition.ofZero());
+        if (changeClipLength) {
+            TimelineInterval originalInterval = this.interval;
+            TimelinePosition originalStartPosition = originalInterval.getStartPosition();
+            BigDecimal newArea = timeScaleProvider.integrate(renderOffset.toPosition(), originalInterval.getLength().toPosition());
+            if (newArea.abs().doubleValue() < 0.001) {
+                return this.interval; // avoid divide by zero
+            } else {
+                BigDecimal newLengthMultiplier = interval.getLength().getSeconds().divide(newArea, 10, RoundingMode.HALF_UP);
+                return new TimelineInterval(originalStartPosition, this.interval.getLength().multiply(newLengthMultiplier));
+            }
+        } else {
+            return this.interval;
+        }
     }
 
 }
