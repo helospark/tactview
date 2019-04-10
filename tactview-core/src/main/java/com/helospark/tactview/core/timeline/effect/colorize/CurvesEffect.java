@@ -34,9 +34,9 @@ public class CurvesEffect extends StatelessVideoEffect {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    public CurvesEffect(CurvesEffect maximumRgbEffect, CloneRequestMetadata cloneRequestMetadata) {
-        super(maximumRgbEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(maximumRgbEffect, this);
+    public CurvesEffect(CurvesEffect curves, CloneRequestMetadata cloneRequestMetadata) {
+        super(curves, cloneRequestMetadata);
+        ReflectionUtil.copyOrCloneFieldFromTo(curves, this);
     }
 
     public CurvesEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

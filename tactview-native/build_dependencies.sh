@@ -68,14 +68,20 @@ cd /tmp
 echo "Cloning OpenCV"
 
 git clone https://github.com/opencv/opencv.git
+git clone https://github.com/opencv/opencv_contrib.git
 
-cd ~/opencv
+cd ./opencv
 mkdir build
 cd build
-cmake  -D OPENCV_GENERATE_PKGCONFIG=YES -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
+cmake  -D OPENCV_GENERATE_PKGCONFIG=YES -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
 
 make -j 4
 
 make install
+
+cd ..
+cd ..
+rm -r opencv
+rm -r opencv_contrib
 
 ldconfig -v

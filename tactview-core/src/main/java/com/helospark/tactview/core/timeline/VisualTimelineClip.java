@@ -221,12 +221,12 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .build();
         ValueProviderDescriptor timeScaleProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(timeScaleProvider)
-                .withName("time scale")
+                .withName("clip speed")
                 .withGroup("speed")
                 .build();
         ValueProviderDescriptor changeClipLengthProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(changeClipLengthProvider)
-                .withName("time scale")
+                .withName("change clip length")
                 .withGroup("speed")
                 .build();
 

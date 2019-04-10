@@ -71,15 +71,6 @@ public class CurveProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     }
                 });
 
-        //        ObjectProperty<javafx.scene.paint.Color> property = control.onActionProperty();
-        //        property.addListener((e, oldValue, newValue) -> {
-        //            javafx.scene.paint.Color color = newValue;
-        //            //            redProvider.updateFromValue.accept(color.getRed());
-        //            //            greenProvider.updateFromValue.accept(color.getGreen());
-        //            //            blueProvider.updateFromValue.accept(color.getBlue());
-        //            result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), "");
-        //        });
-
         contextMenuAppender.addContextMenu(result, colorProvider, descriptor, control);
 
         return result;

@@ -17,6 +17,8 @@ import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
+import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
 
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
@@ -33,6 +35,7 @@ public class DisplayUpdaterService {
     private UiProjectRepository uiProjectRepostiory;
     private UiTimelineManager uiTimelineManager;
     private GlobalDirtyClipManager globalDirtyClipManager;
+    private List<DisplayUpdatedListener> displayUpdateListeners;
 
     @Slf4j
     private Logger logger;
@@ -40,11 +43,12 @@ public class DisplayUpdaterService {
     private Canvas canvas;
 
     public DisplayUpdaterService(PlaybackController playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
-            GlobalDirtyClipManager globalDirtyClipManager) {
+            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners) {
         this.playbackController = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
         this.globalDirtyClipManager = globalDirtyClipManager;
+        this.displayUpdateListeners = displayUpdateListeners;
     }
 
     @PostConstruct
@@ -89,7 +93,7 @@ public class DisplayUpdaterService {
             actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
         } else {
             try {
-                System.out.println("Served from cache " + currentPosition);
+                //                System.out.println("Served from cache " + currentPosition);
                 actualAudioVideoFragment = cachedKey.get();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -102,6 +106,14 @@ public class DisplayUpdaterService {
             int height = uiProjectRepostiory.getPreviewHeight();
             GraphicsContext gc = canvas.getGraphicsContext2D();
             gc.drawImage(actualAudioVideoFragment.getImage(), 0, 0, width, height);
+
+            DisplayUpdatedRequest displayUpdateRequest = DisplayUpdatedRequest.builder()
+                    .withImage(actualAudioVideoFragment.getImage())
+                    .withPosition(currentPosition)
+                    .build();
+
+            displayUpdateListeners.stream()
+                    .forEach(a -> a.displayUpdated(displayUpdateRequest));
         });
 
         startCacheJobs(currentPosition);

@@ -103,7 +103,7 @@ public class CurveProvider extends CompositeKeyframeableEffect implements Keyfra
         for (var element : curvePoints) {
             clonePointProviders.add(element.deepClone());
         }
-        CurveProvider result = new CurveProvider(maxX, maxX, maxX, maxX, clonePointProviders);
+        CurveProvider result = new CurveProvider(minX, maxX, minY, maxY, clonePointProviders);
         result.isUsingKeyframes = this.isUsingKeyframes;
         return result;
     }
