@@ -94,6 +94,10 @@ public class UiTimelineManager {
         notifyConsumers();
     }
 
+    public void refresh() {
+        notifyConsumers();
+    }
+
     private void sleep(long sleepTime) {
         try {
             Thread.sleep(sleepTime);

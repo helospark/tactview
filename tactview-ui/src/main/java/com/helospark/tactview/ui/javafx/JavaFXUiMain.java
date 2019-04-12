@@ -45,6 +45,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
@@ -163,30 +164,53 @@ public class JavaFXUiMain extends Application {
         videoStatusBar.getChildren().add(videoTimestampLabel);
         rightVBox.getChildren().add(videoStatusBar);
 
+        UiPlaybackPreferenceRepository playbackPreferenceRepository = lightDi.getBean(UiPlaybackPreferenceRepository.class);
+
         HBox underVideoBar = new HBox(1);
         ToggleButton muteButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.VOLUME_OFF));
         muteButton.setSelected(false);
-        muteButton.setOnAction(event -> {
-            lightDi.getBean(UiPlaybackPreferenceRepository.class).setMute(muteButton.isSelected());
-        });
+        muteButton.setOnAction(event -> playbackPreferenceRepository.setMute(muteButton.isSelected()));
+        muteButton.setTooltip(new Tooltip("Mute"));
 
         SingleFullImageViewController fullScreenRenderer = lightDi.getBean(SingleFullImageViewController.class);
         Button fullscreenButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.IMAGE));
         fullscreenButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
+        fullscreenButton.setTooltip(new Tooltip("Show full scale preview"));
+
+        ToggleButton halfImageEffectButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.STAR_HALF_ALT));
+        halfImageEffectButton.setSelected(false);
+        halfImageEffectButton.setOnAction(e -> {
+            playbackPreferenceRepository.setHalfEffect(halfImageEffectButton.isSelected());
+            uiTimelineManager.refresh();
+        });
+        halfImageEffectButton.setTooltip(new Tooltip("Apply effects only on left side of preview"));
+
         Button playButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.PLAY));
         playButton.setOnMouseClicked(e -> uiTimelineManager.startPlayback());
+        playButton.setTooltip(new Tooltip("Play"));
+
         Button stopButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STOP));
         stopButton.setOnMouseClicked(e -> uiTimelineManager.stopPlayback());
+        stopButton.setTooltip(new Tooltip("Stop"));
+
         Button jumpBackOnFrameButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STEP_BACKWARD));
         jumpBackOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveBackOneFrame());
+        jumpBackOnFrameButton.setTooltip(new Tooltip("Step one frame back"));
+
         Button jumpForwardOnFrameButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STEP_FORWARD));
         jumpForwardOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveForwardOneFrame());
+        jumpForwardOnFrameButton.setTooltip(new Tooltip("Step one frame forward"));
+
         Button jumpBackButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.BACKWARD));
         jumpBackButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(-10)));
+        jumpBackButton.setTooltip(new Tooltip("Step 10s back"));
+
         Button jumpForwardButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FORWARD));
         jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
+        jumpForwardButton.setTooltip(new Tooltip("Step 10s forward"));
 
         underVideoBar.getChildren().add(muteButton);
+        underVideoBar.getChildren().add(halfImageEffectButton);
         underVideoBar.getChildren().add(fullscreenButton);
         underVideoBar.getChildren().add(jumpBackButton);
         underVideoBar.getChildren().add(jumpBackOnFrameButton);

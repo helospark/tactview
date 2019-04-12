@@ -93,7 +93,6 @@ public class DisplayUpdaterService {
             actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
         } else {
             try {
-                //                System.out.println("Served from cache " + currentPosition);
                 actualAudioVideoFragment = cachedKey.get();
             } catch (Exception e) {
                 throw new RuntimeException(e);

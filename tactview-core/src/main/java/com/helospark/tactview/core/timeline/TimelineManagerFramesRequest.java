@@ -6,6 +6,7 @@ public class TimelineManagerFramesRequest {
     private double scale;
     private boolean needSound;
     private boolean needVideo;
+    private boolean effectsEnabled;
     private Integer previewWidth;
     private Integer previewHeight;
     private TimelinePosition position;
@@ -15,6 +16,7 @@ public class TimelineManagerFramesRequest {
         this.scale = builder.scale;
         this.needSound = builder.needSound;
         this.needVideo = builder.needVideo;
+        this.effectsEnabled = builder.effectsEnabled;
         this.previewWidth = builder.previewWidth;
         this.previewHeight = builder.previewHeight;
         this.position = builder.position;
@@ -26,6 +28,10 @@ public class TimelineManagerFramesRequest {
 
     public boolean isNeedVideo() {
         return needVideo;
+    }
+
+    public boolean isEffectsEnabled() {
+        return effectsEnabled;
     }
 
     public double getScale() {
@@ -54,6 +60,7 @@ public class TimelineManagerFramesRequest {
         private double scale;
         private boolean needSound = true;
         private boolean needVideo = true;
+        private boolean effectsEnabled = true;
         private Integer previewWidth;
         private Integer previewHeight;
         private TimelinePosition position;
@@ -73,6 +80,11 @@ public class TimelineManagerFramesRequest {
 
         public Builder withNeedVideo(boolean needVideo) {
             this.needVideo = needVideo;
+            return this;
+        }
+
+        public Builder withEffectsEnabled(boolean effectsEnabled) {
+            this.effectsEnabled = effectsEnabled;
             return this;
         }
 

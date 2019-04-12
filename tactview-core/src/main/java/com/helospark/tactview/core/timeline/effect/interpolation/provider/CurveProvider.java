@@ -54,6 +54,8 @@ public class CurveProvider extends CompositeKeyframeableEffect implements Keyfra
             ys[i] = result.get(i).y;
         }
 
+        // TODO: Make xs unique
+
         PolynomialSplineFunction univariateFunction = spi.interpolate(xs, ys);
         return new KnotAwareUnivariateFunction(univariateFunction, univariateFunction.getKnots(), minY, maxY);
     }

@@ -99,7 +99,7 @@ public class TimelineManagerRenderService {
                                 .withPosition(request.getPosition())
                                 .withExpectedWidth(request.getPreviewWidth())
                                 .withExpectedHeight(request.getPreviewHeight())
-                                .withApplyEffects(true)
+                                .withApplyEffects(request.isEffectsEnabled())
                                 .withRequestedClips(requiredClips)
                                 .withRequestedChannelClips(channelCopiedClips)
                                 .build();
@@ -126,7 +126,7 @@ public class TimelineManagerRenderService {
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
                         AudioRequest audioRequest = AudioRequest.builder()
-                                .withApplyEffects(true)
+                                .withApplyEffects(request.isEffectsEnabled())
                                 .withPosition(request.getPosition())
                                 .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 100, RoundingMode.HALF_DOWN)))
                                 .build();

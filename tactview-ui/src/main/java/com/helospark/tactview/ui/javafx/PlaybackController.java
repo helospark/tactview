@@ -14,6 +14,8 @@ import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 
 @Component
 public class PlaybackController {
@@ -35,9 +37,42 @@ public class PlaybackController {
         this.byteBufferToImageConverter = byteBufferToImageConverter;
         this.javaByteArrayConverter = javaByteArrayConverter;
         this.projectRepository = projectRepository;
+        this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
     }
 
     public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position) {
+        Image imageWithEffects = getImageWithEffectEnabled(position, true);
+
+        Image result;
+        if (uiPlaybackPreferenceRepository.isHalfEffect()) {
+            Image javafxImageWithoutEffects = getImageWithEffectEnabled(position, false);
+            result = mergeImages(imageWithEffects, javafxImageWithoutEffects);
+        } else {
+            result = imageWithEffects;
+        }
+
+        return new JavaDisplayableAudioVideoFragment(result, new byte[0]);
+    }
+
+    private Image mergeImages(Image javafxImage, Image javafxImageWithoutEffects) {
+        int width = (int) javafxImageWithoutEffects.getWidth();
+        int height = (int) javafxImage.getHeight();
+        WritableImage result = new WritableImage(width, height);
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width / 2; ++x) {
+                Color color = javafxImage.getPixelReader().getColor(x, y);
+                result.getPixelWriter().setColor(x, y, color);
+            }
+            for (int x = width / 2; x < width; ++x) {
+                Color color = javafxImageWithoutEffects.getPixelReader().getColor(x, y);
+                result.getPixelWriter().setColor(x, y, color);
+            }
+        }
+
+        return result;
+    }
+
+    private Image getImageWithEffectEnabled(TimelinePosition position, boolean enableEffect) {
         Integer width = uiProjectRepository.getPreviewWidth();
         Integer height = uiProjectRepository.getPreviewHeight();
         TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
@@ -47,13 +82,12 @@ public class PlaybackController {
                 .withPreviewHeight(height)
                 .withNeedSound(false)
                 .withNeedVideo(true)
+                .withEffectsEnabled(enableEffect)
                 .build();
         AudioVideoFragment frame = timelineManager.getFrame(request);
         Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame.getVideoResult().getBuffer(), width, height);
-
         frame.free();
-
-        return new JavaDisplayableAudioVideoFragment(javafxImage, new byte[0]);
+        return javafxImage;
     }
 
     public byte[] getAudioFrameAt(TimelinePosition position, int samples) {
