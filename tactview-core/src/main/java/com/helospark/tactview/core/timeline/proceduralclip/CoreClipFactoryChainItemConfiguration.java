@@ -23,11 +23,13 @@ import com.helospark.tactview.core.timeline.proceduralclip.noise.NoiseProcedural
 import com.helospark.tactview.core.timeline.proceduralclip.noise.service.PerturbationNoiseService;
 import com.helospark.tactview.core.timeline.proceduralclip.particlesystem.ParticleSystemProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.pattern.CheckerBoardProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.BezierPolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.DrawnNurbsProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.DrawnPolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
@@ -272,6 +274,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new GradientPerturbationProceduralClip(metadata, node, loadMetadata, perturbationNoiseService);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem bezierPolygonProceduralClip(BezierPolygonRenderService bezierPolygonRenderService) {
+        return new StandardProceduralClipFactoryChainItem("bezierpolygon", "Bezier polygon",
+                request -> {
+                    return new BezierPolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bezierPolygonRenderService);
+                },
+                (node, loadMetadata) -> {
+                    return new BezierPolygonProceduralClip(metadata, node, loadMetadata, bezierPolygonRenderService);
                 });
     }
 }

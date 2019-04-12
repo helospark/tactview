@@ -11,10 +11,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
 import com.helospark.tactview.ui.javafx.PlaybackController;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.BezierPolygonInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ColorInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.InputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy;
@@ -103,6 +106,20 @@ public class InputModeRepository implements CleanableMode {
     public void requestPolygonPrefilled(Consumer<Polygon> consumer, SizeFunction sizeFunction, List<Point> polygon) {
         InputTypeStrategy<Polygon> currentStrategy = new PolygonInputTypeStrategy(polygon);
         this.inputModeInput = new InputModeInput<>(Polygon.class, consumer, currentStrategy, sizeFunction);
+        inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+    }
+
+    public void requestBezierPolygon(Consumer<BezierPolygon> consumer, SizeFunction sizeFunction) {
+        InputTypeStrategy<BezierPolygon> currentStrategy = new BezierPolygonInputTypeStrategy();
+        this.inputModeInput = new InputModeInput<>(BezierPolygon.class, consumer, currentStrategy, sizeFunction);
+        inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+    }
+
+    public void requestBezierPolygonPrefilled(Consumer<BezierPolygon> consumer, SizeFunction sizeFunction, List<BezierPolygonPoint> points) {
+        InputTypeStrategy<BezierPolygon> currentStrategy = new BezierPolygonInputTypeStrategy(points);
+        this.inputModeInput = new InputModeInput<>(BezierPolygon.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
         Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
     }
