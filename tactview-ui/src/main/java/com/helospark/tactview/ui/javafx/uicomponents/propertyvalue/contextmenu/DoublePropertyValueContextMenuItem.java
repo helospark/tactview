@@ -30,7 +30,7 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
 
     @Override
     public boolean supports(PropertyValueContextMenuRequest request) {
-        return request.valueProvider.keyframesEnabled() && request.valueProvider instanceof DoubleProvider;
+        return request.valueProvider instanceof DoubleProvider;
     }
 
     @Override

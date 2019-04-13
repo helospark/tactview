@@ -3,29 +3,29 @@ package com.helospark.tactview.ui.javafx.tabs.curve.curveeditor;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
-import javafx.scene.input.MouseEvent;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 
-public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
-    public MouseEvent event;
-
-    public Point remappedMousePosition;
-    public Point screenMousePosition;
-    public Point mouseDelta;
+public class CurveDrawRequest extends AbstractCurveEditorRequest {
+    public Canvas canvas;
+    public GraphicsContext graphics;
 
     @Generated("SparkTools")
-    private CurveEditorMouseRequest(Builder builder) {
+    private CurveDrawRequest(Builder builder) {
         this.currentKeyframeableEffect = builder.currentKeyframeableEffect;
+        this.canvas = builder.canvas;
+        this.graphics = builder.graphics;
         this.curveViewerOffsetSeconds = builder.curveViewerOffsetSeconds;
         this.secondsPerPixel = builder.secondsPerPixel;
         this.minValue = builder.minValue;
         this.maxValue = builder.maxValue;
         this.displayScale = builder.displayScale;
-        this.event = builder.event;
-        this.remappedMousePosition = builder.remappedMousePosition;
-        this.screenMousePosition = builder.screenMousePosition;
-        this.mouseDelta = builder.mouseDelta;
+    }
+
+    public CurveDrawRequest(Canvas canvas, GraphicsContext graphics) {
+        this.canvas = canvas;
+        this.graphics = graphics;
     }
 
     @Generated("SparkTools")
@@ -36,21 +36,29 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
     @Generated("SparkTools")
     public static final class Builder {
         private DoubleInterpolator currentKeyframeableEffect;
+        private Canvas canvas;
+        private GraphicsContext graphics;
         private double curveViewerOffsetSeconds;
         private double secondsPerPixel;
         private double minValue;
         private double maxValue;
         private double displayScale;
-        private MouseEvent event;
-        private Point remappedMousePosition;
-        private Point screenMousePosition;
-        private Point mouseDelta;
 
         private Builder() {
         }
 
         public Builder withCurrentKeyframeableEffect(DoubleInterpolator currentKeyframeableEffect) {
             this.currentKeyframeableEffect = currentKeyframeableEffect;
+            return this;
+        }
+
+        public Builder withCanvas(Canvas canvas) {
+            this.canvas = canvas;
+            return this;
+        }
+
+        public Builder withGraphics(GraphicsContext graphics) {
+            this.graphics = graphics;
             return this;
         }
 
@@ -79,28 +87,8 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
             return this;
         }
 
-        public Builder withEvent(MouseEvent event) {
-            this.event = event;
-            return this;
-        }
-
-        public Builder withRemappedMousePosition(Point remappedMousePosition) {
-            this.remappedMousePosition = remappedMousePosition;
-            return this;
-        }
-
-        public Builder withScreenMousePosition(Point screenMousePosition) {
-            this.screenMousePosition = screenMousePosition;
-            return this;
-        }
-
-        public Builder withMouseDelta(Point mouseDelta) {
-            this.mouseDelta = mouseDelta;
-            return this;
-        }
-
-        public CurveEditorMouseRequest build() {
-            return new CurveEditorMouseRequest(this);
+        public CurveDrawRequest build() {
+            return new CurveDrawRequest(this);
         }
     }
 

@@ -136,7 +136,7 @@ public class DoubleProvider extends KeyframeableEffect {
 
     @Override
     public boolean keyframesEnabled() {
-        return ((KeyframeSupportingInterpolator) interpolator).isUsingKeyframes();
+        return interpolator instanceof KeyframeSupportingInterpolator && ((KeyframeSupportingInterpolator) interpolator).isUsingKeyframes();
     }
 
     @Override

@@ -65,7 +65,7 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
                 .stream()
                 .map(key -> key.getSeconds())
                 .map(key -> key.doubleValue())
-                .distinct() // just in case double representation of TimelinePosition is equals
+                .distinct() // just in case double representation of TimelinePosition is equals. // TODO: this causes exception due to dimension mismatch
                 .mapToDouble(Double::valueOf)
                 .toArray();
     }
@@ -127,6 +127,13 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
     @Override
     public void setDefaultValue(double defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
+        if (useKeyframes) {
+            values.remove(timelinePosition);
+            values.put(newTime, newValue);
+        }
     }
 
 }

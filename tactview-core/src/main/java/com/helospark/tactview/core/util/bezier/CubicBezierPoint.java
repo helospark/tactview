@@ -13,4 +13,11 @@ public class CubicBezierPoint {
         this.controlPointOut = controlPointOut;
     }
 
+    public CubicBezierPoint butWithInControlPoint(Point newValue) {
+        return new CubicBezierPoint(value, newValue, controlPointOut);
+    }
+
+    public CubicBezierPoint butWithOutControlPoint(Point newValue) {
+        return new CubicBezierPoint(value, controlPointIn, newValue);
+    }
 }

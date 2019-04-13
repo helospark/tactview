@@ -95,8 +95,6 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
         double x = getPt(xm, xn, i);
         double y = getPt(ym, yn, i);
 
-        System.out.println("CurveY: " + y);
-
         return y;
     }
 
@@ -157,5 +155,29 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
         }
         return result;
     }
+
+    public void updateDoubleValueAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
+        CubicBezierPoint previousValue = values.remove(timelinePosition);
+        CubicBezierPoint newPoint = new CubicBezierPoint(newValue, previousValue.controlPointIn, previousValue.controlPointOut);
+        values.put(newTime, newPoint);
+    }
+
+    public TreeMap<TimelinePosition, CubicBezierPoint> getBezierValues() {
+        return new TreeMap<>(values);
+    }
+
+    public void updatedInControlPointAt(TimelinePosition positionToModify, Point point) {
+        values.put(positionToModify, values.get(positionToModify).butWithInControlPoint(point));
+    }
+
+    public void updatedOutControlPointAt(TimelinePosition positionToModify, Point point) {
+        values.put(positionToModify, values.get(positionToModify).butWithOutControlPoint(point));
+    }
+
+    //    @Override
+    //    protected void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
+    //        values.remove(timelinePosition);
+    //        values.put(newTime, newValue);
+    //    }
 
 }

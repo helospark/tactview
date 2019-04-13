@@ -53,4 +53,12 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
         return RandomDoubleInterpolatorFactory.class;
     }
 
+    public void changeScale(BigDecimal changeScale) {
+        this.changeScale = changeScale;
+    }
+
+    public BigDecimal getChangeScale() {
+        return changeScale;
+    }
+
 }
