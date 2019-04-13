@@ -7,11 +7,14 @@ import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.RandomDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.EaseFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.MixedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.MixedDoubleInterpolatorElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.util.bezier.CubicBezierPoint;
 
 @Configuration
 public class StandardDoubleInterpolatorFactoryConfiguration {
@@ -36,6 +39,23 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
                 }
             }
             MixedDoubleInterpolator result = new MixedDoubleInterpolator(values);
+            if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
+                result.setUseKeyframes(previous.keyframesEnabled());
+            }
+            return result;
+        });
+    }
+
+    @Bean
+    public StandardDoubleInterpolatorFactory bezierDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory("bezierDoubleInterpolator", previous -> {
+            TreeMap<TimelinePosition, CubicBezierPoint> values = new TreeMap<>();
+            if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
+                for (var entry : previous.getValues().entrySet()) {
+                    values.put(entry.getKey(), new CubicBezierPoint((Double) entry.getValue(), new Point(-1, 0), new Point(1, 0)));
+                }
+            }
+            BezierDoubleInterpolator result = new BezierDoubleInterpolator(values);
             if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 result.setUseKeyframes(previous.keyframesEnabled());
             }

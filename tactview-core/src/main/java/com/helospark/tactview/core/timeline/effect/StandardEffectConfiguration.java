@@ -54,6 +54,7 @@ import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGree
 import com.helospark.tactview.core.timeline.effect.histogramequization.HistogramEquizationEffect;
 import com.helospark.tactview.core.timeline.effect.histogramequization.opencv.OpenCVHistogramEquizerImplementation;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
+import com.helospark.tactview.core.timeline.effect.layermask.BezierMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.PolygonMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlphaCalculator;
@@ -90,6 +91,7 @@ import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
 import com.helospark.tactview.core.timeline.effect.warp.rasterizer.Simple2DRasterizer;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.service.PerturbationNoiseService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -748,6 +750,20 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new CurvesEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Curves")
                 .withSupportedEffectId("curves")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory bezierPolygonEffect(BezierPolygonRenderService bezierPolygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new BezierMaskEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), bezierPolygonRenderService, layerMaskApplier,
+                        layerMaskAlphaToAlpha))
+                .withRestoreFactory((node, loadMetadata) -> new BezierMaskEffect(node, loadMetadata, bezierPolygonRenderService, layerMaskApplier,
+                        layerMaskAlphaToAlpha))
+                .withName("Bezier mask")
+                .withSupportedEffectId("beziermask")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
