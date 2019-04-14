@@ -135,8 +135,13 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
     }
 
     public Optional<Entry<TimelinePosition, MixedDoubleInterpolatorElement>> getEasingAt(TimelinePosition position) {
-        Entry<TimelinePosition, MixedDoubleInterpolatorElement> value = values.headMap(position, true).firstEntry();
+        Entry<TimelinePosition, MixedDoubleInterpolatorElement> value = values.headMap(position, true).lastEntry();
         return Optional.ofNullable(value);
+    }
+
+    public void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
+        MixedDoubleInterpolatorElement originalValue = values.remove(timelinePosition);
+        values.put(newTime, originalValue.butWithPoint(newValue));
     }
 
 }

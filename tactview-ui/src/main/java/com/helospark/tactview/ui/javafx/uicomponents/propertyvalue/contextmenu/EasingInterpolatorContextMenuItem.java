@@ -41,7 +41,7 @@ public class EasingInterpolatorContextMenuItem implements PropertyValueContextMe
         return createInterpolators(request.valueProvider.getId(), request.timelinePosition);
     }
 
-    private Menu createInterpolators(String id, TimelinePosition timelinePosition) {
+    public Menu createInterpolators(String id, TimelinePosition timelinePosition) {
         Menu menu = new Menu("Change easing");
 
         List<MenuItem> menuItems = Arrays.stream(EaseFunction.values())

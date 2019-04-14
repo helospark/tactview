@@ -116,7 +116,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
     protected Point remapPointToScreenSpace(AbstractCurveEditorRequest request, Point point) {
         double screenX = ((point.x - request.curveViewerOffsetSeconds) * (1.0 / request.secondsPerPixel));
-        double screenY = ((point.y - request.minValue) * request.displayScale);
+        double screenY = request.height - (((point.y - request.minValue) * request.displayScale));
 
         return new Point(screenX, screenY);
     }

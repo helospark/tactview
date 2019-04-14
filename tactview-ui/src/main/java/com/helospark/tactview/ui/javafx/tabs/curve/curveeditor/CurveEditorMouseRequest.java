@@ -2,9 +2,11 @@ package com.helospark.tactview.ui.javafx.tabs.curve.curveeditor;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
+import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
 
 public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
@@ -16,12 +18,15 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
 
     @Generated("SparkTools")
     private CurveEditorMouseRequest(Builder builder) {
+        this.currentProvider = builder.currentProvider;
         this.currentKeyframeableEffect = builder.currentKeyframeableEffect;
         this.curveViewerOffsetSeconds = builder.curveViewerOffsetSeconds;
         this.secondsPerPixel = builder.secondsPerPixel;
         this.minValue = builder.minValue;
         this.maxValue = builder.maxValue;
         this.displayScale = builder.displayScale;
+        this.height = builder.height;
+        this.canvas = builder.canvas;
         this.event = builder.event;
         this.remappedMousePosition = builder.remappedMousePosition;
         this.screenMousePosition = builder.screenMousePosition;
@@ -35,18 +40,26 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
+        private KeyframeableEffect currentProvider;
         private DoubleInterpolator currentKeyframeableEffect;
         private double curveViewerOffsetSeconds;
         private double secondsPerPixel;
         private double minValue;
         private double maxValue;
         private double displayScale;
+        private double height;
+        private Canvas canvas;
         private MouseEvent event;
         private Point remappedMousePosition;
         private Point screenMousePosition;
         private Point mouseDelta;
 
         private Builder() {
+        }
+
+        public Builder withCurrentProvider(KeyframeableEffect currentProvider) {
+            this.currentProvider = currentProvider;
+            return this;
         }
 
         public Builder withCurrentKeyframeableEffect(DoubleInterpolator currentKeyframeableEffect) {
@@ -76,6 +89,16 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
 
         public Builder withDisplayScale(double displayScale) {
             this.displayScale = displayScale;
+            return this;
+        }
+
+        public Builder withHeight(double height) {
+            this.height = height;
+            return this;
+        }
+
+        public Builder withCanvas(Canvas canvas) {
+            this.canvas = canvas;
             return this;
         }
 

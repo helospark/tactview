@@ -95,7 +95,6 @@ public class EffectAddedListener {
             EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
                     event.getX());
             boolean isResizing = isResizing(rectangle, currentX - LAYOUT_FIXER_HACK) || isResizing(rectangle, currentX + LAYOUT_FIXER_HACK);
-            //            System.out.println("IS RESIZING=" + isResizing + " " + currentX);
             if (isResizing) {
                 DragDirection dragDirection = isDraggingLeft(rectangle, currentX - LAYOUT_FIXER_HACK) ? DragDirection.LEFT : DragDirection.RIGHT;
                 System.out.println("DragDirection: " + dragDirection);
@@ -111,7 +110,6 @@ public class EffectAddedListener {
         rectangle.setOnMouseMoved(event -> {
             double currentX = event.getX();
             boolean isResizing = isResizing(rectangle, currentX);
-            //            System.out.println("Move IS_RESIZING=" + isResizing + " " + currentX);
             if (isResizing) {
                 rectangle.setCursor(Cursor.H_RESIZE);
             } else {

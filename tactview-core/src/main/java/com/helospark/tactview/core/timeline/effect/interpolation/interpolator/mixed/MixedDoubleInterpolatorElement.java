@@ -25,4 +25,8 @@ public class MixedDoubleInterpolatorElement {
         this.easeFunction = easeFunction;
     }
 
+    public MixedDoubleInterpolatorElement butWithPoint(double newValue) {
+        return new MixedDoubleInterpolatorElement(newValue, easeFunction);
+    }
+
 }

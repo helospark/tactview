@@ -31,6 +31,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 @Component
 public class CurveEditorTab extends Tab implements ScenePostProcessor {
@@ -119,7 +120,6 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
         }
         clearCanvas();
         GraphicsContext graphics = canvas.getGraphicsContext2D();
-        graphics.setStroke(Color.MEDIUMSEAGREEN);
         double numberOfSamples = samplesPerPixel * canvas.getWidth();
         BigDecimal increment = new BigDecimal(secondsPerPixel);
 
@@ -143,13 +143,20 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
         }
         displayScale = canvas.getHeight() / interval;
 
+        double height = canvas.getHeight();
+
+        drawCoordinateSystem(minValue, maxValue, interval);
+
+        graphics.setStroke(Color.MEDIUMSEAGREEN);
+
         for (int i = 1; i < values.size(); ++i) {
-            double previousValue = (values.get(i - 1) - minValue) * displayScale;
-            double currentValue = (values.get(i) - minValue) * displayScale;
+            double previousValue = convertYToScreenSpace(values.get(i - 1), height);
+            double currentValue = convertYToScreenSpace(values.get(i), height);
             graphics.strokeLine(i - 1, previousValue, i, currentValue);
         }
 
         CurveDrawRequest drawRequest = CurveDrawRequest.builder()
+                .withCurrentProvider(currentKeyframeableEffect)
                 .withCanvas(canvas)
                 .withCurrentKeyframeableEffect(currentInterpolator)
                 .withCurveViewerOffsetSeconds(scrollValue)
@@ -158,6 +165,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
                 .withMinValue(minValue)
                 .withSecondsPerPixel(secondsPerPixel)
                 .withGraphics(graphics)
+                .withHeight(canvas.getHeight())
                 .build();
 
         currentlyOpenEditor.drawAdditionalUi(drawRequest);
@@ -165,6 +173,49 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
         graphics.setStroke(Color.YELLOW);
         double playheadPosition = ((timelineManager.getCurrentPosition().getSeconds().doubleValue()) * (1.0 / secondsPerPixel)) - scrollValue;
         graphics.strokeLine(playheadPosition, 0, playheadPosition, canvas.getHeight());
+    }
+
+    private double convertYToScreenSpace(double value, double height) {
+        return height - ((value - minValue) * displayScale);
+    }
+
+    private void drawCoordinateSystem(double minValue, double maxValue, double interval) {
+        // 0.123
+        double distance = interval / 10;
+
+        GraphicsContext graphics = canvas.getGraphicsContext2D();
+        graphics.setStroke(Color.gray(0.2));
+        graphics.setFont(new Font(8));
+
+        for (double i = minValue; i <= maxValue; i += distance) {
+            double screenY = convertYToScreenSpace(i, canvas.getHeight());
+            graphics.strokeLine(0, screenY, canvas.getWidth(), screenY);
+
+            String value = String.format("%.2f", i);
+
+            graphics.strokeText(value, 5, screenY - 3);
+        }
+
+        int secondIncrement = (int) (canvas.getWidth() * secondsPerPixel) / 10;
+
+        int firstLine = (int) scrollValue;
+
+        if (secondIncrement > 0) {
+            int second = firstLine;
+            for (int i = 0; i < 100; ++i) {
+                double screenX = (second - scrollValue) * (1.0 / secondsPerPixel);
+                graphics.strokeLine(screenX, 0, screenX, canvas.getHeight());
+
+                graphics.strokeText(second + "", screenX, canvas.getHeight() - 10);
+
+                second += secondIncrement;
+
+                if (screenX > canvas.getWidth()) {
+                    break;
+                }
+            }
+        }
+
     }
 
     @Override
@@ -227,16 +278,18 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
             mouseDelta = currentMousePosition.subtract(lastMousePosition);
             mouseDelta.x *= secondsPerPixel;
             mouseDelta.y /= displayScale;
+            mouseDelta.y *= -1;
         }
         lastMousePosition = currentMousePosition;
 
         double remappedX = (currentMousePosition.x - scrollValue) * secondsPerPixel;
-        double remappedY = currentMousePosition.y / displayScale + minValue;
+        double remappedY = canvas.getHeight() - (currentMousePosition.y / displayScale + minValue);
 
         Point remappedMousePosition = new Point(remappedX, remappedY);
 
         if (currentlyOpenEditor != null) {
             CurveEditorMouseRequest request = CurveEditorMouseRequest.builder()
+                    .withCurrentProvider(currentKeyframeableEffect)
                     .withCurrentKeyframeableEffect(currentInterpolator)
                     .withEvent(e)
                     .withMouseDelta(mouseDelta)
@@ -247,6 +300,8 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
                     .withMinValue(minValue)
                     .withSecondsPerPixel(secondsPerPixel)
                     .withScreenMousePosition(currentMousePosition)
+                    .withHeight(canvas.getHeight())
+                    .withCanvas(canvas)
                     .build();
             boolean shouldUpdate = consumer.apply(request);
             if (shouldUpdate) {
