@@ -13,12 +13,16 @@ public abstract class KeyframeSupportingDoubleInterpolator implements DoubleInte
     TreeMap<TimelinePosition, BigDecimal> integralCache;
 
     public void valueAdded(TimelinePosition globalTimelinePosition, String value) {
-        integralCache.clear();
+        if (integralCache != null) {
+            integralCache.clear();
+        }
         valueAddedInternal(globalTimelinePosition, value);
     }
 
     public void valueRemoved(TimelinePosition globalTimelinePosition) {
-        integralCache.clear();
+        if (integralCache != null) {
+            integralCache.clear();
+        }
         valueRemovedInternal(globalTimelinePosition);
     }
 

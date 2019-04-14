@@ -8,7 +8,6 @@ import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
-import com.helospark.tactview.ui.javafx.tabs.curve.CurveEditorTab;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PrimitiveEffectLine;
 
 import javafx.scene.control.MenuItem;
@@ -47,18 +46,6 @@ public class CommonPropertyValueContextMenuItemConfiguration {
                 ((PrimitiveEffectLine) (request.effectLine)).sendKeyframeWithValue(timelineManager.getCurrentPosition(), value);
             });
             return pasteKeyframeMenuItem;
-        });
-    }
-
-    @Bean
-    @Order(-9)
-    public PropertyValueContextMenuItem revealCurveInEditor(CurveEditorTab curveEditorTab) {
-        return allPrimitiveEffectLineSupportingMenuIfRequired(request -> {
-            MenuItem revealInEditorMenuItem = new MenuItem("Reveal curve in editor");
-            revealInEditorMenuItem.setOnAction(e -> {
-                curveEditorTab.revealInEditor(request.valueProvider);
-            });
-            return revealInEditorMenuItem;
         });
     }
 

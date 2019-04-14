@@ -1,15 +1,13 @@
 package com.helospark.tactview.ui.javafx.tabs.curve.curveeditor;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.MixedDoubleInterpolator;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.EasingInterpolatorContextMenuItem;
 
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
-import javafx.scene.input.MouseButton;
+import javafx.scene.control.MenuItem;
 
 @Component
 public class MixedDoubleInterpolatorCurveEditor extends TypeSupportingPointBasedKeyframeDoubleCurveEditor<MixedDoubleInterpolator> {
@@ -21,20 +19,14 @@ public class MixedDoubleInterpolatorCurveEditor extends TypeSupportingPointBased
     }
 
     @Override
-    public boolean onMouseClicked(CurveEditorMouseRequest request) {
-        if (request.event.getButton().equals(MouseButton.SECONDARY)) {
-            Menu menu = easingInterpolatorContextMenuItem.createInterpolators(request.currentProvider.getId(), new TimelinePosition(new BigDecimal(request.remappedMousePosition.x)));
-
-            ContextMenu contextMenu = new ContextMenu(menu);
-
-            contextMenu.show(request.canvas.getScene().getWindow(), request.event.getScreenX(), request.event.getScreenY());
-        }
-        return false;
+    protected void valueModifiedAtInternal(MixedDoubleInterpolator currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
+        currentKeyframeableEffect.valueModifiedAt(timelinePosition, newTime, newValue);
     }
 
     @Override
-    protected void valueModifiedAtInternal(MixedDoubleInterpolator currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
-        currentKeyframeableEffect.valueModifiedAt(timelinePosition, newTime, newValue);
+    protected List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request) {
+        TimelinePosition position = getKeyframePoints(((MixedDoubleInterpolator) request.currentKeyframeableEffect)).get(elementIndex).timelinePosition;
+        return List.of(easingInterpolatorContextMenuItem.createInterpolators(request.currentProvider.getId(), position));
     }
 
 }

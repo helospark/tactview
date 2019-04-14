@@ -15,6 +15,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.bezier.CubicBezierPoint;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
 
 @Component
@@ -230,6 +231,11 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
             return true;
         }
 
+    }
+
+    @Override
+    protected List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request) {
+        return List.of();
     }
 
 }

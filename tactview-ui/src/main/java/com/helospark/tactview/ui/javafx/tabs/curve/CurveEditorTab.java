@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMess
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
+import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
 import com.helospark.tactview.ui.javafx.tabs.curve.curveeditor.ControlInitializationRequest;
 import com.helospark.tactview.ui.javafx.tabs.curve.curveeditor.CurveDrawRequest;
 import com.helospark.tactview.ui.javafx.tabs.curve.curveeditor.CurveEditor;
@@ -35,6 +36,7 @@ import javafx.scene.text.Font;
 
 @Component
 public class CurveEditorTab extends Tab implements ScenePostProcessor {
+    private static final String CURVE_EDITOR_ID = "curve-editor";
     private static final double samplesPerPixel = 1.0;
     private List<CurveEditor> curveEditors;
     private UiTimelineManager timelineManager;
@@ -48,6 +50,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
     private KeyframeableEffect currentKeyframeableEffect;
     private DoubleInterpolator currentInterpolator;
     private CurveEditor currentlyOpenEditor;
+    private MessagingService messagingService;
 
     private double maxValue;
     private double minValue;
@@ -64,6 +67,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
     public CurveEditorTab(List<CurveEditor> curveEditors, MessagingService messagingService, UiTimelineManager timelineManager) {
         this.curveEditors = curveEditors;
         this.timelineManager = timelineManager;
+        this.messagingService = messagingService;
 
         messagingService.register(KeyframeSuccesfullyAddedMessage.class, e -> {
             if (currentlyOpenEditor != null && e.getDescriptorId().equals(currentKeyframeableEffect.getId())) {
@@ -75,7 +79,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
             // TODO: only if it is revield
             updateCanvas();
         });
-
+        this.setId(CURVE_EDITOR_ID);
     }
 
     public void revealInEditor(KeyframeableEffect valueProvider) {
@@ -103,6 +107,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
             isLeftRightDragging = false;
 
             updateCanvas();
+            messagingService.sendAsyncMessage(new TabActiveRequest(CURVE_EDITOR_ID));
         } else {
             throw new RuntimeException("Only keyframe supporting double interpolator is supported for now");
         }

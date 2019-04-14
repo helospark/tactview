@@ -7,6 +7,7 @@ import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.RandomDoubleInterpolator;
@@ -58,6 +59,23 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
                 }
             }
             BezierDoubleInterpolator result = new BezierDoubleInterpolator(values);
+            if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
+                result.setUseKeyframes(previous.keyframesEnabled());
+            }
+            return result;
+        });
+    }
+
+    @Bean
+    public StandardDoubleInterpolatorFactory multiKeyframeDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory("multiKeyframeDoubleInterpolator", previous -> {
+            TreeMap<TimelinePosition, Double> values = new TreeMap<>();
+            if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
+                for (var entry : previous.getValues().entrySet()) {
+                    values.put(entry.getKey(), (double) entry.getValue());
+                }
+            }
+            MultiKeyframeBasedDoubleInterpolator result = new MultiKeyframeBasedDoubleInterpolator(values);
             if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 result.setUseKeyframes(previous.keyframesEnabled());
             }

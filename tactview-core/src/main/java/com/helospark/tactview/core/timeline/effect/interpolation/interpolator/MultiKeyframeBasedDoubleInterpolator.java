@@ -136,4 +136,8 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
         }
     }
 
+    public UnivariateInterpolator getInterpolatorFunction() {
+        return interpolatorImplementation;
+    }
+
 }

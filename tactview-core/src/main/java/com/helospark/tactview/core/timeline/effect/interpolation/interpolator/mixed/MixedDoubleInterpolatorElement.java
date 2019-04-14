@@ -1,12 +1,14 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class MixedDoubleInterpolatorElement {
     double value;
     EaseFunction easeFunction;
 
-    public MixedDoubleInterpolatorElement(double value, EaseFunction easeIn) {
+    public MixedDoubleInterpolatorElement(@JsonProperty("value") double value, @JsonProperty("easeFunction") EaseFunction easeFunction) {
         this.value = value;
-        this.easeFunction = easeIn;
+        this.easeFunction = easeFunction;
     }
 
     public double getValue() {

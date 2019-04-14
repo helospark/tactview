@@ -8,11 +8,14 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ke
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 
 public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpCurveEditor {
-    private int draggedIndex = -1;
-    private int closeIndex = -1;
+    protected int draggedIndex = -1;
+    protected int closeIndex = -1;
 
     @Override
     public boolean onMouseMoved(CurveEditorMouseRequest mouseEvent) {
@@ -22,12 +25,41 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     }
 
     @Override
+    public boolean onMouseClicked(CurveEditorMouseRequest request) {
+        if (request.event.getButton().equals(MouseButton.SECONDARY)) {
+            int elementIndex = getElementIndex(request);
+
+            if (elementIndex != -1) {
+                List<MenuItem> menuItems = contextMenuForElementIndex(elementIndex, request);
+                MenuItem deleteMenu = new MenuItem("Delete");
+
+                ContextMenu contextMenu = new ContextMenu();
+                contextMenu.getItems().addAll(deleteMenu);
+                contextMenu.getItems().addAll(menuItems);
+                contextMenu.show(request.canvas.getScene().getWindow(), request.event.getScreenX(), request.event.getScreenY());
+            }
+        }
+        if (request.event.getButton().equals(MouseButton.PRIMARY) && request.event.getClickCount() == 2) {
+            addNewPoint(request.remappedMousePosition, request);
+            return true;
+        }
+        return false;
+    }
+
+    protected void addNewPoint(Point remappedMousePosition, CurveEditorMouseRequest request) {
+        // TODO: commandInterpreter
+        ((KeyframeSupportingDoubleInterpolator) request.currentKeyframeableEffect).valueAdded(new TimelinePosition(remappedMousePosition.x), String.valueOf(remappedMousePosition.y));
+    }
+
+    protected abstract List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request);
+
+    @Override
     public boolean onMouseDown(CurveEditorMouseRequest mouseEvent) {
         draggedIndex = getElementIndex(mouseEvent);
         return false;
     }
 
-    private int getElementIndex(CurveEditorMouseRequest mouseEvent) {
+    protected int getElementIndex(CurveEditorMouseRequest mouseEvent) {
         List<KeyframePoint> bezierValues = getKeyframePoints((KeyframeSupportingDoubleInterpolator) mouseEvent.currentKeyframeableEffect);
         for (int i = 0; i < bezierValues.size(); ++i) {
             KeyframePoint element = bezierValues.get(i);

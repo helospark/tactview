@@ -4,12 +4,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
-
-public class StandardInterpolationFunctionFactory implements DoubleInterpolatorFactory {
+public class StandardInterpolationFunctionFactory implements MultiKeyframeDoubleInterpolatorFunctionFactory {
     private String id;
     private Supplier<UnivariateInterpolator> factory;
 
@@ -19,16 +14,8 @@ public class StandardInterpolationFunctionFactory implements DoubleInterpolatorF
     }
 
     @Override
-    public DoubleInterpolator createInterpolator(DoubleProvider previousInterpolator) {
-        if (previousInterpolator.getInterpolatorClone() instanceof MultiKeyframeBasedDoubleInterpolator) {
-            UnivariateInterpolator newInterpolator = factory.get();
-
-            MultiKeyframeBasedDoubleInterpolator multiKeyframeBasedDoubleInterpolator = (MultiKeyframeBasedDoubleInterpolator) previousInterpolator.getInterpolatorClone();
-            MultiKeyframeBasedDoubleInterpolator clone = multiKeyframeBasedDoubleInterpolator.deepClone();
-            clone.setInterpolatorFunction(newInterpolator);
-            return clone;
-        }
-        throw new IllegalArgumentException("Changing interpolator function is only possible for MultiKeyframeBasedDoubleInterpolator");
+    public UnivariateInterpolator createInterpolator() {
+        return factory.get();
     }
 
     @Override
