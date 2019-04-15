@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.repository;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragInformation;
 
@@ -8,6 +9,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.EffectDragInformation;
 public class DragRepository implements CleanableMode {
     private ClipDragInformation clipDragInformation;
     private EffectDragInformation effectDragInformation;
+    private SelectionBoxInformation selectionBoxInformation;
     private boolean isResizing;
     private DragDirection dragDirection;
 
@@ -62,6 +64,22 @@ public class DragRepository implements CleanableMode {
         this.effectDragInformation = dragInformation;
         this.isResizing = true;
         this.dragDirection = dragDirection;
+    }
+
+    public void onBoxSelectStarted(Point point) {
+        selectionBoxInformation = new SelectionBoxInformation(point);
+    }
+
+    public void onBoxSelectEnded() {
+        selectionBoxInformation = null;
+    }
+
+    public boolean isBoxSelectInProgress() {
+        return selectionBoxInformation != null;
+    }
+
+    public SelectionBoxInformation getSelectionBoxInformation() {
+        return selectionBoxInformation;
     }
 
     public static enum DragDirection {

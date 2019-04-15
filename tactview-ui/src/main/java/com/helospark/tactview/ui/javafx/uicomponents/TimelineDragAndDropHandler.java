@@ -10,6 +10,7 @@ import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
@@ -20,15 +21,20 @@ import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
+import com.helospark.tactview.ui.javafx.repository.SelectionBoxInformation;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 
 @Component
 public class TimelineDragAndDropHandler {
@@ -40,6 +46,7 @@ public class TimelineDragAndDropHandler {
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
     private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
+    private UiTimeline uiTimeline;
 
     @Slf4j
     private Logger logger;
@@ -47,13 +54,15 @@ public class TimelineDragAndDropHandler {
     private boolean isLoadingInprogress = false;
 
     public TimelineDragAndDropHandler(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
-            DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
+            DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository,
+            UiTimeline uiTimeline) {
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
         this.timelineState = timelineState;
         this.dragRepository = dragRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
+        this.uiTimeline = uiTimeline;
     }
 
     public void addDragAndDrop(Node timeline, Pane timelineRow, String channelId) {
@@ -82,7 +91,24 @@ public class TimelineDragAndDropHandler {
                 }
             }
         });
+
+        timeline.addEventFilter(MouseEvent.DRAG_DETECTED, event -> {
+            if (dragRepository.currentlyDraggedClip() == null && dragRepository.currentEffectDragInformation() == null &&
+                    !(event.getTarget() instanceof Rectangle)) {
+                double x = event.getX();
+                double y = event.getY() + timeline.getLayoutY();
+                dragRepository.onBoxSelectStarted(new Point(x, y));
+                Dragboard db = timeline.startDragAndDrop(TransferMode.ANY);
+                ClipboardContent content = new ClipboardContent();
+                content.putString("dragging");
+                db.setContent(content);
+                event.consume();
+            }
+        });
+
         timeline.setOnDragOver(event -> {
+            double x = event.getX();
+            double y = event.getY() + timeline.getLayoutY();
 
             if (dragRepository.currentlyDraggedClip() != null) {
                 event.acceptTransferModes(TransferMode.MOVE);
@@ -91,19 +117,20 @@ public class TimelineDragAndDropHandler {
                 } else {
                     moveClip(event, channelId, false);
                 }
-            }
-            if (dragRepository.currentEffectDragInformation() != null) {
+            } else if (dragRepository.currentEffectDragInformation() != null) {
                 if (dragRepository.isResizing()) {
                     resizeEffect(event, false);
                 } else {
                     moveEffect(event, false);
                 }
                 event.acceptTransferModes(TransferMode.LINK);
+            } else if (dragRepository.isBoxSelectInProgress()) {
+                SelectionBoxInformation selectionBox = dragRepository.getSelectionBoxInformation();
+                uiTimeline.updateSelectionBox(selectionBox.startPoint, new Point(x, y));
+                updateSelectedNodes(uiTimeline.getSelectionRectangle());
             }
 
             ZoomableScrollPane pane = timelineState.getTimeLineScrollPane();
-            double x = event.getX();
-            double y = event.getY() + timeline.getLayoutY();
 
             Bounds paneBounds = pane.getViewportBounds();
 
@@ -111,6 +138,12 @@ public class TimelineDragAndDropHandler {
             scrollLeftWhenNeeded(x, paneBounds);
             scrollDownWhenNeeded(y, paneBounds);
             scrollUpWhenNeeded(y, paneBounds);
+        });
+
+        timeline.setOnDragDone(event -> {
+            if (dragRepository.isBoxSelectInProgress()) {
+                uiTimeline.selectionBoxEnded();
+            }
         });
 
         timeline.setOnDragDropped(event -> {
@@ -124,8 +157,7 @@ public class TimelineDragAndDropHandler {
                 event.setDropCompleted(true);
                 dragRepository.clearClipDrag();
                 event.consume();
-            }
-            if (dragRepository.currentEffectDragInformation() != null) {
+            } else if (dragRepository.currentEffectDragInformation() != null) {
                 if (dragRepository.isResizing()) {
                     resizeEffect(event, true);
                 } else {
@@ -135,10 +167,26 @@ public class TimelineDragAndDropHandler {
                 event.setDropCompleted(true);
                 dragRepository.clearEffectDrag();
                 event.consume();
+            } else if (dragRepository.isBoxSelectInProgress()) {
+                uiTimeline.selectionBoxEnded();
             }
             timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
         });
 
+    }
+
+    private void updateSelectedNodes(Rectangle selectionRectangle) {
+        timelineState.getAllClips()
+                .filter(a -> selectionRectangle.intersects(getBoundsWithIncludeParent(a)))
+                .forEach(a -> selectedNodeRepository.addSelectedClip(a));
+        //        timelineState.getAllEffects()
+        //                .filter(a -> selectionRectangle.getBoundsInParent().intersects(getBoundsWithIncludeParentParent(a)))
+        //                .forEach(a -> selectedNodeRepository.addSelectedEffect(a));
+    }
+
+    private Bounds getBoundsWithIncludeParent(Node selectionRectangle) {
+        Bounds inParent = selectionRectangle.getBoundsInParent();
+        return new BoundingBox(inParent.getMinX(), selectionRectangle.getParent().getParent().getLayoutY() + inParent.getMinY(), inParent.getWidth(), inParent.getHeight());
     }
 
     private void scrollRightWhenNeeded(double x, Bounds paneBounds) {

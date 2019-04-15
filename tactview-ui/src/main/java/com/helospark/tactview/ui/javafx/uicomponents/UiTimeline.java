@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -42,6 +43,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
@@ -60,6 +62,8 @@ public class UiTimeline {
     private VBox timelineTitlesPane;
     private BorderPane borderPane;
     private Canvas timelineLabelCanvas;
+
+    private Rectangle rectangle;
 
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
@@ -127,6 +131,15 @@ public class UiTimeline {
         positionIndicatorLine.setStrokeWidth(1.0);
         positionIndicatorLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
         zoomGroup.getChildren().add(positionIndicatorLine);
+
+        rectangle = new Rectangle();
+        rectangle.setVisible(false);
+        rectangle.setFill(new Color(0.0, 0.0, 1.0, 0.2));
+        rectangle.xProperty().set(200);
+        rectangle.yProperty().set(20);
+        rectangle.widthProperty().set(300);
+        rectangle.heightProperty().set(100);
+        zoomGroup.getChildren().add(rectangle);
 
         Line specialPositionLine = new Line();
         //        specialPositionLine.setTranslateX(6.0); // TODO: Layout need to be fixed
@@ -319,6 +332,29 @@ public class UiTimeline {
 
     public void updateLine(TimelinePosition position) {
         timelineState.setLinePosition(position);
+    }
+
+    public void updateSelectionBox(Point startPoint, Point endPoint) {
+        rectangle.setVisible(true);
+
+        double startX = Math.min(startPoint.x, endPoint.x);
+        double endX = Math.max(startPoint.x, endPoint.x);
+
+        double startY = Math.min(startPoint.y, endPoint.y);
+        double endY = Math.max(startPoint.y, endPoint.y);
+
+        rectangle.xProperty().set(startX);
+        rectangle.yProperty().set(startY);
+        rectangle.widthProperty().set(endX - startX);
+        rectangle.heightProperty().set(endY - startY);
+    }
+
+    public void selectionBoxEnded() {
+        rectangle.setVisible(false);
+    }
+
+    public Rectangle getSelectionRectangle() {
+        return rectangle;
     }
 
 }

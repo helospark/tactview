@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.SecondsAware;
@@ -151,11 +152,15 @@ public class TimelineState {
     }
 
     public Optional<Pane> findClipById(String clipId) {
-        return channelToClips.values()
-                .stream()
-                .flatMap(list -> list.stream())
+        return getAllClips()
                 .filter(element -> Objects.equals(element.getUserData(), clipId))
                 .findFirst();
+    }
+
+    public Stream<Pane> getAllClips() {
+        return channelToClips.values()
+                .stream()
+                .flatMap(list -> list.stream());
     }
 
     public void removeClip(String elementId) {
@@ -332,6 +337,12 @@ public class TimelineState {
         if (newScroll >= 0 && newScroll < 1.0) {
             vscroll.set(newScroll);
         }
+    }
+
+    public Stream<Node> getAllEffects() {
+        return clipsToEffects.entrySet()
+                .stream()
+                .flatMap(a -> a.getValue().stream());
     }
 
 }
