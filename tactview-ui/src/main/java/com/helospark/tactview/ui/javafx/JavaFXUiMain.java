@@ -45,6 +45,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToggleButton;
@@ -152,7 +153,7 @@ public class JavaFXUiMain extends Application {
 
         VBox rightVBox = new VBox(5);
         rightVBox.setAlignment(Pos.TOP_CENTER);
-        rightVBox.setPrefWidth(300);
+        rightVBox.setPrefWidth(330);
         rightVBox.setId("clip-view");
 
         canvas = new Canvas();
@@ -163,7 +164,12 @@ public class JavaFXUiMain extends Application {
         InputModeRepository inputModeRepository = lightDi.getBean(InputModeRepository.class);
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
-        rightVBox.getChildren().add(canvas);
+
+        ScrollPane previewScrollPane = new ScrollPane(canvas);
+        previewScrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        previewScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+
+        rightVBox.getChildren().add(previewScrollPane);
         AudioVisualizationComponent audioVisualazationComponent = lightDi.getBean(AudioVisualizationComponent.class);
         rightVBox.getChildren().add(audioVisualazationComponent.getCanvas());
         audioVisualazationComponent.clearCanvas();

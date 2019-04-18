@@ -18,7 +18,6 @@ import javafx.scene.paint.Color;
 public class AudioVisualizationComponent {
     private static final int EXPECTED_NUMBER_OF_CHANNELS = 2;
     private static final int BAR_RADIUS = 6;
-    private static final double EXPECTED_MAX_VALUE = 14000.0;
     Color startColor = Color.GREEN;
     Color endColor = Color.RED;
     static final int NUMBER_OF_BARS = 45;
@@ -31,10 +30,12 @@ public class AudioVisualizationComponent {
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
     private Canvas canvas;
 
+    private double expectedHighestValue = 100.0;
+
     private PlaybackController playbackController;
 
     public AudioVisualizationComponent(PlaybackController playbackController) {
-        canvas = new Canvas(NUMBER_OF_BARS * (BAR_WIDTH + BAR_SPACE_WIDTH), (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS);
+        canvas = new Canvas(NUMBER_OF_BARS * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
         this.playbackController = playbackController;
     }
 
@@ -54,13 +55,13 @@ public class AudioVisualizationComponent {
             // TODO: Do not query the sound again! Use the already queried sound
             AudioVideoFragment frame = playbackController.getSingleAudioFrameAtPosition(position);
             AudioFrameResult audioFrame = frame.getAudioResult();
-            if (audioFrame.getBytesPerSample() == 0 || audioFrame.getNumberSamples() == 0) {
-                return;
-            }
             clearCanvas();
 
-            for (int i = 0; i < audioFrame.getChannels().size(); ++i) {
-                double value = calculateRmsForChannel(i, audioFrame);
+            for (int i = 0; i < 2; ++i) {
+                double value = i < audioFrame.getChannels().size() ? calculateRmsForChannel(i, audioFrame) : 0.0;
+                if (value > expectedHighestValue) {
+                    expectedHighestValue = value;
+                }
                 updateUiForChannel(i, value);
             }
 
@@ -77,26 +78,26 @@ public class AudioVisualizationComponent {
 
     private void updateUiForChannel(int channel, double value) {
         GraphicsContext graphics = canvas.getGraphicsContext2D();
-        double normalizedValue = MathUtil.clamp(value / EXPECTED_MAX_VALUE, 0.0, 1.0);
+        double normalizedValue = MathUtil.clamp(value / expectedHighestValue, 0.0, 1.0);
         double increment = 1.0 / NUMBER_OF_BARS;
         for (int i = 0; i < NUMBER_OF_BARS; ++i) {
             if (i * increment < normalizedValue) {
                 graphics.setFill(startColor.interpolate(endColor, i * increment));
-                graphics.fillRoundRect(i * (BAR_WIDTH + BAR_SPACE_WIDTH), channel * (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) + CHANNEL_HEIGHT_GAP, BAR_WIDTH, CHANNEL_HEIGHT, BAR_RADIUS, BAR_RADIUS);
             } else {
-                break;
+                graphics.setFill(Color.gray(0.5, 0.1));
             }
+            graphics.fillRoundRect(i * (BAR_WIDTH + BAR_SPACE_WIDTH) + 1, channel * (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) + CHANNEL_HEIGHT_GAP, BAR_WIDTH, CHANNEL_HEIGHT, BAR_RADIUS, BAR_RADIUS);
         }
     }
 
     private double calculateRmsForChannel(int channel, AudioFrameResult audioFrame) {
-        long sum = 0;
+        double sum = 0;
         for (int i = 0; i < audioFrame.getNumberSamples(); ++i) {
-            int currentSample = audioFrame.getSampleAt(channel, i);
+            double currentSample = audioFrame.getSampleAt(channel, i);
             sum += currentSample * currentSample;
         }
 
-        return Math.sqrt((double) sum / audioFrame.getNumberSamples());
+        return Math.sqrt(sum / audioFrame.getNumberSamples());
 
     }
 

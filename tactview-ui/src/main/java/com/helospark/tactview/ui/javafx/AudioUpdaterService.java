@@ -47,6 +47,7 @@ public class AudioUpdaterService {
     }
 
     public void updateAtPosition(TimelinePosition position) {
+        audioVisualizationComponent.updateAudioComponent(position);
         if (uiTimelineManager.isPlaybackInProgress()) {
             BigDecimal normalizedStartPosition = normalizePosition(position);
 
@@ -54,7 +55,6 @@ public class AudioUpdaterService {
             if (currentData != null && currentData.hasData()) {
                 byte[] bytes = currentData.get();
                 audioStreamService.streamAudio(bytes);
-                audioVisualizationComponent.updateAudioComponent(position);
             } else {
                 System.out.println("Key " + currentData + " " + " is not ready at " + normalizedStartPosition);
             }
@@ -73,8 +73,6 @@ public class AudioUpdaterService {
 
             buffer.entrySet()
                     .removeIf(e -> e.getKey().compareTo(normalizedStartPosition) < 0);
-        } else {
-            audioVisualizationComponent.clearCanvas();
         }
     }
 

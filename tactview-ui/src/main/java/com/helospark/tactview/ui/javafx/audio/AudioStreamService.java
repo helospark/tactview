@@ -45,7 +45,7 @@ public class AudioStreamService {
 
             int availableBytes = sourceDataLine.available();
             int bytesToWrite = Math.min(data.length, availableBytes);
-            sourceDataLine.write(data, 0, bytesToWrite - (bytesToWrite % 2));
+            sourceDataLine.write(data, 0, bytesToWrite - (bytesToWrite % (PlaybackController.BYTES * PlaybackController.CHANNELS)));
         }
     }
 

@@ -88,6 +88,9 @@ public class UiTimelineManager {
     }
 
     public void jumpAbsolute(BigDecimal seconds) {
+        if (seconds.compareTo(BigDecimal.ZERO) < 0) {
+            seconds = BigDecimal.ZERO;
+        }
         synchronized (timelineLock) {
             currentPosition = new TimelinePosition(seconds);
         }
