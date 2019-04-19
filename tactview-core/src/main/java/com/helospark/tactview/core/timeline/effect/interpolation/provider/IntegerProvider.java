@@ -102,4 +102,9 @@ public class IntegerProvider extends KeyframeableEffect {
     public boolean keyframesEnabled() {
         return ((KeyframeSupportingInterpolator) interpolator).isUsingKeyframes();
     }
+
+    @Override
+    public EffectInterpolator getInterpolator() {
+        return interpolator;
+    }
 }

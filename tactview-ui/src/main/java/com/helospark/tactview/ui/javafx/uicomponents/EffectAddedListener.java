@@ -82,7 +82,11 @@ public class EffectAddedListener {
 
         rectangle.setOnMouseClicked(event -> {
             if (event.getClickCount() == 1) {
-                selectedNodeRepository.setOnlySelectedEffect(rectangle);
+                if (event.isControlDown()) {
+                    selectedNodeRepository.addSelectedEffect(rectangle);
+                } else {
+                    selectedNodeRepository.setOnlySelectedEffect(rectangle);
+                }
             } else {
                 extendClipToClipSize(effectAddedMessage.getClipId(), effectAddedMessage.getEffect());
             }

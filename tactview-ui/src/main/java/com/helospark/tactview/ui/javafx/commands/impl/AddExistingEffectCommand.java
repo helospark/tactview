@@ -16,12 +16,16 @@ public class AddExistingEffectCommand implements UiCommand {
 
     @Override
     public void execute() {
-        timelineManager.addExistingEffect(request);
+        request.getEffect()
+                .stream()
+                .forEach(a -> timelineManager.addExistingEffect(request.getClipToAdd(), a));
     }
 
     @Override
     public void revert() {
-        timelineManager.removeClip(request.getClipToAdd().getId());
+        request.getEffect()
+                .stream()
+                .forEach(a -> timelineManager.removeEffect(a.getId()));
     }
 
 }

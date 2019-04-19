@@ -116,7 +116,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     } else {
                         List<String> selectedEffects = selectedNodeRepository.getSelectedEffectIds();
                         if (selectedEffects.size() > 0) {
-                            copyPasteRepository.copyEffect(selectedEffects.get(0));
+                            copyPasteRepository.copyEffect(selectedEffects);
                         }
                     }
                 }));
@@ -126,7 +126,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     if (selectedClipIds.isEmpty()) {
                         copyPasteRepository.pasteWithoutAdditionalInfo();
                     } else {
-                        copyPasteRepository.pasteOnExistingClip(selectedClipIds.get(0));
+                        copyPasteRepository.pasteOnExistingClips(selectedClipIds);
                     }
                 }));
     }

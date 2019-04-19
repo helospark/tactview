@@ -118,7 +118,6 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
         messagingService.sendAsyncMessage(new EffectDescriptorsAdded(effect.getId(), effect.getValueProviders(), effect));
         messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), effect.interval.getStartPosition(), effect, newEffectChannelId, effect.getGlobalInterval()));
         effect.notifyAfterInitialized();
-        // TODO: keyframes
     }
 
     private StatelessEffect createEffect(String effectId, TimelinePosition position, TimelineClip clipById) {
@@ -642,8 +641,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
         addClip(request.getChannel(), clip);
     }
 
-    public void addExistingEffect(AddExistingEffectRequest request) {
-        addEffectForClip(request.getClipToAdd(), request.getEffect());
+    public void addExistingEffect(TimelineClip clipToAdd, StatelessEffect effect) {
+        addEffectForClip(clipToAdd, effect);
     }
 
     public TimelinePosition findEndPosition() {

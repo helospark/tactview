@@ -12,6 +12,10 @@ public class CompositeCommand implements UiCommand {
         this.children = Arrays.asList(children);
     }
 
+    public CompositeCommand(List<? extends UiCommand> commands) {
+        this.children = (List<UiCommand>) commands;
+    }
+
     @Override
     public void execute() {
         children.stream()

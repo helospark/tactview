@@ -1,5 +1,8 @@
 package com.helospark.tactview.ui.javafx.repository;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.AddExistingClipRequest;
@@ -11,8 +14,10 @@ import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddExistingClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.AddExistingEffectCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.repository.copypaste.ClipCopyPasteDomain;
 import com.helospark.tactview.ui.javafx.repository.copypaste.EffectCopyPasteDomain;
+import com.helospark.tactview.ui.javafx.repository.copypaste.EffectCopyPasteDomain.EffectCopyPasteDomainElement;
 
 @Component
 public class CopyPasteRepository {
@@ -45,6 +50,21 @@ public class CopyPasteRepository {
         }
     }
 
+    public void copyEffect(List<String> selectedEffects) {
+        if (selectedEffects.size() == 0) {
+            return;
+        }
+        List<EffectCopyPasteDomainElement> elements = selectedEffects.stream()
+                .map(a -> {
+                    TimelineClip clip = timelineManager.findClipForEffect(a).orElse(null);
+                    StatelessEffect effect = clip.getEffect(a).orElse(null);
+
+                    return new EffectCopyPasteDomainElement(clip, effect);
+                })
+                .collect(Collectors.toList());
+        clipboardContent = new EffectCopyPasteDomain(elements);
+    }
+
     public void pasteWithoutAdditionalInfo() {
         if (clipboardContent == null) {
             return;
@@ -52,19 +72,26 @@ public class CopyPasteRepository {
         pasteWithoutInfo();
     }
 
-    public void pasteOnExistingClip(String clipId) {
+    public void pasteOnExistingClips(List<String> selectedClipIds) {
         if (clipboardContent == null) {
             return;
         }
-        pasteWithSelectedClip(clipId);
+        pasteWithSelectedClips(selectedClipIds);
     }
 
-    private void pasteWithSelectedClip(String clipId) {
+    private void pasteWithSelectedClips(List<String> selectedClipIds) {
         if (clipboardContent instanceof ClipCopyPasteDomain) {
             pasteClip();
         } else if (clipboardContent instanceof EffectCopyPasteDomain) {
-            TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow();
-            pasteEffectToClip(clip);
+
+            List<AddExistingEffectCommand> commands = selectedClipIds.stream()
+                    .map(clipId -> {
+                        TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow();
+                        return createExsitingEffectPasteCommand(clip);
+                    }).collect(Collectors.toList());
+
+            CompositeCommand command = new CompositeCommand(commands);
+            commandInterpreter.sendWithResult(command);
         }
     }
 
@@ -72,19 +99,31 @@ public class CopyPasteRepository {
         if (clipboardContent instanceof ClipCopyPasteDomain) {
             pasteClip();
         } else if (clipboardContent instanceof EffectCopyPasteDomain) {
-            TimelineClip clip = timelineManager.findClipById(((EffectCopyPasteDomain) clipboardContent).clipboardContent.getId()).orElseThrow();
-            pasteEffectToClip(clip);
+            TimelineClip clip = timelineManager.findClipById(((EffectCopyPasteDomain) clipboardContent).getElements().get(0).clip.getId()).orElseThrow();
+            pasteEffectsToClip(clip);
         }
     }
 
-    private void pasteEffectToClip(TimelineClip clip) {
-        AddExistingEffectRequest request = AddExistingEffectRequest.builder()
-                .withClipToAdd(clip)
-                .withEffect(((EffectCopyPasteDomain) clipboardContent).effect.cloneEffect(CloneRequestMetadata.ofDefault()))
-                .build();
-        AddExistingEffectCommand addExistingEffectCommand = new AddExistingEffectCommand(request, timelineManager);
+    private void pasteEffectsToClip(TimelineClip clip) {
+        AddExistingEffectCommand addExistingEffectCommand = createExsitingEffectPasteCommand(clip);
 
         commandInterpreter.sendWithResult(addExistingEffectCommand);
+    }
+
+    private AddExistingEffectCommand createExsitingEffectPasteCommand(TimelineClip clip) {
+        AddExistingEffectRequest request = AddExistingEffectRequest.builder()
+                .withClipToAdd(clip)
+                .withEffects(getAllEffectClone())
+                .build();
+        AddExistingEffectCommand addExistingEffectCommand = new AddExistingEffectCommand(request, timelineManager);
+        return addExistingEffectCommand;
+    }
+
+    private List<StatelessEffect> getAllEffectClone() {
+        return ((EffectCopyPasteDomain) clipboardContent).getElements()
+                .stream()
+                .map(e -> e.effect.cloneEffect(CloneRequestMetadata.ofDefault()))
+                .collect(Collectors.toList());
     }
 
     private void pasteClip() {

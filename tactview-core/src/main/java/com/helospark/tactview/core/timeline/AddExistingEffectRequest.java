@@ -1,25 +1,27 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Generated;
 
 public class AddExistingEffectRequest {
     private TimelineClip clipToAdd;
-    private StatelessEffect effect;
+    private List<StatelessEffect> effects;
 
     @Generated("SparkTools")
     private AddExistingEffectRequest(Builder builder) {
         this.clipToAdd = builder.clipToAdd;
-        this.effect = builder.effect;
+        this.effects = builder.effects;
     }
 
     public TimelineClip getClipToAdd() {
         return clipToAdd;
     }
 
-    public StatelessEffect getEffect() {
-        return effect;
+    public List<StatelessEffect> getEffect() {
+        return effects;
     }
 
     @Override
@@ -28,17 +30,17 @@ public class AddExistingEffectRequest {
             return false;
         }
         AddExistingEffectRequest castOther = (AddExistingEffectRequest) other;
-        return Objects.equals(clipToAdd, castOther.clipToAdd) && Objects.equals(effect, castOther.effect);
+        return Objects.equals(clipToAdd, castOther.clipToAdd) && Objects.equals(effects, castOther.effects);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(clipToAdd, effect);
+        return Objects.hash(clipToAdd, effects);
     }
 
     @Override
     public String toString() {
-        return "AddExistingEffectRequest [clipToAdd=" + clipToAdd + ", effect=" + effect + "]";
+        return "AddExistingEffectRequest [clipToAdd=" + clipToAdd + ", effect=" + effects + "]";
     }
 
     @Generated("SparkTools")
@@ -49,7 +51,7 @@ public class AddExistingEffectRequest {
     @Generated("SparkTools")
     public static final class Builder {
         private TimelineClip clipToAdd;
-        private StatelessEffect effect;
+        private List<StatelessEffect> effects = Collections.emptyList();
 
         private Builder() {
         }
@@ -59,8 +61,8 @@ public class AddExistingEffectRequest {
             return this;
         }
 
-        public Builder withEffect(StatelessEffect effect) {
-            this.effect = effect;
+        public Builder withEffects(List<StatelessEffect> effect) {
+            this.effects = effect;
             return this;
         }
 
