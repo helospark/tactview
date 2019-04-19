@@ -20,7 +20,9 @@ import com.helospark.tactview.core.timeline.effect.cartoon.CartoonEffect;
 import com.helospark.tactview.core.timeline.effect.cartoon.opencv.OpenCVCartoonEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.colorchannelchange.ColorChannelChangeEffect;
 import com.helospark.tactview.core.timeline.effect.colorchannelchange.FloodFillEffect;
+import com.helospark.tactview.core.timeline.effect.colorize.AutoWhiteBalanceEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorBalanceEffect;
+import com.helospark.tactview.core.timeline.effect.colorize.ColorTemperatureService;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeEffect;
 import com.helospark.tactview.core.timeline.effect.colorize.ColorizeService;
 import com.helospark.tactview.core.timeline.effect.colorize.CurvesEffect;
@@ -424,11 +426,12 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory colorBalanceEffect(IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService) {
+    public StandardEffectFactory colorBalanceEffect(IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
+            ColorTemperatureService colorTemperatureService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ColorBalanceEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, brignessContrastService,
-                        colorizeService))
-                .withRestoreFactory((node, loadMetadata) -> new ColorBalanceEffect(node, loadMetadata, independentPixelOperation, brignessContrastService, colorizeService))
+                        colorizeService, colorTemperatureService))
+                .withRestoreFactory((node, loadMetadata) -> new ColorBalanceEffect(node, loadMetadata, independentPixelOperation, brignessContrastService, colorizeService, colorTemperatureService))
                 .withName("Color balance")
                 .withSupportedEffectId("colorbalance")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
@@ -764,6 +767,18 @@ public class StandardEffectConfiguration {
                         layerMaskAlphaToAlpha))
                 .withName("Bezier mask")
                 .withSupportedEffectId("beziermask")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory autoWhiteBalanceEffect(ColorTemperatureService colorTemperatureService) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new AutoWhiteBalanceEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), colorTemperatureService))
+                .withRestoreFactory((node, loadMetadata) -> new AutoWhiteBalanceEffect(node, loadMetadata, colorTemperatureService))
+                .withName("Auto white balance")
+                .withSupportedEffectId("autowhitebalance")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();

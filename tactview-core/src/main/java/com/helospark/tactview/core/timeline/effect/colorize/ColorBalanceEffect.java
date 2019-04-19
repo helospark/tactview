@@ -51,12 +51,15 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     private IndependentPixelOperation independentPixelOperation;
     private BrignessContrastService brignessContrastService;
     private ColorizeService colorizeService;
+    private ColorTemperatureService colorTemperatureService;
 
-    public ColorBalanceEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService) {
+    public ColorBalanceEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
+            ColorTemperatureService colorTemperatureService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
         this.brignessContrastService = brignessContrastService;
         this.colorizeService = colorizeService;
+        this.colorTemperatureService = colorTemperatureService;
     }
 
     public ColorBalanceEffect(ColorBalanceEffect colorBalance, CloneRequestMetadata cloneRequestMetadata) {
@@ -65,11 +68,12 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     }
 
     public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2,
-            ColorizeService colorizeService2) {
+            ColorizeService colorizeService2, ColorTemperatureService colorTemperatureService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
         this.brignessContrastService = brignessContrastService2;
         this.colorizeService = colorizeService2;
+        this.colorTemperatureService = colorTemperatureService;
     }
 
     @Override
@@ -104,17 +108,11 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
         double tint = tintProvider.getValueAt(request.getEffectPosition());
 
         if (!DoubleMath.fuzzyEquals(colorTemperature, 0.0, EPSILON) || !DoubleMath.fuzzyEquals(tint, 0.0, EPSILON)) {
-            independentPixelOperation.executePixelTransformation(clipImage.getWidth(), clipImage.getHeight(), (x, y) -> {
-                int red = (int) (clipImage.getColorComponentWithOffset(x, y, 0) + colorTemperature * 255.0);
-                int green = (int) (clipImage.getColorComponentWithOffset(x, y, 1) + tint * 255.0);
-                int blue = (int) (clipImage.getColorComponentWithOffset(x, y, 2) - colorTemperature * 255.0);
-                int alpha = clipImage.getColorComponentWithOffset(x, y, 3);
-
-                clipImage.setColorComponentByOffset(red, x, y, 0);
-                clipImage.setColorComponentByOffset(green, x, y, 1);
-                clipImage.setColorComponentByOffset(blue, x, y, 2);
-                clipImage.setColorComponentByOffset(alpha, x, y, 3);
-            });
+            ColorTemperatureChangeRequest temperatureChangeRequest = ColorTemperatureChangeRequest.builder()
+                    .withTemperatureChange(colorTemperature)
+                    .withTintChange(tint)
+                    .build();
+            colorTemperatureService.applyColorTemperatureChange(clipImage, temperatureChangeRequest);
         }
     }
 
