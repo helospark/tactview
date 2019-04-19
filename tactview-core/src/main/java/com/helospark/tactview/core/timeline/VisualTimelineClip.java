@@ -41,6 +41,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected BooleanProvider changeClipLengthProvider;
     protected DoubleProvider timeScaleProvider;
     protected BooleanProvider enabledProvider;
+    protected BooleanProvider reverseTimeProvider;
     protected ValueListProvider<AlignmentValueListElement> verticallyCenteredProvider;
     protected ValueListProvider<AlignmentValueListElement> horizontallyCenteredProvider;
 
@@ -87,10 +88,20 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     protected TimelinePosition calculatePositionToRender(GetFrameRequest request) {
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-        TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
-        BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
-        TimelinePosition rateAdjustedPosition = new TimelinePosition(integrated);
-        return rateAdjustedPosition;
+
+        boolean reverse = reverseTimeProvider.getValueAt(TimelinePosition.ofZero());
+
+        if (reverse) {
+            TimelinePosition endPosition = interval.getLength().toPosition().add(renderOffset);
+            TimelinePosition unscaledPosition = endPosition.subtract(relativePosition);
+            BigDecimal integrated = timeScaleProvider.integrate(unscaledPosition, endPosition);
+            return endPosition.subtract(new TimelinePosition(integrated));
+        } else {
+            TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
+            BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
+            return renderOffset.toPosition().add(integrated);
+        }
+
     }
 
     protected ReadOnlyClipImage applyEffects(TimelinePosition relativePosition, ReadOnlyClipImage frameResult, GetFrameRequest frameRequest) {
@@ -167,6 +178,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         verticallyCenteredProvider = new ValueListProvider<>(createVerticalAlignments(), new StepStringInterpolator("top"));
         timeScaleProvider = new DoubleProvider(0, 5, new MultiKeyframeBasedDoubleInterpolator(1.0));
         changeClipLengthProvider = new BooleanProvider(new ConstantInterpolator(1.0));
+        reverseTimeProvider = new BooleanProvider(new ConstantInterpolator(0.0));
     }
 
     private List<AlignmentValueListElement> createVerticalAlignments() {
@@ -229,6 +241,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withName("change clip length")
                 .withGroup("speed")
                 .build();
+        ValueProviderDescriptor reverseTimeProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(reverseTimeProvider)
+                .withName("Reverse clip")
+                .withGroup("speed")
+                .build();
 
         result.add(translateDescriptor);
         result.add(centerHorizontallyDescriptor);
@@ -238,6 +255,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         result.add(blendModeDescriptor);
         result.add(timeScaleProviderDescriptor);
         result.add(changeClipLengthProviderDescriptor);
+        result.add(reverseTimeProviderDescriptor);
 
         return result;
     }
@@ -275,7 +293,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         if (changeClipLength) {
             TimelineInterval originalInterval = this.interval;
             TimelinePosition originalStartPosition = originalInterval.getStartPosition();
-            BigDecimal newArea = timeScaleProvider.integrate(renderOffset.toPosition(), originalInterval.getLength().toPosition());
+            BigDecimal newArea = timeScaleProvider.integrate(renderOffset.toPosition(), renderOffset.toPosition().add(originalInterval.getLength().toPosition()));
             if (newArea.abs().doubleValue() < 0.001) {
                 return this.interval; // avoid divide by zero
             } else {
