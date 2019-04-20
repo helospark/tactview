@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.inputmode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
@@ -19,6 +20,7 @@ import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.BezierPolygonInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ColorInputTypeStrategy;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.DrawRequestParameter;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.InputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
@@ -79,56 +81,56 @@ public class InputModeRepository implements CleanableMode {
         InputTypeStrategy<Point> currentStrategy = new PointInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     public void requestLine(Consumer<InterpolationLine> consumer, InterpolationLine interpolationLine, SizeFunction sizeFunction) {
         InputTypeStrategy<InterpolationLine> currentStrategy = new LineInputTypeStrategy(interpolationLine);
         this.inputModeInput = new InputModeInput<>(InterpolationLine.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     public void requestPolygon(Consumer<Polygon> consumer, SizeFunction sizeFunction) {
         InputTypeStrategy<Polygon> currentStrategy = new PolygonInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(Polygon.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     public void requestRectangle(Consumer<Rectangle> consumer, List<Point> rectangle, SizeFunction sizeFunction) {
         InputTypeStrategy<Rectangle> currentStrategy = new RectangleInputTypeStrategy(rectangle);
         this.inputModeInput = new InputModeInput<>(Rectangle.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     public void requestPolygonPrefilled(Consumer<Polygon> consumer, SizeFunction sizeFunction, List<Point> polygon) {
         InputTypeStrategy<Polygon> currentStrategy = new PolygonInputTypeStrategy(polygon);
         this.inputModeInput = new InputModeInput<>(Polygon.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     public void requestBezierPolygon(Consumer<BezierPolygon> consumer, SizeFunction sizeFunction) {
         InputTypeStrategy<BezierPolygon> currentStrategy = new BezierPolygonInputTypeStrategy();
         this.inputModeInput = new InputModeInput<>(BezierPolygon.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     public void requestBezierPolygonPrefilled(Consumer<BezierPolygon> consumer, SizeFunction sizeFunction, List<BezierPolygonPoint> points) {
         InputTypeStrategy<BezierPolygon> currentStrategy = new BezierPolygonInputTypeStrategy(points);
         this.inputModeInput = new InputModeInput<>(BezierPolygon.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     public void requestColor(Consumer<Color> consumer) {
-        InputTypeStrategy<Color> currentStrategy = new ColorInputTypeStrategy();
+        InputTypeStrategy<Color> currentStrategy = new ColorInputTypeStrategy(currentlyPressedKeyRepository);
         this.inputModeInput = new InputModeInput<>(Color.class, consumer, currentStrategy, SizeFunction.CLAMP_TO_MIN_MAX);
         inputModeChanged(true);
-        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D()));
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
     }
 
     private void processStrategy() {
@@ -144,7 +146,7 @@ public class InputModeRepository implements CleanableMode {
         });
         canvas.setOnMouseExited(e -> {
             displayUpdaterService.updateCurrentPosition();
-            updateCanvasWithStrategy(canvas.getGraphicsContext2D());
+            updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null);
         });
     }
 
@@ -157,14 +159,21 @@ public class InputModeRepository implements CleanableMode {
                 graphics.setStroke(javafx.scene.paint.Color.RED);
                 graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
                 graphics.strokeLine(e.getX(), 0, e.getX(), canvas.getHeight());
-                updateCanvasWithStrategy(graphics);
+                updateCanvasWithStrategy(graphics, e);
             });
         }
     }
 
-    private void updateCanvasWithStrategy(GraphicsContext graphics) {
+    private void updateCanvasWithStrategy(GraphicsContext graphics, MouseEvent e) {
         if (inputModeInput != null) {
-            inputModeInput.currentStrategy.draw(graphics, (int) canvas.getWidth(), (int) canvas.getHeight());
+            DrawRequestParameter request = DrawRequestParameter.builder()
+                    .withCanvas(graphics)
+                    .withWidth((int) canvas.getWidth())
+                    .withHeight((int) canvas.getHeight())
+                    .withMouseInCanvas(e != null)
+                    .withMouseEvent(Optional.ofNullable(e))
+                    .build();
+            inputModeInput.currentStrategy.draw(request);
         }
     }
 

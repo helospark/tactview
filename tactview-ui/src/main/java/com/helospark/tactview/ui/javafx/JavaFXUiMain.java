@@ -30,18 +30,22 @@ import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
+import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
@@ -56,6 +60,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -153,7 +158,7 @@ public class JavaFXUiMain extends Application {
 
         VBox rightVBox = new VBox(5);
         rightVBox.setAlignment(Pos.TOP_CENTER);
-        rightVBox.setPrefWidth(330);
+        rightVBox.setPrefWidth(350);
         rightVBox.setId("clip-view");
 
         canvas = new Canvas();
@@ -165,7 +170,8 @@ public class JavaFXUiMain extends Application {
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
 
-        ScrollPane previewScrollPane = new ScrollPane(canvas);
+        ScrollPane previewScrollPane = new ScrollPane(createCentered(canvas));
+        previewScrollPane.setFitToWidth(true);
         previewScrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         previewScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 
@@ -226,6 +232,9 @@ public class JavaFXUiMain extends Application {
         jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
         jumpForwardButton.setTooltip(new Tooltip("Step 10s forward"));
 
+        ComboBox<String> sizeDropDown = lightDi.getBean(ScaleComboBoxFactory.class).create();
+
+        underVideoBar.getChildren().add(sizeDropDown);
         underVideoBar.getChildren().add(muteButton);
         underVideoBar.getChildren().add(halfImageEffectButton);
         underVideoBar.getChildren().add(fullscreenButton);
@@ -277,6 +286,24 @@ public class JavaFXUiMain extends Application {
         lightDi.getBean(UiInitializer.class).initialize();
 
         stage.show();
+    }
+
+    private Node createCentered(Canvas canvas2) {
+        GridPane outerPane = new GridPane();
+        RowConstraints row = new RowConstraints();
+        row.setPercentHeight(100);
+        row.setFillHeight(false);
+        row.setValignment(VPos.CENTER);
+        outerPane.getRowConstraints().add(row);
+
+        ColumnConstraints col = new ColumnConstraints();
+        col.setPercentWidth(100);
+        col.setFillWidth(false);
+        col.setHalignment(HPos.CENTER);
+        outerPane.getColumnConstraints().add(col);
+
+        outerPane.add(canvas2, 0, 0);
+        return outerPane;
     }
 
     private void exitApplication(ExitWithSaveService exitWithSaveService) {

@@ -7,7 +7,6 @@ import java.util.Optional;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 
@@ -99,12 +98,12 @@ public class RectangleInputTypeStrategy implements InputTypeStrategy<Rectangle> 
     }
 
     @Override
-    public void draw(GraphicsContext canvas, int width, int height) {
-        canvas.setFill(Color.BLUE);
-        canvas.setStroke(Color.BLUE);
+    public void draw(DrawRequestParameter parameterObject) {
+        parameterObject.getCanvas().setFill(Color.BLUE);
+        parameterObject.getCanvas().setStroke(Color.BLUE);
         Point previous = null;
         for (int i = 0; i < result.size(); ++i) {
-            Point current = result.get(i).multiply(width, height);
+            Point current = result.get(i).multiply(parameterObject.getWidth(), parameterObject.getHeight());
             int diameter = 10;
 
             if (isMouseCloseToFirstPoint && i == 0) {
@@ -112,14 +111,14 @@ public class RectangleInputTypeStrategy implements InputTypeStrategy<Rectangle> 
             }
 
             if (mouseCloseTo.isPresent() && mouseCloseTo.get().equals(i)) {
-                canvas.setFill(Color.RED);
+                parameterObject.getCanvas().setFill(Color.RED);
             } else {
-                canvas.setFill(Color.BLUE);
+                parameterObject.getCanvas().setFill(Color.BLUE);
             }
 
-            canvas.fillOval(current.x - diameter / 2, current.y - diameter / 2, diameter, diameter);
+            parameterObject.getCanvas().fillOval(current.x - diameter / 2, current.y - diameter / 2, diameter, diameter);
             if (previous != null) {
-                canvas.strokeLine(previous.x, previous.y, current.x, current.y);
+                parameterObject.getCanvas().strokeLine(previous.x, previous.y, current.x, current.y);
             }
             previous = current;
         }

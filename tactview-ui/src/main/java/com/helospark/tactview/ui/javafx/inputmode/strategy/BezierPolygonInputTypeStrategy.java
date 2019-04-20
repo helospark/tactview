@@ -9,7 +9,6 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.B
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.SplinePolygonType;
 
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 
@@ -150,13 +149,13 @@ public class BezierPolygonInputTypeStrategy implements InputTypeStrategy<BezierP
     }
 
     @Override
-    public void draw(GraphicsContext canvas, int width, int height) {
-        canvas.setFill(Color.BLUE);
-        canvas.setStroke(Color.BLUE);
+    public void draw(DrawRequestParameter parameterObject) {
+        parameterObject.getCanvas().setFill(Color.BLUE);
+        parameterObject.getCanvas().setStroke(Color.BLUE);
         Point previousRealPoint = null;
         for (int i = 0; i < result.size(); ++i) {
             BezierPolygonPoint currentBezier = result.get(i);
-            Point current = pointFromBezierPoint(currentBezier).multiply(width, height);
+            Point current = pointFromBezierPoint(currentBezier).multiply(parameterObject.getWidth(), parameterObject.getHeight());
             int diameter = 10;
 
             if (isMouseCloseToFirstPoint && i == 0 && !finishOnRightClick) {
@@ -164,25 +163,25 @@ public class BezierPolygonInputTypeStrategy implements InputTypeStrategy<BezierP
             }
 
             if (mouseCloseTo.isPresent() && mouseCloseTo.get().equals(i)) {
-                canvas.setFill(Color.RED);
+                parameterObject.getCanvas().setFill(Color.RED);
             } else {
                 if (currentBezier.type == SplinePolygonType.SPLINE) {
-                    canvas.setFill(Color.GRAY);
+                    parameterObject.getCanvas().setFill(Color.GRAY);
                 } else {
-                    canvas.setFill(Color.BLUE);
+                    parameterObject.getCanvas().setFill(Color.BLUE);
                 }
             }
 
-            canvas.fillOval(current.x - diameter / 2, current.y - diameter / 2, diameter, diameter);
+            parameterObject.getCanvas().fillOval(current.x - diameter / 2, current.y - diameter / 2, diameter, diameter);
 
             if (currentBezier.type == SplinePolygonType.SPLINE) {
-                canvas.setStroke(Color.GRAY);
+                parameterObject.getCanvas().setStroke(Color.GRAY);
             } else {
-                canvas.setStroke(Color.BLUE);
+                parameterObject.getCanvas().setStroke(Color.BLUE);
             }
 
             if (previousRealPoint != null) {
-                canvas.strokeLine(previousRealPoint.x, previousRealPoint.y, current.x, current.y);
+                parameterObject.getCanvas().strokeLine(previousRealPoint.x, previousRealPoint.y, current.x, current.y);
             }
             if (currentBezier.type == SplinePolygonType.POINT) {
                 previousRealPoint = current;

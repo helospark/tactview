@@ -1,7 +1,5 @@
 package com.helospark.tactview.ui.javafx.inputmode.strategy;
 
-import javafx.scene.canvas.GraphicsContext;
-
 public interface InputTypeStrategy<T> {
 
     public default void onMouseDownEvent(StrategyMouseInput input) {
@@ -21,7 +19,7 @@ public interface InputTypeStrategy<T> {
 
     public ResultType getResultType();
 
-    public void draw(GraphicsContext canvas, int width, int height);
+    public void draw(DrawRequestParameter parameterObject);
 
     public T getResult();
 

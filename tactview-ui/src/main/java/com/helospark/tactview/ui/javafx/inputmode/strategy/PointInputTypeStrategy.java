@@ -2,8 +2,6 @@ package com.helospark.tactview.ui.javafx.inputmode.strategy;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
-import javafx.scene.canvas.GraphicsContext;
-
 public class PointInputTypeStrategy implements InputTypeStrategy<Point> {
     private Point result;
     private boolean done = false;
@@ -35,10 +33,10 @@ public class PointInputTypeStrategy implements InputTypeStrategy<Point> {
     }
 
     @Override
-    public void draw(GraphicsContext canvas, int width, int height) {
+    public void draw(DrawRequestParameter parameterObject) {
         if (result != null) {
-            canvas.strokeLine(result.x - 10, result.y, result.x + 10, result.y);
-            canvas.strokeLine(result.x, result.y - 10, result.x, result.y + 10);
+            parameterObject.getCanvas().strokeLine(result.x - 10, result.y, result.x + 10, result.y);
+            parameterObject.getCanvas().strokeLine(result.x, result.y - 10, result.x, result.y + 10);
         }
     }
 

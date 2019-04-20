@@ -363,3 +363,7 @@
     -fx-border-color: rgba(10,10,10,0.2);
     -fx-padding: 0 0 0 20
 }
+
+.size-drop-down {
+    -fx-background-color: transparent;
+}

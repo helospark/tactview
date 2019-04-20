@@ -21,8 +21,8 @@ public class ProjectRepository implements SaveLoadContributor {
     private ObjectMapper objectMapper;
 
     private boolean isInitialized = false;
-    private int width = 0;
-    private int height = 0;
+    private int width = 1920;
+    private int height = 1080;
     private BigDecimal fps = BigDecimal.valueOf(24);
     private BigDecimal frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
 
