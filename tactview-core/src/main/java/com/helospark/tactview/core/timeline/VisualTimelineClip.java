@@ -1,7 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +46,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     protected VisualMediaSource backingSource;
     protected ValueListProvider<BlendModeValueListElement> blendModeProvider;
+
+    protected BigDecimal lengthCache = null;
 
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
@@ -293,16 +294,21 @@ public abstract class VisualTimelineClip extends TimelineClip {
         if (changeClipLength) {
             TimelineInterval originalInterval = this.interval;
             TimelinePosition originalStartPosition = originalInterval.getStartPosition();
-            BigDecimal newArea = timeScaleProvider.integrate(renderOffset.toPosition(), renderOffset.toPosition().add(originalInterval.getLength().toPosition()));
-            if (newArea.abs().doubleValue() < 0.001) {
-                return this.interval; // avoid divide by zero
-            } else {
-                BigDecimal newLengthMultiplier = interval.getLength().getSeconds().divide(newArea, 10, RoundingMode.HALF_UP);
-                return new TimelineInterval(originalStartPosition, this.interval.getLength().multiply(newLengthMultiplier));
+            if (lengthCache == null) {
+                lengthCache = timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), originalInterval.getLength(), new BigDecimal("1000"));
             }
+            return new TimelineInterval(originalStartPosition, new TimelineLength(lengthCache));
         } else {
             return this.interval;
         }
     }
 
+    @Override
+    public void effectChanged(EffectChangedRequest request) {
+        super.effectChanged(request);
+        if (request.id.equals(timeScaleProvider.getId())) {
+            lengthCache = null;
+            //                    ((PercentAwareMultiKeyframeBasedDoubleInterpolator) timeScaleProvider.getInterpolator()).resizeTo(getInterval().getLength());
+        }
+    }
 }

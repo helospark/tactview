@@ -51,7 +51,7 @@ public class IntegerProvider extends KeyframeableEffect {
     @Override
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
         if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
-            ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemovedInternal(globalTimelinePosition);
+            ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemoved(globalTimelinePosition);
         }
     }
 

@@ -25,6 +25,19 @@ public class ByteBufferToImageConverter {
         return bufferedImage;
     }
 
+    public BufferedImage byteBufferToBufferedImageWithAlpha(ByteBuffer byteBuffer, int width, int height) {
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+        independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
+            int in = y * width * 4 + (x * 4);
+            int r = printByte(byteBuffer.get(in + 0));
+            int g = printByte(byteBuffer.get(in + 1));
+            int b = printByte(byteBuffer.get(in + 2));
+            int a = printByte(byteBuffer.get(in + 3));
+            bufferedImage.setRGB(x, y, new java.awt.Color(r, g, b, a).getRGB());
+        });
+        return bufferedImage;
+    }
+
     public int printByte(byte b) {
         int value;
         if (b < 0) {

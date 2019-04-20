@@ -178,6 +178,8 @@ extern "C" {
 
         DecodeStructure* element;
 
+        std::cout << "Found Element" <<  elementIterator->first << std::endl;
+
         if (elementIterator == decodeStructureMap.end()) {
             element = openFile(request);
         } else {
@@ -316,12 +318,14 @@ extern "C" {
             return NULL;
         }
 
-        int numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, pCodecCtx->width,
-                                    pCodecCtx->height);
+        std::cout << "Opening file with size " << request->width << " " << request->width << std::endl;
+
+        int numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, request->width,
+                                     request->height);
         buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
 
         avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
-                       pCodecCtx->width, pCodecCtx->height);
+                       request->width, request->height);
 
         sws_ctx = sws_getContext(pCodecCtx->width,
                                  pCodecCtx->height,

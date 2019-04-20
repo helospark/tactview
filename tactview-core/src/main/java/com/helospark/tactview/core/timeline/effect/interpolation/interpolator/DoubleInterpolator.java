@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
 import java.math.BigDecimal;
 
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public interface DoubleInterpolator extends EffectInterpolator {
@@ -25,9 +26,35 @@ public interface DoubleInterpolator extends EffectInterpolator {
             // trapezoid area
             area = area.add(lowValue.add(highValue).divide(two).multiply(interpolationResolition));
 
-            currentPosition.add(interpolationResolition);
+            currentPosition = currentPosition.add(interpolationResolition);
         }
         return area;
+    }
+
+    public default BigDecimal integrateUntil(TimelinePosition start, TimelineLength untilValue, BigDecimal max) {
+        BigDecimal area = BigDecimal.ZERO;
+        while (area.compareTo(untilValue.getSeconds()) < 0 && start.getSeconds().compareTo(max) < 0) {
+            BigDecimal integralValue = this.integrate(TimelinePosition.ofZero(), start.add(BigDecimal.ONE));
+            BigDecimal newArea = integralValue;
+            if (area.compareTo(untilValue.getSeconds()) < 0) {
+                area = newArea;
+                start = start.add(BigDecimal.ONE);
+            } else {
+                break;
+            }
+        }
+
+        while (area.compareTo(untilValue.getSeconds()) < 0 && start.getSeconds().compareTo(max) < 0) {
+            BigDecimal lowValue = BigDecimal.valueOf(valueAt(start));
+            BigDecimal highValue = BigDecimal.valueOf(valueAt(start.add(interpolationResolition)));
+
+            // trapezoid area
+            area = area.add(lowValue.add(highValue).divide(two).multiply(interpolationResolition));
+
+            start = start.add(interpolationResolition);
+        }
+
+        return start.getSeconds();
     }
 
 }

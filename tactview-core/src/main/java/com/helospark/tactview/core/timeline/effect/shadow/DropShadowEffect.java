@@ -17,9 +17,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class DropShadowEffect extends StatelessVideoEffect {
@@ -32,13 +35,16 @@ public class DropShadowEffect extends StatelessVideoEffect {
     private DoubleProvider shiftYProvider;
     private ColorProvider shadowColorProvider;
     private DoubleProvider maximumAlphaProvider;
+    private DoubleProvider scaleProvider;
 
     private BlurService blurService;
+    private ScaleService scaleService;
 
-    public DropShadowEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BlurService blurService) {
+    public DropShadowEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BlurService blurService, ScaleService scaleService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
         this.blurService = blurService;
+        this.scaleService = scaleService;
     }
 
     public DropShadowEffect(DropShadowEffect dropShadowEffect, CloneRequestMetadata cloneRequestMetadata) {
@@ -46,10 +52,11 @@ public class DropShadowEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this);
     }
 
-    public DropShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BlurService blurService2) {
+    public DropShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BlurService blurService2, ScaleService scaleService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
         this.blurService = blurService2;
+        this.scaleService = scaleService;
     }
 
     @Override
@@ -94,21 +101,67 @@ public class DropShadowEffect extends StatelessVideoEffect {
             shadow.setAlpha(newa, x, y);
         });
 
-        BlurRequest blurRequest = BlurRequest.builder()
-                .withImage(shadow)
-                .withKernelWidth(blurX)
-                .withKernelHeight(blurY)
-                .build();
+        double scale = scaleProvider.getValueAt(request.getEffectPosition());
 
-        ClipImage result = blurService.createBlurredImage(blurRequest);
-        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(shadow.getBuffer());
+        int shadowTranslateX;
+        int shadowTranslateY;
+        ClipImage shadowImage;
+        if (!MathUtil.fuzzyEquals(scale, 1.0)) {
+
+            ScaleRequest scaleRequest = ScaleRequest.builder()
+                    .withImage(shadow)
+                    .withNewWidth((int) (shadow.getWidth() * scale))
+                    .withNewHeight((int) (shadow.getHeight() * scale))
+                    .build();
+
+            ClipImage scaledImage = scaleService.createScaledImage(scaleRequest);
+
+            BlurRequest blurRequest = BlurRequest.builder()
+                    .withImage(scaledImage)
+                    .withKernelWidth(blurX)
+                    .withKernelHeight(blurY)
+                    .build();
+
+            shadowImage = blurService.createBlurredImage(blurRequest);
+
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(shadow.getBuffer());
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(scaledImage.getBuffer());
+
+            shadowTranslateX = (shadowImage.getWidth() - currentFrame.getWidth()) / 2;
+            shadowTranslateY = (shadowImage.getHeight() - currentFrame.getHeight()) / 2;
+        } else {
+            BlurRequest blurRequest = BlurRequest.builder()
+                    .withImage(shadow)
+                    .withKernelWidth(blurX)
+                    .withKernelHeight(blurY)
+                    .build();
+            shadowImage = blurService.createBlurredImage(blurRequest);
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(shadow.getBuffer());
+            shadowTranslateX = 0;
+            shadowTranslateY = 0;
+        }
+
+        ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
         independentPixelOperation.executePixelTransformation(currentFrame.getWidth(), currentFrame.getHeight(), (x, y) -> {
-            int newr = result.getRed(x, y);
-            int newg = result.getGreen(x, y);
-            int newb = result.getBlue(x, y);
-            int newa = (int) (result.getAlpha(x, y) * shadowMultiplier);
+            int shadowX = x + shadowTranslateX;
+            int shadowY = y + shadowTranslateY;
 
+            int newr;
+            int newg;
+            int newb;
+            int newa;
+            if (shadowImage.inBounds(shadowX, shadowY)) {
+                newr = shadowImage.getRed(shadowX, shadowY);
+                newg = shadowImage.getGreen(shadowX, shadowY);
+                newb = shadowImage.getBlue(shadowX, shadowY);
+                newa = (int) (shadowImage.getAlpha(shadowX, shadowY) * shadowMultiplier);
+            } else {
+                newr = 0;
+                newg = 0;
+                newb = 0;
+                newa = 0;
+            }
             double originalAlpha = currentFrame.getAlpha(x, y) / 255.0;
 
             newr = (int) ((currentFrame.getRed(x, y) * originalAlpha) + (newr * (1.0 - originalAlpha)));
@@ -134,6 +187,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
         shiftXProvider = new DoubleProvider(-300, 300, new MultiKeyframeBasedDoubleInterpolator(20.0));
         shiftYProvider = new DoubleProvider(-300, 300, new MultiKeyframeBasedDoubleInterpolator(20.0));
         maximumAlphaProvider = new DoubleProvider(0, 1, new MultiKeyframeBasedDoubleInterpolator(0.7));
+        scaleProvider = new DoubleProvider(0, 3, new MultiKeyframeBasedDoubleInterpolator(1.0));
         shadowColorProvider = createColorProvider(0, 0, 0);
     }
 
@@ -160,6 +214,10 @@ public class DropShadowEffect extends StatelessVideoEffect {
                 .withKeyframeableEffect(shiftYProvider)
                 .withName("vertical shift")
                 .build();
+        ValueProviderDescriptor scaleProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(scaleProvider)
+                .withName("Scale")
+                .build();
         ValueProviderDescriptor maximumAlphaProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(maximumAlphaProvider)
                 .withName("Maximum alpha")
@@ -170,7 +228,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
                 .build();
 
         return List.of(shadowBlurXProviderDescriptor, shadowBlurYProviderDescriptor, shadowMultiplierProviderDescriptor, shiftXProviderDescriptor, shiftYProviderDescriptor,
-                maximumAlphaProviderDescriptor, shadowColorProviderDescriptor);
+                scaleProviderDescriptor, maximumAlphaProviderDescriptor, shadowColorProviderDescriptor);
     }
 
     private ColorProvider createColorProvider(double r, double g, double b) {

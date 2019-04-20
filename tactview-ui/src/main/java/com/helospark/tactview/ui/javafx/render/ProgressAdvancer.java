@@ -37,8 +37,8 @@ public class ProgressAdvancer {
 
                 long allTimeTaken = (System.currentTimeMillis() - startTime);
                 long expectedRemainingTime;
-                if (percent > 0.0) {
-                    expectedRemainingTime = (long) ((1.0 / percent) * allTimeTaken);
+                if (percent > 0) {
+                    expectedRemainingTime = (long) ((1.0 - percent) * (allTimeTaken / percent));
                 } else {
                     expectedRemainingTime = 0;
                 }

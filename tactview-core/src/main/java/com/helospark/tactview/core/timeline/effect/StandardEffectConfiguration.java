@@ -464,10 +464,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory dropShadowEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService) {
+    public StandardEffectFactory dropShadowEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService, ScaleService scaleService) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new DropShadowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, blurService))
-                .withRestoreFactory((node, loadMetadata) -> new DropShadowEffect(node, loadMetadata, independentPixelOperation, blurService))
+                .withFactory(request -> new DropShadowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, blurService, scaleService))
+                .withRestoreFactory((node, loadMetadata) -> new DropShadowEffect(node, loadMetadata, independentPixelOperation, blurService, scaleService))
                 .withName("Drop Shadow")
                 .withSupportedEffectId("dropshadow")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
