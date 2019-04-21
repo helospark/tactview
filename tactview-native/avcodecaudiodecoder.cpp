@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include "common.h"
 
 extern "C" {
 #include <stdio.h>
@@ -17,13 +17,6 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         int channels;
         int bytesPerSample;
         long lengthInMicroseconds;
-
-        AVCodecAudioMetadataResponse() {
-            this->channels = -1;
-            this->bytesPerSample = -1;
-            this->lengthInMicroseconds = -1;
-            this->sampleRate = -1;
-        }
     };
 
     AVFrame *alloc_audio_frame(enum AVSampleFormat sample_fmt,
@@ -59,7 +52,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                   && sampleFormat != AV_SAMPLE_FMT_U8P && sampleFormat != AV_SAMPLE_FMT_S16P && sampleFormat != AV_SAMPLE_FMT_S32P;
     }
 
-    AVCodecAudioMetadataResponse readMetadata(const char* path) {
+    EXPORTED AVCodecAudioMetadataResponse readMetadata(const char* path) {
         av_register_all();
 
         // get format from audio file
@@ -128,7 +121,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         FFMpegFrame* channels;
     };
 
-    int readAudio(AVCodecAudioRequest* request) {
+    EXPORTED int readAudio(AVCodecAudioRequest* request) {
         //std::cout << "Audio size: " << request->bufferSize << " " << request->path << " " << request->startMicroseconds << " " << request->numberOfChannels << std::endl;
 
         av_register_all();
@@ -217,7 +210,13 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         bool isPlanar = av_sample_fmt_is_planar(sampleFormat);
 
         int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000);
-        seek_target= av_rescale_q(seek_target, AV_TIME_BASE_Q, stream->time_base);
+
+		// AV_TIME_BASE_Q   (AVRational){1, AV_TIME_BASE} -> VC++ causes error, so redefine without braces
+		AVRational timeBaseQ;
+		timeBaseQ.num = 1;
+		timeBaseQ.den = AV_TIME_BASE;
+		
+        seek_target= av_rescale_q(seek_target, timeBaseQ, stream->time_base);
         av_seek_frame(format, stream_index, seek_target, AVSEEK_FLAG_BACKWARD);
 
         int totalNumberOfSamplesRead = 0;

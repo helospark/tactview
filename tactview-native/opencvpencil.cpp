@@ -3,6 +3,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/photo.hpp>
 #include <iostream>
+#include "common.h"
 
 using namespace cv;
 using namespace std;
@@ -23,7 +24,7 @@ extern "C"
     };
 
 
-    void pencilSketch(OpenCVPencilSketchRequest* request)  {
+    EXPORTED void pencilSketch(OpenCVPencilSketchRequest* request)  {
         Mat inputMat(request->height, request->width, CV_8UC4, (void*)request->input);
         Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
 

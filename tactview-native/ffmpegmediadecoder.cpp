@@ -1,6 +1,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include "common.h"
 
 extern "C" {
     #include <libavcodec/avcodec.h>
@@ -50,18 +51,9 @@ extern "C" {
         int height;
         int bitRate;
         long long lengthInMicroseconds;
-
-        MediaMetadata()
-        {
-            fps = -1;
-            width = -1;
-            height = -1;
-            lengthInMicroseconds = -1;
-            bitRate = 0;
-        }
     };
 
-    MediaMetadata readMediaMetadata(const char* path)
+    EXPORTED MediaMetadata readMediaMetadata(const char* path)
     {
         // Initalizing these to NULL prevents segfaults!
         AVFormatContext   *pFormatCtx = NULL;
@@ -72,6 +64,11 @@ extern "C" {
         AVFrame           *pFrame = NULL;
         AVFrame           *pFrameRGB = NULL;
         MediaMetadata mediaMetadata;
+	      mediaMetadata.fps = -1;
+	      mediaMetadata.width = -1;
+	      mediaMetadata.height = -1;
+	      mediaMetadata.lengthInMicroseconds = -1;
+        mediaMetadata.bitRate = 0;
 
         av_register_all();
 
@@ -169,15 +166,15 @@ extern "C" {
         FFMpegFrame* frames;
     } FFmpegImageRequest;
 
-    std::string createKey(FFmpegImageRequest* request) {
-        return std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height);
+    const char* createKey(FFmpegImageRequest* request) {
+        return (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)).c_str();
     }
 
     DecodeStructure* openFile(FFmpegImageRequest* request);
 
-    void readFrames(FFmpegImageRequest* request)
+    EXPORTED void readFrames(FFmpegImageRequest* request)
     {
-        std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(createKey(request));
+        std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(std::string(createKey(request)));
 
         DecodeStructure* element;
 
@@ -206,11 +203,15 @@ extern "C" {
         uint8_t           *buffer = element->buffer;
         struct SwsContext *sws_ctx = element->sws_ctx;
 
+		// AV_TIME_BASE_Q   (AVRational){1, AV_TIME_BASE} -> VC++ causes error
+		AVRational timeBaseQ;
+		timeBaseQ.num = 1;
+		timeBaseQ.den = AV_TIME_BASE;
 
         int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rethink
         int64_t minimumTimeRequiredToSeek = 2 * 1000000 * (AV_TIME_BASE / 1000000); // Seek if distance is more than 2 seconds
-        seek_target = av_rescale_q(seek_target, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
-        minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, AV_TIME_BASE_Q, pFormatCtx->streams[videoStream]->time_base);
+        seek_target = av_rescale_q(seek_target, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
+        minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
         int64_t seek_distance = seek_target - element->lastPts;
 
         //std::cout << "Seek distance " << seek_distance << std::endl;
@@ -354,7 +355,7 @@ extern "C" {
         element->buffer = buffer;
         element->sws_ctx = sws_ctx;
 
-        decodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(createKey(request), element));
+        decodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(std::string(createKey(request)), element));
 
         return element;
     }
