@@ -1,0 +1,753 @@
+Status,Module,File Time Stamp,Link Time Stamp,File Size,Attr.,Link Checksum,Real Checksum,CPU,Subsystem,Symbols,Preferred Base,Actual Base,Virtual Size,Load Order,File Ver,Product Ver,Image Ver,Linker Ver,OS Ver,Subsystem Ver
+?,"API-MS-WIN-CORE-APIQUERY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-APPCOMPAT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-APPCOMPAT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-APPINIT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-ATOMS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-COM-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-COM-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-COM-MIDLPROXYSTUB-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-COM-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-COM-PRIVATE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-COM-PRIVATE-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-COMM-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-CONSOLE-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-CONSOLE-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-CONSOLE-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-CONSOLE-L2-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-CONSOLE-L3-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-CRT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-CRT-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-DATETIME-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-DATETIME-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-DEBUG-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-DELAYLOAD-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-DELAYLOAD-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-ERRORHANDLING-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-ERRORHANDLING-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FIBERS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FIBERS-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FIBERS-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FIBERS-L2-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FILE-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FILE-L1-2-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FILE-L2-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FILE-L2-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-FILE-L2-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-HEAP-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-HEAP-OBSOLETE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-IO-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-IO-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-JOB-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-JOB-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-KERNEL32-LEGACY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-KERNEL32-LEGACY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-KERNEL32-LEGACY-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-KERNEL32-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LIBRARYLOADER-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LIBRARYLOADER-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LIBRARYLOADER-L1-2-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LIBRARYLOADER-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LOCALIZATION-L1-2-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LOCALIZATION-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LOCALIZATION-OBSOLETE-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-LOCALIZATION-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-MEMORY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-MEMORY-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-MEMORY-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-NAMEDPIPE-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-NAMEDPIPE-L1-2-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-NAMESPACE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-NORMALIZATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PATH-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PERFCOUNTERS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PRIVATEPROFILE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PROCESSENVIRONMENT-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PROCESSSNAPSHOT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PROCESSTHREADS-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PROCESSTHREADS-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PROCESSTOPOLOGY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PSAPI-ANSI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PSAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-PSM-KEY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-QUIRKS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-REALTIME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-REGISTRY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-REGISTRY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-REGISTRY-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-REGISTRY-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-REGISTRYUSERSPECIFIC-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-RTLSUPPORT-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SHLWAPI-LEGACY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SHLWAPI-OBSOLETE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SIDEBYSIDE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-STRING-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-STRING-L2-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-STRING-OBSOLETE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-STRINGANSI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SYNCH-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SYSINFO-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SYSINFO-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SYSINFO-L1-2-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SYSTEMTOPOLOGY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-SYSTEMTOPOLOGY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-THREADPOOL-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-THREADPOOL-LEGACY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-THREADPOOL-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-URL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-VERSION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WINDOWSERRORREPORTING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WINDOWSERRORREPORTING-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WINDOWSERRORREPORTING-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WINRT-ERROR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WINRT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WINRT-STRING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WOW64-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-WOW64-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-XSTATE-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-CORE-XSTATE-L2-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-DEVICES-CONFIG-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-EVENTING-CLASSICPROVIDER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-EVENTING-CONSUMER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-EVENTING-CONSUMER-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-EVENTING-CONTROLLER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-EVENTING-PROVIDER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-EVENTLOG-LEGACY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-GDI-INTERNAL-UAP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-ACTIVEDIRECTORYCLIENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-APPCONTAINER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-AUDIT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-AUDIT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-BASE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-BASE-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-BASE-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-CAPABILITY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-CRYPTOAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-LSALOOKUP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SECURITY-LSAPOLICY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-CORE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-CORE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-CORE-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-MANAGEMENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-MANAGEMENT-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-PRIVATE-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-PRIVATE-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-PRIVATE-L1-1-4.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SERVICE-WINSVC-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SHCORE-PATH-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SHCORE-TASKPOOL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SHELL-SHELLCOM-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-SHELL-SHELLFOLDERS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-STATESEPARATION-HELPERS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-STORAGE-EXPORTS-EXTERNAL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+?,"API-MS-WIN-STORAGE-EXPORTS-INTERNAL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-IDENTITY-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-RUNTIME-INTERNAL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-RUNTIME-INTERNAL-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-RUNTIME-INTERNAL-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-RUNTIME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-RUNTIME-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-STATE-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-APPMODEL-UNLOCK-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-BASE-UTIL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-CALENDAR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-COM-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-COM-L2-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-DEBUG-MINIDUMP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-FIRMWARE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-KERNEL32-PRIVATE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-KERNEL32-PRIVATE-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-LARGEINTEGER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-LOCALIZATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-LOCALREGISTRY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-MARSHAL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-MISC-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-PRIVATEPROFILE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-PROCESSTOPOLOGY-OBSOLETE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-PSM-APP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-PSM-APPNOTIFY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-REALTIME-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-REGISTRY-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-SHUTDOWN-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-SYNCH-ANSI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-TOOLHELP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-VERSION-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-VERSION-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-VERSIONANSI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-VERSIONANSI-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-WINRT-ERROR-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-WINRT-ERRORPRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-WINRT-PROPERTYSETPRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-WINRT-PROPERTYSETPRIVATE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-WINRT-REGISTRATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-CORE-WINRT-ROBUFFER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-COREUI-SECRUNTIME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DEVICES-QUERY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-ADVAPI32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-ADVAPI32-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-KERNEL32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-NORMALIZ-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-OLE32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-SHELL32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-SHLWAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-SHLWAPI-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-USER32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DOWNLEVEL-VERSION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DWMAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DX-D3DKMT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DX-D3DKMT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DX-D3DKMT-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DX-D3DKMT-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-DX-D3DKMT-L1-1-4.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-EVENTING-LEGACY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-EVENTING-OBSOLETE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-EVENTING-TDH-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-GDI-DPIINFO-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-HTTP-TIME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-MM-JOYSTICK-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-MM-MISC-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-MM-MISC-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-MM-MME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-MM-TIME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-NETWORKING-INTERFACECONTEXTS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-NTUSER-RECTANGLE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-NTUSER-SYSPARAMS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-OLE32-IE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-OOBE-NOTIFICATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-POWER-BASE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-POWER-SETTING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-CLIPBOARD-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-PRIVATE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-PRIVATE-L1-1-4.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-PRIVATE-L1-1-7.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-SHELL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-SYNCH-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-WINDOW-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-WINEVENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-RTCORE-NTUSER-WMPOINTER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-ACCESSHLPR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-ACTIVEDIRECTORYCLIENT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-BASE-PRIVATE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-CREDENTIALS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-CREDENTIALS-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-GROUPPOLICY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-ISOLATEDCONTAINER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-ISOLATIONPOLICY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-LOGON-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-LOGON-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-LSALOOKUP-ANSI-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-LSALOOKUP-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-LSALOOKUP-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-LSALOOKUP-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-PROVIDER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-SDDL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-SDDLPARSECOND-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SECURITY-SYSTEMFUNCTIONS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SERVICE-CORE-L1-1-4.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-COMHELPERS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-OBSOLETE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-REGISTRY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-REGISTRY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-SCALING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-SCALING-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-STREAM-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-STREAM-WINRT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-SYSINFO-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-THREAD-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHCORE-UNICODEANSI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHELL-ASSOCIATIONS-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHELL-CHANGENOTIFY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHELL-NAMESPACE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHELL-SHDIRECTORY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHLWAPI-IE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"API-MS-WIN-SHLWAPI-WINRT-STORAGE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"DMENTERPRISEDIAGNOSTICS.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EFSCORE.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EMCLIENT.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-MF-PAL-L2-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-ONECORE-APPDEFAULTS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-ONECORE-APPMODEL-EMCLIENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-ONECORE-APPMODEL-STATEREPOSITORY-INTERNAL-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-ONECORE-DCOMP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-ONECORE-HLINK-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-ONECORE-ORIENTATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-ONECORE-SHELLCHROMEAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-ENCRYPTEDFILE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-LSA-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-MSI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-NPUSERNAME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-NTMARTA-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-PSM-APP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-REGISTRY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-REGISTRY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ADVAPI32-SAFER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPCOMPAT-AEINV-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPCOMPAT-AEPIC-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPCOMPAT-APPHELP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPMODEL-APPEXECUTIONALIAS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPMODEL-APPEXECUTIONALIAS-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPMODEL-DAXCORE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPMODEL-DEPLOYMENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPMODEL-STATE-EXT-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPMODEL-USERCONTEXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPMODEL-VIEWSCALEFACTOR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPXDEPLOYMENTCLIENT-APPXDEPLOY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-APPXDEPLOYMENTCLIENT-APPXDEPLOYONECORE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-AUDIOCORE-PAL-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-AUTHZ-CONTEXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-AUTHZ-REMOTE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-BIOMETRICS-WINBIO-CORE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-CLBCATQ-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-COML2-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-OLE32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-OLE32-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-OLE32-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-OLE32-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-OLE32-L1-1-4.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-OLE32-L1-1-5.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-PSMREGISTER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-COM-SUSPENDRESILIENCY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-CORE-PKEYHELPER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-CORE-WINRT-REMOTE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-DESKTOPAPPX-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-DEVMGMT-POLICY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-DEVMGMT-POLICY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-DIRECT2D-DESKTOP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-DOMAINJOIN-NETJOIN-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-DWMAPI-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-DWMAPIDXGI-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-EDPUTIL-POLICY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-EDPUTIL-POLICY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ELS-ELSCORE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-EVENTING-RUNDOWN-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-FAMILYSAFETY-CHILDACCOUNT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-FECLIENT-ENCRYPTEDFILE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-FIREWALLAPI-WEBPROXY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-FVEAPI-QUERY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-CLIPPING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DC-CREATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DC-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DC-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DEVCAPS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DRAW-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DRAW-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DRAW-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-DRAW-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-FONT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-FONT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-FONT-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-FONT-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-GDIPLUS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-INTERNAL-DESKTOP-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-INTERNAL-DESKTOP-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-INTERNAL-DESKTOP-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-METAFILE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-METAFILE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-METAFILE-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-PATH-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-PRINT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-RENDER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GDI-WCS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GPAPI-GROUPPOLICY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-GUI-DUI70-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-IMM-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-APPCOMPAT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-DATETIME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-ERRORHANDLING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-FILE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-LOCALIZATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-PACKAGE-CURRENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-PACKAGE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-PACKAGE-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-QUIRKS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-QUIRKS-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-REGISTRY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNEL32-SIDEBYSIDE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-KERNELBASE-PROCESSTHREAD-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-MININPUT-INPUTHOST-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-MPR-MULTIPLEPROVIDERROUTER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-MRMCORER-RESMANAGER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NETWORKING-WCMAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NETWORKING-WLANAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NETWORKING-WLANSTORAGE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTDSAPI-ACTIVEDIRECTORYCLIENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTDSAPI-ACTIVEDIRECTORYCLIENT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-DC-ACCESS-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-DIALOGBOX-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-DRAW-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-DRAW-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-DRAW-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-GUI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-KEYBOARD-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MENU-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MESSAGE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MESSAGE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MESSAGE-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MISC-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MISC-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MISC-L1-5-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MISC-L1-5-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MIT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-MOUSE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-PRIVATE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-PRIVATE-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-PRIVATE-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-PRIVATE-L1-3-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-PRIVATE-L1-3-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-PRIVATE-L1-3-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-RECTANGLE-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-ROTATIONMANAGER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-SERVER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-STRING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-SYNCH-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-UICONTEXT-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-WINDOW-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-WINDOW-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-WINDOW-L1-1-2.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-WINDOW-L1-1-3.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-WINDOWCLASS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-NTUSER-WINDOWSTATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-ODBC-ODBC32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-OLE32-BINDCTX-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-OLE32-IE-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-OLE32-OLEAUTOMATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-PRINTER-PRNTVPT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-PROFILE-EXTENDER-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-PROFILE-USERENV-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-PROFILE-USERENV-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RAS-RASAPI32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RAS-TAPI32-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RDR-DAVHLPR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RESOURCES-DEPLOYMENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RESOURCES-LANGUAGEOVERLAY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RESOURCES-LANGUAGEOVERLAY-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RO-TYPERESOLUTION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RPC-SSL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-GDI-DEVCAPS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-GDI-OBJECT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-GDI-RGN-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-GDI-RGN-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-MINUSER-INPUT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-MINUSER-PRIVATE-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-CURSOR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-DC-ACCESS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-DPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-DPI-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-DPI-L1-2-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-IAM-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-INTEGRATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-SYNCH-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-SYSCOLORS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-SYSPARAMS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-RTCORE-NTUSER-WINDOW-EXT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECUR32-TRANSLATENAME-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CAPAUTHZ-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CAPAUTHZ-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CHAMBERS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CREDUI-INTERNAL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CREDUI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CREDUI-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CRYPTUI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-CRYPTUI-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-EFS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-EFSWRT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-EFSWRT-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-NGC-LOCAL-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-WINSCARD-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SECURITY-WINSCARD-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SESSION-USERMGR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SESSION-USERTOKEN-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SESSION-WINSTA-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SESSION-WTSAPI32-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SETUPAPI-INF-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SETUPAPI-INF-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SHELL-DIRECTORY-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SHELL-EMBEDDEDMODE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SHELL-SHELL32-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SHELL-SHLWAPI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SHELL-TABBEDTITLEBAR-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SHELL32-SHELLCOM-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SHELL32-SHELLFOLDERS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SMBSHARE-BROWSERCLIENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-STORAGE-SENSE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-STORAGE-SENSE-L1-2-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-SXS-OLEAUTOMATION-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-TSF-MSCTF-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-TSF-MSCTF-L1-1-1.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-UI-VIEWMANAGEMENT-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-USP10-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WER-REPORTING-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WER-UI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WER-XBOX-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WEVTAPI-EVENTLOG-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WINRT-DEVICE-ACCESS-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WINRT-STORAGE-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WLAN-ONEXUI-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WIN-WLAN-SCARD-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"EXT-MS-WINDOWSCORE-DEVICEINFO-L1-1-0.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"IESHIMS.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"NGCRECOVERY.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"WFDSCONMGR.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+D?,"WPAXHOLDER.DLL","Error opening file. The system cannot find the file specified (2).",,,,,,,,,,,,,,,,,,
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-CONVERT-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:25:50,22208,A,0x0000972A,0x0000972A,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00004000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-FILESYSTEM-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:25:50,20160,A,0x000147F1,0x000147F1,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00003000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-HEAP-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:25:50,18624,A,0x00013E42,0x00013E42,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00003000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-LOCALE-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:25:50,18624,A,0x0000846E,0x0000846E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00003000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-MATH-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:25:50,28864,A,0x00012FCF,0x00012FCF,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00005000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-RUNTIME-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:52:13,22720,A,0x0000D4A5,0x0000D4A5,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00004000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-STDIO-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:51:49,24256,A,0x000084EF,0x000084EF,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00004000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-STRING-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:25:50,24256,A,0x00014538,0x00014538,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00004000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-TIME-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:50:02,20672,A,0x000147E7,0x000147E7,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00003000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-UTILITY-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:52:35,18624,A,0x0000A702,0x0000A702,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00003000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+E,"c:\windows\system32\ADVAPI32.DLL",2018-09-15 00:28:59,2004-04-06 10:32:57,507400,A,0x00087064,0x00087064,x86,Console,"CV,Unknown",0x4C300000,Unknown,0x0007E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\BCRYPTPRIMITIVES.DLL",2018-09-15 00:28:46,2044-01-31 04:48:52,398208,A,0x0006D5A9,0x0006D5A9,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00062000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\COMBASE.DLL",2019-04-20 23:49:16,2017-02-28 18:49:42,2592816,A,0x00285ADF,0x00285ADF,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00278000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\CRYPTBASE.DLL",2018-09-15 00:29:00,2051-02-02 20:16:37,31728,A,0x00015950,0x00015950,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000A000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\GDI32.DLL",2018-09-15 00:29:03,1984-12-13 15:08:53,138376,A,0x000244E0,0x000244E0,x86,Console,"CV,Unknown",0x4D500000,Unknown,0x00023000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\KERNEL32.DLL",2019-04-20 23:50:18,1975-07-08 18:38:58,649064,A,0x000A6D29,0x000A6D29,x86,Console,"CV,Unknown",0x6B800000,Unknown,0x000E0000,Not Loaded,10.0.17763.437,10.0.17763.437,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\KERNELBASE.DLL",2019-04-20 23:49:59,1997-09-20 22:20:45,2073960,A,0x00206D25,0x00206D25,x86,Console,"CV,Unknown",0x10000000,Unknown,0x001FA000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\MSVCP140.DLL",2018-11-20 10:33:08,2018-11-07 11:34:56,449264,A,0x00071962,0x00071962,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0006F000,Not Loaded,14.16.27024.1,14.16.27024.1,10.0,14.15,6.0,6.0
+E,"c:\windows\system32\MSVCRT.DLL",2018-09-15 00:29:00,1972-03-28 05:55:37,779376,A,0x000CBCC8,0x000CBCC8,x86,GUI,"CV,Unknown",0x10100000,Unknown,0x000C0000,Not Loaded,7.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\NTDLL.DLL",2019-04-20 23:50:16,2090-01-16 18:53:51,1674480,A,0x001A24FF,0x001A24FF,x86,Console,"CV,Unknown",0x4B280000,Unknown,0x0019C000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\OLE32.DLL",2019-04-20 23:50:27,2036-10-11 10:30:53,1026792,A,0x00107A00,0x00107A00,x86,Console,"CV,Unknown",0x68F00000,Unknown,0x000FC000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\RPCRT4.DLL",2019-03-24 07:21:51,2043-06-02 03:24:05,782968,A,0x000C9801,0x000C9801,x86,Console,"CV,Unknown",0x4EF80000,Unknown,0x000BF000,Not Loaded,10.0.17763.379,10.0.17763.379,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\SECHOST.DLL",2018-09-15 00:29:00,2095-08-22 03:54:57,492432,A,0x000864BD,0x000864BD,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00079000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\SECUR32.DLL",2018-09-15 00:29:13,1996-08-16 08:13:40,23040,A,0x00015758,0x00015758,x86,Console,"CV,Unknown",0x51B80000,Unknown,0x0000A000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\SHCORE.DLL",2018-09-15 00:29:07,2021-02-20 08:10:04,555440,A,0x0009326E,0x0009326E,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00089000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\SHELL32.DLL",2019-03-24 07:22:10,2093-01-02 00:38:55,5588184,A,0x0055E645,0x0055E645,x86,GUI,"CV,Unknown",0x69800000,Unknown,0x0054E000,Not Loaded,10.0.17763.348,10.0.17763.348,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\SHLWAPI.DLL",2018-09-15 00:29:12,2029-06-30 01:48:50,274224,A,0x0004A424,0x0004A424,x86,GUI,"CV,Unknown",0x63180000,Unknown,0x00044000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\SSPICLI.DLL",2018-09-15 00:29:00,2073-07-27 04:11:23,122400,A,0x0002CAF6,0x0002CAF6,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00020000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\UCRTBASE.DLL",2019-04-20 23:49:16,2048-08-16 23:10:45,1191728,A,0x001284BD,0x001284BD,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00122000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,5.1
+E,"c:\windows\system32\USER32.DLL",2019-03-09 02:14:14,2035-11-03 10:01:44,1675712,A,0x001A329C,0x001A329C,x86,GUI,"CV,Unknown",0x69E00000,Unknown,0x00199000,Not Loaded,10.0.17763.168,10.0.17763.168,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\VCRUNTIME140.DLL",2018-11-20 10:32:42,2018-11-07 11:34:50,80112,A,0x0001BDC9,0x0001BDC9,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00013000,Not Loaded,14.16.27024.1,14.16.27024.1,10.0,14.15,6.0,6.0
+E,"c:\windows\system32\WIN32U.DLL",2018-09-15 00:29:05,2043-04-19 23:47:08,88304,A,0x000175C8,0x000175C8,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00017000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E,"c:\windows\system32\WS2_32.DLL",2018-09-15 00:29:00,2021-02-19 12:27:39,384272,A,0x0006BA16,0x0006BA16,x86,Console,"CV,Unknown",0x4F780000,Unknown,0x0005F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-FILE-L1-1-0.DLL",2018-08-22 19:18:04,2010-11-03 10:27:45,22328,,0x000136A4,0x000136A4,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00004000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-LIBRARYLOADER-L1-1-0.DLL",2018-08-22 19:18:04,1982-04-22 21:55:30,19256,,0x00009D4F,0x00009D4F,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-PROCESSTHREADS-L1-1-0.DLL",2018-08-22 19:18:04,2051-04-20 06:07:58,20792,,0x00010144,0x00010144,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-PROCESSTHREADS-L1-1-1.DLL",2018-08-22 19:18:04,2059-05-13 11:05:25,19256,,0x00013774,0x00013774,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-SYNCH-L1-1-0.DLL",2018-08-22 19:18:04,2030-03-15 19:48:13,20792,,0x0000AD6C,0x0000AD6C,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-SYNCH-L1-2-0.DLL",2018-08-22 19:18:04,2103-01-01 16:11:14,19256,,0x0001325B,0x0001325B,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-SYSINFO-L1-1-0.DLL",2018-08-22 19:18:04,1985-06-26 14:28:47,19768,,0x00008D23,0x00008D23,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-TIMEZONE-L1-1-0.DLL",2018-08-22 19:18:04,2008-01-21 17:22:10,18744,,0x00013071,0x00013071,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+E6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CRT-PRIVATE-L1-1-0.DLL",2018-08-22 19:18:04,1981-03-03 03:23:40,71480,,0x0001FDC4,0x0001FDC4,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00010000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+DE,"c:\program files (x86)\microsoft visual studio\2017\community\common7\tools\API-MS-WIN-CRT-MULTIBYTE-L1-1-0.DLL",2019-03-09 05:36:26,2017-01-05 22:52:02,25792,A,0x0000F8EA,0x0000F8EA,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00005000,Not Loaded,10.0.14393.795,10.0.14393.795,10.0,14.0,10.0,10.0
+DE,"c:\windows\system32\ACLUI.DLL",2018-09-15 00:29:27,2050-04-24 20:25:13,5384704,A,0x0052973F,0x0052973F,x86,GUI,"CV,Unknown",0x5D500000,Unknown,0x00527000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\ACTIVEDS.DLL",2018-09-15 00:29:05,1973-02-12 11:22:11,219648,A,0x0003EE31,0x0003EE31,x86,Console,"CV,Unknown",0x4C200000,Unknown,0x0003A000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\ADSLDPC.DLL",2018-09-15 00:29:07,2008-10-01 09:27:33,208896,A,0x00040B8E,0x00040B8E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00037000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\ADVPACK.DLL",2018-09-15 00:29:10,1974-04-19 07:53:19,120832,A,0x00024E8F,0x00024E8F,x86,GUI,"CV,Unknown",0x65000000,Unknown,0x0002E000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\AEPIC.DLL",2019-04-20 23:49:16,2036-10-28 09:20:29,384312,A,0x0005EC31,0x0005EC31,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00061000,Not Loaded,10.0.17763.1024,10.0.17763.1024,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\APPHELP.DLL",2019-03-09 02:14:15,1994-11-10 21:56:11,624640,A,0x0009B4B6,0x0009B4B6,x86,GUI,"CV,Unknown",0x78C80000,Unknown,0x0009C000,Not Loaded,10.0.17763.292,10.0.17763.292,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\AUTHZ.DLL",2018-09-15 00:29:07,2086-07-07 22:02:36,185856,A,0x0003974A,0x0003974A,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00032000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\BCP47LANGS.DLL",2018-09-15 00:29:05,2034-09-03 16:40:05,279416,A,0x0005192E,0x0005192E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00046000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\BCP47MRM.DLL",2018-09-15 00:29:05,2061-05-21 01:39:09,112256,A,0x00024FE7,0x00024FE7,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001D000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\BCRYPT.DLL",2018-09-15 00:29:08,1971-12-24 14:34:44,96760,A,0x00018A81,0x00018A81,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00019000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\BROWCLI.DLL",2018-09-15 00:29:00,2089-12-12 23:25:08,43008,A,0x00019608,0x00019608,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CABINET.DLL",2018-09-15 00:29:05,1986-01-10 21:27:13,119800,A,0x00025A8C,0x00025A8C,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00020000,Not Loaded,5.0.1.1,5.0.1.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CERTCA.DLL",2018-09-15 00:29:03,1974-07-16 01:48:22,649728,A,0x000A3318,0x000A3318,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000A3000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CERTENROLL.DLL",2018-09-15 00:29:03,1998-09-12 23:07:44,2839040,A,0x002C468C,0x002C468C,x86,Console,"CV,Unknown",0x10000000,Unknown,0x002BA000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CFGMGR32.DLL",2018-09-15 00:29:08,2068-10-19 23:53:18,235496,A,0x00046EF9,0x00046EF9,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0003B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CHARTV.DLL",2018-09-15 00:29:05,2055-09-05 11:43:04,105984,A,0x00026469,0x00026469,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001D000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CLDAPI.DLL",2018-09-15 00:29:05,2029-08-17 05:15:24,92672,A,0x000227B6,0x000227B6,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\COMDLG32.DLL",2018-09-15 00:29:12,1994-05-20 04:09:44,993792,A,0x000FE939,0x000FE939,x86,GUI,"CV,Unknown",0x52080000,Unknown,0x000FA000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\COML2.DLL",2019-03-09 02:14:12,2057-09-07 11:01:23,373768,A,0x00063CBC,0x00063CBC,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0005E000,Not Loaded,10.0.17763.134,10.0.17763.134,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CONCRT140.DLL",2018-11-20 10:33:04,2018-11-07 11:34:49,249392,A,0x00047A09,0x00047A09,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0003C000,Not Loaded,14.16.27024.1,14.16.27024.1,10.0,14.15,6.0,6.0
+DE,"c:\windows\system32\CONTACTACTIVATION.DLL",2018-09-15 00:29:05,2075-09-26 14:18:25,47104,A,0x00019AA5,0x00019AA5,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\COREMESSAGING.DLL",2019-03-09 02:11:30,2032-11-23 22:32:14,582240,A,0x000931ED,0x000931ED,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0008F000,Not Loaded,10.0.17763.194,10.0.17763.194,0.0,14.13,6.0,6.0
+DE,"c:\windows\system32\COREUICOMPONENTS.DLL",2018-09-15 00:29:03,2015-09-23 19:11:57,2538768,A,0x0027673E,0x0027673E,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0026A000,Not Loaded,10.0.17763.1,10.0.17763.1,0.0,14.13,6.0,6.0
+DE,"c:\windows\system32\CREDUI.DLL",2019-04-20 23:50:29,2010-03-25 11:09:23,35840,A,0x000181D0,0x000181D0,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000D000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CRYPT32.DLL",2018-09-15 00:29:07,2031-06-01 09:58:31,1668784,A,0x001A37CF,0x001A37CF,x86,GUI,"CV,Unknown",0x5CF00000,Unknown,0x00199000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CRYPTNET.DLL",2018-09-15 00:29:08,2100-09-22 04:31:37,135680,A,0x00029BDD,0x00029BDD,x86,GUI,"CV,Unknown",0x63B00000,Unknown,0x00026000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CRYPTNGC.DLL",2019-03-24 07:22:02,1990-11-15 03:08:40,322048,A,0x00057462,0x00057462,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00053000,Not Loaded,10.0.17763.348,10.0.17763.348,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CRYPTSP.DLL",2018-09-15 00:29:08,1991-09-23 22:19:58,67648,A,0x000165EB,0x000165EB,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00012000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CRYPTTPMEKSVC.DLL",2018-09-15 00:29:03,2057-03-20 01:15:07,45056,A,0x0000B985,0x0000B985,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0000F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CRYPTUI.DLL",2018-09-15 00:29:07,1981-10-03 20:27:12,548864,A,0x000892D9,0x000892D9,x86,GUI,"CV,Unknown",0x61400000,Unknown,0x0008B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\CSCAPI.DLL",2019-04-20 23:50:32,2002-05-19 01:24:37,40960,A,0x00011CB8,0x00011CB8,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000E000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\D2D1.DLL",2018-09-15 00:29:03,2026-02-19 18:26:05,5309288,A,0x0051C903,0x0051C903,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00508000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\D3D11.DLL",2018-09-15 00:29:03,2096-10-26 12:59:09,2264344,A,0x002351E7,0x002351E7,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00229000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\D3D11ON12.DLL",2018-09-15 00:29:03,2092-03-23 02:38:18,439976,A,0x00073DBB,0x00073DBB,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00070000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\D3D12.DLL",2019-04-20 23:50:19,2091-03-29 11:05:59,1458056,A,0x0016A3E3,0x0016A3E3,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00169000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\D3DSCACHE.DLL",2018-09-15 00:29:03,2030-09-20 13:04:22,113152,A,0x00023FFD,0x00023FFD,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00020000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DAVHLPR.DLL",2018-09-15 00:29:12,2092-08-06 01:02:23,22016,A,0x000129C1,0x000129C1,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0000A000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DBGCORE.DLL",2018-09-15 00:29:08,1999-12-03 00:22:56,132096,A,0x00029D47,0x00029D47,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00024000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,6.1
+DE,"c:\windows\system32\DBGENG.DLL",2019-03-09 02:12:01,2090-01-05 22:07:50,5130752,A,0x004ED616,0x004ED616,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0051E000,Not Loaded,10.0.17763.168,10.0.17763.168,10.0,14.13,10.0,6.1
+DE,"c:\windows\system32\DBGHELP.DLL",2018-09-15 00:29:08,2050-04-11 14:46:43,1522176,A,0x00175623,0x00175623,x86,Console,"CV,Unknown",0x03000000,Unknown,0x0018F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,6.1
+DE,"c:\windows\system32\DBGMODEL.DLL",2018-09-15 00:29:07,2084-10-14 18:44:06,500224,A,0x0008065B,0x0008065B,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0007F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,6.1
+DE,"c:\windows\system32\DCOMP.DLL",2018-09-15 00:29:07,2061-08-06 04:05:09,1427600,A,0x0015DBA8,0x0015DBA8,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0015F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DEVMGR.DLL",2018-09-15 00:29:13,2077-12-09 02:26:02,757760,A,0x000C6CD4,0x000C6CD4,x86,GUI,"CV,Unknown",0x5FC80000,Unknown,0x000BD000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DEVOBJ.DLL",2018-09-15 00:29:08,2013-06-01 22:38:20,135304,A,0x00030410,0x00030410,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00023000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DEVRTL.DLL",2018-09-15 00:29:08,1988-01-12 15:24:02,50688,A,0x0001586F,0x0001586F,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00010000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DFSCLI.DLL",2018-09-15 00:29:08,2090-02-18 22:30:07,44032,A,0x00013213,0x00013213,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DHCPCSVC.DLL",2018-09-15 00:29:08,2020-01-15 07:03:20,69120,A,0x0001EDC4,0x0001EDC4,x86,Console,"CV,Unknown",0x53680000,Unknown,0x00014000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DHCPCSVC6.DLL",2018-09-15 00:29:08,2102-08-28 13:42:38,58368,A,0x0000FB5C,0x0000FB5C,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00013000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DNSAPI.DLL",2019-04-20 23:49:13,2065-05-30 08:59:54,580024,A,0x0009878B,0x0009878B,x86,Console,"CV,Unknown",0x5FD80000,Unknown,0x00090000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DPAPI.DLL",2018-09-15 00:29:08,2057-08-22 03:47:06,13312,A,0x0000D393,0x0000D393,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00008000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DRVSETUP.DLL",2019-04-20 23:50:26,2088-11-01 08:20:24,89600,A,0x00022C9C,0x00022C9C,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001A000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DRVSTORE.DLL",2019-04-20 23:49:17,2077-10-20 09:06:19,974352,A,0x000F6205,0x000F6205,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000F1000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,6.0
+DE,"c:\windows\system32\DSCLIENT.DLL",2018-09-15 00:29:03,1986-08-24 08:16:45,41808,A,0x00018E20,0x00018E20,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000C000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DSPARSE.DLL",2018-09-15 00:29:07,2092-10-26 17:28:37,24064,A,0x0000CE7B,0x0000CE7B,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DSREG.DLL",2018-09-15 00:29:03,2041-10-03 11:52:34,625152,A,0x000A42F2,0x000A42F2,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0009D000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DSROLE.DLL",2018-09-15 00:29:07,1970-10-13 18:52:57,24288,A,0x00011666,0x00011666,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00009000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DUI70.DLL",2018-09-15 00:29:08,2058-12-05 10:58:20,1474560,A,0x00169418,0x00169418,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0016E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DUSER.DLL",2018-09-15 00:29:08,2077-04-19 03:45:54,473600,A,0x000788EE,0x000788EE,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00078000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DWMAPI.DLL",2018-09-15 00:29:07,1978-01-23 03:53:42,140288,A,0x0002DE05,0x0002DE05,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00026000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DWRITE.DLL",2019-03-09 02:11:41,2055-09-18 16:15:10,2654208,A,0x0028D919,0x0028D919,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00292000,Not Loaded,10.0.17763.168,10.0.17763.168,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DXGI.DLL",2018-09-15 00:29:03,1987-09-11 20:39:42,661096,A,0x000AD534,0x000AD534,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000A4000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\DXILCONV.DLL",2018-09-15 00:29:03,2003-09-09 11:25:30,857600,A,0x000DBE34,0x000DBE34,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000DA000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\EAPPCFG.DLL",2018-09-15 00:29:00,2081-09-15 13:10:51,197632,A,0x0003EA50,0x0003EA50,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00035000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\EAPPPRXY.DLL",2018-09-15 00:29:00,2030-04-10 19:20:22,55808,A,0x0001CC4E,0x0001CC4E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00011000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\EDPAUDITAPI.DLL",2018-09-15 00:29:07,2023-11-16 18:21:02,104448,A,0x0001C249,0x0001C249,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\EDPUTIL.DLL",2018-09-15 00:29:08,2032-05-28 10:00:37,233984,A,0x0003A3E8,0x0003A3E8,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0003D000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\EFSADU.DLL",2018-09-15 00:29:07,2089-03-10 21:05:38,108544,A,0x000250DB,0x000250DB,x86,GUI,"CV,Unknown",0x67BA0000,Unknown,0x00021000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\EFSUTIL.DLL",2018-09-15 00:29:07,1998-07-11 15:36:27,35840,A,0x0000ECA6,0x0000ECA6,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\EFSWRT.DLL",2018-09-15 00:29:13,2014-10-11 15:29:57,545792,A,0x00090F9A,0x00090F9A,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0008A000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\ELSCORE.DLL",2018-09-15 00:29:10,2053-08-21 18:04:47,61952,A,0x0001ABC6,0x0001ABC6,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00013000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\ESENT.DLL",2019-03-09 02:11:38,1992-03-31 19:40:50,2929152,A,0x002D0981,0x002D0981,x86,Console,"CV,Unknown",0x10000000,Unknown,0x002D2000,Not Loaded,10.0.17763.253,10.0.17763.253,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\FECLIENT.DLL",2018-09-15 00:29:08,2052-05-15 05:24:38,196608,A,0x0003DCCF,0x0003DCCF,x86,Console,"CV,Unknown",0x5AD00000,Unknown,0x00034000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\FIREWALLAPI.DLL",2019-04-20 23:49:10,2048-06-26 09:38:43,385024,A,0x0006A5FB,0x0006A5FB,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00062000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\FLTLIB.DLL",2018-09-15 00:29:08,2079-10-19 01:14:44,27840,A,0x00010DF8,0x00010DF8,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00008000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\FMS.DLL",2018-09-15 00:29:07,2009-08-03 09:56:28,158208,A,0x00029B99,0x00029B99,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0002B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\FWBASE.DLL",2018-09-15 00:29:05,2093-09-23 22:10:11,129536,A,0x00023E33,0x00023E33,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00024000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\FWPOLICYIOMGR.DLL",2018-09-15 00:29:05,2012-06-23 04:46:21,190464,A,0x0003006A,0x0003006A,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00033000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\HID.DLL",2018-09-15 00:29:08,2032-06-30 07:28:48,28160,A,0x0000DC4A,0x0000DC4A,x86,Console,"CV,Unknown",0x58E80000,Unknown,0x0000B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\HTTPAPI.DLL",2018-09-15 00:29:07,1973-04-07 21:50:07,27648,A,0x0001041E,0x0001041E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\ICUUC.DLL",2019-04-20 23:50:25,2077-09-03 23:48:17,1155072,RA,0x00124202,0x00124202,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0011D000,Not Loaded,61.1.0.0,61.1.0.0,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\IEADVPACK.DLL",2018-09-15 00:29:30,2055-05-16 04:26:42,120832,A,0x00023B28,0x00023B28,x86,GUI,"CV,Unknown",0x65000000,Unknown,0x0002E000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\IEAPFLTR.DLL",2018-09-15 00:29:29,1998-11-21 20:57:57,1448448,A,0x00166437,0x00166437,x86,Console,"CV,Unknown",0x72EA0000,Unknown,0x00168000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\IEFRAME.DLL",2019-04-20 23:51:01,2022-04-24 13:45:07,12139008,A,0x00B9F0EE,0x00B9F0EE,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00B9D000,Not Loaded,11.0.17763.437,11.0.17763.437,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\IERTUTIL.DLL",2019-04-20 23:50:31,2001-04-07 10:30:57,2275896,A,0x00237C5F,0x00237C5F,x86,GUI,"CV,Unknown",0x5DCA0000,Unknown,0x0022D000,Not Loaded,11.0.17763.404,11.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\IEUI.DLL",2018-09-15 00:29:30,2001-07-17 03:18:09,482304,A,0x00081E7A,0x00081E7A,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0007B000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,6.1
+DE,"c:\windows\system32\IMAGEHLP.DLL",2018-09-15 00:28:46,2054-02-03 12:58:12,95488,A,0x0001CD04,0x0001CD04,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00019000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,6.1
+DE,"c:\windows\system32\IMGUTIL.DLL",2018-09-15 00:29:30,2083-02-09 08:20:19,44032,A,0x0001962E,0x0001962E,x86,GUI,"CV,Unknown",0x1B000000,Unknown,0x0000F000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\IMM32.DLL",2018-09-15 00:29:07,2005-03-21 19:37:34,144312,A,0x0002CD19,0x0002CD19,x86,GUI,"CV,Unknown",0x4F000000,Unknown,0x00025000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\INETCOMM.DLL",2018-09-15 00:29:30,2006-02-03 17:00:46,889344,A,0x000E2493,0x000E2493,x86,GUI,"CV,Unknown",0x5EC00000,Unknown,0x000DF000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\IPHLPAPI.DLL",2018-09-15 00:29:08,2046-06-16 15:06:28,197832,A,0x0003C8C4,0x0003C8C4,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00033000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\LINKINFO.DLL",2018-09-15 00:29:12,1990-10-11 12:32:27,23552,A,0x000138B9,0x000138B9,x86,GUI,"CV,Unknown",0x52600000,Unknown,0x0000B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\LOGONCLI.DLL",2018-09-15 00:29:08,2017-09-22 09:12:40,186120,A,0x00035E32,0x00035E32,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00030000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MFC42U.DLL",2018-09-15 00:29:03,2055-11-08 15:52:26,1163776,A,0x0011C890,0x0011C890,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00123000,Not Loaded,6.6.8063.0,6.6.4.0,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MI.DLL",2018-09-15 00:29:02,2032-09-09 20:19:12,102912,A,0x000270F5,0x000270F5,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001D000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MIUTILS.DLL",2018-09-15 00:29:02,2014-11-26 23:49:08,192000,A,0x00031CC7,0x00031CC7,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00052000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MLANG.DLL",2018-09-15 00:29:11,2031-12-04 09:07:23,198656,A,0x00037100,0x00037100,x86,GUI,"CV,Unknown",0x5E200000,Unknown,0x00034000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MMDEVAPI.DLL",2018-09-15 00:29:00,2065-04-16 01:59:16,366736,A,0x00063A4E,0x00063A4E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0005E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MPR.DLL",2019-04-20 23:49:17,2008-10-17 20:25:55,89336,A,0x0001DC9F,0x0001DC9F,x86,Console,"CV,Unknown",0x4B680000,Unknown,0x00018000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MPRMSG.DLL",2018-09-15 00:29:13,2105-04-19 22:23:31,113152,A,0x0002860C,0x0002860C,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MRMCORER.DLL",2018-09-15 00:29:05,2040-07-03 23:44:07,864624,A,0x000E2481,0x000E2481,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000D4000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSASN1.DLL",2018-09-15 00:29:07,2006-08-13 01:03:07,50608,A,0x0000C756,0x0000C756,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0000E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSCTF.DLL",2019-03-24 07:20:41,2007-11-16 06:50:22,1296576,A,0x0013D43B,0x0013D43B,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0013D000,Not Loaded,10.0.17763.348,10.0.17763.348,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSFEEDS.DLL",2018-09-15 00:29:28,2053-04-06 17:23:32,669184,A,0x000A4D06,0x000A4D06,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x000A8000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSHTML.DLL",2019-04-20 23:51:06,2090-02-02 11:48:58,19025408,A,0x0122EAF0,0x0122EAF0,x86,GUI,"CV,Unknown",0x63580000,Unknown,0x01339000,Not Loaded,11.0.17763.437,11.0.17763.437,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSI.DLL",2019-04-20 23:50:59,2034-02-26 13:41:27,3904512,A,0x003C8DAD,0x003C8DAD,x86,Console,"CV,Unknown",0x10000000,Unknown,0x003C0000,Not Loaded,5.0.17763.437,5.0.17763.437,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSILTCFG.DLL",2018-09-15 00:29:28,1972-07-22 19:27:10,17408,A,0x00011AA7,0x00011AA7,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00008000,Not Loaded,5.0.17763.1,5.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSIMG32.DLL",2018-09-15 00:29:08,2092-04-11 12:33:47,6656,A,0x0000C335,0x0000C335,x86,Console,"CV,Unknown",0x5B800000,Unknown,0x00006000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,6.0
+DE,"c:\windows\system32\MSISO.DLL",2018-09-15 00:29:08,1978-12-26 15:05:15,260096,A,0x0004205B,0x0004205B,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00045000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSLS31.DLL",2018-09-15 00:29:13,2007-04-09 04:11:28,184320,A,0x0003319B,0x0003319B,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00031000,Not Loaded,3.10.349.0,3.10.0.0,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSOERT2.DLL",2018-09-15 00:29:30,2012-09-28 02:57:51,97792,A,0x000231F3,0x000231F3,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00020000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSVCP110_WIN.DLL",2018-09-15 00:29:00,2102-03-16 06:49:08,414968,A,0x00066265,0x00066265,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00067000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\MSVCP_WIN.DLL",2018-09-15 00:29:08,2090-12-15 02:46:16,516496,A,0x00089943,0x00089943,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00080000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NCRYPT.DLL",2018-09-15 00:29:08,1991-12-30 12:35:11,127592,A,0x00022FC7,0x00022FC7,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00022000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NETAPI32.DLL",2018-09-15 00:29:02,2047-12-03 20:19:59,68680,A,0x000207C5,0x000207C5,x86,Console,"CV,Unknown",0x4CA00000,Unknown,0x00013000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NETUTILS.DLL",2018-09-15 00:29:08,2025-05-01 16:56:54,37160,A,0x000098C6,0x000098C6,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NEWDEV.DLL",2018-09-15 00:29:13,2080-11-09 18:08:36,486912,A,0x0008441E,0x0008441E,x86,Console,"CV,Unknown",0x61B00000,Unknown,0x0007B000,Not Loaded,6.0.5054.0,6.0.5054.0,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NSI.DLL",2018-09-15 00:28:45,2079-06-08 16:38:34,20144,A,0x00012FF5,0x00012FF5,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00007000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NTASN1.DLL",2018-09-15 00:29:07,2005-02-03 10:57:04,177312,A,0x0002EF1E,0x0002EF1E,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0002C000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NTDSAPI.DLL",2018-09-15 00:29:02,2057-07-12 03:16:07,97792,A,0x00018949,0x00018949,x86,Console,"CV,Unknown",0x59280000,Unknown,0x0001C000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\NTSHRUI.DLL",2019-04-20 23:50:33,2101-07-02 22:26:21,671232,A,0x000ACB47,0x000ACB47,x86,GUI,"CV,Unknown",0x51400000,Unknown,0x000A9000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\OCCACHE.DLL",2018-09-15 00:29:28,2019-03-07 16:00:36,127488,A,0x000238A6,0x000238A6,x86,GUI,"CV,Unknown",0x63780000,Unknown,0x00024000,Not Loaded,11.0.17763.1,11.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\OLEACC.DLL",2018-09-15 00:29:13,2092-01-30 10:55:06,324608,A,0x0005957F,0x0005957F,x86,GUI,"CV,Unknown",0x61880000,Unknown,0x00054000,Not Loaded,7.2.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\OLEAUT32.DLL",2019-04-20 23:49:13,2103-03-08 16:55:10,604008,A,0x0009E36E,0x0009E36E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00096000,Not Loaded,10.0.17763.437,10.0.17763.437,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\OLEDLG.DLL",2018-09-15 00:29:05,2030-09-25 07:55:31,148992,A,0x0002DF13,0x0002DF13,x86,GUI,"CV,Unknown",0x47480000,Unknown,0x00029000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\ONEX.DLL",2018-09-15 00:29:00,2029-08-03 21:01:32,205312,A,0x0003978C,0x0003978C,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00039000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\POLICYMANAGER.DLL",2019-03-09 02:14:27,1991-08-28 03:30:24,451072,A,0x00079527,0x00079527,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0006F000,Not Loaded,10.0.17763.168,10.0.17763.168,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\POWRPROF.DLL",2018-09-15 00:29:08,2007-01-30 09:58:22,341560,A,0x00062B2A,0x00062B2A,x86,Console,"CV,Unknown",0x5E600000,Unknown,0x00054000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\PRINTUI.DLL",2018-09-15 00:29:12,2011-02-06 11:21:11,1098752,A,0x00117E5D,0x00117E5D,x86,Console,"CV,Unknown",0x4E180000,Unknown,0x00112000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\PROFAPI.DLL",2018-09-15 00:28:59,2036-03-11 01:43:54,106384,A,0x00025FA8,0x00025FA8,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0001C000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\PROPSYS.DLL",2019-03-24 07:22:01,1993-06-23 01:49:41,1572176,A,0x0017FD75,0x0017FD75,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0017E000,Not Loaded,7.0.17763.348,7.0.17763.348,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\PUIAPI.DLL",2018-09-15 00:29:12,2004-09-04 01:39:36,172032,A,0x00034610,0x00034610,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0002F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\RASAPI32.DLL",2019-03-09 02:14:31,2017-07-03 04:20:38,875008,A,0x000E19BE,0x000E19BE,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x000DB000,Not Loaded,10.0.17763.292,10.0.17763.292,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\RASMAN.DLL",2019-03-09 02:14:29,2080-11-06 02:45:14,156672,A,0x0002FF75,0x0002FF75,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0002B000,Not Loaded,10.0.17763.292,10.0.17763.292,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\REGAPI.DLL",2018-09-15 00:29:02,2062-05-28 20:39:12,82944,A,0x0001B775,0x0001B775,x86,Console,"CV,Unknown",0x30000000,Unknown,0x00018000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\RMCLIENT.DLL",2019-03-09 02:14:13,2043-04-15 14:32:42,114344,A,0x0002877E,0x0002877E,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001E000,Not Loaded,10.0.17763.194,10.0.17763.194,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\RTUTILS.DLL",2018-09-15 00:29:12,2004-11-13 23:01:17,52224,A,0x0001B9A5,0x0001B9A5,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00011000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SAMCLI.DLL",2018-09-15 00:29:07,1990-08-28 20:47:53,70144,A,0x0001EF2D,0x0001EF2D,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00015000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SAMLIB.DLL",2018-09-15 00:29:07,2071-01-30 09:49:58,84480,A,0x00015AF0,0x00015AF0,x86,Console,"CV,Unknown",0x4D180000,Unknown,0x00019000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SCECLI.DLL",2018-09-15 00:29:12,2104-05-29 08:04:14,214016,A,0x000364BF,0x000364BF,x86,Console,"CV,Unknown",0x5FD00000,Unknown,0x00039000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SETUPAPI.DLL",2019-04-20 23:50:32,2086-07-28 11:43:27,4527624,A,0x004581BD,0x004581BD,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0044B000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SHDOCVW.DLL",2018-09-15 00:29:13,2021-04-03 04:50:08,217600,A,0x0003978C,0x0003978C,x86,GUI,"CV,Unknown",0x71700000,Unknown,0x00039000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SLC.DLL",2018-09-15 00:29:02,2033-02-13 20:20:51,122368,A,0x000243D9,0x000243D9,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00021000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SPFILEQ.DLL",2018-09-15 00:29:12,2047-10-20 03:00:47,87040,A,0x0001B00A,0x0001B00A,x86,GUI,"CV,Unknown",0x61000000,Unknown,0x00019000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SPINF.DLL",2018-09-15 00:29:12,2085-09-03 00:20:47,83968,A,0x000161D9,0x000161D9,x86,GUI,"CV,Unknown",0x61000000,Unknown,0x00017000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SPPC.DLL",2018-09-15 00:29:02,2026-08-08 03:50:38,102912,A,0x0001F63A,0x0001F63A,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001C000,Not Loaded,10.0.17763.1,10.0.17763.1,21315.20512,14.13,10.0,10.0
+DE,"c:\windows\system32\SRPAPI.DLL",2019-03-24 07:22:03,2041-08-04 10:36:14,126976,A,0x000218E0,0x000218E0,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00023000,Not Loaded,10.0.17763.348,10.0.17763.348,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\SRVCLI.DLL",2018-09-15 00:29:08,2036-12-05 04:52:18,74352,A,0x000215EC,0x000215EC,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0001C000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\TBS.DLL",2018-09-15 00:28:59,2019-01-31 08:50:21,42576,A,0x00015C7D,0x00015C7D,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000C000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\TEXTINPUTFRAMEWORK.DLL",2018-09-15 00:29:05,2024-11-07 08:11:31,542504,A,0x00090053,0x00090053,x86,Console,"CV,Unknown",0x30000000,Unknown,0x00086000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\TOKENBINDING.DLL",2018-09-15 00:29:08,2057-08-09 16:49:29,34304,A,0x00008CB1,0x00008CB1,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000D000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\TPMCOREPROVISIONING.DLL",2018-09-15 00:28:59,2039-06-10 01:14:30,702976,A,0x000ABC9A,0x000ABC9A,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000B0000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\TWINAPI.APPCORE.DLL",2019-03-09 02:14:11,2023-12-04 18:03:11,1720936,A,0x001A8FAF,0x001A8FAF,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x001A3000,Not Loaded,10.0.17763.292,10.0.17763.292,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\TWINAPI.DLL",2018-09-15 00:29:03,1983-04-04 18:56:30,499200,A,0x000853A0,0x000853A0,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0007E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\UIAUTOMATIONCORE.DLL",2018-09-15 00:29:03,1986-05-25 01:11:49,2004992,A,0x001F62AF,0x001F62AF,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x001F0000,Not Loaded,7.2.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\URLMON.DLL",2019-04-20 23:50:31,2059-05-24 06:44:10,1760768,A,0x001B5F6E,0x001B5F6E,x86,GUI,"CV,Unknown",0x1A400000,Unknown,0x001BC000,Not Loaded,11.0.17763.404,11.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\USERDATATYPEHELPERUTIL.DLL",2018-09-15 00:29:05,2084-11-20 22:12:15,37888,A,0x00017D06,0x00017D06,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\USERENV.DLL",2018-09-15 00:29:08,2020-03-26 21:24:42,137056,A,0x00024B2B,0x00024B2B,x86,GUI,"CV,Unknown",0x52880000,Unknown,0x00023000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\UXTHEME.DLL",2018-09-15 00:29:02,2004-09-20 03:50:52,481280,A,0x0007D786,0x0007D786,x86,GUI,"CV,Unknown",0x71B00000,Unknown,0x0007B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\VAULTCLI.DLL",2018-09-15 00:29:05,2004-10-29 18:11:17,224256,A,0x0003A77A,0x0003A77A,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00039000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\VERSION.DLL",2018-09-15 00:29:13,2093-11-14 17:41:13,27328,A,0x00010CC2,0x00010CC2,x86,GUI,"CV,Unknown",0x52180000,Unknown,0x00008000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\VIRTDISK.DLL",2018-09-15 00:29:07,2050-11-07 17:29:48,57360,A,0x00010ED2,0x00010ED2,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\W32TOPL.DLL",2018-09-15 00:29:02,2073-01-01 20:17:15,28160,A,0x00008D06,0x00008D06,x86,Console,"CV,Unknown",0x4F200000,Unknown,0x0000B000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WDSCORE.DLL",2018-09-15 00:28:45,2077-03-18 08:41:29,201016,A,0x000320CC,0x000320CC,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00034000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,6.0
+DE,"c:\windows\system32\WEBAUTHN.DLL",2018-09-15 00:29:05,1998-04-19 18:21:24,328704,A,0x0005112D,0x0005112D,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00054000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WEBIO.DLL",2018-09-15 00:29:07,1978-03-25 11:58:33,460288,A,0x0007AC35,0x0007AC35,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00075000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WEBSERVICES.DLL",2018-09-15 00:29:05,1992-04-18 23:39:42,948288,A,0x000F692C,0x000F692C,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000E8000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WEBSOCKET.DLL",2018-09-15 00:29:08,2055-01-02 08:58:54,37376,A,0x0000BF16,0x0000BF16,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000D000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WER.DLL",2019-03-24 07:20:47,1997-12-31 01:46:36,680184,A,0x000AC00D,0x000AC00D,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000A9000,Not Loaded,10.0.17763.379,10.0.17763.379,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WEVTAPI.DLL",2019-04-20 23:49:17,2029-06-24 04:24:25,283032,A,0x0004AD89,0x0004AD89,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00047000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINBRAND.DLL",2018-09-15 00:29:07,2009-04-25 14:33:22,149488,A,0x00032F2B,0x00032F2B,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00027000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINDOWSCODECS.DLL",2018-10-29 15:39:46,2024-08-18 19:51:44,1520208,A,0x001736C1,0x001736C1,x86,GUI,"CV,Unknown",0x53000000,Unknown,0x00171000,Not Loaded,10.0.17763.55,10.0.17763.55,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINDOWSPERFORMANCERECORDERCONTROL.DLL",2018-09-15 00:29:07,1990-04-06 21:43:34,886272,A,0x000DDDEC,0x000DDDEC,x86,Console,"CV,Unknown",0x10000000,Unknown,0x000DC000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,6.2
+DE,"c:\windows\system32\WINHTTP.DLL",2019-04-20 23:49:16,2010-11-01 02:41:53,766480,A,0x000BD25A,0x000BD25A,x86,GUI,"CV,Unknown",0x76080000,Unknown,0x000BD000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WININET.DLL",2019-03-09 02:14:28,1988-12-04 01:47:48,4627456,A,0x0046D078,0x0046D078,x86,GUI,"CV,Unknown",0x63000000,Unknown,0x00471000,Not Loaded,11.0.17763.316,11.0.17763.316,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINMM.DLL",2018-09-15 00:29:00,2054-10-13 22:27:35,134512,A,0x00029CBB,0x00029CBB,x86,GUI,"CV,Unknown",0x4F080000,Unknown,0x00024000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINMMBASE.DLL",2018-09-15 00:29:00,2035-11-29 01:34:01,132392,A,0x000281D8,0x000281D8,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x00023000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINNSI.DLL",2018-09-15 00:28:45,1999-07-06 02:56:05,28352,A,0x00015162,0x00015162,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00008000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINSPOOL.DRV",2019-04-20 23:50:16,1987-03-26 06:45:12,414720,A,0x00066C98,0x00066C98,x86,GUI,"CV,Unknown",0x4CC80000,Unknown,0x0006B000,Not Loaded,10.0.17763.404,10.0.17763.404,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINSTA.DLL",2018-09-15 00:29:02,2083-04-20 18:45:10,256704,A,0x00046C72,0x00046C72,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00043000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WINTRUST.DLL",2019-03-24 07:21:58,2011-08-29 12:05:17,279376,A,0x0004B4F7,0x0004B4F7,x86,GUI,"CV,Unknown",0x47600000,Unknown,0x00045000,Not Loaded,10.0.17763.348,10.0.17763.348,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WKSCLI.DLL",2018-09-15 00:29:07,2105-02-02 18:51:12,57816,A,0x00016C68,0x00016C68,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00010000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WLANAPI.DLL",2018-09-15 00:29:00,2007-02-28 17:34:21,333128,A,0x00056ECD,0x00056ECD,x86,Console,"CV,Unknown",0x10000000,Unknown,0x00053000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WLDAP32.DLL",2018-09-15 00:29:08,2004-08-15 01:21:53,321024,A,0x0004F82A,0x0004F82A,x86,GUI,"CV,Unknown",0x52100000,Unknown,0x00053000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WMICLNT.DLL",2018-09-15 00:29:00,2016-02-26 09:00:40,39936,A,0x0000FA5C,0x0000FA5C,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0000E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WPCWEBFILTER.DLL",2018-09-15 00:29:00,1975-11-15 21:35:20,627200,A,0x000A6EE7,0x000A6EE7,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0009E000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WTSAPI32.DLL",2018-09-15 00:29:02,2070-11-20 21:55:16,52864,A,0x0000FCC0,0x0000FCC0,x86,Console,"CV,Unknown",0x30000000,Unknown,0x0000F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\WUCEFFECTS.DLL",2018-09-15 00:29:07,2021-11-22 06:30:31,166912,A,0x00031542,0x00031542,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0002F000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\system32\XMLLITE.DLL",2018-09-15 00:29:07,1980-11-06 17:42:20,173208,A,0x00036E42,0x00036E42,x86,GUI,"CV,Unknown",0x10000000,Unknown,0x0002C000,Not Loaded,10.0.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\winsxs\x86_microsoft.windows.common-controls_6595b64144ccf1df_5.82.17763.437_none_588eeb4778ace641\COMCTL32.DLL",2018-09-15 00:29:12,2091-12-11 18:59:24,569856,A,0x00093940,0x00093940,x86,GUI,"CV,Unknown",0x5BF80000,Unknown,0x0008E000,Not Loaded,5.82.17763.1,10.0.17763.1,10.0,14.13,10.0,10.0
+DE,"c:\windows\winsxs\x86_microsoft.windows.common-controls_6595b64144ccf1df_6.0.17763.437_none_4d6374a11b9a86dc\COMCTL32.DLL",2019-04-02 02:09:50,2040-12-17 14:39:22,2148664,A,0x0020E944,0x0020E944,x86,GUI,"CV,Unknown",0x71A00000,Unknown,0x0020F000,Not Loaded,6.10.17763.437,10.0.17763.437,10.0,14.13,10.0,10.0
+DE,"c:\windows\winsxs\x86_microsoft.windows.gdiplus_6595b64144ccf1df_1.1.17763.437_none_7e4e6786762d00aa\GDIPLUS.DLL",2019-04-02 01:57:36,2032-06-02 17:05:26,1484800,A,0x00178A7B,0x00178A7B,x86,Console,"CV,Unknown",0x10000000,Unknown,0x0016F000,Not Loaded,10.0.17763.437,10.0.17763.437,10.0,14.13,10.0,10.0
+6,"c:\lib\ffmpeg-3.4.2-win64-shared\bin\AVCODEC-57.DLL",2018-02-24 22:55:32,1969-12-31 17:00:00,33008128,,0x01F7FF44,0x01F7FF44,x64,Console,"None",0x0000000180000000,Unknown,0x02937000,Not Loaded,57.107.100.0,57.107.100.0,0.0,2.29,4.0,5.2
+6,"c:\lib\ffmpeg-3.4.2-win64-shared\bin\AVFORMAT-57.DLL",2018-02-24 22:55:30,1969-12-31 17:00:00,3972608,,0x003CB051,0x003CB051,x64,Console,"None",0x0000000180000000,Unknown,0x003D4000,Not Loaded,57.83.100.0,57.83.100.0,0.0,2.29,4.0,5.2
+6,"c:\lib\ffmpeg-3.4.2-win64-shared\bin\AVUTIL-55.DLL",2018-02-24 22:55:32,1969-12-31 17:00:00,678912,,0x000AA730,0x000AA730,x64,Console,"None",0x0000000180000000,Unknown,0x000C3000,Not Loaded,55.78.100.0,55.78.100.0,0.0,2.29,4.0,5.2
+6,"c:\lib\ffmpeg-3.4.2-win64-shared\bin\SWRESAMPLE-2.DLL",2018-02-24 22:55:32,1969-12-31 17:00:00,377344,,0x000670B0,0x000670B0,x64,Console,"None",0x0000000180000000,Unknown,0x0009A000,Not Loaded,2.9.100.0,2.9.100.0,0.0,2.29,4.0,5.2
+6,"c:\lib\ffmpeg-3.4.2-win64-shared\bin\SWSCALE-4.DLL",2018-02-24 22:55:32,1969-12-31 17:00:00,529920,,0x00088218,0x00088218,x64,Console,"None",0x0000000180000000,Unknown,0x00094000,Not Loaded,4.8.100.0,4.8.100.0,0.0,2.29,4.0,5.2
+6,"c:\users\black\desktop\tactview\tactview-native\FFMPEGMEDIADECODER.DLL",2019-04-21 08:38:29,2019-04-21 08:38:29,29696,A,0x00000000,0x0000E24F,x64,GUI,"Unknown",0x0000000180000000,Unknown,0x0000C000,Not Loaded,N/A,N/A,0.0,14.16,6.0,6.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-CONSOLE-L1-1-0.DLL",2018-08-22 19:18:04,2068-05-03 16:52:46,19256,,0x00008B68,0x00008B68,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-DATETIME-L1-1-0.DLL",2018-08-22 19:18:04,2056-05-09 00:02:06,18744,,0x00013E7B,0x00013E7B,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-DEBUG-L1-1-0.DLL",2018-08-22 19:18:04,1975-12-15 01:01:48,18744,,0x00012EB2,0x00012EB2,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-ERRORHANDLING-L1-1-0.DLL",2018-08-22 19:18:04,2034-11-15 11:10:27,18744,,0x0000EAD3,0x0000EAD3,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-FILE-L1-2-0.DLL",2018-08-22 19:18:04,2005-03-03 08:53:57,18744,,0x00010E00,0x00010E00,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-FILE-L2-1-0.DLL",2018-08-22 19:18:04,1982-07-22 11:25:30,18744,,0x0000E832,0x0000E832,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-HANDLE-L1-1-0.DLL",2018-08-22 19:18:04,2049-01-27 03:53:21,18744,,0x0000D68C,0x0000D68C,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-HEAP-L1-1-0.DLL",2018-08-22 19:18:04,2065-04-08 04:28:20,19256,,0x0000D627,0x0000D627,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-INTERLOCKED-L1-1-0.DLL",2018-08-22 19:18:04,2093-11-26 02:13:45,18744,,0x00011B5F,0x00011B5F,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-LOCALIZATION-L1-2-0.DLL",2018-08-22 19:18:04,2077-05-20 21:29:21,21304,,0x0000E28A,0x0000E28A,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-MEMORY-L1-1-0.DLL",2018-08-22 19:18:04,2050-08-03 14:16:03,19256,,0x00009B27,0x00009B27,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-NAMEDPIPE-L1-1-0.DLL",2018-08-22 19:18:04,1988-10-05 03:18:10,18744,,0x000120E3,0x000120E3,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-PROCESSENVIRONMENT-L1-1-0.DLL",2018-08-22 19:18:04,1996-07-16 03:50:14,19768,,0x00008E55,0x00008E55,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-PROFILE-L1-1-0.DLL",2018-08-22 19:18:04,1970-11-08 15:05:14,18232,,0x00010BBD,0x00010BBD,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-RTLSUPPORT-L1-1-0.DLL",2018-08-22 19:18:04,2090-08-06 18:29:17,19256,,0x00010C64,0x00010C64,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-STRING-L1-1-0.DLL",2018-08-22 19:18:04,2053-11-27 19:01:13,18744,,0x0000E6CB,0x0000E6CB,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CORE-UTIL-L1-1-0.DLL",2018-08-22 19:18:04,2063-12-14 00:50:03,17856,,0x0000B71E,0x0000B71E,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CRT-ENVIRONMENT-L1-1-0.DLL",2018-08-22 19:18:04,2103-02-14 19:03:46,19256,,0x0000E4B8,0x0000E4B8,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0
+D6,"c:\users\black\installed\jdk-11\bin\API-MS-WIN-CRT-PROCESS-L1-1-0.DLL",2018-08-22 19:18:04,2007-03-05 16:49:06,19768,,0x0000DB87,0x0000DB87,x64,Console,"CV,Unknown",0x0000000180000000,Unknown,0x00003000,Not Loaded,10.0.16299.15,10.0.16299.15,10.0,14.10,10.0,10.0

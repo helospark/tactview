@@ -4,6 +4,7 @@
 #include <opencv2/photo.hpp>
 #include <opencv2/calib3d.hpp>
 #include <iostream>
+#include "common.h"
 
 using namespace cv;
 using namespace std;
@@ -28,7 +29,7 @@ extern "C"
     };
 
 
-    void lensDistort(OpenCVLensDistortRequest* request)  {
+    EXPORTED void lensDistort(OpenCVLensDistortRequest* request)  {
         Mat inputMat(request->height, request->width, CV_8UC4, (void*)request->input);
         Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
 

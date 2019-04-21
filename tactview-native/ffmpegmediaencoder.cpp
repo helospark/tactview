@@ -15,6 +15,7 @@
 #define __STDC_CONSTANT_MACROS whatisthis
 
 #include <iostream>
+#include "common.h"
 
 extern "C" {
     #include <stdlib.h>
@@ -179,7 +180,8 @@ extern "C" {
                 }
             }
             c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
-            ost->st->time_base = (AVRational){ 1, c->sample_rate };
+            ost->st->time_base.num = 1;
+			ost->st->time_base.den = c->sample_rate;
             break;
 
         case AVMEDIA_TYPE_VIDEO:
@@ -194,7 +196,8 @@ extern "C" {
              * of which frame timestamps are represented. For fixed-fps content,
              * timebase should be 1/framerate and timestamp increments should be
              * identical to 1. */
-            ost->st->time_base =  (AVRational){1, request->fps};
+            ost->st->time_base.num = 1;
+			ost->st->time_base.den = request->fps;
             c->time_base       = ost->st->time_base;
 
             c->pix_fmt       = AV_PIX_FMT_YUV420P;
@@ -387,7 +390,11 @@ extern "C" {
             }
             frame = ost->frame;
 
-            frame->pts = av_rescale_q(ost->samples_count, (AVRational){1, c->sample_rate}, c->time_base);
+			AVRational scale;
+			scale.num = 1;
+			scale.den = c->sample_rate;
+
+            frame->pts = av_rescale_q(ost->samples_count, scale, c->time_base);
             ost->samples_count += dst_nb_samples;
         }
 
@@ -543,7 +550,7 @@ extern "C" {
     /**************************************************************/
     /* media file output */
 
-    int initEncoder(FFmpegInitEncoderRequest* request) {
+    EXPORTED int initEncoder(FFmpegInitEncoderRequest* request) {
         av_register_all();
         AVFormatContext *oc;
         AVOutputFormat *fmt;
@@ -641,7 +648,7 @@ extern "C" {
         renderContext.renderHeight = request->renderHeight;
     }
 
-    void clearEncoder(FFmpegClearEncoderRequest* request) {
+    EXPORTED void clearEncoder(FFmpegClearEncoderRequest* request) {
         //av_interleaved_write_frame(renderContext.oc, NULL);
         /* Write the trailer, if any. The trailer must be written before you
          * close the CodecContexts open when you wrote the header; otherwise
@@ -663,7 +670,7 @@ extern "C" {
         avformat_free_context(renderContext.oc);
     }
 
-    void encodeFrames(FFmpegEncodeFrameRequest* request) {
+    EXPORTED void encodeFrames(FFmpegEncodeFrameRequest* request) {
             OutputStream* video_st = renderContext.video_st;
             OutputStream* audio_st = renderContext.audio_st;
 
@@ -701,7 +708,7 @@ extern "C" {
         int audioCodecNumber;
     };
 
-    void queryCodecs(QueryCodecRequest* request)
+    EXPORTED void queryCodecs(QueryCodecRequest* request)
     {
         av_register_all();
 
@@ -727,6 +734,14 @@ extern "C" {
         }
 
     }
+
+    EXPORTED const char* queryCodecsTest()
+    {
+        av_register_all();
+        AVCodec * codec = av_codec_next(NULL);
+		return codec->long_name;
+    }
+
 
 }
 

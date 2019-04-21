@@ -2,6 +2,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include "common.h"
 
 using namespace cv;
 using namespace std;
@@ -20,7 +21,7 @@ extern "C"
         int shape;
     };
 
-    void erodeDilate(OpenCVErodeDilateRequest* request)  {
+    EXPORTED void erodeDilate(OpenCVErodeDilateRequest* request)  {
         Mat inputMat(request->height, request->width, CV_8UC4, (void*)request->input);
         Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
 

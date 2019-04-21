@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <cstdlib>
 
 int main() {
   // -Djdk.gtk.version=2 -> https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8211302
