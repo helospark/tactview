@@ -12,6 +12,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.decoder.VideoMetadata;
+import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 
 public class TimelineChannel {
     private NonIntersectingIntervalList<TimelineClip> clips = new NonIntersectingIntervalList<>();
@@ -221,6 +223,23 @@ public class TimelineChannel {
 
     public void setMute(boolean mute) {
         this.mute = mute;
+    }
+
+    public int findMaximumVideoBitRate() {
+        int maxBitRate = 0;
+        for (var clip : clips) {
+            if (clip instanceof VideoClip) {
+                VisualMediaMetadata metadata = ((VideoClip) clip).getMediaMetadata();
+                if (metadata instanceof VideoMetadata) {
+                    int bitRate = ((VideoMetadata) metadata).getBitRate();
+                    if (bitRate > maxBitRate) {
+                        maxBitRate = bitRate;
+                    }
+                }
+            }
+        }
+
+        return maxBitRate;
     }
 
 }

@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 
 public class VideoMetadata extends VisualMediaMetadata {
     protected double fps;
+    protected int bitRate;
 
     @Generated("SparkTools")
     private VideoMetadata(Builder builder) {
@@ -16,10 +17,15 @@ public class VideoMetadata extends VisualMediaMetadata {
         this.height = builder.height;
         this.resizable = builder.resizable;
         this.fps = builder.fps;
+        this.bitRate = builder.bitRate;
     }
 
     protected VideoMetadata() {
 
+    }
+
+    public int getBitRate() {
+        return bitRate;
     }
 
     public double getFps() {
@@ -41,7 +47,7 @@ public class VideoMetadata extends VisualMediaMetadata {
 
     @Override
     public String toString() {
-        return "VideoMetadata [fps=" + fps + ", width=" + width + ", height=" + height + ", resizable=" + resizable + ", length=" + length + "]";
+        return "VideoMetadata [fps=" + fps + ", bitRate=" + bitRate + ", width=" + width + ", height=" + height + ", resizable=" + resizable + ", length=" + length + "]";
     }
 
     @Generated("SparkTools")
@@ -56,6 +62,7 @@ public class VideoMetadata extends VisualMediaMetadata {
         private int height;
         private boolean resizable;
         private double fps;
+        private int bitRate;
 
         private Builder() {
         }
@@ -82,6 +89,11 @@ public class VideoMetadata extends VisualMediaMetadata {
 
         public Builder withFps(double fps) {
             this.fps = fps;
+            return this;
+        }
+
+        public Builder withBitRate(int bitRate) {
+            this.bitRate = bitRate;
             return this;
         }
 

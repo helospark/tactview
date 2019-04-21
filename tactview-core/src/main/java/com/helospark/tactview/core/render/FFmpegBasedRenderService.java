@@ -18,6 +18,7 @@ import com.helospark.tactview.core.render.ffmpeg.QueryCodecRequest;
 import com.helospark.tactview.core.render.ffmpeg.RenderFFMpegFrame;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
@@ -29,11 +30,13 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 public class FFmpegBasedRenderService extends AbstractRenderService {
     private static final int MAX_NUMBER_OF_CODECS = 400;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
+    private TimelineManagerAccessor timelineManagerAccessor;
 
     public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService,
-            ScaleService scaleService) {
+            ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor) {
         super(timelineManager, messagingService, scaleService);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
+        this.timelineManagerAccessor = timelineManagerAccessor;
     }
 
     @Override
@@ -153,9 +156,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
     @Override
     public Map<String, OptionProvider<?>> getOptionProviders() {
+        int maximumVideoBitRate = timelineManagerAccessor.findMaximumVideoBitRate();
         OptionProvider<Integer> bitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Video bitrate")
-                .withDefaultValue(800000)
+                .withDefaultValue(maximumVideoBitRate > 0 ? maximumVideoBitRate : 800000)
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {

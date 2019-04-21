@@ -49,6 +49,7 @@ extern "C" {
         double fps;
         int width;
         int height;
+        int bitRate;
         long long lengthInMicroseconds;
     };
 
@@ -63,10 +64,11 @@ extern "C" {
         AVFrame           *pFrame = NULL;
         AVFrame           *pFrameRGB = NULL;
         MediaMetadata mediaMetadata;
-		mediaMetadata.fps = -1;
-		mediaMetadata.width = -1;
-		mediaMetadata.height = -1;
-		mediaMetadata.lengthInMicroseconds = -1;
+	      mediaMetadata.fps = -1;
+	      mediaMetadata.width = -1;
+	      mediaMetadata.height = -1;
+	      mediaMetadata.lengthInMicroseconds = -1;
+        mediaMetadata.bitRate = 0;
 
         av_register_all();
 
@@ -119,6 +121,7 @@ extern "C" {
         mediaMetadata.width = pCodecCtx->width;
         mediaMetadata.height = pCodecCtx->height;
         mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
+        mediaMetadata.bitRate = st->codec->bit_rate;
 
         AVRational framerate;
 

@@ -30,6 +30,7 @@ public class RemoveKeyframeCommand implements UiCommand {
                     .withDescriptorId(request.getDescriptorId())
                     .withGlobalTimelinePosition(request.getGlobalTimelinePosition())
                     .withValue(previousValue.map(String::valueOf).get())
+                    .withRevertable(true)
                     .build();
             effectParametersRepository.keyframeAdded(keyframeAddedRequest);
         }

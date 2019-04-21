@@ -47,15 +47,15 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
         }
     }
 
-    //    @Override
-    //    public boolean isRevertable() {
-    //        
-    //    }
+    @Override
+    public boolean isRevertable() {
+        return request.isRevertable();
+    }
 
     @Override
     public String toString() {
         return "AddKeyframeForPropertyCommand [effectParametersRepository=" + effectParametersRepository + ", request=" + request + ", previousValue=" + previousValue + ", hadPreviousKeyframe="
-                + hadPreviousKeyframe + "]";
+                + hadPreviousKeyframe + ", hadKeyframingEnabled=" + hadKeyframingEnabled + "]";
     }
 
 }
