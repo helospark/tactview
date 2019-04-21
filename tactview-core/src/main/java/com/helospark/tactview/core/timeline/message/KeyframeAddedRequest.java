@@ -8,12 +8,14 @@ public class KeyframeAddedRequest {
     private String descriptorId;
     private TimelinePosition globalTimelinePosition;
     private String value;
+    private boolean revertable;
 
     @Generated("SparkTools")
     private KeyframeAddedRequest(Builder builder) {
         this.descriptorId = builder.descriptorId;
         this.globalTimelinePosition = builder.globalTimelinePosition;
         this.value = builder.value;
+        this.revertable = builder.revertable;
     }
 
     public String getDescriptorId() {
@@ -28,9 +30,13 @@ public class KeyframeAddedRequest {
         return value;
     }
 
+    public boolean isRevertable() {
+        return revertable;
+    }
+
     @Override
     public String toString() {
-        return "KeyframeAddedRequest [descriptorId=" + descriptorId + ", globalTimelinePosition=" + globalTimelinePosition + ", value=" + value + "]";
+        return "KeyframeAddedRequest [descriptorId=" + descriptorId + ", globalTimelinePosition=" + globalTimelinePosition + ", value=" + value + ", revertable=" + revertable + "]";
     }
 
     @Generated("SparkTools")
@@ -43,6 +49,7 @@ public class KeyframeAddedRequest {
         private String descriptorId;
         private TimelinePosition globalTimelinePosition;
         private String value;
+        private boolean revertable;
 
         private Builder() {
         }
@@ -59,6 +66,11 @@ public class KeyframeAddedRequest {
 
         public Builder withValue(String value) {
             this.value = value;
+            return this;
+        }
+
+        public Builder withRevertable(boolean revertable) {
+            this.revertable = revertable;
             return this;
         }
 

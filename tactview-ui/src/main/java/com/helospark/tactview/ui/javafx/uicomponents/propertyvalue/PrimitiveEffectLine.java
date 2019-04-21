@@ -45,10 +45,15 @@ public class PrimitiveEffectLine extends EffectLine {
     }
 
     public void sendKeyframeWithValue(TimelinePosition position, String value) {
+        sendKeyframeWithValueAndRevertable(position, value, true);
+    }
+
+    public void sendKeyframeWithValueAndRevertable(TimelinePosition position, String value, boolean revertable) {
         KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                 .withDescriptorId(descriptorId)
                 .withGlobalTimelinePosition(position)
                 .withValue(value)
+                .withRevertable(revertable)
                 .build();
 
         commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));

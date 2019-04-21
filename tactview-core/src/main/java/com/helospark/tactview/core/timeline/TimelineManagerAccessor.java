@@ -729,4 +729,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
         return timelineChannelsState.channels;
     }
 
+    public int findMaximumVideoBitRate() {
+        return timelineChannelsState.channels
+                .stream()
+                .map(channel -> channel.findMaximumVideoBitRate())
+                .max(Integer::compareTo)
+                .orElse(0);
+    }
+
 }

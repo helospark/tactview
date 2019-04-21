@@ -9,11 +9,12 @@ public class FFmpegResult extends Structure implements Structure.ByValue {
     public double fps;
     public int width;
     public int height;
+    public int bitRate;
     public long lengthInMicroseconds;
 
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("fps", "width", "height", "lengthInMicroseconds");
+        return Arrays.asList("fps", "width", "height", "bitRate", "lengthInMicroseconds");
     }
 
 }

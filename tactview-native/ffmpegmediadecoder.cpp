@@ -48,6 +48,7 @@ extern "C" {
         double fps;
         int width;
         int height;
+        int bitRate;
         long long lengthInMicroseconds;
 
         MediaMetadata()
@@ -56,6 +57,7 @@ extern "C" {
             width = -1;
             height = -1;
             lengthInMicroseconds = -1;
+            bitRate = 0;
         }
     };
 
@@ -122,6 +124,7 @@ extern "C" {
         mediaMetadata.width = pCodecCtx->width;
         mediaMetadata.height = pCodecCtx->height;
         mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
+        mediaMetadata.bitRate = st->codec->bit_rate;
 
         AVRational framerate;
 

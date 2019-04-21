@@ -56,6 +56,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
                 .withFps(result.fps)
                 .withHeight(result.height)
                 .withWidth(result.width)
+                .withBitRate(result.bitRate)
                 .withLength(TimelineLength.ofMicroseconds(result.lengthInMicroseconds))
                 .build();
 
