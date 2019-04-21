@@ -2,6 +2,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include "common.h"
 
 using namespace cv;
 using namespace std;
@@ -18,7 +19,7 @@ extern "C"
         int height;
     } ImageMetadataResonse;
 
-    ImageMetadataResonse readMetadata(ImageMetadataRequest* request)  {
+    EXPORTED ImageMetadataResonse readMetadata(ImageMetadataRequest* request)  {
         Mat mat = imread(request->path, cv::IMREAD_COLOR);
         ImageMetadataResonse response;
         response.width = mat.cols;
@@ -33,7 +34,7 @@ extern "C"
         char* data;
     } ImageRequest;
 
-    void readImage(ImageRequest* request)
+    EXPORTED void readImage(ImageRequest* request)
     {
         Mat input = imread(request->path, cv::IMREAD_COLOR);
 

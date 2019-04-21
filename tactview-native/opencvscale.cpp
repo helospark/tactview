@@ -2,6 +2,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include "common.h"
 
 using namespace cv;
 using namespace std;
@@ -22,7 +23,7 @@ extern "C"
         int interpolationType;
     } OpenCVScaleRequest;
 
-    void scaleImage(OpenCVScaleRequest* request)  {
+    EXPORTED void scaleImage(OpenCVScaleRequest* request)  {
         Mat inputMat(request->originalHeight, request->originalWidth, CV_8UC4, (void*)request->input);
         Mat outputMat(request->newHeight, request->newWidth, CV_8UC4, (void*)request->output);
 

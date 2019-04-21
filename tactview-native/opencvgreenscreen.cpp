@@ -2,6 +2,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include "common.h"
 
 using namespace cv;
 using namespace std;
@@ -17,7 +18,7 @@ extern "C"
       int height;
   };
 
-  void greenScreen(OpenCVGreenScreenRequest* request)  {
+  EXPORTED void greenScreen(OpenCVGreenScreenRequest* request)  {
       Mat inputMat(request->height, request->width, CV_8UC4, (void*)request->input);
       Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
 

@@ -2,6 +2,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include "common.h"
 
 using namespace cv;
 using namespace std;
@@ -25,7 +26,7 @@ extern "C"
         double rotationDegrees;
     } OpenCVRotateRequest;
 
-    void rotateImage(OpenCVRotateRequest* request)  {
+    EXPORTED void rotateImage(OpenCVRotateRequest* request)  {
         Mat inputMat(request->originalHeight, request->originalWidth, CV_8UC4, (void*)request->input);
         Mat outputMat(request->newHeight, request->newWidth, CV_8UC4, (void*)request->output);
 
