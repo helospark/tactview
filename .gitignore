@@ -10,6 +10,7 @@ target
 *.exp
 *.obj
 *.pdb
+*.exe
 
 .classpath
 .settings/
