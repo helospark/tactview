@@ -293,7 +293,7 @@ extern "C" {
         ost->frame     = alloc_audio_frame(c->sample_fmt, c->channel_layout,
                                            c->sample_rate, nb_samples);
         ost->tmp_frame = alloc_audio_frame(ost->sampleFormat, c->channel_layout,
-                                           request->sampleRate, (int)(nb_samples * ((double)request->sampleRate / c->sample_rate)));
+                                           request->sampleRate, (int)ceil(nb_samples * ((double)request->sampleRate / c->sample_rate)));
 
         /* copy the stream parameters to the muxer */
         ret = avcodec_parameters_from_context(ost->st->codecpar, c);
@@ -368,8 +368,8 @@ extern "C" {
                 /* compute destination number of samples */
                 int a = swr_get_delay(ost->swr_ctx, renderContext.sampleRate) + frame->nb_samples;
                 dst_nb_samples = av_rescale_rnd(a, c->sample_rate, renderContext.sampleRate, AV_ROUND_UP);
-                std::cout << a << " , " << c->sample_rate << " , " << renderContext.sampleRate << std::endl;
-                std::cout << dst_nb_samples << " == " << ost->frame->nb_samples << " | " << std::endl;
+                //std::cout << a << " , " << c->sample_rate << " , " << renderContext.sampleRate << " , " << frame->nb_samples << std::endl;
+                //std::cout << dst_nb_samples << " == " << ost->frame->nb_samples << " | " << std::endl;
                 //av_assert0(dst_nb_samples == frame->nb_samples);
 
             /* when we pass a frame to the encoder, it may keep a reference to it

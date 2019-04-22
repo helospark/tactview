@@ -64,6 +64,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
                     .withMask(layerMask.get())
                     .withScaleLayerMask(true)
                     .withCalculator(layerMaskType)
+                    .withInvert(invertProvider.getValueAt(request.getEffectPosition()))
                     .build();
 
             return layerMaskApplier.createNewImageWithLayerMask(layerMaskRequest);

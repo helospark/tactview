@@ -57,13 +57,13 @@ public class WhipPanTransition extends AbstractVideoTransitionEffect {
             int fromX = x + distance;
             int fromY = y;
 
-            result.copyColorFromTo(firstFrame, fromX, fromY, result, x, y);
+            result.copyColorFrom(firstFrame, fromX, fromY, x, y);
         });
         independentPixelOperation.executePixelTransformation(distance, firstFrame.getHeight(), (x, y) -> {
             int toX = x + (result.getWidth() - distance);
             int toY = y;
 
-            result.copyColorFromTo(secondFrame, x, y, result, toX, toY);
+            result.copyColorFrom(secondFrame, x, y, toX, toY);
         });
 
         BlurRequest blurRequest = BlurRequest.builder()

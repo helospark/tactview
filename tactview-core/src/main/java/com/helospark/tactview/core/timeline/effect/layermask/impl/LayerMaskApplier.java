@@ -51,7 +51,8 @@ public class LayerMaskApplier {
                 int color = input.getColorComponentWithOffset(x, y, i);
                 result.setColorComponentByOffset(color, x, y, i);
             }
-            result.setAlpha(intensity, x, y);
+            int newAlpha = (int) (((intensity / 255.0) * (input.getAlpha(x, y) / 255.0)) * 255.0);
+            result.setAlpha(newAlpha, x, y);
         });
         if (scaledMask != null) {
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(scaledMask.getBuffer());

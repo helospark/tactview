@@ -75,8 +75,8 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition);//tmp solution
 
-        initNativeRequest.actualWidth = tmpFrame.getVideoResult().getWidth();
-        initNativeRequest.actualHeight = tmpFrame.getVideoResult().getHeight();
+        initNativeRequest.actualWidth = width;
+        initNativeRequest.actualHeight = height;
         initNativeRequest.bytesPerSample = tmpFrame.getAudioResult().getBytesPerSample();
         initNativeRequest.audioChannels = tmpFrame.getAudioResult().getChannels().size();
         initNativeRequest.sampleRate = tmpFrame.getAudioResult().getSamplePerSecond();

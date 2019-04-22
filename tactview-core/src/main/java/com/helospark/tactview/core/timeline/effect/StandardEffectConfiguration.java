@@ -77,6 +77,7 @@ import com.helospark.tactview.core.timeline.effect.pixelize.PixelizeEffect;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateEffect;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
+import com.helospark.tactview.core.timeline.effect.scale.ZoomEffect;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.effect.shadow.DropShadowEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.SharpenEffect;
@@ -779,6 +780,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new AutoWhiteBalanceEffect(node, loadMetadata, colorTemperatureService))
                 .withName("Auto white balance")
                 .withSupportedEffectId("autowhitebalance")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory zoomEffect(ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new ZoomEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService, frameExtender, independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new ZoomEffect(node, loadMetadata, scaleService, frameExtender, independentPixelOperation))
+                .withName("Zoom to area")
+                .withSupportedEffectId("zoom")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
