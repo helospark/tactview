@@ -20,8 +20,8 @@ public class RectangleProviderFactory extends AbstractKeyframeableEffectDesSerFa
     public RectangleProvider deserializeInternal(JsonNode data, RectangleProvider currentFieldValue, LoadMetadata loadMetadata) {
         List<PointProvider> points = new ArrayList<>();
 
-        for (int i = 0; i < 6; ++i) {
-            PointProvider point = ReflectionUtil.deserialize(data.get(i), PointProvider.class, currentFieldValue.pointProviders.get(i), loadMetadata);
+        for (int i = 0; i < 4; ++i) {
+            PointProvider point = ReflectionUtil.deserialize(data.get("pointProviders").get(i), PointProvider.class, currentFieldValue.pointProviders.get(i), loadMetadata);
             points.add(point);
         }
 

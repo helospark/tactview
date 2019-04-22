@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ke
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
-    private double value;
+    double value;
 
     public ConstantInterpolator(double defaultValue) {
         this.value = defaultValue;

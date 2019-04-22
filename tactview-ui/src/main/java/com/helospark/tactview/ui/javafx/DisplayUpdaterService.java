@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
@@ -17,15 +16,17 @@ import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
 
 import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
 @Component
-public class DisplayUpdaterService {
+public class DisplayUpdaterService implements ScenePostProcessor {
     private ExecutorService executorService = Executors.newFixedThreadPool(4);
     private Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
     private volatile long currentPositionLastRendered = -1;
@@ -51,8 +52,8 @@ public class DisplayUpdaterService {
         this.displayUpdateListeners = displayUpdateListeners;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void postProcess(Scene scene) {
         Thread thread = new Thread(() -> {
             while (running) {
                 try {

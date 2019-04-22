@@ -19,8 +19,8 @@ public class CurveProviderFactory extends AbstractKeyframeableEffectDesSerFactor
         data.put("maxX", instance.maxX);
         data.put("minX", instance.minX);
 
-        data.put("maxY", instance.minY);
-        data.put("minY", instance.maxY);
+        data.put("maxY", instance.maxY);
+        data.put("minY", instance.minY);
 
         data.put("isUsingKeyframes", instance.isUsingKeyframes);
     }
@@ -31,7 +31,7 @@ public class CurveProviderFactory extends AbstractKeyframeableEffectDesSerFactor
             List<PointProvider> curvePoints = new ArrayList<>();
             Iterator<JsonNode> iterator = data.get("curvePoints").iterator();
             while (iterator.hasNext()) {
-                PointProvider point = ReflectionUtil.deserialize(iterator.next(), PointProvider.class, currentFieldValue, loadMetadata);
+                PointProvider point = ReflectionUtil.deserialize(iterator.next(), PointProvider.class, PointProvider.of(0, 0), loadMetadata);
                 curvePoints.add(point);
             }
             double maxX = data.get("maxX").asDouble();

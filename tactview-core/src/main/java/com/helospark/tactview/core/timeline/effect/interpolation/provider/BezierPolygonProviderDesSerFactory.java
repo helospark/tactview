@@ -30,7 +30,7 @@ public class BezierPolygonProviderDesSerFactory implements DesSerFactory<BezierP
     public BezierPolygonProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
             List<BezierPolygonPoint> defaultValues = objectMapper.readValue(
-                    objectMapper.treeAsTokens(data.get("defaultValues")),
+                    objectMapper.treeAsTokens(data.get("defaultValue")),
                     objectMapper.getTypeFactory().constructType(new TypeReference<List<BezierPolygonPoint>>() {
                     }));
             TreeMap<TimelinePosition, List<BezierPolygonPoint>> values = objectMapper.readValue(

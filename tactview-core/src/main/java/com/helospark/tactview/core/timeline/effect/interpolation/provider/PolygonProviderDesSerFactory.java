@@ -30,7 +30,7 @@ public class PolygonProviderDesSerFactory implements DesSerFactory<PolygonProvid
     public PolygonProvider deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
             List<Point> defaultValues = objectMapper.readValue(
-                    objectMapper.treeAsTokens(data.get("defaultValues")),
+                    objectMapper.treeAsTokens(data.get("defaultValue")),
                     objectMapper.getTypeFactory().constructType(new TypeReference<List<Point>>() {
                     }));
             TreeMap<TimelinePosition, List<Point>> values = objectMapper.readValue(

@@ -13,12 +13,14 @@ public class DoubleProviderFactory extends AbstractKeyframeableEffectDesSerFacto
     @Override
     public void addDataForDeserializeInternal(DoubleProvider instance, Map<String, Object> data) {
         data.put("interpolator", instance.interpolator);
+        data.put("min", instance.min);
+        data.put("max", instance.max);
     }
 
     @Override
     public DoubleProvider deserializeInternal(JsonNode data, DoubleProvider currentFieldValue, LoadMetadata loadMetadata) {
 
-        DoubleProvider result = new DoubleProvider(currentFieldValue.getMin(), currentFieldValue.getMax(),
+        DoubleProvider result = new DoubleProvider(data.get("min").asDouble(), data.get("max").asDouble(),
                 ReflectionUtil.deserialize(data.get("interpolator"), DoubleInterpolator.class, currentFieldValue.interpolator, loadMetadata));
         result.sizeFunction = currentFieldValue.getSizeFunction();
         return result;
