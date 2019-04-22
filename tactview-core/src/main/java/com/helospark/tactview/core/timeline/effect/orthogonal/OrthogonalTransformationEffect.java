@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
@@ -61,8 +62,10 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
         InterpolationLine line = lineProvider.getValueAt(request.getEffectPosition());
         double angle = rotateProvider.getValueAt(request.getEffectPosition());
 
-        int newWidth = (int) (Math.abs(line.end.x - line.start.x) * currentFrame.getWidth());
-        int newHeight = (int) (Math.abs(line.end.y - line.start.y) * currentFrame.getHeight());
+        int newWidth = (int) (Math.abs(line.end.x - line.start.x) * request.getCanvasWidth());
+        int newHeight = (int) (Math.abs(line.end.y - line.start.y) * request.getCanvasHeight());
+
+        Point centerPoint = centerProvider.getValueAt(request.getEffectPosition());
 
         ScaleRequest scaleRequest = ScaleRequest.builder()
                 .withImage(currentFrame)
@@ -81,8 +84,16 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
 
         ClipImage rotatedImage = rotateService.rotate(serviceRequest);
 
-        int translateX = (int) (line.start.x * currentFrame.getWidth()) - (rotatedImage.getWidth() - scaledImage.getWidth()) / 2;
-        int translateY = (int) (line.start.y * currentFrame.getHeight()) - (rotatedImage.getHeight() - scaledImage.getHeight()) / 2;
+        double angleRad = Math.toRadians(-angle);
+
+        double relativeCenterPointX = scaledImage.getWidth() * (centerPoint.x - 0.5);
+        double relativeCenterPointY = scaledImage.getHeight() * (centerPoint.y - 0.5);
+
+        int a = (int) (((relativeCenterPointX) * Math.sin(angleRad)) + ((relativeCenterPointY) * Math.cos(angleRad)));
+        int b = (int) (((relativeCenterPointX) * Math.cos(angleRad)) - ((relativeCenterPointY) * Math.sin(angleRad)));
+
+        int translateX = (int) (((line.start.x * request.getCanvasWidth()) - (rotatedImage.getWidth() - scaledImage.getWidth()) / 2) - (b) + relativeCenterPointX);
+        int translateY = (int) (((line.start.y * request.getCanvasHeight()) - (rotatedImage.getHeight() - scaledImage.getHeight()) / 2) - (a) + relativeCenterPointY);
 
         ClipImage extendedFrame = frameExtender.expandAndTranslate(rotatedImage, request.getCanvasWidth(), request.getCanvasHeight(), translateX, translateY);
 
@@ -94,7 +105,7 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
 
     @Override
     public void initializeValueProvider() {
-        lineProvider = new LineProvider(new PointProvider(createDoubleProvider(0.0), createDoubleProvider(0.0)), new PointProvider(createDoubleProvider(1.0), createDoubleProvider(1.0)));
+        lineProvider = new LineProvider(new PointProvider(createDoubleProvider(0.0), createDoubleProvider(0.0)), new PointProvider(createDoubleProvider(0.5), createDoubleProvider(0.5)));
         centerProvider = new PointProvider(createDoubleProvider(0.5), createDoubleProvider(0.5));
         rotateProvider = new DoubleProvider(-10000, 10000, new MultiKeyframeBasedDoubleInterpolator(0.0));
     }
@@ -108,19 +119,18 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
 
         ValueProviderDescriptor lineProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lineProvider)
-                .withName("position")
+                .withName("position scale")
                 .build();
-
         ValueProviderDescriptor rotateProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(rotateProvider)
-                .withName("rotate")
+                .withName("rotate angle")
                 .build();
-        //        ValueProviderDescriptor rotateCenterDescriptor = ValueProviderDescriptor.builder()
-        //                .withKeyframeableEffect(centerProvider)
-        //                .withName("rotate center")
-        //                .build(); // TODO: later
+        ValueProviderDescriptor rotateCenterDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(centerProvider)
+                .withName("relative rotate center")
+                .build();
 
-        return Arrays.asList(lineProviderDescriptor, rotateProviderDescriptor);
+        return Arrays.asList(lineProviderDescriptor, rotateProviderDescriptor, rotateCenterDescriptor);
     }
 
     @Override

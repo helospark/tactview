@@ -24,5 +24,5 @@ ldd tactview-native/*.dll | grep "=> /" | grep -i -v $BLACKLISTED_DEPENDENCIES |
 cd release
 
 builddate=`date '+%Y%M%d_%H%m%S'`
-filename="tactview_$builddate.zip"
+filename="tactview_win64_$builddate.zip"
 zip -r $filename win64/
