@@ -69,15 +69,23 @@ public class RenderDialog {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
         TextField fileNameTextField = new TextField();
+        GridPane.setHgrow(fileNameTextField, Priority.ALWAYS);
+
         Button button = new Button("Browse");
+
         button.setOnMouseClicked(e -> {
-            File result = fileChooser.showOpenDialog(stage);
+            File currentFile = new File(fileNameTextField.getText());
+            fileChooser.setInitialDirectory(currentFile.getParentFile());
+            fileChooser.setInitialFileName(currentFile.getName());
+            File result = fileChooser.showSaveDialog(stage);
             if (result != null) {
                 fileNameTextField.setText(result.getAbsolutePath());
             }
         });
-        HBox hbox = new HBox();
-        hbox.getChildren().addAll(fileNameTextField, button);
+        GridPane hbox = new GridPane();
+
+        hbox.add(fileNameTextField, 0, 0);
+        hbox.add(button, 1, 0);
 
         addGridElement("File name", linePosition++, gridPane, hbox);
 
@@ -189,6 +197,7 @@ public class RenderDialog {
                             // TODO: isValid, etc.
                             optionProvider.setValue(parsedValue);
                         });
+
                         rendererOptions.add(textField, 1, i);
                     } else {
                         ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
@@ -206,6 +215,7 @@ public class RenderDialog {
                         comboBox.setOnAction(e -> {
                             optionProvider.setValue(comboBox.getValue().getId());
                         });
+
                         rendererOptions.add(comboBox, 1, i);
                     }
 
@@ -215,7 +225,7 @@ public class RenderDialog {
             }
         });
 
-        fileNameTextField.setText("/tmp/test.mp4");
+        fileNameTextField.setText(System.getProperty("user.home") + File.separator + "video.mp4");
 
         buttonBar.getChildren().add(okButton);
 

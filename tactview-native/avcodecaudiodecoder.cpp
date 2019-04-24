@@ -16,7 +16,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         int sampleRate;
         int channels;
         int bytesPerSample;
-        long lengthInMicroseconds;
+        long long lengthInMicroseconds;
     };
 
     AVFrame *alloc_audio_frame(enum AVSampleFormat sample_fmt,
@@ -114,10 +114,10 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
     struct AVCodecAudioRequest {
         const char* path;
 
-        long startMicroseconds;
-        long bufferSize;
+        long long startMicroseconds;
+        long long bufferSize;
 
-        long numberOfChannels;
+        long long numberOfChannels;
         FFMpegFrame* channels;
     };
 
