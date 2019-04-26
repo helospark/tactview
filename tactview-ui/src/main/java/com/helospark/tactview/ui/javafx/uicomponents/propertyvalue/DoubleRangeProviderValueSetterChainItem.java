@@ -44,8 +44,6 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
         rangeSlider.setShowTickLabels(true);
 
         HBox box = new HBox();
-        box.getChildren().add(lowEndProvider.visibleNode);
-        box.getChildren().add(highEndProvider.visibleNode);
         box.getChildren().add(rangeSlider);
 
         CompositeEffectLine result = CompositeEffectLine
