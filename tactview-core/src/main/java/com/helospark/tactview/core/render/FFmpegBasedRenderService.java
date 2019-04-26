@@ -135,6 +135,14 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             }
         }
 
+        //        int sum = 0;
+        //        System.out.println("#############################x");
+        //        for (int i = 0; i < result.capacity(); ++i) {
+        //            System.out.print(result.get(i) + " ");
+        //            sum += result.get(i);
+        //        }
+        //        System.out.println("\n/////////////////////////////\n" + sum);
+
         return result;
     }
 

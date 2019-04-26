@@ -369,7 +369,8 @@ extern "C" {
                 int a = swr_get_delay(ost->swr_ctx, renderContext.sampleRate) + frame->nb_samples;
                 dst_nb_samples = av_rescale_rnd(a, c->sample_rate, renderContext.sampleRate, AV_ROUND_UP);
                 //std::cout << a << " , " << c->sample_rate << " , " << renderContext.sampleRate << " , " << frame->nb_samples << std::endl;
-                //std::cout << dst_nb_samples << " == " << ost->frame->nb_samples << " | " << std::endl;
+                std::cout << dst_nb_samples << " == " << ost->frame->nb_samples << " | " << std::endl;
+                dst_nb_samples = ost->frame->nb_samples < dst_nb_samples ? ost->frame->nb_samples : dst_nb_samples;
                 //av_assert0(dst_nb_samples == frame->nb_samples);
 
             /* when we pass a frame to the encoder, it may keep a reference to it
@@ -385,8 +386,8 @@ extern "C" {
                               ost->frame->data, dst_nb_samples,
                               (const uint8_t **)frame->data, frame->nb_samples);
             if (ret < 0) {
-                fprintf(stderr, "Error while converting\n");
-                exit(1);
+                fprintf(stderr, "Error while converting %d\n", ret);
+                //exit(1);
             }
             frame = ost->frame;
 
@@ -400,15 +401,15 @@ extern "C" {
 
         ret = avcodec_encode_audio2(c, &pkt, frame, &got_packet);
         if (ret < 0) {
-            fprintf(stderr, "Error encoding audio frame: \n");
-            exit(1);
+            fprintf(stderr, "Error encoding audio frame: %d\n",ret);
+            //exit(1);
         }
 
         if (got_packet) {
             ret = write_frame(oc, &c->time_base, ost->st, &pkt);
             if (ret < 0) {
-                fprintf(stderr, "Error while writing audio frame: \n");
-                exit(1);
+                fprintf(stderr, "Error while writing audio frame: %d \n", ret);
+                //exit(1);
             }
         }
 
