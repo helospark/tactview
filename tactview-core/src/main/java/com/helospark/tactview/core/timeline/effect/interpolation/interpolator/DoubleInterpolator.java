@@ -36,7 +36,7 @@ public interface DoubleInterpolator extends EffectInterpolator {
         while (area.compareTo(untilValue.getSeconds()) < 0 && start.getSeconds().compareTo(max) < 0) {
             BigDecimal integralValue = this.integrate(TimelinePosition.ofZero(), start.add(BigDecimal.ONE));
             BigDecimal newArea = integralValue;
-            if (area.compareTo(untilValue.getSeconds()) < 0) {
+            if (newArea.compareTo(untilValue.getSeconds()) < 0) {
                 area = newArea;
                 start = start.add(BigDecimal.ONE);
             } else {

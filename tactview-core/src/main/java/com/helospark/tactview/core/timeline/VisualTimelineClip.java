@@ -47,6 +47,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected VisualMediaSource backingSource;
     protected ValueListProvider<BlendModeValueListElement> blendModeProvider;
 
+    protected TimelineInterval cachedInterval = null;
     protected BigDecimal lengthCache = null;
 
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
@@ -294,8 +295,9 @@ public abstract class VisualTimelineClip extends TimelineClip {
         if (changeClipLength) {
             TimelineInterval originalInterval = this.interval;
             TimelinePosition originalStartPosition = originalInterval.getStartPosition();
-            if (lengthCache == null) {
+            if (lengthCache == null || !this.interval.equals(cachedInterval)) {
                 lengthCache = timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), originalInterval.getLength(), new BigDecimal("1000"));
+                cachedInterval = originalInterval;
             }
             return new TimelineInterval(originalStartPosition, new TimelineLength(lengthCache));
         } else {
