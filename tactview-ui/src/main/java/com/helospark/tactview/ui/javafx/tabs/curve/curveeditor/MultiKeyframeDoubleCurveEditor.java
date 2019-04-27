@@ -4,8 +4,10 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.MultiKeyframeDoubleInterpolatorFunctionFactory;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
@@ -14,8 +16,9 @@ import javafx.scene.control.MenuItem;
 public class MultiKeyframeDoubleCurveEditor extends TypeSupportingPointBasedKeyframeDoubleCurveEditor<MultiKeyframeBasedDoubleInterpolator> {
     private List<MultiKeyframeDoubleInterpolatorFunctionFactory> interpolatorFunctionFactories;
 
-    public MultiKeyframeDoubleCurveEditor(List<MultiKeyframeDoubleInterpolatorFunctionFactory> interpolatorFunctionFactories) {
-        super(MultiKeyframeBasedDoubleInterpolator.class);
+    public MultiKeyframeDoubleCurveEditor(List<MultiKeyframeDoubleInterpolatorFunctionFactory> interpolatorFunctionFactories, UiCommandInterpreterService commandInterpreter,
+            EffectParametersRepository effectParametersRepository) {
+        super(MultiKeyframeBasedDoubleInterpolator.class, commandInterpreter, effectParametersRepository);
         this.interpolatorFunctionFactories = interpolatorFunctionFactories;
     }
 

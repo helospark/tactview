@@ -4,8 +4,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.commands.impl.RemoveKeyframeCommand;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
@@ -16,6 +20,14 @@ import javafx.scene.paint.Color;
 public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpCurveEditor {
     protected int draggedIndex = -1;
     protected int closeIndex = -1;
+
+    private UiCommandInterpreterService commandInterpreter;
+    private EffectParametersRepository effectParametersRepository;
+
+    public AbstractGeneralPointBasedCurveEditor(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+        this.commandInterpreter = commandInterpreter;
+        this.effectParametersRepository = effectParametersRepository;
+    }
 
     @Override
     public boolean onMouseMoved(CurveEditorMouseRequest mouseEvent) {
@@ -32,6 +44,17 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
             if (elementIndex != -1) {
                 List<MenuItem> menuItems = contextMenuForElementIndex(elementIndex, request);
                 MenuItem deleteMenu = new MenuItem("Delete");
+
+                deleteMenu.setOnAction(e -> {
+                    KeyframePoint elementToRemove = getKeyframePoints((KeyframeSupportingDoubleInterpolator) request.currentKeyframeableEffect).get(elementIndex);
+
+                    KeyframeRemovedRequest keyframeRemoveRequest = KeyframeRemovedRequest.builder()
+                            .withDescriptorId(request.currentProvider.getId())
+                            .withGlobalTimelinePosition(elementToRemove.timelinePosition)
+                            .build();
+
+                    commandInterpreter.sendWithResult(new RemoveKeyframeCommand(effectParametersRepository, keyframeRemoveRequest));
+                });
 
                 ContextMenu contextMenu = new ContextMenu();
                 contextMenu.getItems().addAll(deleteMenu);

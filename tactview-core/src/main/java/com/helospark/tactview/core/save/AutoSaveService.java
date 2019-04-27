@@ -2,6 +2,7 @@ package com.helospark.tactview.core.save;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -47,7 +48,9 @@ public class AutoSaveService {
                     if (dirtyRepository.isDirty() && dirtyTime != lastDirtySave) {
                         LocalDateTime localDateTime = LocalDateTime.now();
 
-                        File saveFile = new File(temporaryFileSaveDirectory, "autosave_" + localDateTime.toString());
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm_ss");
+
+                        File saveFile = new File(temporaryFileSaveDirectory, "autosave_" + formatter.format(localDateTime));
 
                         SaveRequest saveRequest = new SaveRequest(saveFile.getAbsolutePath());
 

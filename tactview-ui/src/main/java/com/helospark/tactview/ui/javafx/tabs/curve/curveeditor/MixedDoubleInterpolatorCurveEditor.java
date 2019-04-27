@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.MixedDoubleInterpolator;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.EasingInterpolatorContextMenuItem;
 
 import javafx.scene.control.MenuItem;
@@ -13,8 +15,9 @@ import javafx.scene.control.MenuItem;
 public class MixedDoubleInterpolatorCurveEditor extends TypeSupportingPointBasedKeyframeDoubleCurveEditor<MixedDoubleInterpolator> {
     private EasingInterpolatorContextMenuItem easingInterpolatorContextMenuItem;
 
-    public MixedDoubleInterpolatorCurveEditor(EasingInterpolatorContextMenuItem easingInterpolatorContextMenuItem) {
-        super(MixedDoubleInterpolator.class);
+    public MixedDoubleInterpolatorCurveEditor(EasingInterpolatorContextMenuItem easingInterpolatorContextMenuItem, UiCommandInterpreterService commandInterpreter,
+            EffectParametersRepository effectParametersRepository) {
+        super(MixedDoubleInterpolator.class, commandInterpreter, effectParametersRepository);
         this.easingInterpolatorContextMenuItem = easingInterpolatorContextMenuItem;
     }
 

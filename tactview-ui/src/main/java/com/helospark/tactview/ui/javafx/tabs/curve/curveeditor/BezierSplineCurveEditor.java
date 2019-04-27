@@ -8,11 +8,13 @@ import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.bezier.CubicBezierPoint;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.MenuItem;
@@ -22,6 +24,10 @@ import javafx.scene.paint.Color;
 public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEditor {
     private BezierMousePointDescriptor dragged = null;
     private BezierMousePointDescriptor close = null;
+
+    public BezierSplineCurveEditor(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+        super(commandInterpreter, effectParametersRepository);
+    }
 
     @Override
     public boolean supports(EffectInterpolator interpolator) {

@@ -5,13 +5,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 public abstract class TypeSupportingPointBasedKeyframeDoubleCurveEditor<T extends EffectInterpolator> extends AbstractGeneralPointBasedCurveEditor {
     Class<T> type;
 
-    public TypeSupportingPointBasedKeyframeDoubleCurveEditor(Class<T> type) {
+    public TypeSupportingPointBasedKeyframeDoubleCurveEditor(Class<T> type, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+        super(commandInterpreter, effectParametersRepository);
         this.type = type;
     }
 

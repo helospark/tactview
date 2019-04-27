@@ -124,7 +124,7 @@ public class JavaFXUiMain extends Application {
         });
         stage.setMaximized(true);
 
-        VBox vbox = new VBox(2); // spacing between child nodes only.
+        BorderPane vbox = new BorderPane(); // spacing between child nodes only.
         vbox.setId("content-area");
         vbox.setMinHeight(300);
         vbox.setPrefWidth(scene.getWidth());
@@ -270,7 +270,8 @@ public class JavaFXUiMain extends Application {
         lower.getChildren().add(timeline);
         VBox.setVgrow(timeline, Priority.ALWAYS);
 
-        vbox.getChildren().addAll(upper, lower);
+        vbox.setTop(upper);
+        vbox.setCenter(lower);
 
         root.setCenter(vbox);
         notificationPane.setContent(root);
