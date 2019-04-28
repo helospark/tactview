@@ -15,6 +15,9 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.EffectAware;
 import com.helospark.tactview.core.timeline.EffectAware.EffectChangedRequest;
+import com.helospark.tactview.core.timeline.StatelessEffect;
+import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -38,6 +41,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class EffectParametersRepository {
     private MessagingService messagingService;
+    private TimelineManagerAccessor timelineManagerAccessor;
     private List<DoubleInterpolatorFactory> doubleInterpolatorFactories;
     private List<StringInterpolatorFactory> stringInterpolatorFactories;
     @Slf4j
@@ -46,10 +50,12 @@ public class EffectParametersRepository {
     private Map<String, EffectStore> primitiveEffectIdToEffectMap = new ConcurrentHashMap<>();
     private Map<String, EffectStore> allEffectIdToEffectMap = new ConcurrentHashMap<>();
 
-    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories) {
+    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories,
+            TimelineManagerAccessor timelineManagerAccessor) {
         this.messagingService = messagingService;
         this.doubleInterpolatorFactories = interpolatorFactories;
         this.stringInterpolatorFactories = stringInterpolatorFactories;
+        this.timelineManagerAccessor = timelineManagerAccessor;
     }
 
     @PostConstruct
@@ -244,6 +250,24 @@ public class EffectParametersRepository {
                 .map(a -> a.descriptor.get())
                 .filter(a -> a.getName().equals(label))
                 .findFirst();
+    }
+
+    public Optional<TimelinePosition> findGlobalPositionForValueProvider(String id) {
+        EffectStore effectStore = allEffectIdToEffectMap.get(id);
+
+        Optional<TimelineClip> optionalClip = timelineManagerAccessor.findClipById(effectStore.containingElementId);
+        if (optionalClip.isPresent()) {
+            TimelineClip clip = optionalClip.get();
+            return Optional.of(clip.getInterval().getStartPosition());
+        }
+
+        Optional<StatelessEffect> optionalEffect = timelineManagerAccessor.findEffectById(effectStore.containingElementId);
+        if (optionalEffect.isPresent()) {
+            StatelessEffect effect = optionalEffect.get();
+            return Optional.of(effect.getGlobalInterval().getStartPosition());
+        }
+
+        return Optional.empty();
     }
 
 }

@@ -27,6 +27,7 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
         this.displayScale = builder.displayScale;
         this.height = builder.height;
         this.canvas = builder.canvas;
+        this.timeOffset = builder.timeOffset;
         this.event = builder.event;
         this.remappedMousePosition = builder.remappedMousePosition;
         this.screenMousePosition = builder.screenMousePosition;
@@ -49,6 +50,7 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
         private double displayScale;
         private double height;
         private Canvas canvas;
+        private double timeOffset;
         private MouseEvent event;
         private Point remappedMousePosition;
         private Point screenMousePosition;
@@ -99,6 +101,11 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
 
         public Builder withCanvas(Canvas canvas) {
             this.canvas = canvas;
+            return this;
+        }
+
+        public Builder withTimeOffset(double timeOffset) {
+            this.timeOffset = timeOffset;
             return this;
         }
 

@@ -22,6 +22,7 @@ public class CurveDrawRequest extends AbstractCurveEditorRequest {
         this.displayScale = builder.displayScale;
         this.height = builder.height;
         this.canvas = builder.canvas;
+        this.timeOffset = builder.timeOffset;
         this.graphics = builder.graphics;
     }
 
@@ -46,6 +47,7 @@ public class CurveDrawRequest extends AbstractCurveEditorRequest {
         private double displayScale;
         private double height;
         private Canvas canvas;
+        private double timeOffset;
         private GraphicsContext graphics;
 
         private Builder() {
@@ -93,6 +95,11 @@ public class CurveDrawRequest extends AbstractCurveEditorRequest {
 
         public Builder withCanvas(Canvas canvas) {
             this.canvas = canvas;
+            return this;
+        }
+
+        public Builder withTimeOffset(double timeOffset) {
+            this.timeOffset = timeOffset;
             return this;
         }
 

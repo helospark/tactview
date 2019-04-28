@@ -15,4 +15,5 @@ public abstract class AbstractCurveEditorRequest {
     public double displayScale;
     public double height;
     public Canvas canvas;
+    public double timeOffset;
 }

@@ -402,4 +402,8 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return effectChannels;
     }
 
+    public TimelineLength getRenderOffset() {
+        return renderOffset;
+    }
+
 }

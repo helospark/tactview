@@ -8,10 +8,13 @@ import java.util.function.Function;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
+import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -40,6 +43,8 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
     private static final double samplesPerPixel = 1.0;
     private List<CurveEditor> curveEditors;
     private UiTimelineManager timelineManager;
+    private EffectParametersRepository effectParametersRepository;
+    private double positionOffset;
 
     private double secondsPerPixel = 1 / 20.0;
     private double scrollValue = 0.0;
@@ -64,15 +69,22 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
     private double lastDraggedX = 0;
     ///
 
-    public CurveEditorTab(List<CurveEditor> curveEditors, MessagingService messagingService, UiTimelineManager timelineManager) {
+    public CurveEditorTab(List<CurveEditor> curveEditors, MessagingService messagingService, UiTimelineManager timelineManager, EffectParametersRepository effectParametersRepository) {
         this.curveEditors = curveEditors;
         this.timelineManager = timelineManager;
         this.messagingService = messagingService;
+        this.effectParametersRepository = effectParametersRepository;
 
         messagingService.register(KeyframeSuccesfullyAddedMessage.class, e -> {
             if (currentlyOpenEditor != null && e.getDescriptorId().equals(currentKeyframeableEffect.getId())) {
                 Platform.runLater(() -> updateCanvas());
             }
+        });
+        messagingService.register(ClipMovedMessage.class, e -> {
+            updateIfNeeded();
+        });
+        messagingService.register(EffectMovedMessage.class, e -> {
+            updateIfNeeded();
         });
 
         timelineManager.registerUiPlaybackConsumer(position -> {
@@ -80,6 +92,12 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
             updateCanvas();
         });
         this.setId(CURVE_EDITOR_ID);
+    }
+
+    private void updateIfNeeded() {
+        if (currentlyOpenEditor != null) {
+            Platform.runLater(() -> updateCanvas());
+        }
     }
 
     public void revealInEditor(KeyframeableEffect valueProvider) {
@@ -108,6 +126,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
 
             updateCanvas();
             messagingService.sendAsyncMessage(new TabActiveRequest(CURVE_EDITOR_ID));
+
         } else {
             throw new RuntimeException("Only keyframe supporting double interpolator is supported for now");
         }
@@ -123,13 +142,16 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
         if (currentlyOpenEditor == null) {
             return;
         }
+        positionOffset = effectParametersRepository.findGlobalPositionForValueProvider(currentKeyframeableEffect.getId())
+                .map(a -> a.getSeconds().doubleValue())
+                .orElse(0.0);
         clearCanvas();
         GraphicsContext graphics = canvas.getGraphicsContext2D();
         double numberOfSamples = samplesPerPixel * canvas.getWidth();
         BigDecimal increment = new BigDecimal(secondsPerPixel);
 
         List<Double> values = new ArrayList<>();
-        TimelinePosition current = new TimelinePosition(scrollValue);
+        TimelinePosition current = new TimelinePosition(scrollValue - positionOffset);
         for (int i = 0; i < numberOfSamples; ++i) {
             values.add(currentInterpolator.valueAt(current));
             current = current.add(increment);
@@ -171,6 +193,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
                 .withSecondsPerPixel(secondsPerPixel)
                 .withGraphics(graphics)
                 .withHeight(canvas.getHeight())
+                .withTimeOffset(positionOffset)
                 .build();
 
         currentlyOpenEditor.drawAdditionalUi(drawRequest);
@@ -307,6 +330,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
                     .withScreenMousePosition(currentMousePosition)
                     .withHeight(canvas.getHeight())
                     .withCanvas(canvas)
+                    .withTimeOffset(positionOffset)
                     .build();
             boolean shouldUpdate = consumer.apply(request);
             if (shouldUpdate) {
