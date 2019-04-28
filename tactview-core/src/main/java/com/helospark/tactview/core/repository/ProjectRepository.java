@@ -5,8 +5,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 
-import javax.annotation.Generated;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,9 +18,12 @@ public class ProjectRepository implements SaveLoadContributor {
     @JsonIgnore
     private ObjectMapper objectMapper;
 
-    private boolean isInitialized = false;
+    private boolean isVideoInitialized = false;
+    private boolean isAudioInitialized = false;
     private int width = 1920;
     private int height = 1080;
+    private int sampleRate = 44100;
+    private int bytesPerSample = 4;
     private BigDecimal fps = BigDecimal.valueOf(24);
     private BigDecimal frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
 
@@ -30,17 +31,26 @@ public class ProjectRepository implements SaveLoadContributor {
         this.objectMapper = objectMapper;
     }
 
-    private ProjectRepository initialize(Builder builder) {
-        this.isInitialized = builder.isInitialized;
-        this.width = builder.width;
-        this.height = builder.height;
-        this.fps = builder.fps;
+    public void initializeVideo(int width, int height, BigDecimal fps) {
+        this.isVideoInitialized = true;
+        this.width = width;
+        this.height = height;
+        this.fps = fps;
         this.frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
-        return this;
     }
 
-    public boolean isInitialized() {
-        return isInitialized;
+    public void initializeAudio(int samleRate, int bytesPerSample) {
+        this.isAudioInitialized = true;
+        this.sampleRate = samleRate;
+        this.bytesPerSample = bytesPerSample;
+    }
+
+    public boolean isVideoInitialized() {
+        return isVideoInitialized;
+    }
+
+    public boolean isAudioInitialized() {
+        return isAudioInitialized;
     }
 
     public int getWidth() {
@@ -59,44 +69,12 @@ public class ProjectRepository implements SaveLoadContributor {
         return frameTime;
     }
 
-    @Generated("SparkTools")
-    public Builder initializer() {
-        return new Builder();
+    public int getSampleRate() {
+        return sampleRate;
     }
 
-    @Generated("SparkTools")
-    public final class Builder {
-        private boolean isInitialized;
-        private int width;
-        private int height;
-        private BigDecimal fps;
-
-        private Builder() {
-        }
-
-        public Builder withIsInitialized(boolean isInitialized) {
-            this.isInitialized = isInitialized;
-            return this;
-        }
-
-        public Builder withWidth(int width) {
-            this.width = width;
-            return this;
-        }
-
-        public Builder withHeight(int height) {
-            this.height = height;
-            return this;
-        }
-
-        public Builder withFps(BigDecimal fps) {
-            this.fps = fps;
-            return this;
-        }
-
-        public ProjectRepository init() {
-            return initialize(this);
-        }
+    public int getBytesPerSample() {
+        return bytesPerSample;
     }
 
     @Override

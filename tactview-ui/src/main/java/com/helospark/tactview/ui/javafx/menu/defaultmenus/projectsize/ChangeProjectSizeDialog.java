@@ -80,7 +80,7 @@ public class ChangeProjectSizeDialog {
     }
 
     private String getOrDefault(ProjectRepository projectRepository, Object currentValue, Object defaultValue) {
-        if (projectRepository.isInitialized()) {
+        if (projectRepository.isVideoInitialized()) {
             return currentValue + "";
         } else {
             return defaultValue + "";

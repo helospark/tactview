@@ -102,7 +102,15 @@ public class MediaCache {
             cachedFrames = new ConcurrentSkipListMap<>();
             backCache.put(key, cachedFrames);
         }
-        cachedFrames.put(clonedValue.frameStart, clonedValue);
+
+        MediaHashValue previousValue = cachedFrames.put(clonedValue.frameStart, clonedValue);
+
+        if (previousValue != null) {
+            previousValue.frames
+                    .stream()
+                    .forEach(f -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(f));
+        }
+
         toRemove.add(new CacheRemoveDomain(key, clonedValue));
         logger.debug("{} added to cache, current buffer size: {}", clonedValue, approximateSize);
     }

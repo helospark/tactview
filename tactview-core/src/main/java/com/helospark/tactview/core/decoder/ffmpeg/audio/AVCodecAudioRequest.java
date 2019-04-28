@@ -8,6 +8,9 @@ import com.sun.jna.Structure;
 public class AVCodecAudioRequest extends Structure implements Structure.ByReference {
     public String path;
 
+    public int sampleRate;
+    public int bytesPerSample;
+
     public long startMicroseconds;
     public long bufferSize;
 
@@ -16,6 +19,6 @@ public class AVCodecAudioRequest extends Structure implements Structure.ByRefere
 
     @Override
     protected List<String> getFieldOrder() {
-        return List.of("path", "startMicroseconds", "bufferSize", "numberOfChannels", "channels");
+        return List.of("path", "sampleRate", "bytesPerSample", "startMicroseconds", "bufferSize", "numberOfChannels", "channels");
     }
 }

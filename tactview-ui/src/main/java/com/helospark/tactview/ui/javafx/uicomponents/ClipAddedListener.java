@@ -11,6 +11,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
@@ -78,7 +79,7 @@ public class ClipAddedListener {
     }
 
     private void initializeProjectOnFirstVideoClipAdded(TimelineClip clip) {
-        if (!projectRepository.isInitialized() && clip instanceof VisualTimelineClip) {
+        if (!projectRepository.isVideoInitialized() && clip instanceof VisualTimelineClip) {
             VisualTimelineClip visualClip = (VisualTimelineClip) clip;
             VisualMediaMetadata metadata = visualClip.getMediaMetadata();
             int width = visualClip.getMediaMetadata().getWidth();
@@ -86,6 +87,12 @@ public class ClipAddedListener {
             BigDecimal fps = metadata instanceof VideoMetadata ? new BigDecimal(((VideoMetadata) metadata).getFps()) : new BigDecimal("30");
 
             projectSizeInitializer.initializeProjectSize(width, height, fps);
+        }
+        if (!projectRepository.isAudioInitialized() && clip instanceof AudibleTimelineClip) {
+            AudibleTimelineClip audioClip = (AudibleTimelineClip) clip;
+            int sampleRate = audioClip.getMediaMetadata().getSampleRate();
+            int bytesPerSample = audioClip.getMediaMetadata().getBytesPerSample();
+            projectRepository.initializeAudio(sampleRate, bytesPerSample);
         }
     }
 

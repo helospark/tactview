@@ -45,4 +45,14 @@ public class MathUtil {
         }
     }
 
+    public static int clampToInt(long v, int min, int max) {
+        if (v < min) {
+            return min;
+        } else if (v > max) {
+            return max;
+        } else {
+            return (int) v;
+        }
+    }
+
 }

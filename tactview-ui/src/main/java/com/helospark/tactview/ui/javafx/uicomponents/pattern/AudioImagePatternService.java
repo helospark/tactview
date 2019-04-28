@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioRequest;
@@ -28,9 +29,11 @@ public class AudioImagePatternService {
     private static final int RECTANGLE_HEIGHT = 50;
 
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
+    private ProjectRepository projectRepository;
 
-    public AudioImagePatternService(ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter) {
+    public AudioImagePatternService(ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, ProjectRepository projectRepository) {
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
+        this.projectRepository = projectRepository;
     }
 
     public Image createAudioImagePattern(AudibleTimelineClip audibleTimelineClip, int width) {
@@ -72,6 +75,8 @@ public class AudioImagePatternService {
                     .withApplyEffects(false)
                     .withPosition(audibleTimelineClip.getInterval().getStartPosition().add(timeJump.multiply(BigDecimal.valueOf(i))))
                     .withLength(TimelineLength.ofMillis(1))
+                    .withSampleRate(projectRepository.getSampleRate())
+                    .withBytesPerSample(projectRepository.getBytesPerSample())
                     .build();
             AudioFrameResult frame = audibleTimelineClip.requestAudioFrame(frameRequest);
 

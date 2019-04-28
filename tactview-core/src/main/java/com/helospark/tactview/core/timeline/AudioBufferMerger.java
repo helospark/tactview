@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.util.MathUtil;
 
 @Component
 public class AudioBufferMerger {
@@ -30,9 +31,9 @@ public class AudioBufferMerger {
         for (AudioFrameResult data : renderAudioFrameData) {
             for (int channelIndex = 0; channelIndex < data.getChannels().size(); ++channelIndex) {
                 for (int sampleIndex = 0; sampleIndex < length / maximumByteLength; ++sampleIndex) {
-                    int newData = data.getRescaledSample(channelIndex, maximumByteLength, maximumQuality, sampleIndex);
-                    int oldData = audioFrameResult.getSampleAt(channelIndex, sampleIndex);
-                    audioFrameResult.setSampleAt(channelIndex, sampleIndex, newData + oldData);
+                    long newData = data.getRescaledSample(channelIndex, maximumByteLength, maximumQuality, sampleIndex);
+                    long oldData = audioFrameResult.getSampleAt(channelIndex, sampleIndex);
+                    audioFrameResult.setSampleAt(channelIndex, sampleIndex, MathUtil.clampToInt(newData + oldData, Integer.MIN_VALUE, Integer.MAX_VALUE));
                 }
             }
         }

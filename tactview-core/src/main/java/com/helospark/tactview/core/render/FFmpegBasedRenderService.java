@@ -16,6 +16,7 @@ import com.helospark.tactview.core.render.ffmpeg.FFmpegEncodeFrameRequest;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegInitEncoderRequest;
 import com.helospark.tactview.core.render.ffmpeg.QueryCodecRequest;
 import com.helospark.tactview.core.render.ffmpeg.RenderFFMpegFrame;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
@@ -31,12 +32,14 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     private static final int MAX_NUMBER_OF_CODECS = 400;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private TimelineManagerAccessor timelineManagerAccessor;
+    private ProjectRepository projectRepository;
 
     public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService,
-            ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor) {
+            ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository) {
         super(timelineManager, messagingService, scaleService);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
         this.timelineManagerAccessor = timelineManagerAccessor;
+        this.projectRepository = projectRepository;
     }
 
     @Override
@@ -178,7 +181,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 .build();
         OptionProvider<Integer> audioBitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Audio bitrate")
-                .withDefaultValue(128000)
+                .withDefaultValue(248000)
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {
@@ -189,7 +192,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 .build();
         OptionProvider<Integer> audioSampleRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Audio samplerate")
-                .withDefaultValue(44100)
+                .withDefaultValue(projectRepository.getSampleRate())
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     return errors;

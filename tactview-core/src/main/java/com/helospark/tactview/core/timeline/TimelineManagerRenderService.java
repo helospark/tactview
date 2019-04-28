@@ -129,6 +129,8 @@ public class TimelineManagerRenderService {
                                 .withApplyEffects(request.isEffectsEnabled())
                                 .withPosition(request.getPosition())
                                 .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 100, RoundingMode.HALF_DOWN)))
+                                .withSampleRate(projectRepository.getSampleRate())
+                                .withBytesPerSample(projectRepository.getBytesPerSample())
                                 .build();
 
                         return audibleClip.requestAudioFrame(audioRequest);

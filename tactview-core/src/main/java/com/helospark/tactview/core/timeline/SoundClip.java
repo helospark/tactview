@@ -47,15 +47,15 @@ public class SoundClip extends AudibleTimelineClip {
                 .withFile(new File(backingSource.backingFile))
                 .withMetadata(mediaMetadata)
                 .withStart(audioRequest.getPosition().from(interval.getStartPosition()))
-                .withExpectedBytesPerSample(mediaMetadata.getBytesPerSample())
-                .withExpectedSampleRate(mediaMetadata.getSampleRate()) // this could be scaled if processing is too slow
+                .withExpectedBytesPerSample(audioRequest.getBytesPerSample())
+                .withExpectedSampleRate(audioRequest.getSampleRate())
                 .withExpectedChannels(mediaMetadata.getChannels())
                 .withLength(audioRequest.getLength())
                 .build();
 
         List<ByteBuffer> data = backingSource.decoder.readFrames(request).getFrames();
 
-        AudioFrameResult result = new AudioFrameResult(data, mediaMetadata.getSampleRate(), mediaMetadata.getBytesPerSample());
+        AudioFrameResult result = new AudioFrameResult(data, audioRequest.getSampleRate(), audioRequest.getBytesPerSample());
 
         return result;
     }

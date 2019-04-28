@@ -21,12 +21,7 @@ public class ProjectSizeInitializer {
     }
 
     public void initializeProjectSize(int width, int height, BigDecimal fps) {
-        projectRepository.initializer()
-                .withWidth(width)
-                .withHeight(height)
-                .withFps(fps)
-                .withIsInitialized(true)
-                .init();
+        projectRepository.initializeVideo(width, height, fps);
         double horizontalScaleFactor = 320.0 / projectRepository.getWidth();
         double verticalScaleFactor = 260.0 / projectRepository.getHeight();
         double scale = Math.min(horizontalScaleFactor, verticalScaleFactor);

@@ -67,7 +67,7 @@ public class AudioFrameResult {
 
     public void setSampleAt(int channelIndex, int sampleIndex, int newValue) {
         ByteBuffer channel = channels.get(channelIndex);
-        int saturatedValue = saturateIfNeeded(newValue, (long) 1 << (bytesPerSample * 8));
+        int saturatedValue = saturateIfNeeded(newValue, (long) 1 << (bytesPerSample * 8 - 1));
         int byteOffset = sampleIndex * bytesPerSample;
         if (bytesPerSample == 1) {
             channel.put(byteOffset, (byte) saturatedValue);

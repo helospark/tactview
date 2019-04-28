@@ -21,7 +21,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 
 @Component
 public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
-    private static final int MINIMUM_LENGTH_TO_READ = 30;
+    private static final int MINIMUM_LENGTH_TO_READ = 60;
     private AVCodecBasedAudioMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
@@ -35,7 +35,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     @Override
     public MediaDataResponse readFrames(AudioMediaDataRequest request) {
         BigDecimal sampleRate = new BigDecimal(request.getExpectedSampleRate());
-        String hashKey = request.getFile().getAbsolutePath() + " " + request.getExpectedSampleRate();
+        String hashKey = request.getFile().getAbsolutePath() + " " + request.getExpectedSampleRate() + " " + request.getExpectedBytesPerSample();
         int startSample = secondsToBytes(request.getStart().getSeconds(), request.getExpectedBytesPerSample(), sampleRate);
 
         Optional<MediaHashValue> cachedResult = mediaCache.findInCache(hashKey, startSample);
@@ -49,7 +49,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
             int realStartSample = secondsToBytes(result.actualStartPosition, request.getExpectedBytesPerSample(), sampleRate);
             mediaCache.cacheMedia(hashKey, new MediaHashValue(realStartSample, realStartSample + result.actualLength, result.data), false);
 
-            return copyRelevantParts(request, realStartSample - realStartSample, result.data);
+            return copyRelevantParts(request, startSample - realStartSample, result.data);
         }
     }
 
@@ -64,6 +64,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         if (size <= 0) {
             return new MediaDataResponse(List.of()); // TODO: This should not happen, but it does sometimes :(
         }
+
         for (int channel = 0; channel < request.getExpectedChannels(); ++channel) {
             ByteBuffer channelBuffer = memoryManager.requestBuffer(size);
             buffers.add(channelBuffer);
@@ -82,11 +83,16 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         AVCodecAudioRequest nativeRequest = new AVCodecAudioRequest();
         nativeRequest.numberOfChannels = request.getExpectedChannels();
         nativeRequest.bufferSize = bufferSize;
+        nativeRequest.sampleRate = request.getExpectedSampleRate();
+        nativeRequest.bytesPerSample = request.getExpectedBytesPerSample();
         nativeRequest.path = request.getFile().getAbsolutePath();
         nativeRequest.startMicroseconds = correctedStartPosition.multiply(BigDecimal.valueOf(1000000)).longValue();
         nativeRequest.channels = new FFMpegFrame();
         FFMpegFrame[] channels = (FFMpegFrame[]) nativeRequest.channels.toArray(request.getExpectedChannels());
         List<ByteBuffer> result = new ArrayList<>();
+
+        System.out.println("Actually reading audio file " + request.getStart().getSeconds());
+
         for (int i = 0; i < nativeRequest.numberOfChannels; ++i) {
             ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(bufferSize);
             channels[i].data = buffer;
