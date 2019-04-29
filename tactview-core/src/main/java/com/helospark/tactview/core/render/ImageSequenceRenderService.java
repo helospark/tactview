@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +21,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
@@ -39,8 +41,8 @@ public class ImageSequenceRenderService extends AbstractRenderService {
     private ByteBufferToImageConverter byteBufferToImageConverter;
 
     public ImageSequenceRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService,
-            ScaleService scaleService) {
-        super(timelineManager, messagingService, scaleService);
+            ScaleService scaleService, ProjectRepository projectRepository) {
+        super(timelineManager, messagingService, scaleService, projectRepository);
         this.byteBufferToImageConverter = byteBufferToImageConverter;
     }
 
@@ -83,7 +85,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
         String fileNameWithoutExtension = fileName.substring(0, extensionIndex);
         for (int i = 0; i < FRAME_PER_BATCH; ++i) {
             try {
-                ByteBuffer frame = queryFrameAt(renderRequest, new TimelinePosition(currentPosition)).getVideoResult().getBuffer();
+                ByteBuffer frame = queryFrameAt(renderRequest, new TimelinePosition(currentPosition), Optional.empty(), Optional.empty()).getVideoResult().getBuffer();
 
                 BufferedImage image = byteBufferToImageConverter.byteBufferToBufferedImage(frame, renderRequest.getWidth(), renderRequest.getHeight());
 

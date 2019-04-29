@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -112,6 +113,13 @@ public class MediaCache {
         }
 
         toRemove.add(new CacheRemoveDomain(key, clonedValue));
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Following frames are cached {}", value.frames.stream()
+                    .map(a -> System.identityHashCode(a))
+                    .collect(Collectors.toList()));
+        }
+
         logger.debug("{} added to cache, current buffer size: {}", clonedValue, approximateSize);
     }
 
@@ -149,6 +157,7 @@ public class MediaCache {
                     .filter(value -> frame >= value.frameStart && frame < value.endIndex)
                     .findFirst();
             result.ifPresent(value -> value.lastAccessed = System.currentTimeMillis());
+
             return result;
         }
     }
@@ -184,9 +193,9 @@ public class MediaCache {
     }
 
     private void copyToResult(ByteBuffer copyTo, ByteBuffer elementToCopy) {
-        copyTo.position(0);
-        elementToCopy.position(0);
-        copyTo.put(elementToCopy);
+        for (int i = 0; i < elementToCopy.capacity(); ++i) {
+            copyTo.put(i, elementToCopy.get(i));
+        }
     }
 
     public static class CacheRemoveDomain implements Comparable<CacheRemoveDomain> {

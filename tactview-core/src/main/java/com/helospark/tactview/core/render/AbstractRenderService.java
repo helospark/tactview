@@ -2,7 +2,9 @@ package com.helospark.tactview.core.render;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
@@ -18,11 +20,13 @@ public abstract class AbstractRenderService implements RenderService {
     protected TimelineManagerRenderService timelineManagerRenderService;
     protected MessagingService messagingService;
     protected ScaleService scaleService;
+    protected ProjectRepository projectRepository;
 
-    public AbstractRenderService(TimelineManagerRenderService timelineManagerRenderService, MessagingService messagingService, ScaleService scaleService) {
+    public AbstractRenderService(TimelineManagerRenderService timelineManagerRenderService, MessagingService messagingService, ScaleService scaleService, ProjectRepository projectRepository) {
         this.timelineManagerRenderService = timelineManagerRenderService;
         this.messagingService = messagingService;
         this.scaleService = scaleService;
+        this.projectRepository = projectRepository;
     }
 
     @Override
@@ -38,13 +42,18 @@ public abstract class AbstractRenderService implements RenderService {
         messagingService.sendAsyncMessage(new ProgressDoneMessage(renderRequest.getRenderId()));
     }
 
-    protected AudioVideoFragment queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition) {
+    protected AudioVideoFragment queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition, Optional<Integer> sampleRate, Optional<Integer> bytesPerSample) {
         double upscale = renderRequest.getUpscale().doubleValue();
+
+        double scaleMultiplier = (double) renderRequest.getWidth() / projectRepository.getWidth();
+
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
                 .withPosition(currentPosition)
                 .withPreviewWidth((int) (renderRequest.getWidth() * upscale))
                 .withPreviewHeight((int) (renderRequest.getHeight() * upscale))
-                .withScale(upscale)
+                .withScale(scaleMultiplier * upscale)
+                .withAudioBytesPerSample(sampleRate)
+                .withAudioBytesPerSample(bytesPerSample)
                 .build();
 
         AudioVideoFragment frame = timelineManagerRenderService.getFrame(frameRequest);

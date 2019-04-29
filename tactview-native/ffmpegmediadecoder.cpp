@@ -29,6 +29,7 @@ extern "C" {
 
     void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
     {
+        std::cout << "Copying data " << width << " " << height << std::endl;
         for(int y=0; y<height; y++)
         {
             for (int i = 0; i < width; ++i)
@@ -166,23 +167,22 @@ extern "C" {
         FFMpegFrame* frames;
     } FFmpegImageRequest;
 
-    const char* createKey(FFmpegImageRequest* request) {
-        return (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)).c_str();
-    }
 
     DecodeStructure* openFile(FFmpegImageRequest* request);
 
     EXPORTED void readFrames(FFmpegImageRequest* request)
     {
-        std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(std::string(createKey(request)));
+
+        std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
+        std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(key);
 
         DecodeStructure* element;
 
-        std::cout << "Found Element" <<  elementIterator->first << std::endl;
 
         if (elementIterator == decodeStructureMap.end()) {
             element = openFile(request);
         } else {
+            std::cout << "Found Element" <<  elementIterator->first << std::endl;
             element = elementIterator->second;
         }
 
@@ -324,7 +324,7 @@ extern "C" {
 
         std::cout << "Opening file with size " << request->width << " " << request->width << std::endl;
 
-        int numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, request->width,
+        int numBytes=avpicture_get_size(AV_PIX_FMT_BGRA, request->width,
                                      request->height);
         buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
 
@@ -355,7 +355,10 @@ extern "C" {
         element->buffer = buffer;
         element->sws_ctx = sws_ctx;
 
-        decodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(std::string(createKey(request)), element));
+
+        std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
+
+        decodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(key, element));
 
         return element;
     }

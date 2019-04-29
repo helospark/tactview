@@ -125,12 +125,14 @@ public class TimelineManagerRenderService {
                     AudibleTimelineClip audibleClip = (AudibleTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
+                        int sampleRateToUse = request.getAudioSampleRate().orElse(projectRepository.getSampleRate());
+                        int bytesPerSampleToUse = request.getAudioBytesPerSample().orElse(projectRepository.getBytesPerSample());
                         AudioRequest audioRequest = AudioRequest.builder()
                                 .withApplyEffects(request.isEffectsEnabled())
                                 .withPosition(request.getPosition())
                                 .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 100, RoundingMode.HALF_DOWN)))
-                                .withSampleRate(projectRepository.getSampleRate())
-                                .withBytesPerSample(projectRepository.getBytesPerSample())
+                                .withSampleRate(sampleRateToUse)
+                                .withBytesPerSample(bytesPerSampleToUse)
                                 .build();
 
                         return audibleClip.requestAudioFrame(audioRequest);

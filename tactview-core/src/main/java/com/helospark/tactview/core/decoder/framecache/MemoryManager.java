@@ -13,6 +13,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -187,6 +188,11 @@ public class MemoryManager {
                 debugTrace.put(a, Arrays.toString(Thread.currentThread().getStackTrace()));
             }
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Returned buffers are: {}", result.stream()
+                    .map(a -> System.identityHashCode(a))
+                    .collect(Collectors.toList()));
+        }
 
         return result;
     }
@@ -206,7 +212,7 @@ public class MemoryManager {
                 if (DEBUG) {
                     debugTrace.remove(buffer);
                 }
-                logger.debug("{} returned", buffer.capacity());
+                logger.debug("id={} {} returned", System.identityHashCode(buffer), buffer.capacity());
                 return value;
             });
         }

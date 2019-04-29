@@ -12,6 +12,9 @@ import java.util.concurrent.locks.Lock;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.util.concurrent.Striped;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
@@ -28,6 +31,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedMediaDecoderDecorator.class);
     private static final int CHUNK_SIZE = 50;
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
     private FFmpegBasedMediaDecoderImplementation implementation;
@@ -80,7 +84,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         // end
 
         String readId = request.getFile().getAbsolutePath();
-        readId += metadata.getWidth() + "x" + metadata.getHeight();
+        readId += request.getWidth() + "x" + request.getHeight();
 
         Lock lock = duplicateReadLocks.get(readId);
 
@@ -127,13 +131,15 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
             List<ByteBuffer> readFrames = Arrays.asList(readFromFile(request, newStartFrame, newNumberOfFrame, filePath));
 
-            storeInCache(request, newStartFrame, filePath, readFrames);
-
             result = readResultBetweenAtIndex(readFrames, additionalFramesToReadInBeginning);
+
+            storeInCache(request, newStartFrame, filePath, readFrames);
         } else {
             System.out.println("Reading without cache " + request);
             List<ByteBuffer> readFrames = Arrays.asList(readFromFile(request, startFrame, 1, filePath));
             result = readResultBetweenAtIndex(readFrames, 0);
+            readFrames.stream()
+                    .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
         }
         return new MediaDataResponse(result);
     }
@@ -162,7 +168,13 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
             MediaHashValue foundCache = found.get();
             int startCopyFrom = startFrame - foundCache.frameStart;
 
-            return Optional.ofNullable(foundCache.frames.get(startCopyFrom));
+            ByteBuffer result = foundCache.frames.get(startCopyFrom);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Exact frame from cache {}", System.identityHashCode(result));
+            }
+
+            return Optional.ofNullable(result);
         }
         return Optional.empty();
     }

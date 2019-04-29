@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Optional;
+
 import javax.annotation.Generated;
 
 public class TimelineManagerFramesRequest {
@@ -10,6 +12,8 @@ public class TimelineManagerFramesRequest {
     private Integer previewWidth;
     private Integer previewHeight;
     private TimelinePosition position;
+    private Optional<Integer> audioSampleRate;
+    private Optional<Integer> audioBytesPerSample;
 
     @Generated("SparkTools")
     private TimelineManagerFramesRequest(Builder builder) {
@@ -20,6 +24,8 @@ public class TimelineManagerFramesRequest {
         this.previewWidth = builder.previewWidth;
         this.previewHeight = builder.previewHeight;
         this.position = builder.position;
+        this.audioSampleRate = builder.audioSampleRate;
+        this.audioBytesPerSample = builder.audioBytesPerSample;
     }
 
     public boolean isNeedSound() {
@@ -50,6 +56,14 @@ public class TimelineManagerFramesRequest {
         return position;
     }
 
+    public Optional<Integer> getAudioSampleRate() {
+        return audioSampleRate;
+    }
+
+    public Optional<Integer> getAudioBytesPerSample() {
+        return audioBytesPerSample;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -64,6 +78,8 @@ public class TimelineManagerFramesRequest {
         private Integer previewWidth;
         private Integer previewHeight;
         private TimelinePosition position;
+        private Optional<Integer> audioSampleRate = Optional.empty();
+        private Optional<Integer> audioBytesPerSample = Optional.empty();
 
         private Builder() {
         }
@@ -100,6 +116,16 @@ public class TimelineManagerFramesRequest {
 
         public Builder withPosition(TimelinePosition position) {
             this.position = position;
+            return this;
+        }
+
+        public Builder withAudioSampleRate(Optional<Integer> audioSampleRate) {
+            this.audioSampleRate = audioSampleRate;
+            return this;
+        }
+
+        public Builder withAudioBytesPerSample(Optional<Integer> audioBytesPerSample) {
+            this.audioBytesPerSample = audioBytesPerSample;
             return this;
         }
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -32,14 +33,12 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     private static final int MAX_NUMBER_OF_CODECS = 400;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private TimelineManagerAccessor timelineManagerAccessor;
-    private ProjectRepository projectRepository;
 
     public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService,
             ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository) {
-        super(timelineManager, messagingService, scaleService);
+        super(timelineManager, messagingService, scaleService, projectRepository);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
         this.timelineManagerAccessor = timelineManagerAccessor;
-        this.projectRepository = projectRepository;
     }
 
     @Override
@@ -55,6 +54,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int audioSampleRate = (int) renderRequest.getOptions().get("audiosamplerate").getValue();
         System.out.println("Audio SampleRate: " + audioSampleRate);
+
+        int bytesPerSample = Integer.parseInt(renderRequest.getOptions().get("audiobytespersample").getValue().toString());
+        System.out.println("Audio bytes per sample: " + bytesPerSample);
 
         String videoCodec = (String) renderRequest.getOptions().get("videocodec").getValue();
         System.out.println("VideoCodec: " + videoCodec);
@@ -76,13 +78,13 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.renderWidth = width;
         initNativeRequest.renderHeight = height;
 
-        AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition);//tmp solution
+        AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition, Optional.empty(), Optional.empty());//tmp solution
 
         initNativeRequest.actualWidth = width;
         initNativeRequest.actualHeight = height;
-        initNativeRequest.bytesPerSample = tmpFrame.getAudioResult().getBytesPerSample();
+        initNativeRequest.bytesPerSample = bytesPerSample;
         initNativeRequest.audioChannels = tmpFrame.getAudioResult().getChannels().size();
-        initNativeRequest.sampleRate = tmpFrame.getAudioResult().getSamplePerSecond();
+        initNativeRequest.sampleRate = audioSampleRate;
 
         initNativeRequest.audioBitRate = audioBitRate;
         initNativeRequest.videoBitRate = videoBitRate;
@@ -95,7 +97,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int frameIndex = 0;
         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
-            AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition);
+            AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition, Optional.of(audioSampleRate), Optional.of(bytesPerSample));
 
             FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
             nativeRequest.frame = new RenderFFMpegFrame();
@@ -198,6 +200,11 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     return errors;
                 })
                 .build();
+        OptionProvider<String> audioBytesPerSampelProvider = OptionProvider.stringOptionBuilder()
+                .withTitle("Bytes/sample")
+                .withDefaultValue(projectRepository.getBytesPerSample() + "")
+                .withValidValues(List.of(createElement("1"), createElement("2"), createElement("4")))
+                .build();
 
         CodecValueElements codecs = queryCodecInformation();
 
@@ -217,10 +224,15 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         result.put("videobitrate", bitRateProvider);
         result.put("audiobitrate", audioBitRateProvider);
         result.put("audiosamplerate", audioSampleRateProvider);
+        result.put("audiobytespersample", audioBytesPerSampelProvider);
         result.put("videocodec", videoCodecProvider);
         result.put("audiocodec", audioCodecProvider);
 
         return result;
+    }
+
+    private ValueListElement createElement(String e) {
+        return new ValueListElement(e, e);
     }
 
     static class CodecValueElements {
