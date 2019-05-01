@@ -2,7 +2,7 @@
 
 set -e
 
-rm -r release/linux64 || true
+rm -rf release/linux64 || true
 mkdir -p release/linux64
 cd tactview-native
 echo "Compiling native code..."
@@ -12,9 +12,9 @@ mvn clean install
 
 cp tactview-ui/target/tactview-ui*.jar release/linux64/tactview.jar
 
-jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming --output release/linux64/java-runtime
+jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported --output release/linux64/java-runtime
 
-gcc tactview-native/startup.cpp -o release/linux64/tactview
+g++ tactview-native/startup.cpp -o release/linux64/tactview
 
 echo "Copying dynamic library dependencies"
 

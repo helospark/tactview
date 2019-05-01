@@ -57,6 +57,18 @@ public class DefaultFileMenuItemConfiguration {
     }
 
     @Bean
+    @Order(190)
+    public MenuContribution restartContributionMenuItem(ExitWithSaveService exitWithSaveService) {
+        int restartStatusCode = 3;
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "R_estart"), event -> {
+            exitWithSaveService.optionallySaveAndThenRun(() -> {
+                Platform.exit();
+                System.exit(restartStatusCode);
+            });
+        });
+    }
+
+    @Bean
     @Order(200)
     public MenuContribution exitContributionMenuItem(ExitWithSaveService exitWithSaveService) {
         return new DefaultMenuContribution(List.of(FILE_ROOT, "E_xit"), event -> {
