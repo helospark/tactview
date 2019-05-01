@@ -26,4 +26,8 @@ public class InterpolationLine {
         return "InterpolationLine [start=" + start + ", end=" + end + "]";
     }
 
+    public Point getNormalize4dVector() {
+        return end.subtract(start).normalize();
+    }
+
 }

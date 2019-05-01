@@ -79,6 +79,7 @@ import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.timeline.effect.scale.ZoomEffect;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.effect.shadow.DirectionalShadowEffect;
 import com.helospark.tactview.core.timeline.effect.shadow.DropShadowEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.SharpenEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.implementation.OpenCVSharpenImplementation;
@@ -792,6 +793,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new ZoomEffect(node, loadMetadata, scaleService, frameExtender, independentPixelOperation))
                 .withName("Zoom to area")
                 .withSupportedEffectId("zoom")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory directionalShadowEffect(ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new DirectionalShadowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new DirectionalShadowEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Directional shadow")
+                .withSupportedEffectId("directional shadow")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
