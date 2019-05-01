@@ -2,7 +2,11 @@ package com.helospark.tactview.ui.javafx.uicomponents.window;
 
 import static javafx.scene.paint.Color.BLACK;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
@@ -16,30 +20,50 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 
 @Component
 @Order(4003)
 public class HistogramWindow extends SingletonOpenableWindow implements DisplayUpdatedListener, MenuContribution {
     private static final int DEFAULT_WIDTH = 500;
     private static final int DEFAULT_HEIGHT = 300;
+
+    private static final Map<String, Function<Color, Double>> COLOR_MAPPERS;
+    static {
+        COLOR_MAPPERS = new LinkedHashMap<>();
+        COLOR_MAPPERS.put("value", color -> ((color.red + color.green + color.blue) / 3.0));
+        COLOR_MAPPERS.put("red", color -> (color.red));
+        COLOR_MAPPERS.put("green", color -> (color.green));
+        COLOR_MAPPERS.put("blue", color -> (color.blue));
+    }
+
     private Canvas canvas;
 
     private Image previouslyDisplayedImage;
+    private ToggleGroup group;
 
     @Override
     public void displayUpdated(DisplayUpdatedRequest request) {
+        previouslyDisplayedImage = request.image;
+        updateDisplayWithPreviousImageIfRequired();
+    }
+
+    private void updateDisplayWithPreviousImageIfRequired() {
         if (!isWindowOpen) {
-            previouslyDisplayedImage = request.image;
             return;
         }
-        Image javafxImage = request.image;
+        Image javafxImage = previouslyDisplayedImage;
         updateCanvasWithImage(javafxImage);
     }
 
     private void updateCanvasWithImage(Image javafxImage) {
         GraphicsContext graphics = canvas.getGraphicsContext2D();
+
+        Function<Color, Double> colorMapper = getColorMapper();
 
         graphics.setFill(BLACK);
         graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -51,7 +75,7 @@ public class HistogramWindow extends SingletonOpenableWindow implements DisplayU
                 javafx.scene.paint.Color javafxColor = javafxImage.getPixelReader().getColor(j, i);
                 Color color = new Color(javafxColor.getRed(), javafxColor.getGreen(), javafxColor.getBlue()).multiplyComponents(255.0);
 
-                int index = (int) MathUtil.clamp((color.red + color.green + color.blue) / 3.0, 0, 255);
+                int index = MathUtil.clampToInt(colorMapper.apply(color), 0, 255);
 
                 values[index] += 1;
             }
@@ -75,6 +99,10 @@ public class HistogramWindow extends SingletonOpenableWindow implements DisplayU
 
     }
 
+    private Function<Color, Double> getColorMapper() {
+        return COLOR_MAPPERS.get(((RadioButton) group.getSelectedToggle()).getId());
+    }
+
     @Override
     protected Scene createScene() {
         BorderPane borderPane = new BorderPane();
@@ -83,6 +111,26 @@ public class HistogramWindow extends SingletonOpenableWindow implements DisplayU
         canvas.widthProperty().bind(borderPane.widthProperty());
 
         borderPane.setCenter(canvas);
+
+        group = new ToggleGroup();
+
+        List<RadioButton> radioButtons = COLOR_MAPPERS.entrySet()
+                .stream()
+                .map(entry -> {
+                    RadioButton radio = new RadioButton(entry.getKey());
+                    radio.setId(entry.getKey());
+                    radio.setToggleGroup(group);
+
+                    return radio;
+                })
+                .collect(Collectors.toList());
+        radioButtons.get(0).setSelected(true);
+
+        group.selectedToggleProperty().addListener((e, oldValue, newValue) -> updateDisplayWithPreviousImageIfRequired());
+
+        HBox hbox = new HBox();
+        hbox.getChildren().addAll(radioButtons);
+        borderPane.setTop(hbox);
 
         return new Scene(borderPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
