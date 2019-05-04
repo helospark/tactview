@@ -47,7 +47,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -57,7 +56,7 @@ public class PropertyView {
     private final Image keyframesOn;
     private final Image keyframesOff;
 
-    private FlowPane propertyWindow;
+    private VBox propertyWindow;
     private Map<String, GridPane> details = new HashMap<>();
     private Map<String, EffectPropertyPage> effectProperties = new HashMap<>();
     private Map<String, EffectPropertyPage> clipProperties = new HashMap<>();
@@ -93,7 +92,7 @@ public class PropertyView {
 
     @PostConstruct
     public void init() {
-        propertyWindow = new FlowPane();
+        propertyWindow = new VBox();
         propertyWindow.setId("property-view");
         propertyWindow.setPrefWidth(200);
 
@@ -301,7 +300,7 @@ public class PropertyView {
         return propertyValueSetterChain.create(descriptor);
     }
 
-    public FlowPane getPropertyWindow() {
+    public VBox getPropertyWindow() {
         return propertyWindow;
     }
 

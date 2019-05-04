@@ -1,12 +1,15 @@
 
 * {
 	-fx-text-fill: white;
-	-fx-highlight-fill: white;
 }
 
 .timelinerow,#content-area,.dialog-root {
 	-fx-background-color: #333333;
 	-fx-background: #333333;
+}
+
+.progress-bar {
+    -fx-control-inner-background: #666666;
 }
 
 .menu-item,.context-menu,.menu-bar {
@@ -34,8 +37,20 @@
     -fx-border-style: solid;
 }
 
-.text-field,.text-area,.combo-box {
+.text-field,.text-area,.combo-box,.text {
     -fx-control-inner-background: #404040;
+    -fx-highlight-fill: #222;
+    -fx-text-inner-color: white;
+}
+
+.progress-text {
+    -fx-fill:white;
+}
+
+.text-field:disabled {
+    -fx-control-inner-background: #404040;
+    -fx-highlight-fill: #222;
+    -fx-text-inner-color: white;
 }
 
 .color-picker,.combo-box {
@@ -146,6 +161,7 @@
 
 .double-property-field,.integer-property-field {
     -fx-pref-width: 80px;
+    -fx-text-fill: white;
 }
 
 .string-property-field {

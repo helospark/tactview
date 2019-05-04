@@ -45,13 +45,16 @@ public class RenderDialog {
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager) {
         BorderPane borderPane = new BorderPane();
+        borderPane.getStyleClass().add("dialog-root");
 
         Scene dialog = new Scene(borderPane);
+        dialog.getStylesheets().add("stylesheet.css");
         stage = new Stage();
 
         int linePosition = 1;
 
         GridPane gridPane = new GridPane();
+        gridPane.setVgap(4.0);
         gridPane.getStyleClass().add("render-dialog-grid-pane");
 
         TextField startPositionTextField = new TextField("0");
@@ -93,6 +96,7 @@ public class RenderDialog {
         addGridElement("upscale", linePosition++, gridPane, upscaleField);
 
         GridPane rendererOptions = new GridPane();
+        rendererOptions.setVgap(4.0);
         gridPane.add(rendererOptions, 0, linePosition++, 2, 1);
 
         ProgressBar progressBar = new ProgressBar();
@@ -100,6 +104,7 @@ public class RenderDialog {
         progressBar.prefWidthProperty().bind(dialog.widthProperty());
 
         Text progressText = new Text();
+        progressText.getStyleClass().add("progress-text");
 
         StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(progressBar, progressText);

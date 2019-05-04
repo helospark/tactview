@@ -56,7 +56,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -254,7 +253,7 @@ public class JavaFXUiMain extends Application {
         rightBorderPane.setBottom(underVideoLabel);
         rightBorderPane.setCenter(rightVBox);
 
-        FlowPane propertyBox = effectPropertyView.getPropertyWindow();
+        VBox propertyBox = effectPropertyView.getPropertyWindow();
         ScrollPane propertyBoxScrollPane = new ScrollPane(propertyBox);
         propertyBoxScrollPane.setFitToWidth(true);
         upper.add(propertyBoxScrollPane, 0, 0);
