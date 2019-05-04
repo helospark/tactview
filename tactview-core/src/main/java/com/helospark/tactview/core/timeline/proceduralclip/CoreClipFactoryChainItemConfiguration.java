@@ -30,11 +30,14 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProced
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
+import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
+import com.helospark.tactview.core.util.ClassPathResourceReader;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Configuration
@@ -285,6 +288,18 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new BezierPolygonProceduralClip(metadata, node, loadMetadata, bezierPolygonRenderService);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem scriptProceduralClip(IndependentPixelOperation independentPixelOperation, ScriptService scriptService,
+            ClassPathResourceReader resourceReader) {
+        return new StandardProceduralClipFactoryChainItem("scriptClip", "Script",
+                request -> {
+                    return new ScriptProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), scriptService, resourceReader);
+                },
+                (node, loadMetadata) -> {
+                    return new ScriptProceduralClip(metadata, node, loadMetadata, scriptService);
                 });
     }
 }

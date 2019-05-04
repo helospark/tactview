@@ -11,7 +11,7 @@ mvn clean install
 
 cp tactview-ui/target/tactview-ui*.jar release/win64/tactview.jar
 
-jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported --output release/win64/java-runtime
+jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported,java.compiler,jdk.compiler,jdk.zipfs --output release/win64/java-runtime
 
 cp tactview-native/startup.exe release/win64/tactview.exe
 

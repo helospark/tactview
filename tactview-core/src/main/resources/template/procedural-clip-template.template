@@ -1,0 +1,12 @@
+package com.helospark.tactview.core.timeline.proceduralclip.script.dynamic;
+
+import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptColorRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+
+public class {{CLASS_NAME}} {
+
+    public ClipImage execute(ScriptColorRequest request) {
+        {{BODY}}
+    }
+
+}
