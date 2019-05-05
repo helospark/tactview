@@ -25,8 +25,8 @@ public class ChangeProjectSizeDialog {
 
         Scene dialog = new Scene(borderPane);
         stage = new Stage();
-        stage.setWidth(500);
-        stage.setHeight(400);
+        stage.setWidth(300);
+        stage.setHeight(250);
         dialog.getStylesheets().add("stylesheet.css");
 
         GridPane gridPane = new GridPane();
@@ -34,17 +34,25 @@ public class ChangeProjectSizeDialog {
         gridPane.getStyleClass().add("change-project-size-dialog-grid-pane");
         gridPane.prefWidthProperty().bind(stage.widthProperty());
 
-        TextField canvasWidthText = new TextField(getOrDefault(projectRepository, projectRepository.getWidth(), 1920));
+        TextField canvasWidthText = new TextField(getOrDefaultVideo(projectRepository, projectRepository.getWidth(), 1920));
         gridPane.add(new Label("Width"), 0, 0);
         gridPane.add(canvasWidthText, 1, 0);
 
-        TextField canvasHeightText = new TextField(getOrDefault(projectRepository, projectRepository.getHeight(), 1080));
+        TextField canvasHeightText = new TextField(getOrDefaultVideo(projectRepository, projectRepository.getHeight(), 1080));
         gridPane.add(new Label("Height"), 0, 1);
         gridPane.add(canvasHeightText, 1, 1);
 
-        TextField fpsText = new TextField(getOrDefault(projectRepository, projectRepository.getFps(), BigDecimal.valueOf(30)));
+        TextField fpsText = new TextField(getOrDefaultVideo(projectRepository, projectRepository.getFps(), BigDecimal.valueOf(30)));
         gridPane.add(new Label("FPS"), 0, 2);
         gridPane.add(fpsText, 1, 2);
+
+        TextField sampleRateText = new TextField(getOrDefaultAudio(projectRepository, projectRepository.getSampleRate(), BigDecimal.valueOf(44100)));
+        gridPane.add(new Label("Sample rate"), 0, 3);
+        gridPane.add(sampleRateText, 1, 3);
+
+        TextField bytesPerSampleText = new TextField(getOrDefaultAudio(projectRepository, projectRepository.getBytesPerSample(), BigDecimal.valueOf(4)));
+        gridPane.add(new Label("Bytes/sample"), 0, 4);
+        gridPane.add(bytesPerSampleText, 1, 4);
 
         borderPane.setCenter(gridPane);
 
@@ -72,6 +80,7 @@ public class ChangeProjectSizeDialog {
             int height = Integer.valueOf(canvasHeightText.getText());
             BigDecimal fps = new BigDecimal(fpsText.getText());
             projectSizeInitializer.initializeProjectSize(width, height, fps);
+            projectRepository.initializeAudio(Integer.parseInt(sampleRateText.getText()), Integer.parseInt(bytesPerSampleText.getText()));
             stage.close();
         });
         cancelButton.setOnMouseClicked(e -> {
@@ -79,8 +88,16 @@ public class ChangeProjectSizeDialog {
         });
     }
 
-    private String getOrDefault(ProjectRepository projectRepository, Object currentValue, Object defaultValue) {
+    private String getOrDefaultVideo(ProjectRepository projectRepository, Object currentValue, Object defaultValue) {
         if (projectRepository.isVideoInitialized()) {
+            return currentValue + "";
+        } else {
+            return defaultValue + "";
+        }
+    }
+
+    private String getOrDefaultAudio(ProjectRepository projectRepository, Object currentValue, Object defaultValue) {
+        if (projectRepository.isAudioInitialized()) {
             return currentValue + "";
         } else {
             return defaultValue + "";

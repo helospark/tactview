@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.joda.time.Period;
@@ -19,6 +20,7 @@ import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
+import com.helospark.tactview.ui.javafx.util.DurationFormatter;
 
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -38,6 +40,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class RenderDialog {
+    private static final int COLUMNS = 2;
+
     private Stage stage;
     private boolean isRenderCancelled = false;
     private RenderService previousRenderService = null;
@@ -51,16 +55,17 @@ public class RenderDialog {
         dialog.getStylesheets().add("stylesheet.css");
         stage = new Stage();
 
-        int linePosition = 1;
+        int linePosition = 0;
 
         GridPane gridPane = new GridPane();
         gridPane.setVgap(4.0);
+        gridPane.setHgap(15.0);
         gridPane.getStyleClass().add("render-dialog-grid-pane");
 
-        TextField startPositionTextField = new TextField("0");
+        TextField startPositionTextField = new TextField(DurationFormatter.fromSeconds(BigDecimal.ZERO));
         addGridElement("start position", linePosition++, gridPane, startPositionTextField);
 
-        TextField endPositionTextField = new TextField(timelineManager.findEndPosition().getSeconds().toString());
+        TextField endPositionTextField = new TextField(DurationFormatter.fromSeconds(timelineManager.findEndPosition().getSeconds()));
         addGridElement("end position", linePosition++, gridPane, endPositionTextField);
 
         TextField widthTextField = new TextField(Integer.toString(projectRepository.getWidth()));
@@ -68,6 +73,9 @@ public class RenderDialog {
 
         TextField heightTextField = new TextField(Integer.toString(projectRepository.getHeight()));
         addGridElement("height", linePosition++, gridPane, heightTextField);
+
+        ComboBox<ComboBoxElement> upscaleField = createComboBox(List.of("1", "2", "4"), 0);
+        addGridElement("upscale", linePosition++, gridPane, upscaleField);
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
@@ -90,14 +98,16 @@ public class RenderDialog {
         hbox.add(fileNameTextField, 0, 0);
         hbox.add(button, 1, 0);
 
-        addGridElement("File name", linePosition++, gridPane, hbox);
+        linePosition += (linePosition % COLUMNS);
 
-        TextField upscaleField = new TextField("4");
-        addGridElement("upscale", linePosition++, gridPane, upscaleField);
+        addGridElementForFullLine("File name", linePosition++, gridPane, hbox);
+
+        linePosition += (linePosition % COLUMNS);
 
         GridPane rendererOptions = new GridPane();
         rendererOptions.setVgap(4.0);
-        gridPane.add(rendererOptions, 0, linePosition++, 2, 1);
+        rendererOptions.setHgap(15.0);
+        gridPane.add(rendererOptions, 0, linePosition++, COLUMNS * 2, 1);
 
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress(0);
@@ -109,7 +119,7 @@ public class RenderDialog {
         StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(progressBar, progressText);
 
-        GridPane.setColumnSpan(stackPane, 2);
+        GridPane.setColumnSpan(stackPane, COLUMNS * 2);
         gridPane.add(stackPane, 0, linePosition++);
 
         borderPane.setCenter(gridPane);
@@ -138,12 +148,12 @@ public class RenderDialog {
                     .withHeight(Integer.parseInt(heightTextField.getText()))
                     .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
                     .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
-                    .withStartPosition(new TimelinePosition(new BigDecimal(startPositionTextField.getText())))
-                    .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
+                    .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
+                    .withEndPosition(new TimelinePosition(DurationFormatter.toSeconds(endPositionTextField.getText())))
                     .withFileName(fileNameTextField.getText())
                     .withOptions(optionProviders)
                     .withIsCancelledSupplier(() -> isRenderCancelled)
-                    .withUpscale(new BigDecimal(upscaleField.getText()))
+                    .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
                     .build();
 
             String id = request.getRenderId();
@@ -173,8 +183,8 @@ public class RenderDialog {
                     .withHeight(Integer.parseInt(heightTextField.getText()))
                     .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
                     .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
-                    .withStartPosition(new TimelinePosition(new BigDecimal(startPositionTextField.getText())))
-                    .withEndPosition(new TimelinePosition(new BigDecimal(endPositionTextField.getText())))
+                    .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
+                    .withEndPosition(new TimelinePosition(DurationFormatter.toSeconds(endPositionTextField.getText())))
                     .withFileName(fileNameTextField.getText())
                     .withIsCancelledSupplier(() -> isRenderCancelled)
                     .build();
@@ -190,12 +200,16 @@ public class RenderDialog {
                 // TODO: all the below out of here
                 int i = 0;
                 for (var value : values) {
+                    int row = i / COLUMNS;
+                    int column = i % COLUMNS;
+
                     OptionProvider<Object> optionProvider = (OptionProvider<Object>) value;
                     Label label = new Label(optionProvider.getTitle());
-                    rendererOptions.add(label, 0, i);
+                    rendererOptions.add(label, column * COLUMNS, row);
 
                     if (optionProvider.getValidValues().isEmpty()) {
                         TextField textField = new TextField();
+                        textField.getStyleClass().add("render-dialog-option");
                         textField.setText(String.valueOf(optionProvider.getValue()));
                         textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
                             Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
@@ -203,9 +217,10 @@ public class RenderDialog {
                             optionProvider.setValue(parsedValue);
                         });
 
-                        rendererOptions.add(textField, 1, i);
+                        rendererOptions.add(textField, column * COLUMNS + 1, row);
                     } else {
                         ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
+                        comboBox.getStyleClass().add("render-dialog-option");
                         Map<String, ComboBoxElement> comboBoxElements = new LinkedHashMap<>();
 
                         optionProvider.getValidValues()
@@ -221,7 +236,7 @@ public class RenderDialog {
                             optionProvider.setValue(comboBox.getValue().getId());
                         });
 
-                        rendererOptions.add(comboBox, 1, i);
+                        rendererOptions.add(comboBox, column * COLUMNS + 1, row);
                     }
 
                     ++i;
@@ -240,9 +255,33 @@ public class RenderDialog {
         stage.setScene(dialog);
     }
 
+    public ComboBox<ComboBoxElement> createComboBox(List<String> values, int selectedIndex) {
+        ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
+        values
+                .stream()
+                .forEach(a -> {
+                    var entry = new ComboBoxElement(a, a);
+                    comboBox.getItems().add(entry);
+                });
+        comboBox.getSelectionModel().select(selectedIndex);
+        return comboBox;
+    }
+
     private void addGridElement(String name, int linePosition, GridPane gridPane, Node node) {
-        gridPane.add(new Label(name), 0, linePosition);
-        gridPane.add(node, 1, linePosition);
+        int row = linePosition / COLUMNS;
+        int column = linePosition % COLUMNS;
+
+        gridPane.add(new Label(name), column * COLUMNS, row);
+        node.getStyleClass().add("render-dialog-option");
+        gridPane.add(node, column * COLUMNS + 1, row);
+    }
+
+    private void addGridElementForFullLine(String name, int linePosition, GridPane gridPane, GridPane node) {
+        int row = linePosition / COLUMNS;
+        int column = linePosition % COLUMNS;
+
+        gridPane.add(new Label(name), column * COLUMNS, row);
+        gridPane.add(node, column * COLUMNS + 1, row, COLUMNS * 2, 1);
     }
 
     public void show() {

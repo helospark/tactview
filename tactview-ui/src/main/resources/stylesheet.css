@@ -43,6 +43,10 @@
     -fx-text-inner-color: white;
 }
 
+.render-dialog-option {
+    -fx-pref-width: 200px;
+}
+
 .progress-text {
     -fx-fill:white;
 }
