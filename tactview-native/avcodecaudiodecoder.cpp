@@ -310,17 +310,19 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                     }
                 }
             }
-
+            av_free_packet(&packet);
         }
 
         // clean up
         av_frame_free(&frame);
         if (needsResampling) {
-          av_frame_free(&tmp_frame);
           swr_free(&swrContext);
         }
+        if (tmp_frame) {
+          av_frame_free(&tmp_frame);
+        }
         avcodec_close(codec);
-        avformat_free_context(format);
+        avformat_close_input(&format);
 
         return totalNumberOfSamplesRead;
 

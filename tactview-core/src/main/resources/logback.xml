@@ -8,11 +8,15 @@
     </encoder>
   </appender>
 
+  <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="STDOUT" />
+  </appender>
+
   <logger name="com.helospark.tactview.core.decoder.framecache.MediaCache" level="INFO"/>
   <logger name="com.helospark.tactview.core.decoder.framecache.MemoryManager" level="INFO"/>
   <logger name="com.helospark.lightdi.dependencywire.WiringProcessingService" level="INFO"/>
 
   <root level="debug">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="ASYNC" />
   </root>
 </configuration>

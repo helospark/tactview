@@ -30,6 +30,9 @@ public class AudioUpdaterService {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
+    private volatile TimelinePosition lastPlayedTimelinePosition = TimelinePosition.ofZero();
+    private volatile boolean playbackRunning = false;
+
     public AudioUpdaterService(UiTimelineManager uiTimelineManager, PlaybackController playbackController, AudioStreamService audioStreamService, MessagingService messagingService,
             AudioVisualizationComponent audioVisualizationComponent) {
         this.uiTimelineManager = uiTimelineManager;
@@ -44,11 +47,17 @@ public class AudioUpdaterService {
         messagingService.register(AffectedModifiedIntervalAware.class, message -> {
             buffer.clear(); // TODO: finer control here
         });
+        uiTimelineManager.registerStoppedConsumer(status -> {
+            playbackRunning = false;
+            buffer.clear();
+        });
     }
 
     public void updateAtPosition(TimelinePosition position) {
         audioVisualizationComponent.updateAudioComponent(position);
         if (uiTimelineManager.isPlaybackInProgress()) {
+            playbackRunning = true;
+            lastPlayedTimelinePosition = position;
             BigDecimal normalizedStartPosition = normalizePosition(position);
 
             AudioData currentData = buffer.get(normalizedStartPosition);
@@ -65,7 +74,11 @@ public class AudioUpdaterService {
                 if (!buffer.containsKey(nextPosition)) {
                     System.out.println("Starting: " + nextPosition);
                     Future<byte[]> future = executorService.submit(() -> {
-                        return playbackController.getAudioFrameAt(timelinePosition, AUDIOFRAME_NUMBER_PER_ELEMENT);
+                        if (timelinePosition.compareTo(lastPlayedTimelinePosition) >= 0 && playbackRunning) {
+                            return playbackController.getAudioFrameAt(timelinePosition, AUDIOFRAME_NUMBER_PER_ELEMENT);
+                        } else {
+                            return new byte[0];
+                        }
                     });
                     buffer.put(nextPosition, new AudioData(timelinePosition, future));
                 }

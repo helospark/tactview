@@ -29,22 +29,22 @@ import sun.misc.Unsafe;
 
 @Component
 public class MemoryManager {
-    private static final boolean DEBUG = false;
-    private static final byte[] EMPTY_PIXEL = new byte[]{0, 0, 0, 0};
     private Map<Integer, BufferInformation> freeBuffersMap = new ConcurrentHashMap<>();
     private Map<ByteBuffer, String> debugTrace = Collections.synchronizedMap(new IdentityHashMap<>());
     private Long maximumSizeHint;
     @Slf4j
     private Logger logger;
+    private boolean debug;
 
     private Unsafe unsafe;
 
     private AtomicLong currentSize = new AtomicLong(0);
     private boolean running = true;
 
-    public MemoryManager(@Value("${memory.manager.size}") Long maximumSizeHint) {
+    public MemoryManager(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug) {
         this.maximumSizeHint = maximumSizeHint;
         this.unsafe = getUnsafe();
+        this.debug = debug;
     }
 
     @PostConstruct
@@ -140,7 +140,7 @@ public class MemoryManager {
 
     @PreDestroy
     public void destroy() {
-        if (DEBUG) {
+        if (debug) {
             for (var entry : debugTrace.entrySet()) {
                 logger.error("Buffer {} never removed, allocated by {}", entry.getKey().capacity(), entry.getValue());
             }
@@ -183,7 +183,7 @@ public class MemoryManager {
             result.add(resultBuffer);
         }
 
-        if (DEBUG) {
+        if (debug) {
             for (ByteBuffer a : result) {
                 debugTrace.put(a, Arrays.toString(Thread.currentThread().getStackTrace()));
             }
@@ -209,7 +209,7 @@ public class MemoryManager {
                     value = new BufferInformation(new ConcurrentLinkedQueue<>());
                 }
                 value.buffers.offer(buffer);
-                if (DEBUG) {
+                if (debug) {
                     debugTrace.remove(buffer);
                 }
                 logger.debug("id={} {} returned", System.identityHashCode(buffer), buffer.capacity());
