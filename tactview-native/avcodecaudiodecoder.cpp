@@ -241,13 +241,15 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
         int totalNumberOfSamplesRead = 0;
         bool running = true;
-        while (av_read_frame(format, &packet) >= 0 && running) {
+        int returnStatusCode;
+        while ((returnStatusCode=av_read_frame(format, &packet)) >= 0 && running) {
             if(packet.stream_index==stream_index) {
                 int gotFrame;
                 if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
                     std::cout << "Cannot decode package" << std::endl;
                     break;
                 }
+                //std::cout << "Read packet " << packet.stream_index << " (" << (av_frame_get_best_effort_timestamp(frame) * av_q2d(stream->time_base)) << " " << totalNumberOfSamplesRead << ")" << std::endl;
                 if (!gotFrame) {
                     continue;
                 }
@@ -260,12 +262,12 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 AVFrame* frameToUse = frame;
                 if (needsResampling) {
 
-                  if (tmp_frame == NULL) {
-                      int resampledCount = (int)ceil(frame->nb_samples * ((double)codec->sample_rate / request->sampleRate));
+                  int resampledCount = (int)ceil(frame->nb_samples * ((double)codec->sample_rate / request->sampleRate));
 
-                      tmp_frame = alloc_audio_frame(sampleFormat, codec->channel_layout,
-                                           request->sampleRate, resampledCount);
-                  }
+                //  std::cout << "Allocating " << resampledCount << std::endl;
+
+                  tmp_frame = alloc_audio_frame(sampleFormat, codec->channel_layout,
+                                       request->sampleRate, resampledCount);
 
                   swr_convert(swrContext,
                                 ( uint8_t **)tmp_frame->data, tmp_frame->nb_samples,
@@ -275,6 +277,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 }
 
                 if (isPlanar) {
+                  //  std::cout << "Before copy planar: " << " " << frame->nb_samples << " " <<  frameToUse->nb_samples << " " << sampleSize << std::endl;
                     int actuallyWrittenSamples = 0;
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
                         for (int i = 0; i < frameToUse->nb_samples; ++i) {
@@ -282,7 +285,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                                 int toUpdate = totalNumberOfSamplesRead + i * sampleSize + k;
                                 if (toUpdate >= request->bufferSize) {
                                     running = false;
-                                   // std::cout << "Buffer is full 1" << std::endl;
+                                  //  std::cout << "Buffer is full 1" << std::endl;
                                     break;
                                 }
 
@@ -294,13 +297,14 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                     }
                     totalNumberOfSamplesRead += actuallyWrittenSamples * sampleSize;
                 } else {
+                    std::cout << "Not planar" << std::endl;
                     for (int i = 0, j = 0; i < frameToUse->nb_samples; ++i, ++j) {
                         for (int channel = 0; channel < request->numberOfChannels; ++channel) {
                             for (int k = 0; k < sampleSize; ++k) {
                                 int outputBufferIndex = j * sampleSize + k;
                                 if (totalNumberOfSamplesRead >= request->bufferSize) {
                                     running = false;
-                                  //  std::cout << "Buffer is full 2" << std::endl;
+                                 //   std::cout << "Buffer is full 2" << std::endl;
                                     break;
                                 }
                                 // TODO: this only supports single channel
@@ -309,9 +313,21 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                         }
                     }
                 }
+                if (tmp_frame) {
+                  av_frame_free(&tmp_frame);
+                  tmp_frame = NULL;
+                }
             }
             av_free_packet(&packet);
         }
+
+        if (returnStatusCode < 0) {
+          char* errorStr = new char[1000];
+          av_make_error_string(errorStr, 1000, returnStatusCode);
+          std::cout << "Audio decode ended with error, statusCode=" << returnStatusCode << " (" << errorStr << ")" << std::endl;
+          delete[] errorStr;
+        }
+
 
         // clean up
         av_frame_free(&frame);

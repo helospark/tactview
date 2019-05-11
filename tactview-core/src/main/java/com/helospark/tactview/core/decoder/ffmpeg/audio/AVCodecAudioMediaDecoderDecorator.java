@@ -21,7 +21,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 
 @Component
 public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
-    private static final int MINIMUM_LENGTH_TO_READ = 60;
+    private static final int MINIMUM_LENGTH_TO_READ = 30;
     private AVCodecBasedAudioMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
