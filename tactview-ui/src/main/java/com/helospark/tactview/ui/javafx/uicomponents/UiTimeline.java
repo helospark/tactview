@@ -23,6 +23,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
@@ -181,7 +182,14 @@ public class UiTimeline {
 
         Group timelineCanvasGroup = new Group();
         timelineLabelCanvas = new Canvas(200, 35);
-        timelineLabelCanvas.widthProperty().bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
+
+        timelineBoxes.widthProperty()
+                .addListener(ipdateTimelineLabelCanvas(timelineBoxes));
+        timeLineScrollPane.zoomProperty()
+                .addListener(ipdateTimelineLabelCanvas(timelineBoxes));
+
+        //        timelineLabelCanvas.widthProperty()
+        //                .bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
         timeLineScrollPane.hvalueProperty().bindBidirectional(timelineState.getHscroll());
         timeLineScrollPane.vvalueProperty().bindBidirectional(timelineState.getVscroll());
 
@@ -241,6 +249,14 @@ public class UiTimeline {
         borderPane.setCenter(gridPane);
 
         return borderPane;
+    }
+
+    private ChangeListener<? super Number> ipdateTimelineLabelCanvas(VBox timelineBoxes) {
+        return (e, oldValue, newa) -> {
+            double newValue = timelineBoxes.widthProperty().get() * timeLineScrollPane.zoomProperty().get();
+            double newWidth = Math.min(newValue, 16000);
+            timelineLabelCanvas.widthProperty().set(newWidth);
+        };
     }
 
     private void updateTimelineLabels() {

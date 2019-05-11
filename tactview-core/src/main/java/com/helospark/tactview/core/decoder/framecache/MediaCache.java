@@ -97,6 +97,12 @@ public class MediaCache {
             clonedValue = cloneValue(value);
         } else {
             clonedValue = value;
+            int newCachedSize = value.frames
+                    .stream()
+                    .map(a -> a.capacity())
+                    .mapToInt(Integer::valueOf)
+                    .sum();
+            approximateSize += newCachedSize;
         }
         NavigableMap<Integer, MediaHashValue> cachedFrames = backCache.get(key);
         if (cachedFrames == null) {

@@ -1,7 +1,10 @@
 #include <string>
 #include <map>
+#include <set>
 #include <iostream>
 #include "common.h"
+
+int QUEUE_SIZE = 10;
 
 extern "C" {
     #include <libavcodec/avcodec.h>
@@ -10,6 +13,22 @@ extern "C" {
 
     #include <stdio.h>
 
+    struct DecodedPackage {
+      int64_t dts, pts, timestamp;
+      AVFrame *pFrame;
+    };
+
+
+    std::ostream& operator<<(std::ostream &strm, const DecodedPackage& decodedPackage) {
+      return strm << "DecodedPackage [dts=" << decodedPackage.dts << " pts=" << decodedPackage.pts << " timestamp=" << decodedPackage.timestamp << " pFrame=" << decodedPackage.pFrame << "]" << std::endl;
+    }
+
+    struct PtsComparator {
+      bool operator()(const DecodedPackage& a, const DecodedPackage& b) {
+        return a.timestamp < b.timestamp;
+      }
+    };
+
     struct DecodeStructure {
         AVFormatContext   *pFormatCtx = NULL;
         int               videoStream;
@@ -17,11 +36,12 @@ extern "C" {
         AVCodecContext    *pCodecCtx = NULL;
         AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
-        AVFrame           *pFrameRGB = NULL;
         AVPacket          packet;
         uint8_t           *buffer = NULL;
         struct SwsContext *sws_ctx = NULL;
         int64_t lastPts = -1;
+        std::set<DecodedPackage, PtsComparator> decodedPackages;
+        int width, height;
     };
 
 
@@ -63,7 +83,6 @@ extern "C" {
         AVCodecContext    *pCodecCtx = NULL;
         AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
-        AVFrame           *pFrameRGB = NULL;
         MediaMetadata mediaMetadata;
 	      mediaMetadata.fps = -1;
 	      mediaMetadata.width = -1;
@@ -113,7 +132,7 @@ extern "C" {
 
         pFrame=av_frame_alloc();
 
-        pFrameRGB=av_frame_alloc();
+        AVFrame* pFrameRGB=av_frame_alloc();
         if(pFrameRGB==NULL)
             return mediaMetadata;
 
@@ -167,8 +186,87 @@ extern "C" {
         FFMpegFrame* frames;
     } FFmpegImageRequest;
 
+    int decodedMinPts(DecodeStructure* decodeStructure) {
+      if (decodeStructure->decodedPackages.size()) {
+        return (*(decodeStructure->decodedPackages.begin())).timestamp;
+      } else {
+        return decodeStructure->lastPts;
+      }
+    }
+
+    AVFrame* allocateFrame(int width, int height) {
+          AVFrame* pFrameRGB=av_frame_alloc();
+          int numBytes=avpicture_get_size(AV_PIX_FMT_BGRA, width, height);
+
+          uint8_t* buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
+          avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
+                         width, height);
+          pFrameRGB->opaque = buffer;
+          return pFrameRGB;
+    }
+
+    void freeFrame(AVFrame* frame) {
+        std::cout << "Preparing to free " << frame << " " << frame->opaque << std::endl;
+        av_free(frame->opaque);
+        av_frame_free(&frame);
+    }
 
     DecodeStructure* openFile(FFmpegImageRequest* request);
+
+    void emptyQueue(DecodeStructure* decodeStructure) {
+        std::cout << "Emptying queue" << std::endl;        
+        while (decodeStructure->decodedPackages.size() > 0) {
+          DecodedPackage element = *(decodeStructure->decodedPackages.begin());
+          std::cout << "Clearing element " << element << std::endl;
+          decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
+
+          freeFrame(element.pFrame);
+        }
+    }
+
+    void fillQueue(DecodeStructure* element) {
+          AVFormatContext   *pFormatCtx = element->pFormatCtx;
+          int               videoStream = element->videoStream;
+          AVCodecContext    *pCodecCtxOrig = element->pCodecCtxOrig;
+          AVCodecContext    *pCodecCtx = element->pCodecCtx;
+          AVCodec           *pCodec = element->pCodec;
+          AVFrame           *pFrame = element->pFrame;
+          AVPacket          packet = element->packet;
+          struct SwsContext *sws_ctx = element->sws_ctx;
+          int frameFinished;
+          while(element->decodedPackages.size() < QUEUE_SIZE && av_read_frame(pFormatCtx, &packet)>=0)
+          {
+              if(packet.stream_index==videoStream)
+              {
+                  int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+
+                  if(frameFinished)
+                  {
+                      AVFrame* pFrameRGB=allocateFrame(element->width, element->height);
+
+                      sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
+                                pFrame->linesize, 0, pCodecCtx->height,
+                                pFrameRGB->data, pFrameRGB->linesize);
+
+                      DecodedPackage decodedPackage;
+                      decodedPackage.pts = packet.pts;
+                      decodedPackage.dts = packet.dts;
+                      decodedPackage.timestamp = av_frame_get_best_effort_timestamp(pFrame);
+                      decodedPackage.pFrame = pFrameRGB;
+
+                      element->decodedPackages.insert(decodedPackage);
+
+                      //copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
+                      //++i;
+                  }
+                  //element->lastPts = packet.pts;
+                  std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
+              }
+              // Free the packet that was allocated by av_read_frame
+              av_free_packet(&packet);
+          }
+          //std::cout << "Set filled: " << element->decodedPackages << std::endl;
+    }
 
     EXPORTED void readFrames(FFmpegImageRequest* request)
     {
@@ -176,80 +274,102 @@ extern "C" {
         std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
         std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(key);
 
-        DecodeStructure* element;
+        DecodeStructure* decodeStructure;
 
 
         if (elementIterator == decodeStructureMap.end()) {
-            element = openFile(request);
+            decodeStructure = openFile(request);
         } else {
             std::cout << "Found Element" <<  elementIterator->first << std::endl;
-            element = elementIterator->second;
+            decodeStructure = elementIterator->second;
         }
 
-        if (element == NULL) {
+        if (decodeStructure == NULL) {
             return;
         }
 
         int i = 0;
-        AVFormatContext   *pFormatCtx = element->pFormatCtx;
-        int               videoStream = element->videoStream;
-        AVCodecContext    *pCodecCtxOrig = element->pCodecCtxOrig;
-        AVCodecContext    *pCodecCtx = element->pCodecCtx;
-        AVCodec           *pCodec = element->pCodec;
-        AVFrame           *pFrame = element->pFrame;
-        AVFrame           *pFrameRGB = element->pFrameRGB;
-        AVPacket          packet = element->packet;
+        AVFormatContext   *pFormatCtx = decodeStructure->pFormatCtx;
+        int               videoStream = decodeStructure->videoStream;
+        AVCodecContext    *pCodecCtxOrig = decodeStructure->pCodecCtxOrig;
+        AVCodecContext    *pCodecCtx = decodeStructure->pCodecCtx;
+        AVCodec           *pCodec = decodeStructure->pCodec;
+        AVFrame           *pFrame = decodeStructure->pFrame;
+        AVPacket          packet = decodeStructure->packet;
         int               frameFinished = 0;
-        uint8_t           *buffer = element->buffer;
-        struct SwsContext *sws_ctx = element->sws_ctx;
+        uint8_t           *buffer = decodeStructure->buffer;
+        struct SwsContext *sws_ctx = decodeStructure->sws_ctx;
 
-		// AV_TIME_BASE_Q   (AVRational){1, AV_TIME_BASE} -> VC++ causes error
-		AVRational timeBaseQ;
-		timeBaseQ.num = 1;
-		timeBaseQ.den = AV_TIME_BASE;
+		    // AV_TIME_BASE_Q   (AVRational){1, AV_TIME_BASE} -> VC++ causes error
+		    AVRational timeBaseQ;
+		    timeBaseQ.num = 1;
+		    timeBaseQ.den = AV_TIME_BASE;
 
         int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rethink
         int64_t minimumTimeRequiredToSeek = 2 * 1000000 * (AV_TIME_BASE / 1000000); // Seek if distance is more than 2 seconds
         seek_target = av_rescale_q(seek_target, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
         minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
-        int64_t seek_distance = seek_target - element->lastPts;
+        int64_t seek_distance = seek_target - decodedMinPts(decodeStructure);
 
         //std::cout << "Seek distance " << seek_distance << std::endl;
         //std::cout << "MIN TIME = " << minimumTimeRequiredToSeek << std::endl;
-        //std::cout << "Want to read " << request->startMicroseconds << " current packet pts " << element->lastPts << std::endl;
+        //std::cout << "Want to read " << request->startMicroseconds << " current packet pts " << element.lastPts << std::endl;
 
-        if (seek_distance > minimumTimeRequiredToSeek || seek_distance <= 0) {
-          std::cout << "Seeking to " << request->startMicroseconds << " current position " << element->lastPts << " distance " << seek_distance << std::endl;
+        std::cout << "Seeking info " << request->startMicroseconds << " current_position=" << decodeStructure->lastPts << " expected=" << seek_target << " distance=" << seek_distance << std::endl;
+        if (seek_distance > minimumTimeRequiredToSeek || seek_distance < 0) {
+          std::cout << "Seeking required" << std::endl;          
           av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
           avcodec_flush_buffers(pCodecCtx);
+          emptyQueue(decodeStructure);
         } else {
           std::cout << "No seek, distance " << seek_distance << std::endl;
         }
 
-        while(av_read_frame(pFormatCtx, &packet)>=0 && i < request->numberOfFrames)
-        {
-            if(packet.stream_index==videoStream)
-            {
-                int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+        if (request->useApproximatePosition) {
+          while(av_read_frame(pFormatCtx, &packet)>=0 && i < request->numberOfFrames)
+          {
+              if(packet.stream_index==videoStream)
+              {
+                  int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 
-                if (packet.pts < seek_target && frameFinished) {
-                  std::cout << "Skipping package " << packet.pts << std::endl;
-                }
+                  if (packet.pts < seek_target && frameFinished) {
+                    std::cout << "Skipping package " << packet.pts << std::endl;
+                  }
 
-                if(frameFinished && (packet.pts >= seek_target || request->useApproximatePosition) )
-                {
-                    sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
-                              pFrame->linesize, 0, pCodecCtx->height,
-                              pFrameRGB->data, pFrameRGB->linesize);
+                  if(frameFinished)
+                  {
+                      AVFrame*  pFrameRGB=allocateFrame(request->width, request->height);
+                      sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
+                                pFrame->linesize, 0, pCodecCtx->height,
+                                pFrameRGB->data, pFrameRGB->linesize);
 
-                    copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
-                    element->lastPts = packet.pts;
-                    ++i;
-                }
+                      copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
+                      ++i;
+                      av_frame_free(&pFrameRGB);
+                  }
+                  decodeStructure->lastPts = packet.pts;
+                  std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
+              }
+              // Free the packet that was allocated by av_read_frame
+              av_free_packet(&packet);
+          }
+        } else {
+          fillQueue(decodeStructure);
+          while (i < request->numberOfFrames && decodeStructure->decodedPackages.size() > 0) {
+            DecodedPackage element = *(decodeStructure->decodedPackages.begin());
+            decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
+            fillQueue(decodeStructure);
+
+            if (element.timestamp < seek_target) {
+              std::cout << "Skipping package " << packet.pts << std::endl;
+            } else {
+              std::cout << "Reading from queue " << i << " " << element.dts << " " << element.pts << " " << element.timestamp << std::endl;
+              copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
+              ++i;
             }
-            // Free the packet that was allocated by av_read_frame
-            av_free_packet(&packet);
-        }
+            freeFrame(element.pFrame);
+          }
+       }
 
     }
 
@@ -263,7 +383,6 @@ extern "C" {
         AVCodecContext    *pCodecCtx = NULL;
         AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
-        AVFrame           *pFrameRGB = NULL;
         AVPacket          packet;
         uint8_t           *buffer = NULL;
         struct SwsContext *sws_ctx = NULL;
@@ -316,20 +435,7 @@ extern "C" {
 
         pFrame=av_frame_alloc();
 
-        pFrameRGB=av_frame_alloc();
-        if(pFrameRGB == NULL || pFrame == NULL) {
-            std::cerr << "Cannot allocate RGB frame " << std::endl;
-            return NULL;
-        }
-
         std::cout << "Opening file with size " << request->width << " " << request->width << std::endl;
-
-        int numBytes=avpicture_get_size(AV_PIX_FMT_BGRA, request->width,
-                                     request->height);
-        buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-
-        avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
-                       request->width, request->height);
 
         sws_ctx = sws_getContext(pCodecCtx->width,
                                  pCodecCtx->height,
@@ -350,11 +456,11 @@ extern "C" {
         element->pCodecCtx = pCodecCtx;
         element->pCodec = pCodec;
         element->pFrame = pFrame;
-        element->pFrameRGB = pFrameRGB;
         element->packet = packet;
         element->buffer = buffer;
         element->sws_ctx = sws_ctx;
-
+        element->width = request->width;
+        element->height = request->height;
 
         std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
 

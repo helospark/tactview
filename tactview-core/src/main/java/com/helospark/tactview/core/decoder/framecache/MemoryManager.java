@@ -122,7 +122,7 @@ public class MemoryManager {
         try {
             unsafe.invokeCleaner(buffer);
         } catch (Throwable t) {
-            logger.debug("Unable to clean bytebuffer", t);
+            logger.warn("Unable to clean bytebuffer", t);
             // It's OK, GC will take care of it, when it runs
         }
     }
@@ -244,6 +244,11 @@ public class MemoryManager {
         @Override
         public int compareTo(BufferInformation o) {
             return Long.compare(lastNeededAnUpdate, o.lastNeededAnUpdate);
+        }
+
+        @Override
+        public String toString() {
+            return "BufferInformation [buffers=" + buffers + ", lastRequestedAccessed=" + lastRequestedAccessed + ", lastNeededAnUpdate=" + lastNeededAnUpdate + "]";
         }
 
     }
