@@ -17,6 +17,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         int sampleRate;
         int channels;
         int bytesPerSample;
+        long long bitRate;
         long long lengthInMicroseconds;
     };
 
@@ -95,6 +96,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         response.channels = codec->channels;
         response.sampleRate = codec->sample_rate;
         response.lengthInMicroseconds = format->duration / (AV_TIME_BASE / 1000000);
+        response.bitRate = codec->bit_rate;
         response.bytesPerSample = av_get_bytes_per_sample(sampleFormat);
 
         avcodec_close(codec);

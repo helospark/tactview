@@ -13,8 +13,10 @@ public interface RenderService {
 
     List<String> getSupportedFormats();
 
-    Map<String, OptionProvider<?>> getOptionProviders();
+    Map<String, OptionProvider<?>> getOptionProviders(CreateValueProvidersRequest request);
 
     boolean supports(RenderRequest renderRequest);
+
+    Map<String, OptionProvider<?>> updateValueProviders(UpdateValueProvidersRequest request);
 
 }

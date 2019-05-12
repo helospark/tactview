@@ -122,8 +122,13 @@ public class ImageSequenceRenderService extends AbstractRenderService {
     }
 
     @Override
-    public Map<String, OptionProvider<?>> getOptionProviders() {
+    public Map<String, OptionProvider<?>> getOptionProviders(CreateValueProvidersRequest request) {
         return Map.of();
+    }
+
+    @Override
+    public Map<String, OptionProvider<?>> updateValueProviders(UpdateValueProvidersRequest request) {
+        return request.options;
     }
 
 }

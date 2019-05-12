@@ -111,6 +111,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
                 .withChannels(readMetadata.channels)
                 .withSampleRate(readMetadata.sampleRate)
                 .withBytesPerSample(readMetadata.bytesPerSample)
+                .withBitRate(readMetadata.bitRate)
                 .withLength(TimelineLength.ofMicroseconds(readMetadata.lengthInMicroseconds))
                 .build();
     }

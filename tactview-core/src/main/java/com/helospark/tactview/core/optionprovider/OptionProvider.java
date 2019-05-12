@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.optionprovider;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -10,11 +11,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 
 public class OptionProvider<T> {
     private String title;
+    private Class<T> type;
     private Function<String, T> valueConverter;
     private Function<T, List<String>> validationErrorProvider;
     private Supplier<Boolean> shouldShow;
     private Supplier<Boolean> isEnabled;
     private List<ValueListElement> validValues;
+    private boolean shouldTriggerUpdate;
     private T value;
 
     @Generated("SparkTools")
@@ -60,32 +63,68 @@ public class OptionProvider<T> {
         return isEnabled;
     }
 
+    public boolean shouldTriggerUpdate() {
+        return shouldTriggerUpdate;
+    }
+
     @Generated("SparkTools")
     public static <T> Builder<T> builder(Class<T> type) {
-        return new Builder<T>();
+        return new Builder<T>(type);
     }
 
     public static Builder<Integer> integerOptionBuilder() {
-        return new Builder<Integer>()
+        return new Builder<Integer>(Integer.class)
                 .withValueConverter(Integer::valueOf);
     }
 
     public static Builder<String> stringOptionBuilder() {
-        return new Builder<String>()
+        return new Builder<String>(String.class)
                 .withValueConverter(String::valueOf);
+    }
+
+    public OptionProvider<T> butWithUpdatedValidValues(List<ValueListElement> validValues) {
+        OptionProvider<T> cloned = cloneThis();
+        cloned.validValues = validValues;
+
+        boolean currentValueContainedInNewValues = false;
+        for (ValueListElement element : cloned.validValues) {
+            if (element.getId().equals(cloned.value)) {
+                currentValueContainedInNewValues = true;
+                break;
+            }
+        }
+        if (!currentValueContainedInNewValues) {
+            cloned.value = (T) validValues.get(0).getId();
+        }
+        return cloned;
+    }
+
+    private OptionProvider<T> cloneThis() {
+        return OptionProvider.builder(this.type)
+                .withTitle(title)
+                .withShouldShow(shouldShow)
+                .withDefaultValue(value)
+                .withIsEnabled(isEnabled)
+                .withValidationErrorProvider(validationErrorProvider)
+                .withValidValues(new ArrayList<>(validValues))
+                .withValueConverter(valueConverter)
+                .build();
     }
 
     @Generated("SparkTools")
     public static final class Builder<T> {
         private String title;
+        private Class<T> type;
         private Function<String, T> valueConverter;
         private Function<T, List<String>> validationErrorProvider;
         private Supplier<Boolean> shouldShow;
         private Supplier<Boolean> isEnabled;
         private List<ValueListElement> validValues;
+        private boolean shouldTriggerUpdate;
         private T defaultValue;
 
-        private Builder() {
+        private Builder(Class<T> type) {
+            this.type = type;
         }
 
         public Builder<T> withTitle(String title) {
@@ -120,6 +159,11 @@ public class OptionProvider<T> {
 
         public Builder<T> withDefaultValue(T defaultValue) {
             this.defaultValue = defaultValue;
+            return this;
+        }
+
+        public Builder<T> withShouldTriggerUpdate(boolean shouldTriggerUpdate) {
+            this.shouldTriggerUpdate = shouldTriggerUpdate;
             return this;
         }
 

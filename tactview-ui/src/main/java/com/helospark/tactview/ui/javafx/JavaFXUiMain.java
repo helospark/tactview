@@ -265,7 +265,7 @@ public class JavaFXUiMain extends Application {
         lower.setPrefHeight(300);
         lower.setId("timeline-view");
 
-        Node timeline = uiTimeline.createTimeline(lower, root);
+        BorderPane timeline = uiTimeline.createTimeline(lower, root);
         lower.getChildren().add(timeline);
         VBox.setVgrow(timeline, Priority.ALWAYS);
 

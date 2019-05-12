@@ -31,6 +31,7 @@ extern "C" {
     #include <libavformat/avformat.h>
     #include <libswscale/swscale.h>
     #include <libswresample/swresample.h>
+    #include "libavutil/pixdesc.h"
 
     #define SCALE_FLAGS SWS_BICUBIC
 
@@ -52,6 +53,7 @@ extern "C" {
         int audioSampleRate;
         const char* videoCodec;
         const char* audioCodec;
+        const char* videoPixelFormat;
     };
 
 
@@ -96,7 +98,8 @@ extern "C" {
         int actualWidth;
         int actualHeight;
         int renderWidth;
-        int renderHeight;        
+        int renderHeight;
+        AVPixelFormat videoPixelFormat;    
     };
     RenderContext renderContext;
 
@@ -128,7 +131,69 @@ extern "C" {
     }
 
     /* Add an output stream. */
-    static void add_stream(OutputStream *ost, AVFormatContext *oc,
+    static void add_video_stream(OutputStream *ost, AVFormatContext *oc,
+                           AVCodec **codec,
+                           enum AVCodecID codec_id,
+                           FFmpegInitEncoderRequest* request,
+                           AVPixelFormat videoPixelFormat)
+    {
+        AVCodecContext *c;
+        int i;
+
+        /* find the encoder */
+        *codec = avcodec_find_encoder(codec_id);
+        if (!(*codec)) {
+            fprintf(stderr, "Could not find encoder for '%s'\n",
+                    avcodec_get_name(codec_id));
+            exit(1);
+        }
+
+        ost->st = avformat_new_stream(oc, NULL);
+        if (!ost->st) {
+            fprintf(stderr, "Could not allocate stream\n");
+            exit(1);
+        }
+        ost->st->id = oc->nb_streams-1;
+        c = avcodec_alloc_context3(*codec);
+        if (!c) {
+            fprintf(stderr, "Could not alloc an encoding context\n");
+            exit(1);
+        }
+        ost->enc = c;
+
+        c->codec_id = codec_id;
+
+        c->bit_rate = request->videoBitRate;
+        /* Resolution must be a multiple of two. */
+        c->width = request->renderWidth;
+        c->height = request->renderHeight;
+
+        /* timebase: This is the fundamental unit of time (in seconds) in terms
+         * of which frame timestamps are represented. For fixed-fps content,
+         * timebase should be 1/framerate and timestamp increments should be
+         * identical to 1. */
+        ost->st->time_base.num = 1;
+			  ost->st->time_base.den = request->fps;
+        c->time_base       = ost->st->time_base;
+
+        c->pix_fmt       = videoPixelFormat;
+        if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
+           /* just for testing, we also add B frames */
+           c->max_b_frames = 2;
+        }
+        if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
+           /* Needed to avoid using macroblocks in which some coeffs overflow.
+            * This does not happen with normal video, it just happens here as
+            * the motion of the chroma plane does not match the luma plane. */
+           c->mb_decision = 2;
+        }
+
+        if (oc->oformat->flags & AVFMT_GLOBALHEADER)
+            c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+/* Add an output stream. */
+    static void add_audio_stream(OutputStream *ost, AVFormatContext *oc,
                            AVCodec **codec,
                            enum AVCodecID codec_id,
                            FFmpegInitEncoderRequest* request)
@@ -157,70 +222,35 @@ extern "C" {
         }
         ost->enc = c;
 
-        switch ((*codec)->type) {
-        case AVMEDIA_TYPE_AUDIO:
-            c->sample_fmt  = (*codec)->sample_fmts ?
-                (*codec)->sample_fmts[0] : AV_SAMPLE_FMT_FLTP;
-            c->bit_rate    = request->audioBitRate;
-            c->sample_rate = 44100; // default if none found
-            if ((*codec)->supported_samplerates) {
-                c->sample_rate = (*codec)->supported_samplerates[0];
-                for (i = 0; (*codec)->supported_samplerates[i]; i++) {
-                    if ((*codec)->supported_samplerates[i] == request->audioSampleRate)
-                        c->sample_rate = request->audioSampleRate;
-                }
+        c->sample_fmt  = (*codec)->sample_fmts ?
+            (*codec)->sample_fmts[0] : AV_SAMPLE_FMT_FLTP;
+        c->bit_rate    = request->audioBitRate;
+        c->sample_rate = 44100; // default if none found
+        if ((*codec)->supported_samplerates) {
+            c->sample_rate = (*codec)->supported_samplerates[0];
+            for (i = 0; (*codec)->supported_samplerates[i]; i++) {
+                if ((*codec)->supported_samplerates[i] == request->audioSampleRate)
+                    c->sample_rate = request->audioSampleRate;
             }
-            c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
-            c->channel_layout = AV_CH_LAYOUT_STEREO;
-            if ((*codec)->channel_layouts) {
-                c->channel_layout = (*codec)->channel_layouts[0];
-                for (i = 0; (*codec)->channel_layouts[i]; i++) {
-                    if ((*codec)->channel_layouts[i] == AV_CH_LAYOUT_STEREO)
-                        c->channel_layout = AV_CH_LAYOUT_STEREO;
-                }
-            }
-            c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
-            ost->st->time_base.num = 1;
-			ost->st->time_base.den = c->sample_rate;
-            break;
-
-        case AVMEDIA_TYPE_VIDEO:
-            c->codec_id = codec_id;
-
-            c->bit_rate = request->videoBitRate;
-            /* Resolution must be a multiple of two. */
-            c->width = request->renderWidth;
-            c->height = request->renderHeight;
-
-            /* timebase: This is the fundamental unit of time (in seconds) in terms
-             * of which frame timestamps are represented. For fixed-fps content,
-             * timebase should be 1/framerate and timestamp increments should be
-             * identical to 1. */
-            ost->st->time_base.num = 1;
-			ost->st->time_base.den = request->fps;
-            c->time_base       = ost->st->time_base;
-
-            c->pix_fmt       = AV_PIX_FMT_YUV420P;
-            if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
-               /* just for testing, we also add B frames */
-               c->max_b_frames = 2;
-            }
-            if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
-               /* Needed to avoid using macroblocks in which some coeffs overflow.
-                * This does not happen with normal video, it just happens here as
-                * the motion of the chroma plane does not match the luma plane. */
-               c->mb_decision = 2;
-            }
-        break;
-
-        default:
-            break;
         }
+        c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
+        c->channel_layout = AV_CH_LAYOUT_STEREO;
+        if ((*codec)->channel_layouts) {
+            c->channel_layout = (*codec)->channel_layouts[0];
+            for (i = 0; (*codec)->channel_layouts[i]; i++) {
+                if ((*codec)->channel_layouts[i] == AV_CH_LAYOUT_STEREO)
+                    c->channel_layout = AV_CH_LAYOUT_STEREO;
+            }
+        }
+        c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
+        ost->st->time_base.num = 1;
+        ost->st->time_base.den = c->sample_rate;
 
         /* Some formats want stream headers to be separate. */
         if (oc->oformat->flags & AVFMT_GLOBALHEADER)
             c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     }
+
 
     /**************************************************************/
     /* audio output */
@@ -442,7 +472,7 @@ extern "C" {
         return picture;
     }
 
-    static void open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request)
+    static void open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request, AVPixelFormat videoPixelFormat)
     {
         int ret;
         AVCodecContext *c = ost->enc;
@@ -459,7 +489,7 @@ extern "C" {
         }
 
         /* allocate and init a re-usable frame */
-        ost->frame = alloc_picture(AV_PIX_FMT_YUV420P, c->width, c->height);
+        ost->frame = alloc_picture(videoPixelFormat, c->width, c->height);
         if (!ost->frame) {
             fprintf(stderr, "Could not allocate video frame\n");
             exit(1);
@@ -491,7 +521,7 @@ extern "C" {
 
         SwsContext * ctx = sws_getContext(renderContext.actualWidth, renderContext.actualHeight,
                                   AV_PIX_FMT_BGR32, c->width, c->height,
-                                  AV_PIX_FMT_YUV420P, 0, 0, 0, 0);
+                                  renderContext.videoPixelFormat, 0, 0, 0, 0);
         uint8_t * inData[1] = { frame->imageData };
         int inLinesize[1] = { 4*renderContext.actualWidth };
         sws_scale(ctx, inData, inLinesize, 0, renderContext.actualHeight, ost->frame->data, ost->frame->linesize);
@@ -548,6 +578,14 @@ extern "C" {
         swr_free(&ost->swr_ctx);
     }
 
+    AVPixelFormat getPixelFormat(FFmpegInitEncoderRequest* request, AVCodec *videoCodec) {
+        if (strcmp(request->videoPixelFormat, "default") == 0) {
+          return videoCodec->pix_fmts[0];
+        } else {
+          return av_get_pix_fmt(request->videoPixelFormat);
+        }
+    }
+
     /**************************************************************/
     /* media file output */
 
@@ -566,6 +604,7 @@ extern "C" {
         AVDictionary *opt = NULL;
 
         int i;
+        memset(&renderContext, 0, sizeof(RenderContext));
 
 
         const char* filename = request->fileName;
@@ -581,6 +620,7 @@ extern "C" {
 
         fmt = oc->oformat;
 
+        AVPixelFormat videoPixelFormat;
         /* Add the audio and video streams using the default format codecs
          * and initialize the codecs. */
         if (fmt->video_codec != AV_CODEC_ID_NONE) {
@@ -588,15 +628,23 @@ extern "C" {
                 fmt->video_codec = avcodec_find_encoder_by_name(request->videoCodec)->id;
             }
 
-            add_stream(video_st, oc, &video_codec, fmt->video_codec, request);
+
+            videoPixelFormat = getPixelFormat(request, avcodec_find_encoder(fmt->video_codec));
+            
+            const char* videoPixelFormatStr = av_get_pix_fmt_name(videoPixelFormat);
+            std::cout << "Using pixel format " << videoPixelFormatStr << std::endl;
+
+            add_video_stream(video_st, oc, &video_codec, fmt->video_codec, request, videoPixelFormat);
             have_video = 1;
             encode_video = 1;
+
+            renderContext.videoPixelFormat =  videoPixelFormat;
         }
         if (fmt->audio_codec != AV_CODEC_ID_NONE && request->audioChannels > 0) {
             if (strcmp(request->audioCodec, "default") != 0) {            
                 fmt->audio_codec = avcodec_find_encoder_by_name(request->audioCodec)->id;
             }
-            add_stream(audio_st, oc, &audio_codec, fmt->audio_codec, request);
+            add_audio_stream(audio_st, oc, &audio_codec, fmt->audio_codec, request);
             have_audio = 1;
             encode_audio = 1;
         }
@@ -604,7 +652,7 @@ extern "C" {
         /* Now that all the parameters are set, we can open the audio and
          * video codecs and allocate the necessary encode buffers. */
         if (have_video)
-            open_video(oc, video_codec, video_st, opt, request);
+            open_video(oc, video_codec, video_st, opt, request, videoPixelFormat);
 
         if (have_audio)
             open_audio(oc, audio_codec, audio_st, opt, request);
@@ -625,7 +673,6 @@ extern "C" {
             fprintf(stderr, "Error occurred when opening output file: \n");
             return 1;
         }
-        memset(&renderContext, 0, sizeof(RenderContext));
         renderContext.oc = oc;
         renderContext.fmt = fmt;
         renderContext.have_audio = have_audio;
@@ -694,8 +741,6 @@ extern "C" {
             renderContext.encode_video = !write_video_frame(renderContext.oc, video_st, frame);
     }
 
-
-
     struct CodecInformation {
         const char* id;
         const char* longName;
@@ -712,7 +757,6 @@ extern "C" {
     EXPORTED void queryCodecs(QueryCodecRequest* request)
     {
         av_register_all();
-
 
         request->videoCodecNumber = 0;
         request->audioCodecNumber = 0;
@@ -736,11 +780,53 @@ extern "C" {
 
     }
 
-    EXPORTED const char* queryCodecsTest()
+    struct CodecExtraDataRequest {
+        const char* fileName;
+        const char* videoCodec;
+
+        CodecInformation* availablePixelFormats;
+        int availablePixelFormatNumber;
+    };
+
+    EXPORTED void queryCodecExtraData(CodecExtraDataRequest* request)
     {
         av_register_all();
-        AVCodec * codec = av_codec_next(NULL);
-		return codec->long_name;
+
+        request->availablePixelFormatNumber = 0;
+
+        av_register_all();
+        AVFormatContext *oc;
+
+
+        avformat_alloc_output_context2(&oc, NULL, NULL, request->fileName);
+        if (!oc) {
+            printf("Could not deduce output format from file extension: using MPEG.\n");
+            avformat_alloc_output_context2(&oc, NULL, "mpeg", request->fileName);
+        }
+        if (!oc)
+            return;
+
+        AVOutputFormat* fmt = oc->oformat;
+
+        if (fmt->video_codec != AV_CODEC_ID_NONE) {
+            AVCodec* videoCodec;
+            if (strcmp(request->videoCodec, "default") != 0) {
+                videoCodec = avcodec_find_encoder_by_name(request->videoCodec);
+            } else {
+                videoCodec = avcodec_find_encoder(fmt->video_codec);
+            }
+
+            const AVPixelFormat* formats = videoCodec->pix_fmts;
+
+            int i = 0;
+            while (formats != NULL && formats[i] > -1) {
+                const char* data = av_get_pix_fmt_name(formats[i]);
+                request->availablePixelFormats[i].id = data;
+                request->availablePixelFormats[i].longName = data;
+                ++i;
+            }
+            request->availablePixelFormatNumber = i;
+        }
     }
 
 

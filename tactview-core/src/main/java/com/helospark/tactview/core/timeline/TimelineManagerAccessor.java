@@ -737,4 +737,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
                 .orElse(0);
     }
 
+    public int findMaximumAudioBitRate() {
+        return timelineChannelsState.channels
+                .stream()
+                .map(channel -> channel.findMaximumAudioBitRate())
+                .max(Integer::compareTo)
+                .orElse(0);
+    }
+
 }

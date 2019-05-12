@@ -27,7 +27,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
@@ -77,7 +76,7 @@ public class UiTimeline {
         this.linkClipRepository = linkClipRepository;
     }
 
-    public Node createTimeline(VBox lower, BorderPane root) {
+    public BorderPane createTimeline(VBox lower, BorderPane root) {
         borderPane = new BorderPane();
 
         Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
@@ -203,6 +202,7 @@ public class UiTimeline {
         //        timelineTimeLabelsScrollPane.prefWidthProperty().bind(timeLineScrollPane.widthProperty());
         timelineTimeLabelsScrollPane.setContent(timelineCanvasGroup);
         timelineTimeLabelsScrollPane.hvalueProperty().bind(timeLineScrollPane.hvalueProperty());
+        timelineTimeLabelsScrollPane.prefWidthProperty().bind(timeLineScrollPane.widthProperty());
         timelineTimeLabelsScrollPane.setFitToHeight(true);
         timelineTimeLabelsScrollPane.setFitToWidth(true);
 
@@ -241,6 +241,7 @@ public class UiTimeline {
 
         //        timeLineScrollPane.setContent(timelineGroup);
         timeLineScrollPane.prefHeightProperty().bind(borderPane.heightProperty());
+        timeLineScrollPane.prefWidthProperty().bind(root.widthProperty());
 
         gridPane.add(timelineTitlesPane, 0, 0);
         gridPane.add(timeLineScrollPane, 1, 0);

@@ -48,7 +48,7 @@ public class ZoomableScrollPane extends ScrollPane {
     }
 
     private Node outerNode(Node node) {
-        Node outerNode = centeredNode(node);
+        Node outerNode = vboxNode(node);
         outerNode.setOnScroll(e -> {
             if (e.isControlDown()) {
                 e.consume();
@@ -58,9 +58,9 @@ public class ZoomableScrollPane extends ScrollPane {
         return outerNode;
     }
 
-    private Node centeredNode(Node node) {
+    private Node vboxNode(Node node) {
         VBox vBox = new VBox(node);
-        vBox.setAlignment(Pos.CENTER);
+        vBox.setAlignment(Pos.TOP_LEFT);
         return vBox;
     }
 

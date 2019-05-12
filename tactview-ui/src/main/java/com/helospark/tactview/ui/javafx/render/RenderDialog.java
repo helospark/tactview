@@ -12,9 +12,11 @@ import org.joda.time.Period;
 import org.joda.time.format.PeriodFormat;
 
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.render.CreateValueProvidersRequest;
 import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.render.RenderService;
 import com.helospark.tactview.core.render.RenderServiceChain;
+import com.helospark.tactview.core.render.UpdateValueProvidersRequest;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -46,6 +48,9 @@ public class RenderDialog {
     private boolean isRenderCancelled = false;
     private RenderService previousRenderService = null;
     private Map<String, OptionProvider<?>> optionProviders = Map.of();
+
+    TextField fileNameTextField;
+    GridPane rendererOptions;
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager) {
         BorderPane borderPane = new BorderPane();
@@ -79,7 +84,7 @@ public class RenderDialog {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
-        TextField fileNameTextField = new TextField();
+        fileNameTextField = new TextField();
         GridPane.setHgrow(fileNameTextField, Priority.ALWAYS);
 
         Button button = new Button("Browse");
@@ -104,7 +109,7 @@ public class RenderDialog {
 
         linePosition += (linePosition % COLUMNS);
 
-        GridPane rendererOptions = new GridPane();
+        rendererOptions = new GridPane();
         rendererOptions.setVgap(4.0);
         rendererOptions.setHgap(15.0);
         gridPane.add(rendererOptions, 0, linePosition++, COLUMNS * 2, 1);
@@ -191,57 +196,11 @@ public class RenderDialog {
 
             RenderService currentRenderService = renderService.getRenderer(request);
             if (currentRenderService != previousRenderService) {
-                optionProviders = currentRenderService.getOptionProviders();
+                optionProviders = currentRenderService.getOptionProviders(CreateValueProvidersRequest.builder().withFileName(fileNameTextField.getText()).build());
                 previousRenderService = currentRenderService;
-                rendererOptions.getChildren().clear();
-
-                Collection<OptionProvider<?>> values = optionProviders.values();
-
-                // TODO: all the below out of here
-                int i = 0;
-                for (var value : values) {
-                    int row = i / COLUMNS;
-                    int column = i % COLUMNS;
-
-                    OptionProvider<Object> optionProvider = (OptionProvider<Object>) value;
-                    Label label = new Label(optionProvider.getTitle());
-                    rendererOptions.add(label, column * COLUMNS, row);
-
-                    if (optionProvider.getValidValues().isEmpty()) {
-                        TextField textField = new TextField();
-                        textField.getStyleClass().add("render-dialog-option");
-                        textField.setText(String.valueOf(optionProvider.getValue()));
-                        textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
-                            Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
-                            // TODO: isValid, etc.
-                            optionProvider.setValue(parsedValue);
-                        });
-
-                        rendererOptions.add(textField, column * COLUMNS + 1, row);
-                    } else {
-                        ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
-                        comboBox.getStyleClass().add("render-dialog-option");
-                        Map<String, ComboBoxElement> comboBoxElements = new LinkedHashMap<>();
-
-                        optionProvider.getValidValues()
-                                .stream()
-                                .forEach(a -> {
-                                    var entry = new ComboBoxElement(a.getId(), a.getText());
-                                    comboBox.getItems().add(entry);
-                                    comboBoxElements.put(a.getId(), entry);
-                                });
-                        comboBox.getSelectionModel().select(comboBoxElements.get(optionProvider.getValue().toString()));
-
-                        comboBox.setOnAction(e -> {
-                            optionProvider.setValue(comboBox.getValue().getId());
-                        });
-
-                        rendererOptions.add(comboBox, column * COLUMNS + 1, row);
-                    }
-
-                    ++i;
-                }
-
+                updateRenderOptions(rendererOptions);
+            } else {
+                updateProvidersAfterUpdate();
             }
         });
 
@@ -253,6 +212,76 @@ public class RenderDialog {
 
         stage.setTitle("Render");
         stage.setScene(dialog);
+    }
+
+    private void updateRenderOptions(GridPane rendererOptions) {
+        rendererOptions.getChildren().clear();
+
+        Collection<OptionProvider<?>> values = optionProviders.values();
+
+        // TODO: all the below out of here
+        int i = 0;
+        for (var value : values) {
+            int row = i / COLUMNS;
+            int column = i % COLUMNS;
+
+            OptionProvider<Object> optionProvider = (OptionProvider<Object>) value;
+            Label label = new Label(optionProvider.getTitle());
+            rendererOptions.add(label, column * COLUMNS, row);
+
+            if (optionProvider.getValidValues().isEmpty()) {
+                TextField textField = new TextField();
+                textField.getStyleClass().add("render-dialog-option");
+                textField.setText(String.valueOf(optionProvider.getValue()));
+                textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
+                    Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
+                    // TODO: isValid, etc.
+                    optionProvider.setValue(parsedValue);
+                    if (optionProvider.shouldTriggerUpdate()) {
+                        updateProvidersAfterUpdate();
+                    }
+                });
+
+                rendererOptions.add(textField, column * COLUMNS + 1, row);
+            } else {
+                ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
+                comboBox.getStyleClass().add("render-dialog-option");
+                Map<String, ComboBoxElement> comboBoxElements = new LinkedHashMap<>();
+
+                optionProvider.getValidValues()
+                        .stream()
+                        .forEach(a -> {
+                            var entry = new ComboBoxElement(a.getId(), a.getText());
+                            comboBox.getItems().add(entry);
+                            comboBoxElements.put(a.getId(), entry);
+                        });
+                comboBox.getSelectionModel().select(comboBoxElements.get(optionProvider.getValue().toString()));
+
+                comboBox.setOnAction(e -> {
+                    optionProvider.setValue(comboBox.getValue().getId());
+                    if (optionProvider.shouldTriggerUpdate()) {
+                        updateProvidersAfterUpdate();
+                    }
+                });
+
+                rendererOptions.add(comboBox, column * COLUMNS + 1, row);
+            }
+
+            ++i;
+        }
+    }
+
+    private void updateProvidersAfterUpdate() {
+        UpdateValueProvidersRequest request = UpdateValueProvidersRequest.builder()
+                .withFileName(fileNameTextField.getText())
+                .withOptions(optionProviders)
+                .build();
+        Map<String, OptionProvider<?>> updatedValues = previousRenderService.updateValueProviders(request);
+
+        if (!updatedValues.equals(optionProviders)) {
+            this.optionProviders = updatedValues;
+            updateRenderOptions(rendererOptions);
+        }
     }
 
     public ComboBox<ComboBoxElement> createComboBox(List<String> values, int selectedIndex) {

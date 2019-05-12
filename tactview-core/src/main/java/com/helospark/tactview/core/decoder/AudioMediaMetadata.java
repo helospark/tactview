@@ -8,6 +8,7 @@ public class AudioMediaMetadata extends MediaMetadata {
     protected int sampleRate;
     protected int bytesPerSample;
     protected int channels;
+    protected long bitRate;
 
     @Generated("SparkTools")
     private AudioMediaMetadata(Builder builder) {
@@ -15,6 +16,7 @@ public class AudioMediaMetadata extends MediaMetadata {
         this.sampleRate = builder.sampleRate;
         this.bytesPerSample = builder.bytesPerSample;
         this.channels = builder.channels;
+        this.bitRate = builder.bitRate;
     }
 
     public int getSampleRate() {
@@ -29,6 +31,14 @@ public class AudioMediaMetadata extends MediaMetadata {
         return bytesPerSample;
     }
 
+    public boolean isValid() {
+        return sampleRate > 0;
+    }
+
+    public long getBitRate() {
+        return bitRate;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -40,6 +50,7 @@ public class AudioMediaMetadata extends MediaMetadata {
         private int sampleRate;
         private int bytesPerSample;
         private int channels;
+        private long bitRate;
 
         private Builder() {
         }
@@ -64,13 +75,14 @@ public class AudioMediaMetadata extends MediaMetadata {
             return this;
         }
 
+        public Builder withBitRate(long bitRate) {
+            this.bitRate = bitRate;
+            return this;
+        }
+
         public AudioMediaMetadata build() {
             return new AudioMediaMetadata(this);
         }
-    }
-
-    public boolean isValid() {
-        return sampleRate > 0;
     }
 
 }

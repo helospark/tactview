@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 
@@ -235,6 +236,21 @@ public class TimelineChannel {
                     if (bitRate > maxBitRate) {
                         maxBitRate = bitRate;
                     }
+                }
+            }
+        }
+
+        return maxBitRate;
+    }
+
+    public int findMaximumAudioBitRate() {
+        int maxBitRate = 0;
+        for (var clip : clips) {
+            if (clip instanceof AudibleTimelineClip) {
+                AudioMediaMetadata metadata = ((AudibleTimelineClip) clip).getMediaMetadata();
+                int bitRate = (int) metadata.getBitRate();
+                if (bitRate > maxBitRate) {
+                    maxBitRate = bitRate;
                 }
             }
         }

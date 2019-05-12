@@ -10,6 +10,7 @@ import java.util.Optional;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.render.ffmpeg.CodecExtraDataRequest;
 import com.helospark.tactview.core.render.ffmpeg.CodecInformation;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegBasedMediaEncoder;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegClearEncoderRequest;
@@ -30,6 +31,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedRenderService extends AbstractRenderService {
+    private static final String DEFAULT_VALUE = "default";
     private static final int MAX_NUMBER_OF_CODECS = 400;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private TimelineManagerAccessor timelineManagerAccessor;
@@ -64,6 +66,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         String audioCodec = (String) renderRequest.getOptions().get("audiocodec").getValue();
         System.out.println("AudioCodec: " + audioCodec);
 
+        String videoPixelFormat = (String) renderRequest.getOptions().get("videoPixelFormat").getValue();
+        System.out.println("videoPixelFormat: " + videoPixelFormat);
+
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
         initNativeRequest.fps = renderRequest.getFps();
@@ -91,6 +96,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.audioSampleRate = audioSampleRate;
         initNativeRequest.videoCodec = videoCodec;
         initNativeRequest.audioCodec = audioCodec;
+        initNativeRequest.videoPixelFormat = videoPixelFormat;
         // frame not freed
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
@@ -168,11 +174,11 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     }
 
     @Override
-    public Map<String, OptionProvider<?>> getOptionProviders() {
+    public Map<String, OptionProvider<?>> getOptionProviders(CreateValueProvidersRequest request) {
         int maximumVideoBitRate = timelineManagerAccessor.findMaximumVideoBitRate();
         OptionProvider<Integer> bitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Video bitrate")
-                .withDefaultValue(maximumVideoBitRate > 0 ? maximumVideoBitRate : 800000)
+                .withDefaultValue(maximumVideoBitRate > 0 ? maximumVideoBitRate : 1600000)
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {
@@ -181,9 +187,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     return errors;
                 })
                 .build();
+        int maximumAudioBitRate = timelineManagerAccessor.findMaximumAudioBitRate();
         OptionProvider<Integer> audioBitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Audio bitrate")
-                .withDefaultValue(248000)
+                .withDefaultValue(maximumAudioBitRate > 0 ? maximumAudioBitRate : 192000)
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {
@@ -210,13 +217,22 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         OptionProvider<String> videoCodecProvider = OptionProvider.stringOptionBuilder()
                 .withTitle("Video codec")
-                .withDefaultValue("default")
+                .withDefaultValue(DEFAULT_VALUE)
                 .withValidValues(codecs.videoCodecs)
+                .withShouldTriggerUpdate(true)
                 .build();
         OptionProvider<String> audioCodecProvider = OptionProvider.stringOptionBuilder()
                 .withTitle("Audio codec")
-                .withDefaultValue("default")
+                .withDefaultValue(DEFAULT_VALUE)
                 .withValidValues(codecs.audioCodecs)
+                .build();
+
+        EncoderExtraData extra = queryCodecExtraData(request.fileName, DEFAULT_VALUE);
+
+        OptionProvider<String> videoPixelFormatProvider = OptionProvider.stringOptionBuilder()
+                .withTitle("Video pixel format")
+                .withDefaultValue(DEFAULT_VALUE)
+                .withValidValues(extra.pixelFormats)
                 .build();
 
         LinkedHashMap<String, OptionProvider<?>> result = new LinkedHashMap<>();
@@ -227,8 +243,24 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         result.put("audiobytespersample", audioBytesPerSampelProvider);
         result.put("videocodec", videoCodecProvider);
         result.put("audiocodec", audioCodecProvider);
+        result.put("videoPixelFormat", videoPixelFormatProvider);
 
         return result;
+    }
+
+    @Override
+    public Map<String, OptionProvider<?>> updateValueProviders(UpdateValueProvidersRequest request) {
+        Map<String, OptionProvider<?>> optionsToUpdate = new LinkedHashMap<String, OptionProvider<?>>(request.options);
+
+        // update pixel formats
+        String codec = (String) optionsToUpdate.get("videocodec").getValue();
+        OptionProvider<?> pixelFormat = optionsToUpdate.get("videoPixelFormat");
+        EncoderExtraData extra = queryCodecExtraData(request.fileName, codec);
+        if (!pixelFormat.getValidValues().equals(extra.pixelFormats)) {
+            optionsToUpdate.put("videoPixelFormat", pixelFormat.butWithUpdatedValidValues(extra.pixelFormats));
+        }
+
+        return optionsToUpdate;
     }
 
     private ValueListElement createElement(String e) {
@@ -257,8 +289,31 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         for (int i = 0; i < nativeRequest.audioCodecNumber; ++i) {
             result.audioCodecs.add(new ValueListElement(audioCodecs[i].id, "[" + audioCodecs[i].id + "] " + audioCodecs[i].longName));
         }
-        result.videoCodecs.add(new ValueListElement("default", "default"));
-        result.audioCodecs.add(new ValueListElement("default", "default"));
+        result.videoCodecs.add(new ValueListElement(DEFAULT_VALUE, DEFAULT_VALUE));
+        result.audioCodecs.add(new ValueListElement(DEFAULT_VALUE, DEFAULT_VALUE));
+        return result;
+    }
+
+    static class EncoderExtraData {
+        List<ValueListElement> pixelFormats = new ArrayList<>();
+    }
+
+    private EncoderExtraData queryCodecExtraData(String fileName, String videoCodec) {
+        CodecExtraDataRequest nativeRequest = new CodecExtraDataRequest();
+        nativeRequest.availablePixelFormatNumber = 0;
+        nativeRequest.fileName = fileName;
+        nativeRequest.videoCodec = videoCodec;
+        nativeRequest.availablePixelFormats = new CodecInformation();
+        CodecInformation[] availablePixelFormats = (CodecInformation[]) nativeRequest.availablePixelFormats.toArray(MAX_NUMBER_OF_CODECS);
+
+        ffmpegBasedMediaEncoder.queryCodecExtraData(nativeRequest);
+
+        EncoderExtraData result = new EncoderExtraData();
+
+        result.pixelFormats.add(new ValueListElement(DEFAULT_VALUE, DEFAULT_VALUE));
+        for (int i = 0; i < nativeRequest.availablePixelFormatNumber; ++i) {
+            result.pixelFormats.add(new ValueListElement(availablePixelFormats[i].id, availablePixelFormats[i].id));
+        }
         return result;
     }
 

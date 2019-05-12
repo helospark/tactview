@@ -33,7 +33,19 @@ apt-get -y install \
   libvpx-dev \
   libx264-dev \
   libx265-dev \
-  libnuma-dev
+  libnuma-dev \
+  libbluray-dev \
+  libmysofa-dev \
+  libopencore-amrnb-dev \
+  libopencore-amrwb-dev \
+  libshine-dev \
+  libsnappy-dev \
+  libspeex-dev \
+  libtheora-dev \
+  libtwolame-dev \
+  libwavpack-dev \
+  libwebp-dev \
+  libxvidcore-dev
 
 cd /tmp
 
@@ -46,7 +58,10 @@ cd ffmpeg-3.4.5
 
 echo "Configuring FFmpeg"
 
-./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads
+./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libmysofa --enable-libspeex --enable-libxvid --enable-cuda --enable-cuvid --enable-nvenc --enable-avisynth
+# --enable-libmfx - Intel HW accelerated encoding/decoding, could be useful
+# --enable-libopenjpeg - decode jpeg
+
 
 echo "Building FFmpeg"
 
