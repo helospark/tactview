@@ -3,6 +3,7 @@ package com.helospark.tactview.core.it;
 import static com.helospark.tactview.core.it.PictureAssertions.assertFrameOfColorWithDelta;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +16,7 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.tactview.core.it.PictureAssertions.Delta;
 import com.helospark.tactview.core.it.util.IntegrationTestUtil;
 import com.helospark.tactview.core.it.util.ui.FakeUi;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -24,11 +26,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 public class RenderAndLoadIT {
     private LightDiContext lightDi;
     private FakeUi fakeUi;
+    private ProjectRepository projectRepository;
 
     @BeforeEach
     public void setUp() {
         lightDi = IntegrationTestUtil.startContext();
         fakeUi = lightDi.getBean(FakeUi.class);
+        projectRepository = lightDi.getBean(ProjectRepository.class);
     }
 
     @AfterEach
@@ -39,6 +43,8 @@ public class RenderAndLoadIT {
     @ParameterizedTest
     @MethodSource("containerProvider")
     public void testRenderVideoThenDragRenderedVideoAndCheckFrames(String extension) {
+        projectRepository.initializeVideo(640, 480, BigDecimal.valueOf(24));
+
         TimelineClip clip = fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
 
         fakeUi.selectClipAndFindSettingByName(clip.getId(), "color")

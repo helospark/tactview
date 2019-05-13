@@ -7,10 +7,14 @@ public class FileTypeProberUtil {
 
     public static boolean isImageByContentType(File file) {
         try {
-            return Files.probeContentType(file.toPath()).contains("image/");
+            String contentType = Files.probeContentType(file.toPath());
+            if (contentType == null) {
+                return false;
+            } else {
+                return contentType.contains("image/");
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 }
