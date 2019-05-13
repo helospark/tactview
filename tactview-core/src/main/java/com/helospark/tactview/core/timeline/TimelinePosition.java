@@ -134,6 +134,10 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
         return new TimelinePosition(BigDecimal.valueOf(seconds));
     }
 
+    public static TimelinePosition ofSeconds(double seconds) {
+        return new TimelinePosition(BigDecimal.valueOf(seconds));
+    }
+
     public TimelinePosition subtract(BigDecimal integralcacheresolution) {
         return new TimelinePosition(seconds.subtract(integralcacheresolution));
     }

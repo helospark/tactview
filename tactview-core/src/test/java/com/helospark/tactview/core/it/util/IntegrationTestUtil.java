@@ -19,7 +19,6 @@ import javax.imageio.ImageIO;
 import com.helospark.lightdi.LightDi;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
-import com.helospark.tactview.core.TactViewCoreConfiguration;
 import com.helospark.tactview.core.it.util.ui.ColorWithAlpha;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest.Builder;
@@ -37,7 +36,7 @@ public class IntegrationTestUtil {
                 .withCheckForIntegrity(true)
                 .withAdditionalDependencies(Collections.singletonList(new JnaLightDiPlugin()))
                 .build();
-        LightDiContext lightDi = LightDi.initContextByClass(TactViewCoreConfiguration.class, configuration);
+        LightDiContext lightDi = LightDi.initContextByClass(TestContextConfiguration.class, configuration);
         lightDi.eagerInitAllBeans();
 
         return lightDi;

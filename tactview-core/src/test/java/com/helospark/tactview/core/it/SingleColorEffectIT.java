@@ -1,7 +1,6 @@
 package com.helospark.tactview.core.it;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static com.helospark.tactview.core.it.PictureAssertions.assertFrameOfColor;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,17 +78,4 @@ public class SingleColorEffectIT {
         assertFrameOfColor(frameAtEnd, 0, 255, 255, 255);
     }
 
-    private void assertFrameOfColor(AudioVideoFragment frame, int red, int green, int blue, int alpha) {
-        assertThat(frame.getVideoResult().getWidth(), is(600));
-        assertThat(frame.getVideoResult().getHeight(), is(400));
-
-        for (int i = 0; i < frame.getVideoResult().getHeight(); ++i) {
-            for (int j = 0; j < frame.getVideoResult().getWidth(); ++j) {
-                assertThat(frame.getVideoResult().getRed(j, i), is(red));
-                assertThat(frame.getVideoResult().getGreen(j, i), is(green));
-                assertThat(frame.getVideoResult().getBlue(j, i), is(blue));
-                assertThat(frame.getVideoResult().getAlpha(j, i), is(alpha));
-            }
-        }
-    }
 }

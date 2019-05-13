@@ -5,7 +5,10 @@ import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 
+import com.helospark.lightdi.annotation.Autowired;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.render.RenderServiceChain;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineChannel;
@@ -23,16 +26,20 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FakeUi {
+    @Autowired
     private TimelineManagerAccessor timelineManagerAccessor;
+    @Autowired
     private TimelineManagerRenderService timelineManagerRenderService;
+    @Autowired
     private MessagingService messagingService;
+    @Autowired
     private EffectParametersRepository parametersRepository;
-
-    public FakeUi(TimelineManagerAccessor timelineManager, TimelineManagerRenderService timelineManagerRenderService, EffectParametersRepository parametersRepository) {
-        this.timelineManagerAccessor = timelineManager;
-        this.timelineManagerRenderService = timelineManagerRenderService;
-        this.parametersRepository = parametersRepository;
-    }
+    @Autowired
+    private RenderServiceChain renderService;
+    @Autowired
+    private ProjectRepository projectRepository;
+    @Autowired
+    private TimelineManagerAccessor timelineManager;
 
     @PostConstruct
     public void init() {
@@ -117,6 +124,14 @@ public class FakeUi {
                 .build();
 
         return timelineManagerAccessor.addClip(request);
+    }
+
+    public TestRenderDialogUi openRenderDialog() {
+        return new TestRenderDialogUi(renderService, projectRepository, timelineManager, messagingService);
+    }
+
+    public void deleteClip(String id) {
+        timelineManagerAccessor.removeClip(id);
     }
 
 }
