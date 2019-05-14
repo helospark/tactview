@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 
 public interface RenderService {
 
@@ -18,5 +19,7 @@ public interface RenderService {
     boolean supports(RenderRequest renderRequest);
 
     Map<String, OptionProvider<?>> updateValueProviders(UpdateValueProvidersRequest request);
+
+    List<ValueListElement> handledExtensions();
 
 }

@@ -24,6 +24,7 @@ import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
@@ -129,6 +130,15 @@ public class ImageSequenceRenderService extends AbstractRenderService {
     @Override
     public Map<String, OptionProvider<?>> updateValueProviders(UpdateValueProvidersRequest request) {
         return request.options;
+    }
+
+    @Override
+    public List<ValueListElement> handledExtensions() {
+        return List.of(
+                new ValueListElement("jpg", "jpg (sequence)"),
+                new ValueListElement("png", "png (sequence)"),
+                new ValueListElement("tiff", "tiff (sequence)"),
+                new ValueListElement("bmp", "bmp (sequence)"));
     }
 
 }

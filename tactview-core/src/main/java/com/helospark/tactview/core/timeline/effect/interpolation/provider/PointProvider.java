@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
-import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.DesSerFactory;
 
@@ -60,13 +60,13 @@ public class PointProvider extends CompositeKeyframeableEffect {
     }
 
     public static PointProvider ofNormalizedImagePosition(double d, double e) {
-        return new PointProvider(new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(d)),
-                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(e)));
+        return new PointProvider(new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new BezierDoubleInterpolator(d)),
+                new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new BezierDoubleInterpolator(e)));
     }
 
     public static PointProvider of(double x, double y) {
-        return new PointProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(x)),
-                new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(y)));
+        return new PointProvider(new DoubleProvider(new BezierDoubleInterpolator(x)),
+                new DoubleProvider(new BezierDoubleInterpolator(y)));
     }
 
 }

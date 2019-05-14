@@ -91,6 +91,7 @@ public class RenderAndLoadIT {
                 Arguments.of("wmv"),
                 Arguments.of("flv"),
                 Arguments.of("webm"),
-                Arguments.of("avi"));
+                Arguments.of("avi"),
+                Arguments.of("gif"));
     }
 }

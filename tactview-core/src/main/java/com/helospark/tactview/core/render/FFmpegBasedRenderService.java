@@ -2,6 +2,7 @@ package com.helospark.tactview.core.render;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -315,6 +316,18 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             result.pixelFormats.add(new ValueListElement(availablePixelFormats[i].id, availablePixelFormats[i].id));
         }
         return result;
+    }
+
+    @Override
+    public List<ValueListElement> handledExtensions() {
+        return Arrays.asList(
+                new ValueListElement("mp4", "mp4"),
+                new ValueListElement("ogg", "ogg"),
+                new ValueListElement("flv", "flv"),
+                new ValueListElement("webm", "webm"),
+                new ValueListElement("avi", "avi"),
+                new ValueListElement("gif", "gif (animated)"),
+                new ValueListElement("wmv", "wmv"));
     }
 
 }

@@ -20,6 +20,7 @@ import com.helospark.tactview.core.render.UpdateValueProvidersRequest;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
 import com.helospark.tactview.ui.javafx.util.DurationFormatter;
@@ -98,14 +99,30 @@ public class RenderDialog {
                 fileNameTextField.setText(result.getAbsolutePath());
             }
         });
-        GridPane hbox = new GridPane();
+        ComboBox<ComboBoxElement> extensionComboBox = createComboBoxFromValueList(renderService.getCommonHandledExtensions(), "mp4");
+        extensionComboBox.setPrefWidth(80.0);
+        extensionComboBox.valueProperty().addListener((e, oldValue, newValue) -> {
+            String currentValue = fileNameTextField.getText();
+            int lastDot = currentValue.lastIndexOf('.');
+            if (lastDot == -1) {
+                fileNameTextField.setText(currentValue + "." + newValue.getId());
+            } else {
+                fileNameTextField.setText(currentValue.substring(0, lastDot) + "." + newValue.getId());
+            }
+        });
 
-        hbox.add(fileNameTextField, 0, 0);
-        hbox.add(button, 1, 0);
+        GridPane fileNameGrid = new GridPane();
+
+        HBox fileNameHbox = new HBox();
+        fileNameHbox.getChildren().add(extensionComboBox);
+        fileNameHbox.getChildren().add(button);
+
+        fileNameGrid.add(fileNameTextField, 0, 0);
+        fileNameGrid.add(fileNameHbox, 1, 0);
 
         linePosition += (linePosition % COLUMNS);
 
-        addGridElementForFullLine("File name", linePosition++, gridPane, hbox);
+        addGridElementForFullLine("File name", linePosition++, gridPane, fileNameGrid);
 
         linePosition += (linePosition % COLUMNS);
 
@@ -293,6 +310,23 @@ public class RenderDialog {
                     comboBox.getItems().add(entry);
                 });
         comboBox.getSelectionModel().select(selectedIndex);
+        return comboBox;
+    }
+
+    public ComboBox<ComboBoxElement> createComboBoxFromValueList(List<ValueListElement> values, String string) {
+        ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
+        values
+                .stream()
+                .forEach(a -> {
+                    var entry = new ComboBoxElement(a.getId(), a.getText());
+                    comboBox.getItems().add(entry);
+                });
+        for (int i = 0; i < values.size(); ++i) {
+            if (values.get(i).getId().equals(string)) {
+                comboBox.getSelectionModel().select(i);
+                break;
+            }
+        }
         return comboBox;
     }
 

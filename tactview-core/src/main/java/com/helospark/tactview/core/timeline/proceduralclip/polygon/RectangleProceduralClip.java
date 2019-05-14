@@ -15,6 +15,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
@@ -124,7 +125,7 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
     }
 
     private DoubleProvider doubleProviderWithDefaultValue(double defaultValue) {
-        return new DoubleProvider(IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(defaultValue));
+        return new DoubleProvider(IMAGE_SIZE_IN_0_to_1_RANGE, new BezierDoubleInterpolator(defaultValue));
     }
 
     @Override

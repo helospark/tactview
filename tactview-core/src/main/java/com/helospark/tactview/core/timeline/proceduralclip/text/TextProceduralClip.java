@@ -31,6 +31,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
@@ -203,7 +204,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
         super.initializeValueProvider();
 
         textProvider = new StringProvider(new StepStringInterpolator());
-        sizeProvider = new IntegerProvider(0, 700, new MultiKeyframeBasedDoubleInterpolator(250.0));
+        sizeProvider = new IntegerProvider(0, 700, new BezierDoubleInterpolator(250.0));
         sizeProvider.setScaleDependent();
         colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
