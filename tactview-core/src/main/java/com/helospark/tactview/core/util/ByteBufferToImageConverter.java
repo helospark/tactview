@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class ByteBufferToImageConverter {
@@ -11,6 +12,10 @@ public class ByteBufferToImageConverter {
 
     public ByteBufferToImageConverter(IndependentPixelOperation independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
+    }
+
+    public BufferedImage frameToBufferedImage(ReadOnlyClipImage currentFrame) {
+        return byteBufferToBufferedImage(currentFrame.getBuffer(), currentFrame.getWidth(), currentFrame.getHeight());
     }
 
     public BufferedImage byteBufferToBufferedImage(ByteBuffer byteBuffer, int width, int height) {

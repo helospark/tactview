@@ -49,6 +49,7 @@ import com.helospark.tactview.core.timeline.effect.erodedilate.opencv.OpenCVErod
 import com.helospark.tactview.core.timeline.effect.extend.ExtendClipWithBlurredImage;
 import com.helospark.tactview.core.timeline.effect.extend.FrameExtendEffect;
 import com.helospark.tactview.core.timeline.effect.framehold.FrameHoldEffect;
+import com.helospark.tactview.core.timeline.effect.fun.AsciiArtEffect;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.glow.LightGlowEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
@@ -97,6 +98,8 @@ import com.helospark.tactview.core.timeline.proceduralclip.noise.service.Perturb
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
+import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
+import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -805,6 +808,19 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new DirectionalShadowEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Directional shadow")
                 .withSupportedEffectId("directional shadow")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory asciiArtEffect(ByteBufferToImageConverter byteBufferToImageConverter, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
+        return StandardEffectFactory.builder()
+                .withFactory(
+                        request -> new AsciiArtEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), byteBufferToImageConverter, bufferedImageToClipFrameResultConverter))
+                .withRestoreFactory((node, loadMetadata) -> new AsciiArtEffect(node, loadMetadata, byteBufferToImageConverter, bufferedImageToClipFrameResultConverter))
+                .withName("Ascii art")
+                .withSupportedEffectId("asciiart")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
