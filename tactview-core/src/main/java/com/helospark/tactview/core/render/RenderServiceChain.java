@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.render;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -39,9 +40,16 @@ public class RenderServiceChain {
     }
 
     public List<ValueListElement> getCommonHandledExtensions() {
-        return renderServiceChainItem.stream()
+        List<ValueListElement> elements = renderServiceChainItem.stream()
                 .flatMap(renderService -> renderService.handledExtensions().stream())
                 .collect(Collectors.toList());
+        List<ValueListElement> reversedList = new ArrayList<>();
+
+        for (int i = elements.size() - 1; i >= 0; --i) {
+            reversedList.add(elements.get(i));
+        }
+
+        return reversedList;
     }
 
 }
