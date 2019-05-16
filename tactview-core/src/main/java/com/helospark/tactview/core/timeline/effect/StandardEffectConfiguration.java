@@ -36,6 +36,7 @@ import com.helospark.tactview.core.timeline.effect.desaturize.DesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.desaturize.ExclusiveDesaturizeEffect;
 import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementMapEffect;
 import com.helospark.tactview.core.timeline.effect.displacementmap.service.DisplacementMapService;
+import com.helospark.tactview.core.timeline.effect.distort.GlassTilesEffect;
 import com.helospark.tactview.core.timeline.effect.distort.LensDistortEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PerturbationDistortEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PolarCoordinateEffect;
@@ -821,6 +822,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new AsciiArtEffect(node, loadMetadata, byteBufferToImageConverter, bufferedImageToClipFrameResultConverter))
                 .withName("Ascii art")
                 .withSupportedEffectId("asciiart")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory glassTilesEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new GlassTilesEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new GlassTilesEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Glass tiles")
+                .withSupportedEffectId("glass tiles")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
