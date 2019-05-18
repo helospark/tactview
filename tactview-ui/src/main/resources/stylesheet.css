@@ -291,8 +291,9 @@
         linear-gradient(#000000 70%, white 100%),
         radial-gradient(center 50% -40%, radius 200%, #000000 45%, rgba(150,150,150,0) 50%);
 }
-
-
+.radio-menu-item.selected {    
+    -fx-text-fill: red;
+}
 
 .tab-pane .tab-header-area .tab-header-background {
     -fx-opacity: 0;

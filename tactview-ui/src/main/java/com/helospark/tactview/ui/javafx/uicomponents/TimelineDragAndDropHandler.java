@@ -143,6 +143,7 @@ public class TimelineDragAndDropHandler {
         timeline.setOnDragDone(event -> {
             if (dragRepository.isBoxSelectInProgress()) {
                 uiTimeline.selectionBoxEnded();
+                dragRepository.onBoxSelectEnded();
             }
         });
 

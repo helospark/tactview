@@ -5,13 +5,16 @@ import java.util.function.Function;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
-public class StandardDoubleInterpolatorFactory implements DoubleInterpolatorFactory {
+public class StandardDoubleInterpolatorFactory<T extends DoubleInterpolator> implements DoubleInterpolatorFactory {
     private String id;
-    private Function<DoubleProvider, DoubleInterpolator> supplier;
+    private Function<DoubleProvider, T> supplier;
+    private Class<T> createdType;
 
-    public StandardDoubleInterpolatorFactory(String id, Function<DoubleProvider, DoubleInterpolator> supplier) {
+    public StandardDoubleInterpolatorFactory(String id, Class<T> createdType, Function<DoubleProvider, T> supplier) {
         this.id = id;
         this.supplier = supplier;
+        this.createdType = createdType;
+
     }
 
     @Override
@@ -27,6 +30,11 @@ public class StandardDoubleInterpolatorFactory implements DoubleInterpolatorFact
     @Override
     public boolean doesSuppert(String id) {
         return this.id.equals(id);
+    }
+
+    @Override
+    public Class<T> getCreatedType() {
+        return createdType;
     }
 
 }

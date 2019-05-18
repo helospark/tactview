@@ -16,6 +16,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.ChangeEasingCommand;
 
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
 
 @Component
 @Order(50)
@@ -52,9 +53,10 @@ public class EasingInterpolatorContextMenuItem implements PropertyValueContextMe
     }
 
     public List<MenuItem> createMenuItems(String id, TimelinePosition timelinePosition) {
+        MixedDoubleInterpolator mixedInterpolator = (MixedDoubleInterpolator) effectParametersRepository.getCurrentInterpolator(id);
         List<MenuItem> menuItems = Arrays.stream(EaseFunction.values())
                 .map(easing -> {
-                    MenuItem menuItem = new MenuItem(easing.getId());
+                    RadioMenuItem menuItem = new RadioMenuItem(easing.getId());
                     menuItem.setOnAction(e -> {
                         ChangeEasingCommand interpolatorChangedCommand = ChangeEasingCommand.builder()
                                 .withDescriptorId(id)
@@ -64,6 +66,10 @@ public class EasingInterpolatorContextMenuItem implements PropertyValueContextMe
                                 .build();
                         commandInterpreter.sendWithResult(interpolatorChangedCommand);
                     });
+                    boolean isSelected = mixedInterpolator.getEasingAt(timelinePosition)
+                            .map(a -> a.getValue().getEaseFunction().equals(easing))
+                            .orElse(false);
+                    menuItem.setSelected(isSelected);
                     return menuItem;
                 })
                 .collect(Collectors.toList());

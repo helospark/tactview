@@ -11,4 +11,6 @@ public interface DoubleInterpolatorFactory {
 
     public boolean doesSuppert(String id);
 
+    public Class<?> getCreatedType();
+
 }

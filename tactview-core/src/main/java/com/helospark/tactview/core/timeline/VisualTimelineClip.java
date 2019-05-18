@@ -21,6 +21,7 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.function.impl.StepInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
@@ -167,8 +168,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     @Override
     protected void initializeValueProvider() {
-        DoubleProvider translateXProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new MultiKeyframeBasedDoubleInterpolator(0.0));
-        DoubleProvider translateYProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new MultiKeyframeBasedDoubleInterpolator(0.0));
+        DoubleProvider translateXProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new BezierDoubleInterpolator(0.0));
+        DoubleProvider translateYProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new BezierDoubleInterpolator(0.0));
         translateXProvider.setScaleDependent();
         translateYProvider.setScaleDependent();
 

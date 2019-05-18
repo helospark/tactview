@@ -23,18 +23,19 @@ import com.helospark.tactview.core.util.bezier.CubicBezierPoint;
 public class StandardDoubleInterpolatorFactoryConfiguration {
 
     @Bean
-    public StandardDoubleInterpolatorFactory constantInterpolator() {
-        return new StandardDoubleInterpolatorFactory("constantInterpolator", previous -> new ConstantInterpolator(0));
+    public StandardDoubleInterpolatorFactory<?> constantInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("constantInterpolator", ConstantInterpolator.class, previous -> new ConstantInterpolator(0));
     }
 
     @Bean
-    public StandardDoubleInterpolatorFactory randomDoubleInterpolator() {
-        return new StandardDoubleInterpolatorFactory("randomDoubleInterpolator", previous -> new RandomDoubleInterpolator(previous.getMin(), previous.getMax(), BigDecimal.valueOf(1)));
+    public StandardDoubleInterpolatorFactory<?> randomDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("randomDoubleInterpolator", RandomDoubleInterpolator.class,
+                previous -> new RandomDoubleInterpolator(previous.getMin(), previous.getMax(), BigDecimal.valueOf(1)));
     }
 
     @Bean
-    public StandardDoubleInterpolatorFactory mixedDoubleInterpolator() {
-        return new StandardDoubleInterpolatorFactory("mixedDoubleInterpolator", previous -> {
+    public StandardDoubleInterpolatorFactory<?> mixedDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("mixedDoubleInterpolator", MixedDoubleInterpolator.class, previous -> {
             TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> values = new TreeMap<>();
             if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 for (var entry : previous.getValues().entrySet()) {
@@ -50,8 +51,8 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
     }
 
     @Bean
-    public StandardDoubleInterpolatorFactory bezierDoubleInterpolator() {
-        return new StandardDoubleInterpolatorFactory("bezierDoubleInterpolator", previous -> {
+    public StandardDoubleInterpolatorFactory<?> bezierDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("bezierDoubleInterpolator", BezierDoubleInterpolator.class, previous -> {
             TreeMap<TimelinePosition, CubicBezierPoint> values = new TreeMap<>();
             if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 for (var entry : previous.getValues().entrySet()) {
@@ -67,8 +68,8 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
     }
 
     @Bean
-    public StandardDoubleInterpolatorFactory multiKeyframeDoubleInterpolator() {
-        return new StandardDoubleInterpolatorFactory("multiKeyframeDoubleInterpolator", previous -> {
+    public StandardDoubleInterpolatorFactory<?> multiKeyframeDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("multiKeyframeDoubleInterpolator", MultiKeyframeBasedDoubleInterpolator.class, previous -> {
             TreeMap<TimelinePosition, Double> values = new TreeMap<>();
             if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 for (var entry : previous.getValues().entrySet()) {
@@ -84,8 +85,8 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
     }
 
     @Bean
-    public StandardDoubleInterpolatorFactory sineDoubleInterpolator() {
-        return new StandardDoubleInterpolatorFactory("sineDoubleInterpolator", previous -> {
+    public StandardDoubleInterpolatorFactory<?> sineDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("sineDoubleInterpolator", SineDoubleInterpolator.class, previous -> {
             return SineDoubleInterpolator.builder()
                     .withFrequency(1.0)
                     .withMinValue(-1.0)
@@ -96,8 +97,8 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
     }
 
     @Bean
-    public StandardDoubleInterpolatorFactory lineDoubleInterpolator() {
-        return new StandardDoubleInterpolatorFactory("lineDoubleInterpolator", previous -> {
+    public StandardDoubleInterpolatorFactory<?> lineDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("lineDoubleInterpolator", LineDoubleInterpolator.class, previous -> {
             return new LineDoubleInterpolator(BigDecimal.ONE, BigDecimal.ZERO);
         });
     }

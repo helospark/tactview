@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Value;
+import com.helospark.tactview.core.util.DebugImageRenderer;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 
@@ -41,6 +42,8 @@ public class MemoryManager {
     private AtomicLong currentSize = new AtomicLong(0);
     private boolean running = true;
 
+    private boolean firstOutOfMemoryError = true;
+
     public MemoryManager(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug) {
         this.maximumSizeHint = maximumSizeHint;
         this.unsafe = getUnsafe();
@@ -57,7 +60,7 @@ public class MemoryManager {
                     cleanupOfOldBuffers(120000L);
 
                     if (currentSize.get() >= maximumSizeHint * 0.8) {
-                        doForcefulCleanup();
+                        doForcefulCleanup(maximumSizeHint * 0.6);
                     }
                 } catch (Exception e) {
                     logger.error("Error while cleaning buffer", e);
@@ -66,9 +69,7 @@ public class MemoryManager {
         }, "memory-cleaner-thread").start();
     }
 
-    private void doForcefulCleanup() {
-        double target = maximumSizeHint * 0.6;
-
+    private void doForcefulCleanup(double target) {
         // step1 clean buffers not accessed in the last 2 secs
         if (currentSize.get() > target) {
             cleanupOfOldBuffers(10000);
@@ -176,8 +177,16 @@ public class MemoryManager {
                 resultBuffer = ByteBuffer.allocateDirect(bytes);
             } catch (OutOfMemoryError e) {
                 logger.warn("No more memory left, trying to free some", e);
-                doForcefulCleanup();
-                resultBuffer = ByteBuffer.allocateDirect(bytes);
+                doForcefulCleanup(maximumSizeHint * 0.3);
+                try {
+                    resultBuffer = ByteBuffer.allocateDirect(bytes);
+                } catch (OutOfMemoryError e2) {
+                    if (firstOutOfMemoryError) {
+                        DebugImageRenderer.writeToString(debugTrace);
+                        firstOutOfMemoryError = false;
+                    }
+                    throw e2;
+                }
             }
             resultBuffer.order(ByteOrder.nativeOrder());
             result.add(resultBuffer);

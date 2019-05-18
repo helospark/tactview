@@ -91,6 +91,7 @@ public class DragRepository implements CleanableMode {
     public void clean() {
         clearClipDrag();
         clearEffectDrag();
+        onBoxSelectEnded();
     }
 
 }

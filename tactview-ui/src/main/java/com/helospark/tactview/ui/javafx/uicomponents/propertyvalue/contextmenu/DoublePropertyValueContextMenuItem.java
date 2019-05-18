@@ -14,6 +14,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.InterpolatorChangedCommand
 
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
 
 @Component
 @Order(40)
@@ -41,10 +42,13 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
     private Menu createInterpolators(String id) {
         Menu menu = new Menu("Change interpolator");
 
+        Object currentInterpolator = effectParametersRepository.getCurrentInterpolator(id);
+
         List<DoubleInterpolatorFactory> interpolators = context.getListOfBeans(DoubleInterpolatorFactory.class);
+
         List<MenuItem> menuItems = interpolators.stream()
                 .map(interpolator -> {
-                    MenuItem menuItem = new MenuItem(interpolator.getId());
+                    RadioMenuItem menuItem = new RadioMenuItem(interpolator.getId());
                     menuItem.setOnAction(e -> {
                         InterpolatorChangedCommand interpolatorChangedCommand = InterpolatorChangedCommand.builder()
                                 .withDescriptorId(id)
@@ -53,6 +57,9 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
                                 .build();
                         commandInterpreter.sendWithResult(interpolatorChangedCommand);
                     });
+                    boolean isSelected = (interpolator.getCreatedType().equals(currentInterpolator.getClass()));
+                    menuItem.setSelected(isSelected);
+
                     return menuItem;
                 })
                 .collect(Collectors.toList());

@@ -54,6 +54,8 @@ extern "C" {
         const char* videoCodec;
         const char* audioCodec;
         const char* videoPixelFormat;
+
+        SwsContext * swsContext;
     };
 
 
@@ -190,6 +192,9 @@ extern "C" {
 
         if (oc->oformat->flags & AVFMT_GLOBALHEADER)
             c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        ost->sws_ctx = sws_getContext(request->actualWidth, request->actualHeight,
+                                  AV_PIX_FMT_BGR32, c->width, c->height,
+                                  videoPixelFormat, 0, 0, 0, 0);
     }
 
 /* Add an output stream. */
@@ -441,6 +446,7 @@ extern "C" {
                 fprintf(stderr, "Error while writing audio frame: %d \n", ret);
                 //exit(1);
             }
+            av_free_packet(&pkt);
         }
 
         return (frame || got_packet) ? 0 : 1;
@@ -519,9 +525,7 @@ extern "C" {
             exit(1);
 
 
-        SwsContext * ctx = sws_getContext(renderContext.actualWidth, renderContext.actualHeight,
-                                  AV_PIX_FMT_BGR32, c->width, c->height,
-                                  renderContext.videoPixelFormat, 0, 0, 0, 0);
+        SwsContext * ctx = ost->sws_ctx;
         uint8_t * inData[1] = { frame->imageData };
         int inLinesize[1] = { 4*renderContext.actualWidth };
         sws_scale(ctx, inData, inLinesize, 0, renderContext.actualHeight, ost->frame->data, ost->frame->linesize);
@@ -557,13 +561,14 @@ extern "C" {
 
         if (got_packet) {
             ret = write_frame(oc, &c->time_base, ost->st, &pkt);
+            av_free_packet(&pkt);
         } else {
             ret = 0;
         }
 
         if (ret < 0) {
             fprintf(stderr, "Error while writing video frame: \n");
-            exit(1);
+          //  exit(1);
         }
 
         return (frame || got_packet) ? 0 : 1;

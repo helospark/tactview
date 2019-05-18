@@ -24,4 +24,9 @@ public class DynamicInterpolatorFactory implements DoubleInterpolatorFactory {
         return false;
     }
 
+    @Override
+    public Class<?> getCreatedType() {
+        return DynamicInterpolatorFactory.class;
+    }
+
 }
