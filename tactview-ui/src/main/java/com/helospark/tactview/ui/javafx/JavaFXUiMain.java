@@ -35,8 +35,11 @@ import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -54,15 +57,20 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
     public static Stage STAGE = null;
@@ -72,6 +80,9 @@ public class JavaFXUiMain extends Application {
     static LightDiContext lightDi;
 
     static BufferedImage bufferedImage;
+
+    private Stage splashStage;
+    private ImageView splasViewh;
 
     int frames = 0;
     long currentTime = System.currentTimeMillis();
@@ -140,20 +151,17 @@ public class JavaFXUiMain extends Application {
         upper.setMaxHeight(400);
 
         TabPane tabPane = new TabPane();
-        lightDi.getListOfBeans(TabFactory.class)
-                .stream()
-                .forEach(tabFactory -> {
-                    Tab tab = tabFactory.createTabContent();
-                    tabPane.getTabs().add(tab);
-                });
-        lightDi.getBean(MessagingService.class)
-                .register(TabActiveRequest.class, message -> {
-                    tabPane.getTabs()
-                            .stream()
-                            .filter(tab -> Objects.equals(tab.getId(), message.getEditorId()))
-                            .findFirst()
-                            .ifPresent(foundTab -> tabPane.getSelectionModel().select(foundTab));
-                });
+        lightDi.getListOfBeans(TabFactory.class).stream().forEach(tabFactory -> {
+            Tab tab = tabFactory.createTabContent();
+            tabPane.getTabs().add(tab);
+        });
+        lightDi.getBean(MessagingService.class).register(TabActiveRequest.class, message -> {
+            tabPane.getTabs()
+                    .stream()
+                    .filter(tab -> Objects.equals(tab.getId(), message.getEditorId()))
+                    .findFirst()
+                    .ifPresent(foundTab -> tabPane.getSelectionModel().select(foundTab));
+        });
 
         VBox rightVBox = new VBox(5);
         rightVBox.setAlignment(Pos.TOP_CENTER);
@@ -169,13 +177,15 @@ public class JavaFXUiMain extends Application {
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
 
-        ScrollPane previewScrollPane = new ScrollPane(createCentered(canvas));
+        ScrollPane previewScrollPane = new ScrollPane(
+                createCentered(canvas));
         previewScrollPane.setFitToWidth(true);
         previewScrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         previewScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 
         rightVBox.getChildren().add(previewScrollPane);
-        AudioVisualizationComponent audioVisualazationComponent = lightDi.getBean(AudioVisualizationComponent.class);
+        AudioVisualizationComponent audioVisualazationComponent = lightDi
+                .getBean(AudioVisualizationComponent.class);
         rightVBox.getChildren().add(audioVisualazationComponent.getCanvas());
         audioVisualazationComponent.clearCanvas();
 
@@ -189,13 +199,15 @@ public class JavaFXUiMain extends Application {
         UiPlaybackPreferenceRepository playbackPreferenceRepository = lightDi.getBean(UiPlaybackPreferenceRepository.class);
 
         HBox underVideoBar = new HBox(1);
-        ToggleButton muteButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.VOLUME_OFF));
+        ToggleButton muteButton = new ToggleButton("", new Glyph("FontAwesome",
+                FontAwesome.Glyph.VOLUME_OFF));
         muteButton.setSelected(false);
         muteButton.setOnAction(event -> playbackPreferenceRepository.setMute(muteButton.isSelected()));
         muteButton.setTooltip(new Tooltip("Mute"));
 
         SingleFullImageViewController fullScreenRenderer = lightDi.getBean(SingleFullImageViewController.class);
-        Button fullscreenButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.IMAGE));
+        Button fullscreenButton = new Button("", new Glyph("FontAwesome",
+                FontAwesome.Glyph.IMAGE));
         fullscreenButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
         fullscreenButton.setTooltip(new Tooltip("Show full scale preview"));
 
@@ -215,19 +227,23 @@ public class JavaFXUiMain extends Application {
         stopButton.setOnMouseClicked(e -> uiTimelineManager.stopPlayback());
         stopButton.setTooltip(new Tooltip("Stop"));
 
-        Button jumpBackOnFrameButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STEP_BACKWARD));
+        Button jumpBackOnFrameButton = new Button("", new Glyph("FontAwesome",
+                FontAwesome.Glyph.STEP_BACKWARD));
         jumpBackOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveBackOneFrame());
         jumpBackOnFrameButton.setTooltip(new Tooltip("Step one frame back"));
 
-        Button jumpForwardOnFrameButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STEP_FORWARD));
+        Button jumpForwardOnFrameButton = new Button("", new Glyph("FontAwesome",
+                FontAwesome.Glyph.STEP_FORWARD));
         jumpForwardOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveForwardOneFrame());
         jumpForwardOnFrameButton.setTooltip(new Tooltip("Step one frame forward"));
 
-        Button jumpBackButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.BACKWARD));
+        Button jumpBackButton = new Button("", new Glyph("FontAwesome",
+                FontAwesome.Glyph.BACKWARD));
         jumpBackButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(-10)));
         jumpBackButton.setTooltip(new Tooltip("Step 10s back"));
 
-        Button jumpForwardButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FORWARD));
+        Button jumpForwardButton = new Button("", new Glyph("FontAwesome",
+                FontAwesome.Glyph.FORWARD));
         jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
         jumpForwardButton.setTooltip(new Tooltip("Step 10s forward"));
 
@@ -285,7 +301,31 @@ public class JavaFXUiMain extends Application {
 
         lightDi.getBean(UiInitializer.class).initialize();
 
-        stage.show();
+        if (splashStage.isShowing()) {
+            stage.show();
+            splashStage.toFront();
+            FadeTransition fadeSplash = new FadeTransition(Duration.seconds(0.5), splasViewh);
+            fadeSplash.setDelay(Duration.millis(800));
+            fadeSplash.setFromValue(1.0);
+            fadeSplash.setToValue(0.0);
+            fadeSplash.setOnFinished(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    splashStage.hide();
+                }
+            });
+            fadeSplash.play();
+        }
+    }
+
+    private void showSplash(Stage splashStage, ImageView splash) {
+        StackPane splashLayout = new StackPane();
+        splashLayout.setStyle("-fx-background-color: transparent;");
+        splashLayout.getChildren().add(splash);
+        Scene splashScene = new Scene(splashLayout, 690, 590);
+        splashScene.setFill(Color.TRANSPARENT);
+        splashStage.setScene(splashScene);
+        splashStage.show();
     }
 
     private Node createCentered(Canvas canvas2) {
@@ -326,6 +366,16 @@ public class JavaFXUiMain extends Application {
     @Override
     public void init() throws Exception {
         super.init();
+
+        Platform.runLater(() -> {
+            splashStage = new Stage(StageStyle.DECORATED);
+
+            splasViewh = new ImageView(new Image(getClass().getResource("/tactview-splash.png").toString()));
+
+            splashStage.initStyle(StageStyle.TRANSPARENT);
+            showSplash(splashStage, splasViewh);
+        });
+
         LightDiContextConfiguration configuration = LightDiContextConfiguration.builder()
                 .withThreadNumber(4)
                 .withCheckForIntegrity(true)

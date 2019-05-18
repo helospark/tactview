@@ -35,6 +35,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.water.CausticProceduralClip;
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.ClassPathResourceReader;
@@ -300,6 +301,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new ScriptProceduralClip(metadata, node, loadMetadata, scriptService);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem scriptProceduralClip(IndependentPixelOperation independentPixelOperation) {
+        return new StandardProceduralClipFactoryChainItem("caustics", "Caustics",
+                request -> {
+                    return new CausticProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
+                },
+                (node, loadMetadata) -> {
+                    return new CausticProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
                 });
     }
 }
