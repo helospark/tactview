@@ -13,6 +13,10 @@
     <module>tactview-3rd-party</module>
   </modules>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -43,6 +47,7 @@
           <source>11</source>
           <target>11</target>
           <forceJavacCompilerUse>true</forceJavacCompilerUse>
+          <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
       <plugin>

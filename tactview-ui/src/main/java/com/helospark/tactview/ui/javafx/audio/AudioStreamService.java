@@ -7,19 +7,13 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
-import org.slf4j.Logger;
-
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.PlaybackController;
 
 @Component
 public class AudioStreamService {
     private DataLine.Info dataLineInfo;
     private SourceDataLine sourceDataLine;
-
-    @Slf4j
-    private Logger logger;
 
     @PostConstruct
     public void init() {
@@ -30,7 +24,7 @@ public class AudioStreamService {
             sourceDataLine.open(format);
             sourceDataLine.start();
         } catch (LineUnavailableException e) {
-            logger.error("Unable to initialize audio subsystem", e);
+            e.printStackTrace();
         }
     }
 
