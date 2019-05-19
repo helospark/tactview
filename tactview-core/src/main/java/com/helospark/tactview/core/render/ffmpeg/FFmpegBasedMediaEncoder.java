@@ -8,7 +8,7 @@ public interface FFmpegBasedMediaEncoder extends Library {
 
     public int initEncoder(FFmpegInitEncoderRequest request);
 
-    public void encodeFrames(FFmpegEncodeFrameRequest request);
+    public int encodeFrames(FFmpegEncodeFrameRequest request);
 
     public void clearEncoder(FFmpegClearEncoderRequest request);
 

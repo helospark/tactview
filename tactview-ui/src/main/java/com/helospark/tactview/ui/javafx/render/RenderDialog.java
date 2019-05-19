@@ -23,6 +23,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
+import com.helospark.tactview.ui.javafx.util.DialogHelper;
 import com.helospark.tactview.ui.javafx.util.DurationFormatter;
 
 import javafx.scene.Node;
@@ -195,6 +196,11 @@ public class RenderDialog {
                     .thenAccept(a -> {
                         cancelButton.setDisable(false);
                         okButton.setDisable(false);
+                    })
+                    .exceptionally(ex -> {
+                        ex.printStackTrace();
+                        DialogHelper.showExceptionDialog("Error rendering", "Unable to render to file, see stacktrace below, more details in logs", ex);
+                        return null;
                     });
 
         });

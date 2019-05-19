@@ -102,6 +102,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
 
+        if (encoderIndex < 0) {
+            throw new RuntimeException("Unable to render, statuscode is " + encoderIndex + " , check logs");
+        }
+
         int frameIndex = 0;
         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
             AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition, Optional.of(audioSampleRate), Optional.of(bytesPerSample));
@@ -117,7 +121,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             nativeRequest.encoderIndex = encoderIndex;
             nativeRequest.startFrameIndex = frameIndex;
 
-            ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
+            int encodeResult = ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
+            if (encodeResult < 0) {
+                throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
+            }
 
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
             for (var buffer : frame.getAudioResult().getChannels()) {

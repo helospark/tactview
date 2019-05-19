@@ -133,7 +133,7 @@ extern "C" {
     }
 
     /* Add an output stream. */
-    static void add_video_stream(OutputStream *ost, AVFormatContext *oc,
+    static int add_video_stream(OutputStream *ost, AVFormatContext *oc,
                            AVCodec **codec,
                            enum AVCodecID codec_id,
                            FFmpegInitEncoderRequest* request,
@@ -147,19 +147,19 @@ extern "C" {
         if (!(*codec)) {
             fprintf(stderr, "Could not find encoder for '%s'\n",
                     avcodec_get_name(codec_id));
-            exit(1);
+            return -1;
         }
 
         ost->st = avformat_new_stream(oc, NULL);
         if (!ost->st) {
             fprintf(stderr, "Could not allocate stream\n");
-            exit(1);
+            return -1;
         }
         ost->st->id = oc->nb_streams-1;
         c = avcodec_alloc_context3(*codec);
         if (!c) {
             fprintf(stderr, "Could not alloc an encoding context\n");
-            exit(1);
+            return -1;
         }
         ost->enc = c;
 
@@ -195,10 +195,11 @@ extern "C" {
         ost->sws_ctx = sws_getContext(request->actualWidth, request->actualHeight,
                                   AV_PIX_FMT_BGR32, c->width, c->height,
                                   videoPixelFormat, 0, 0, 0, 0);
+        return 0;
     }
 
 /* Add an output stream. */
-    static void add_audio_stream(OutputStream *ost, AVFormatContext *oc,
+    static int add_audio_stream(OutputStream *ost, AVFormatContext *oc,
                            AVCodec **codec,
                            enum AVCodecID codec_id,
                            FFmpegInitEncoderRequest* request)
@@ -211,19 +212,19 @@ extern "C" {
         if (!(*codec)) {
             fprintf(stderr, "Could not find encoder for '%s'\n",
                     avcodec_get_name(codec_id));
-            exit(1);
+            return -1;
         }
 
         ost->st = avformat_new_stream(oc, NULL);
         if (!ost->st) {
             fprintf(stderr, "Could not allocate stream\n");
-            exit(1);
+            return -1;
         }
         ost->st->id = oc->nb_streams-1;
         c = avcodec_alloc_context3(*codec);
         if (!c) {
             fprintf(stderr, "Could not alloc an encoding context\n");
-            exit(1);
+            return -1;
         }
         ost->enc = c;
 
@@ -254,6 +255,7 @@ extern "C" {
         /* Some formats want stream headers to be separate. */
         if (oc->oformat->flags & AVFMT_GLOBALHEADER)
             c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        return 0;
     }
 
 
@@ -269,7 +271,7 @@ extern "C" {
 
         if (!frame) {
             fprintf(stderr, "Error allocating an audio frame\n");
-            exit(1);
+            return NULL;
         }
 
         frame->format = sample_fmt;
@@ -281,14 +283,14 @@ extern "C" {
             ret = av_frame_get_buffer(frame, 0);
             if (ret < 0) {
                 fprintf(stderr, "Error allocating an audio buffer\n");
-                exit(1);
+                return NULL;
             }
         }
 
         return frame;
     }
 
-    static void open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request)
+    static int open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request)
     {
         AVCodecContext *c;
         int nb_samples;
@@ -303,7 +305,7 @@ extern "C" {
         av_dict_free(&opt);
         if (ret < 0) {
             fprintf(stderr, "Could not open audio codec:");
-            exit(1);
+            return -1;
         }
 
         if (c->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
@@ -329,19 +331,22 @@ extern "C" {
                                            c->sample_rate, nb_samples);
         ost->tmp_frame = alloc_audio_frame(ost->sampleFormat, c->channel_layout,
                                            request->sampleRate, (int)ceil(nb_samples * ((double)request->sampleRate / c->sample_rate)));
+        if (ost->frame == NULL || ost->tmp_frame == NULL) {
+          return -1;
+        }
 
         /* copy the stream parameters to the muxer */
         ret = avcodec_parameters_from_context(ost->st->codecpar, c);
         if (ret < 0) {
             fprintf(stderr, "Could not copy the stream parameters\n");
-            exit(1);
+            return -1;
         }
 
         /* create resampler context */
             ost->swr_ctx = swr_alloc();
             if (!ost->swr_ctx) {
                 fprintf(stderr, "Could not allocate resampler context\n");
-                exit(1);
+                return -1;
             }
 
             std::cout << "SWR " << c->sample_rate << " " << request->sampleRate << " " << request->audioChannels << std::endl;
@@ -357,8 +362,9 @@ extern "C" {
             /* initialize the resampling context */
             if ((ret = swr_init(ost->swr_ctx)) < 0) {
                 fprintf(stderr, "Failed to initialize the resampling context\n");
-                exit(1);
+                return -1;
             }
+            return 0;
     }
 
     static AVFrame *get_audio_frame(OutputStream *ost, unsigned char* dataStart)
@@ -414,7 +420,7 @@ extern "C" {
              */
             ret = av_frame_make_writable(ost->frame);
             if (ret < 0)
-                exit(1);
+                return ret;
 
             /* convert to destination format */
             ret = swr_convert(ost->swr_ctx,
@@ -422,7 +428,7 @@ extern "C" {
                               (const uint8_t **)frame->data, frame->nb_samples);
             if (ret < 0) {
                 fprintf(stderr, "Error while converting %d\n", ret);
-                //exit(1);
+                return ret;
             }
             frame = ost->frame;
 
@@ -437,14 +443,14 @@ extern "C" {
         ret = avcodec_encode_audio2(c, &pkt, frame, &got_packet);
         if (ret < 0) {
             fprintf(stderr, "Error encoding audio frame: %d\n",ret);
-            //exit(1);
+            return ret;
         }
 
         if (got_packet) {
             ret = write_frame(oc, &c->time_base, ost->st, &pkt);
             if (ret < 0) {
                 fprintf(stderr, "Error while writing audio frame: %d \n", ret);
-                //exit(1);
+                return ret;
             }
             av_free_packet(&pkt);
         }
@@ -472,13 +478,13 @@ extern "C" {
         ret = av_frame_get_buffer(picture, 32);
         if (ret < 0) {
             fprintf(stderr, "Could not allocate frame data.\n");
-            exit(1);
+            return NULL;
         }
 
         return picture;
     }
 
-    static void open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request, AVPixelFormat videoPixelFormat)
+    static int open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request, AVPixelFormat videoPixelFormat)
     {
         int ret;
         AVCodecContext *c = ost->enc;
@@ -491,14 +497,14 @@ extern "C" {
         av_dict_free(&opt);
         if (ret < 0) {
             fprintf(stderr, "Could not open video codec: %s\n", request->fileName);
-            exit(1);
+            return -1;
         }
 
         /* allocate and init a re-usable frame */
         ost->frame = alloc_picture(videoPixelFormat, c->width, c->height);
         if (!ost->frame) {
             fprintf(stderr, "Could not allocate video frame\n");
-            exit(1);
+            return -1;
         }
 
         /* If the output format is not YUV420P, then a temporary YUV420P
@@ -511,8 +517,9 @@ extern "C" {
         ret = avcodec_parameters_from_context(ost->st->codecpar, c);
         if (ret < 0) {
             fprintf(stderr, "Could not copy the stream parameters\n");
-            exit(1);
+            return -1;
         }
+        return 0;
     }
 
     static AVFrame *get_video_frame(OutputStream *ost, RenderFFMpegFrame* frame)
@@ -522,7 +529,7 @@ extern "C" {
         /* when we pass a frame to the encoder, it may keep a reference to it
          * internally; make sure we do not overwrite it here */
         if (av_frame_make_writable(ost->frame) < 0)
-            exit(1);
+            return NULL;
 
 
         SwsContext * ctx = ost->sws_ctx;
@@ -556,7 +563,7 @@ extern "C" {
         ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
         if (ret < 0) {
             fprintf(stderr, "Error encoding video frame: \n");
-            exit(1);
+            return -1;
         }
 
         if (got_packet) {
@@ -568,7 +575,7 @@ extern "C" {
 
         if (ret < 0) {
             fprintf(stderr, "Error while writing video frame: \n");
-          //  exit(1);
+            return -1;
         }
 
         return (frame || got_packet) ? 0 : 1;
@@ -621,7 +628,7 @@ extern "C" {
             avformat_alloc_output_context2(&oc, NULL, "mpeg", filename);
         }
         if (!oc)
-            return 1;
+            return -1;
 
         fmt = oc->oformat;
 
@@ -639,7 +646,10 @@ extern "C" {
             const char* videoPixelFormatStr = av_get_pix_fmt_name(videoPixelFormat);
             std::cout << "Using pixel format " << videoPixelFormatStr << std::endl;
 
-            add_video_stream(video_st, oc, &video_codec, fmt->video_codec, request, videoPixelFormat);
+            ret = add_video_stream(video_st, oc, &video_codec, fmt->video_codec, request, videoPixelFormat);
+            if (ret < 0) {
+                return ret;
+            }
             have_video = 1;
             encode_video = 1;
 
@@ -649,26 +659,38 @@ extern "C" {
             if (strcmp(request->audioCodec, "default") != 0) {            
                 fmt->audio_codec = avcodec_find_encoder_by_name(request->audioCodec)->id;
             }
-            add_audio_stream(audio_st, oc, &audio_codec, fmt->audio_codec, request);
+            ret = add_audio_stream(audio_st, oc, &audio_codec, fmt->audio_codec, request);
+            if (ret < 0) {
+                return ret;
+            }
             have_audio = 1;
             encode_audio = 1;
         }
 
         /* Now that all the parameters are set, we can open the audio and
          * video codecs and allocate the necessary encode buffers. */
-        if (have_video)
-            open_video(oc, video_codec, video_st, opt, request, videoPixelFormat);
+        if (have_video) {
+            ret = open_video(oc, video_codec, video_st, opt, request, videoPixelFormat);
+            if (ret < 0) {
+                return ret;
+            }
+        }
 
-        if (have_audio)
-            open_audio(oc, audio_codec, audio_st, opt, request);
+        if (have_audio) {
+            ret = open_audio(oc, audio_codec, audio_st, opt, request);
+            if (ret < 0) {
+                return ret;
+            }
 
+        }
+        
         av_dump_format(oc, 0, filename, 1);
         /* open the output file, if needed */
         if (!(fmt->flags & AVFMT_NOFILE)) {
             ret = avio_open(&oc->pb, filename, AVIO_FLAG_WRITE);
             if (ret < 0) {
                 fprintf(stderr, "Could not open '%s': \n", filename);
-                return 1;
+                return -1;
             }
         }
 
@@ -676,7 +698,7 @@ extern "C" {
         ret = avformat_write_header(oc, &opt);
         if (ret < 0) {
             fprintf(stderr, "Error occurred when opening output file: \n");
-            return 1;
+            return -1;
         }
         renderContext.oc = oc;
         renderContext.fmt = fmt;
@@ -699,6 +721,8 @@ extern "C" {
         renderContext.actualHeight = request->actualHeight;
         renderContext.renderWidth = request->renderWidth;
         renderContext.renderHeight = request->renderHeight;
+
+        return 0; // TODO: generate an index, so more renders can proceed in parallel
     }
 
     EXPORTED void clearEncoder(FFmpegClearEncoderRequest* request) {
@@ -723,7 +747,7 @@ extern "C" {
         avformat_free_context(renderContext.oc);
     }
 
-    EXPORTED void encodeFrames(FFmpegEncodeFrameRequest* request) {
+    EXPORTED int encodeFrames(FFmpegEncodeFrameRequest* request) {
             OutputStream* video_st = renderContext.video_st;
             OutputStream* audio_st = renderContext.audio_st;
 
@@ -743,7 +767,15 @@ extern "C" {
 
 
             AVFrame *frame = get_video_frame(video_st, request->frame);
-            renderContext.encode_video = !write_video_frame(renderContext.oc, video_st, frame);
+            if (frame == NULL) {
+              return -1;
+            }
+            int ret = write_video_frame(renderContext.oc, video_st, frame);
+            if (ret < 0) {
+              return ret;
+            }
+            renderContext.encode_video = !ret;
+            return 0;
     }
 
     struct CodecInformation {

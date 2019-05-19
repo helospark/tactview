@@ -25,11 +25,7 @@ public class RenderServiceChain {
         RenderService chainItem = getRenderer(renderRequest);
 
         return CompletableFuture
-                .runAsync(() -> chainItem.render(renderRequest))
-                .exceptionally(e -> {
-                    logger.error("Unable to render", e);
-                    return null;
-                });
+                .runAsync(() -> chainItem.render(renderRequest));
     }
 
     public RenderService getRenderer(RenderRequest renderRequest) {
