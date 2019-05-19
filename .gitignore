@@ -1,6 +1,7 @@
 target
 .factorypath
 *.log
+.DS_Store
 
 *.so
 *.lib
@@ -11,6 +12,7 @@ target
 *.obj
 *.pdb
 *.exe
+*.dylib
 
 .classpath
 .settings/
