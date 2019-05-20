@@ -38,6 +38,7 @@ import com.helospark.tactview.core.timeline.effect.displacementmap.DisplacementM
 import com.helospark.tactview.core.timeline.effect.displacementmap.service.DisplacementMapService;
 import com.helospark.tactview.core.timeline.effect.distort.GlassTilesEffect;
 import com.helospark.tactview.core.timeline.effect.distort.LensDistortEffect;
+import com.helospark.tactview.core.timeline.effect.distort.MagnifierEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PerturbationDistortEffect;
 import com.helospark.tactview.core.timeline.effect.distort.PolarCoordinateEffect;
 import com.helospark.tactview.core.timeline.effect.distort.ShearEffect;
@@ -834,6 +835,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new GlassTilesEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Glass tiles")
                 .withSupportedEffectId("glass tiles")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory magnifierEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new MagnifierEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new MagnifierEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Magnifier")
+                .withSupportedEffectId("magnifier")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();
