@@ -635,7 +635,7 @@ extern "C" {
         AVPixelFormat videoPixelFormat;
         /* Add the audio and video streams using the default format codecs
          * and initialize the codecs. */
-        if (fmt->video_codec != AV_CODEC_ID_NONE) {
+        if (fmt->video_codec != AV_CODEC_ID_NONE && strcmp(request->videoCodec, "none") != 0) {
             if (strcmp(request->videoCodec, "default") != 0) {            
                 fmt->video_codec = avcodec_find_encoder_by_name(request->videoCodec)->id;
             }
@@ -655,7 +655,7 @@ extern "C" {
 
             renderContext.videoPixelFormat =  videoPixelFormat;
         }
-        if (fmt->audio_codec != AV_CODEC_ID_NONE && request->audioChannels > 0) {
+        if (fmt->audio_codec != AV_CODEC_ID_NONE && request->audioChannels > 0 && strcmp(request->audioCodec, "none") != 0) {
             if (strcmp(request->audioCodec, "default") != 0) {            
                 fmt->audio_codec = avcodec_find_encoder_by_name(request->audioCodec)->id;
             }
@@ -751,30 +751,32 @@ extern "C" {
             OutputStream* video_st = renderContext.video_st;
             OutputStream* audio_st = renderContext.audio_st;
 
+            if (renderContext.encode_audio) {
+              int nbSamples = renderContext.numberOfSamplesPerAudioFrame;
 
-            int nbSamples = renderContext.numberOfSamplesPerAudioFrame;
+              for (int i = 0; i < request->frame->numberOfAudioSamples * renderContext.bytesPerSample * renderContext.audioChannels; ++i) {
+                  renderContext.audioBuffer[renderContext.audioBufferPointer++] = request->frame->audioData[i];
 
-            for (int i = 0; i < request->frame->numberOfAudioSamples * renderContext.bytesPerSample * renderContext.audioChannels; ++i) {
-                renderContext.audioBuffer[renderContext.audioBufferPointer++] = request->frame->audioData[i];
-
-                if (renderContext.audioBufferPointer >= audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * renderContext.audioChannels) {
-                    AVFrame *frame = get_audio_frame(audio_st, renderContext.audioBuffer);
-                    renderContext.encode_audio = !write_audio_frame(renderContext.oc, audio_st, frame);
-                    renderContext.audioBufferPointer = 0;
-                }
+                  if (renderContext.audioBufferPointer >= audio_st->tmp_frame->nb_samples * renderContext.bytesPerSample * renderContext.audioChannels) {
+                      AVFrame *frame = get_audio_frame(audio_st, renderContext.audioBuffer);
+                      renderContext.encode_audio = !write_audio_frame(renderContext.oc, audio_st, frame);
+                      renderContext.audioBufferPointer = 0;
+                  }
+              }
             }
         
 
-
-            AVFrame *frame = get_video_frame(video_st, request->frame);
-            if (frame == NULL) {
-              return -1;
+            if (renderContext.encode_video) {
+              AVFrame *frame = get_video_frame(video_st, request->frame);
+              if (frame == NULL) {
+                return -1;
+              }
+              int ret = write_video_frame(renderContext.oc, video_st, frame);
+              if (ret < 0) {
+                return ret;
+              }
+              renderContext.encode_video = !ret;
             }
-            int ret = write_video_frame(renderContext.oc, video_st, frame);
-            if (ret < 0) {
-              return ret;
-            }
-            renderContext.encode_video = !ret;
             return 0;
     }
 
@@ -836,10 +838,6 @@ extern "C" {
 
 
         avformat_alloc_output_context2(&oc, NULL, NULL, request->fileName);
-        if (!oc) {
-            printf("Could not deduce output format from file extension: using MPEG.\n");
-            avformat_alloc_output_context2(&oc, NULL, "mpeg", request->fileName);
-        }
         if (!oc)
             return;
 
@@ -851,6 +849,10 @@ extern "C" {
                 videoCodec = avcodec_find_encoder_by_name(request->videoCodec);
             } else {
                 videoCodec = avcodec_find_encoder(fmt->video_codec);
+            }
+
+            if (videoCodec == NULL) {
+              return;
             }
 
             const AVPixelFormat* formats = videoCodec->pix_fmts;

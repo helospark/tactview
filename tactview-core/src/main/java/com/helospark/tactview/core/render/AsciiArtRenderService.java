@@ -58,7 +58,7 @@ public class AsciiArtRenderService extends AbstractRenderService {
 
             BigDecimal position = startSeconds;
             while (position.compareTo(endSeconds) < 0 && !renderRequest.getIsCancelledSupplier().get()) {
-                AudioVideoFragment videoResult = queryFrameAt(renderRequest, new TimelinePosition(position), Optional.empty(), Optional.empty());
+                AudioVideoFragment videoResult = queryFrameAt(renderRequest, new TimelinePosition(position), Optional.empty(), Optional.empty(), true, false);
 
                 BufferedImage image = byteBufferToImageConverter.byteBufferToBufferedImage(videoResult.getVideoResult().getBuffer(), renderRequest.getWidth(), renderRequest.getHeight());
 

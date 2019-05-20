@@ -17,6 +17,7 @@ import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.TabCloseListener;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
@@ -38,7 +39,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 @Component
-public class CurveEditorTab extends Tab implements ScenePostProcessor {
+public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseListener {
     private static final String CURVE_EDITOR_ID = "curve-editor";
     private static final double samplesPerPixel = 1.0;
     private List<CurveEditor> curveEditors;
@@ -337,6 +338,12 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor {
                 Platform.runLater(() -> updateCanvas());
             }
         }
+    }
+
+    @Override
+    public void tabClosed() {
+        currentlyOpenEditor = null;
+        clearCanvas();
     }
 
 }

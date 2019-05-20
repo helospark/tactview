@@ -42,7 +42,8 @@ public abstract class AbstractRenderService implements RenderService {
         messagingService.sendAsyncMessage(new ProgressDoneMessage(renderRequest.getRenderId()));
     }
 
-    protected AudioVideoFragment queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition, Optional<Integer> sampleRate, Optional<Integer> bytesPerSample) {
+    protected AudioVideoFragment queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition, Optional<Integer> sampleRate, Optional<Integer> bytesPerSample, boolean needsVideo,
+            boolean needsSound) { // <- TODO: request object and builder
         double upscale = renderRequest.getUpscale().doubleValue();
 
         double scaleMultiplier = (double) renderRequest.getWidth() / projectRepository.getWidth();
@@ -54,6 +55,8 @@ public abstract class AbstractRenderService implements RenderService {
                 .withScale(scaleMultiplier * upscale)
                 .withAudioBytesPerSample(sampleRate)
                 .withAudioBytesPerSample(bytesPerSample)
+                .withNeedVideo(needsVideo)
+                .withNeedSound(needsSound)
                 .build();
 
         AudioVideoFragment frame = timelineManagerRenderService.getFrame(frameRequest);

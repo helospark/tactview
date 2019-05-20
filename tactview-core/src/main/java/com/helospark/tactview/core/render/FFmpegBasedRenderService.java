@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+
+import org.apache.commons.io.FilenameUtils;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -32,7 +35,10 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedRenderService extends AbstractRenderService {
+    private static final Set<String> COMMON_AUDIO_CONTAINERS = Set.of("mp3", "wav", "oga");
+    private static final Set<String> COMMON_VIDEO_CONTAINERS = Set.of("mp4", "ogg", "flv", "webm", "avi", "gif", "wmv");
     private static final String DEFAULT_VALUE = "default";
+    private static final String NONE_VALUE = "none";
     private static final int MAX_NUMBER_OF_CODECS = 400;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private TimelineManagerAccessor timelineManagerAccessor;
@@ -84,7 +90,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.renderWidth = width;
         initNativeRequest.renderHeight = height;
 
-        AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition, Optional.empty(), Optional.empty());//tmp solution
+        AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition, Optional.empty(), Optional.empty(), false, true);//tmp solution
 
         initNativeRequest.actualWidth = width;
         initNativeRequest.actualHeight = height;
@@ -107,14 +113,20 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         }
 
         int frameIndex = 0;
+
+        boolean needsVideo = !videoCodec.equals(NONE_VALUE);
+        boolean needsAudio = !audioCodec.equals(NONE_VALUE);
+
         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
-            AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition, Optional.of(audioSampleRate), Optional.of(bytesPerSample));
+            AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition, Optional.of(audioSampleRate), Optional.of(bytesPerSample), needsVideo, needsAudio);
 
             FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
             nativeRequest.frame = new RenderFFMpegFrame();
             RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
-            array[0].imageData = frame.getVideoResult().getBuffer();
-            if (frame.getAudioResult().getChannels().size() > 0) {
+            if (needsVideo) {
+                array[0].imageData = frame.getVideoResult().getBuffer();
+            }
+            if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
                 array[0].audioData = convertAudio(frame.getAudioResult());
                 array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
             }
@@ -267,8 +279,32 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         if (!pixelFormat.getValidValues().equals(extra.pixelFormats)) {
             optionsToUpdate.put("videoPixelFormat", pixelFormat.butWithUpdatedValidValues(extra.pixelFormats));
         }
+        String extension = FilenameUtils.getExtension(request.fileName);
+        OptionProvider<String> videoCodecProvider = (OptionProvider<String>) request.options.get("videocodec");
+        if (!videoCodecProvider.getValue().equals(NONE_VALUE) && (isAudioContainer(extension))) {
+            videoCodecProvider.setValue(NONE_VALUE);
+            optionsToUpdate.put("videocodec", videoCodecProvider);
+        }
+        if (videoCodecProvider.getValue().equals(NONE_VALUE) && isVideoContainer(extension)) {
+            videoCodecProvider.setValue(DEFAULT_VALUE);
+            optionsToUpdate.put("videocodec", videoCodecProvider);
+        }
 
         return optionsToUpdate;
+    }
+
+    private boolean isAudioContainer(String extension) {
+        if (extension == null) {
+            return false;
+        }
+        return COMMON_AUDIO_CONTAINERS.contains(extension);
+    }
+
+    private boolean isVideoContainer(String extension) {
+        if (extension == null) {
+            return false;
+        }
+        return COMMON_VIDEO_CONTAINERS.contains(extension);
     }
 
     private ValueListElement createElement(String e) {
@@ -291,14 +327,19 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         CodecValueElements result = new CodecValueElements();
 
+        result.videoCodecs.add(new ValueListElement(DEFAULT_VALUE, DEFAULT_VALUE));
+        result.audioCodecs.add(new ValueListElement(DEFAULT_VALUE, DEFAULT_VALUE));
+
+        result.audioCodecs.add(new ValueListElement(NONE_VALUE, "Do not render audio"));
+        result.videoCodecs.add(new ValueListElement(NONE_VALUE, "Do not render video"));
+
         for (int i = 0; i < nativeRequest.videoCodecNumber; ++i) {
             result.videoCodecs.add(new ValueListElement(videoCodecs[i].id, "[" + videoCodecs[i].id + "] " + videoCodecs[i].longName));
         }
         for (int i = 0; i < nativeRequest.audioCodecNumber; ++i) {
             result.audioCodecs.add(new ValueListElement(audioCodecs[i].id, "[" + audioCodecs[i].id + "] " + audioCodecs[i].longName));
         }
-        result.videoCodecs.add(new ValueListElement(DEFAULT_VALUE, DEFAULT_VALUE));
-        result.audioCodecs.add(new ValueListElement(DEFAULT_VALUE, DEFAULT_VALUE));
+
         return result;
     }
 
@@ -334,7 +375,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 new ValueListElement("webm", "webm"),
                 new ValueListElement("avi", "avi"),
                 new ValueListElement("gif", "gif (animated)"),
-                new ValueListElement("wmv", "wmv"));
+                new ValueListElement("wmv", "wmv"),
+                new ValueListElement("mp3", "mp3 (audio only)"),
+                new ValueListElement("wav", "wav (audio only)"),
+                new ValueListElement("oga", "oga (audio only)"));
     }
 
 }

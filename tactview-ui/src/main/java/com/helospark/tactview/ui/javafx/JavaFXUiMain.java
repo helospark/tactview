@@ -162,6 +162,12 @@ public class JavaFXUiMain extends Application {
                     .findFirst()
                     .ifPresent(foundTab -> tabPane.getSelectionModel().select(foundTab));
         });
+        tabPane.getSelectionModel().selectedItemProperty()
+                .addListener((e, oldValue, newValue) -> {
+                    if (oldValue instanceof TabCloseListener) {
+                        ((TabCloseListener) oldValue).tabClosed();
+                    }
+                });
 
         VBox rightVBox = new VBox(5);
         rightVBox.setAlignment(Pos.TOP_CENTER);

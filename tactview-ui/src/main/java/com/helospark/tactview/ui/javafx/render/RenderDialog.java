@@ -200,6 +200,8 @@ public class RenderDialog {
                     .exceptionally(ex -> {
                         ex.printStackTrace();
                         DialogHelper.showExceptionDialog("Error rendering", "Unable to render to file, see stacktrace below, more details in logs", ex);
+                        cancelButton.setDisable(false);
+                        okButton.setDisable(false);
                         return null;
                     });
 
