@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.it.util.ui;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +9,7 @@ import com.helospark.tactview.core.timeline.AddClipRequestMetaDataKey;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
 
 public class FakeImageSequenceChooserDialog {
     private TimelineManagerAccessor timelineManagerAccessor;
@@ -54,7 +54,7 @@ public class FakeImageSequenceChooserDialog {
         Map<AddClipRequestMetaDataKey, Object> metadata = new HashMap<>();
         metadata.put(AddClipRequestMetaDataKey.FPS, new BigDecimal(fps.toString()));
 
-        String filePath = path + File.separatorChar + pattern;
+        String filePath = path + FileNamePatternToFileResolverService.PATH_FILENAME_SEPARATOR + pattern;
 
         AddClipRequest clipRequest = AddClipRequest.builder()
                 .withChannelId(timelineManagerAccessor.getChannels().get(channel).getId())

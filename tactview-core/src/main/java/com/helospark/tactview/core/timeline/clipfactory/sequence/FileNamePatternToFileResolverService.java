@@ -11,13 +11,14 @@ import com.helospark.lightdi.annotation.Service;
 
 @Service
 public class FileNamePatternToFileResolverService {
+    public static final String PATH_FILENAME_SEPARATOR = "$$"; // TODO: I don't think this is the right approach
 
     //    @Cacheable
     public List<FileHolder> filenamePatternToFileResolver(String filePathAndPattern) {
-        int index = filePathAndPattern.lastIndexOf(File.separatorChar);
+        int index = filePathAndPattern.lastIndexOf(PATH_FILENAME_SEPARATOR);
 
         String path = filePathAndPattern.substring(0, index);
-        String fileNamePattern = filePathAndPattern.substring(index + 1);
+        String fileNamePattern = filePathAndPattern.substring(index + PATH_FILENAME_SEPARATOR.length());
 
         Pattern pattern = Pattern.compile(fileNamePattern);
 

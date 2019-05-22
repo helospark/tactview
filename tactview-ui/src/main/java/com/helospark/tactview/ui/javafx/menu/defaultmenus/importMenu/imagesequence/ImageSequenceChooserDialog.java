@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AddClipRequestMetaDataKey;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 
@@ -87,7 +88,7 @@ public class ImageSequenceChooserDialog {
             Map<AddClipRequestMetaDataKey, Object> metadata = new HashMap<>();
             metadata.put(AddClipRequestMetaDataKey.FPS, new BigDecimal(fpsField.getText()));
 
-            String filePath = pathField.getText() + File.separatorChar + patternField.getText();
+            String filePath = pathField.getText() + FileNamePatternToFileResolverService.PATH_FILENAME_SEPARATOR + patternField.getText();
 
             AddClipRequest clipRequest = AddClipRequest.builder()
                     .withChannelId(timelineManager.getAllChannelIds().get(0))
