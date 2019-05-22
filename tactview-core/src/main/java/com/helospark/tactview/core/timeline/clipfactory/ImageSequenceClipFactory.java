@@ -12,8 +12,8 @@ import com.helospark.tactview.core.decoder.MediaMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.imagesequence.ImageSequenceDecoderDecorator;
 import com.helospark.tactview.core.decoder.opencv.ImageMetadataRequest;
-import com.helospark.tactview.core.decoder.opencv.ImageMetadataResonse;
-import com.helospark.tactview.core.decoder.opencv.OpenCvMediaDecoder;
+import com.helospark.tactview.core.decoder.opencv.ImageMetadataResponse;
+import com.helospark.tactview.core.decoder.opencv.ImageMediaLoader;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
@@ -28,10 +28,10 @@ import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePattern
 @Component
 public class ImageSequenceClipFactory implements ClipFactory {
     private FileNamePatternToFileResolverService fileNamePatternToFileResolverService;
-    private OpenCvMediaDecoder implementation;
+    private ImageMediaLoader implementation;
     private ImageSequenceDecoderDecorator imageSequenceDecoder;
 
-    public ImageSequenceClipFactory(FileNamePatternToFileResolverService fileNamePatternToFileResolverService, OpenCvMediaDecoder implementation, ImageSequenceDecoderDecorator imageSequenceDecoder) {
+    public ImageSequenceClipFactory(FileNamePatternToFileResolverService fileNamePatternToFileResolverService, ImageMediaLoader implementation, ImageSequenceDecoderDecorator imageSequenceDecoder) {
         this.fileNamePatternToFileResolverService = fileNamePatternToFileResolverService;
         this.implementation = implementation;
         this.imageSequenceDecoder = imageSequenceDecoder;
@@ -89,7 +89,7 @@ public class ImageSequenceClipFactory implements ClipFactory {
         ImageMetadataRequest imageRequest = new ImageMetadataRequest();
         imageRequest.path = firstImage.getFile().getAbsolutePath();
 
-        ImageMetadataResonse imageMetadata = implementation.readMetadata(imageRequest);
+        ImageMetadataResponse imageMetadata = implementation.readMetadata(imageRequest);
 
         VideoMetadata metadata = VideoMetadata.builder()
                 .withWidth(imageMetadata.width)

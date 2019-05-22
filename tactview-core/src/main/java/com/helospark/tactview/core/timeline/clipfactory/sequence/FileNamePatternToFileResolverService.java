@@ -8,12 +8,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.helospark.lightdi.annotation.Service;
-import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Service
 public class FileNamePatternToFileResolverService {
 
-    @Cacheable
+    //    @Cacheable
     public List<FileHolder> filenamePatternToFileResolver(String filePathAndPattern) {
         int index = filePathAndPattern.lastIndexOf(File.separatorChar);
 

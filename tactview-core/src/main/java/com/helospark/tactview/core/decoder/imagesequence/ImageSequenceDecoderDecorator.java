@@ -15,18 +15,18 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
 import com.helospark.tactview.core.decoder.opencv.ImageRequest;
-import com.helospark.tactview.core.decoder.opencv.OpenCvMediaDecoder;
+import com.helospark.tactview.core.decoder.opencv.ImageMediaLoader;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileHolder;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
 
 @Component
 public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
-    private OpenCvMediaDecoder implementation;
+    private ImageMediaLoader implementation;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
     private FileNamePatternToFileResolverService fileNamePatternService;
 
-    public ImageSequenceDecoderDecorator(OpenCvMediaDecoder implementation, MediaCache mediaCache, MemoryManager memoryManager, FileNamePatternToFileResolverService fileNamePatternService) {
+    public ImageSequenceDecoderDecorator(ImageMediaLoader implementation, MediaCache mediaCache, MemoryManager memoryManager, FileNamePatternToFileResolverService fileNamePatternService) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.memoryManager = memoryManager;

@@ -10,8 +10,16 @@ public class ClassPathResourceReader {
 
     public String readClasspathFile(String fileName) {
         try {
+            return new String(readClasspathFileToByteArray(fileName), Charset.forName("UTF-8"));
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot read file " + fileName, e);
+        }
+    }
+
+    public byte[] readClasspathFileToByteArray(String fileName) {
+        try {
             InputStream stream = getClass().getResourceAsStream("/" + fileName);
-            return new String(stream.readAllBytes(), Charset.forName("UTF-8"));
+            return stream.readAllBytes();
         } catch (Exception e) {
             throw new RuntimeException("Cannot read file " + fileName, e);
         }

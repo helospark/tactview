@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -73,7 +75,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
             position = position.add(renderDistance);
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
         renderExecutorService.shutdown();
     }
 
@@ -110,7 +112,11 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
     @Override
     public List<String> getSupportedFormats() {
-        return List.of("png", "jpg");
+        return Arrays.stream(ImageIO.getWriterFormatNames())
+                .map(a -> a.toLowerCase())
+                .distinct()
+                .filter(a -> !a.equals("gif")) // only animated git supported
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -134,11 +140,10 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
     @Override
     public List<ValueListElement> handledExtensions() {
-        return List.of(
-                new ValueListElement("jpg", "jpg (sequence)"),
-                new ValueListElement("png", "png (sequence)"),
-                new ValueListElement("tiff", "tiff (sequence)"),
-                new ValueListElement("bmp", "bmp (sequence)"));
+        return getSupportedFormats()
+                .stream()
+                .map(a -> new ValueListElement(a, a + " (images seq.)"))
+                .collect(Collectors.toList());
     }
 
 }

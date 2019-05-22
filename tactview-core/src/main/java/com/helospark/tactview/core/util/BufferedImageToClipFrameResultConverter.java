@@ -75,4 +75,26 @@ public class BufferedImageToClipFrameResultConverter {
         return frameResult;
     }
 
+    public ReadOnlyClipImage convert(BufferedImage bufferedImage) {
+        int width = bufferedImage.getWidth();
+        int height = bufferedImage.getHeight();
+        ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4);
+        ClipImage frameResult = new ClipImage(buffer, width, height);
+
+        independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
+            int pixel = bufferedImage.getRGB(x, y); // TODO: get pixel array
+            int a = ClipImage.signedToUnsignedByte((byte) ((pixel & 0xff000000) >> 24));
+            int r = ClipImage.signedToUnsignedByte((byte) ((pixel & 0x00ff0000) >> 16));
+            int g = ClipImage.signedToUnsignedByte((byte) ((pixel & 0x0000ff00) >> 8));
+            int b = ClipImage.signedToUnsignedByte((byte) ((pixel & 0x000000ff) >> 0));
+
+            frameResult.setRed(r, x, y);
+            frameResult.setGreen(g, x, y);
+            frameResult.setBlue(b, x, y);
+            frameResult.setAlpha(a, x, y);
+        });
+
+        return frameResult;
+    }
+
 }

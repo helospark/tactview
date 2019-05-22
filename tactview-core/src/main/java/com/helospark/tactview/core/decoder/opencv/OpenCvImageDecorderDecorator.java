@@ -19,10 +19,10 @@ import com.helospark.tactview.core.util.cacheable.Cacheable;
 @Component
 public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     public static final TimelineLength IMAGE_LENGTH = TimelineLength.ofMillis(10000);
-    private OpenCvMediaDecoder implementation;
+    private ImageMediaLoader implementation;
     private MediaCache mediaCache;
 
-    public OpenCvImageDecorderDecorator(OpenCvMediaDecoder implementation, MediaCache mediaCache) {
+    public OpenCvImageDecorderDecorator(ImageMediaLoader implementation, MediaCache mediaCache) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
     }
@@ -31,7 +31,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     public ImageMetadata readMetadata(File file) {
         ImageMetadataRequest request = new ImageMetadataRequest();
         request.path = file.getAbsolutePath();
-        ImageMetadataResonse result = implementation.readMetadata(request);
+        ImageMetadataResponse result = implementation.readMetadata(request);
 
         return ImageMetadata.builder()
                 .withWidth(result.width)

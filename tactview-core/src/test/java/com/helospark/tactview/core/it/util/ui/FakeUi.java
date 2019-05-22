@@ -9,6 +9,7 @@ import com.helospark.lightdi.annotation.Autowired;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineChannel;
@@ -40,6 +41,8 @@ public class FakeUi {
     private ProjectRepository projectRepository;
     @Autowired
     private TimelineManagerAccessor timelineManager;
+    @Autowired
+    private SaveAndLoadHandler saveAndLoadHandler;
 
     @PostConstruct
     public void init() {
@@ -132,6 +135,18 @@ public class FakeUi {
 
     public void deleteClip(String id) {
         timelineManagerAccessor.removeClip(id);
+    }
+
+    public LoadDialog clickLoadMenuItem() {
+        return new LoadDialog(saveAndLoadHandler);
+    }
+
+    public SaveDialog clickSaveMenuItem() {
+        return new SaveDialog(saveAndLoadHandler);
+    }
+
+    public FakeImageSequenceChooserDialog clickLoadImageSequence() {
+        return new FakeImageSequenceChooserDialog(timelineManagerAccessor);
     }
 
 }
