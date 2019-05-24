@@ -12,6 +12,7 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
@@ -49,6 +50,8 @@ public class ClipPatternDrawerListener {
     @Slf4j
     private Logger logger;
 
+    private boolean patternDrawingEnabled = true;
+
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
             TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager) {
         this.messagingService = messagingService;
@@ -56,6 +59,11 @@ public class ClipPatternDrawerListener {
         this.timelineState = timelineState;
         this.audioImagePatternService = audioImagePatternService;
         this.timelineManager = timelineManager;
+    }
+
+    @PreferenceValue(name = "Render pattern on clips", defaultValue = "true", group = "Performance")
+    public void setImageClipLength(boolean patternDrawingEnabled) {
+        this.patternDrawingEnabled = patternDrawingEnabled;
     }
 
     @PostConstruct
@@ -129,28 +137,30 @@ public class ClipPatternDrawerListener {
     }
 
     private void updatePattern(ClipPatternUpdateRequest request) {
-        Pane clip = timelineState.findClipById(request.clipId).orElseThrow();
-        ClipPatternUpdateDomain clipsToUpdateDomain = clipsToUpdate.get(request.clipId);
-        double zoom = timelineState.getZoom();
+        if (patternDrawingEnabled) {
+            Pane clip = timelineState.findClipById(request.clipId).orElseThrow();
+            ClipPatternUpdateDomain clipsToUpdateDomain = clipsToUpdate.get(request.clipId);
+            double zoom = timelineState.getZoom();
 
-        int pixelWidth = timelineState.secondsToPixels(timelineManager.findClipById(request.clipId).map(cl -> cl.getInterval().getLength()).get());
-        int width = (int) (pixelWidth * zoom);
-        Rectangle rectangle = (Rectangle) clip.getChildren().get(0);
+            int pixelWidth = timelineState.secondsToPixels(timelineManager.findClipById(request.clipId).map(cl -> cl.getInterval().getLength()).get());
+            int width = (int) (pixelWidth * zoom);
+            Rectangle rectangle = (Rectangle) clip.getChildren().get(0);
 
-        TimelineClip clipToUpdate = clipsToUpdateDomain.videoClip;
-        Paint image;
-        if (clipToUpdate instanceof VisualTimelineClip) {
-            VisualTimelineClip videoClip = (VisualTimelineClip) clipToUpdate;
-            image = new ImagePattern(timelineImagePatternService.createTimelinePattern(videoClip, width));
-        } else if (clipToUpdate instanceof AudibleTimelineClip) {
-            AudibleTimelineClip audibleTimelineClip = (AudibleTimelineClip) clipToUpdate;
-            image = new ImagePattern(audioImagePatternService.createAudioImagePattern(audibleTimelineClip, width));
-        } else {
-            image = new Color(0, 0, 0, 1.0);
+            TimelineClip clipToUpdate = clipsToUpdateDomain.videoClip;
+            Paint image;
+            if (clipToUpdate instanceof VisualTimelineClip) {
+                VisualTimelineClip videoClip = (VisualTimelineClip) clipToUpdate;
+                image = new ImagePattern(timelineImagePatternService.createTimelinePattern(videoClip, width));
+            } else if (clipToUpdate instanceof AudibleTimelineClip) {
+                AudibleTimelineClip audibleTimelineClip = (AudibleTimelineClip) clipToUpdate;
+                image = new ImagePattern(audioImagePatternService.createAudioImagePattern(audibleTimelineClip, width));
+            } else {
+                image = new Color(0, 0, 0, 1.0);
+            }
+
+            Platform.runLater(() -> rectangle.setFill(image));
+            clipsToUpdate.put(request.clipId, clipsToUpdateDomain.butWithZoomLevel(zoom));
         }
-
-        Platform.runLater(() -> rectangle.setFill(image));
-        clipsToUpdate.put(request.clipId, clipsToUpdateDomain.butWithZoomLevel(zoom));
     }
 
     static class ClipPatternUpdateDomain {

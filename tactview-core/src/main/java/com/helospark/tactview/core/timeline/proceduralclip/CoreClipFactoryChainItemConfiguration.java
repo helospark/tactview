@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.proceduralclip;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.decoder.ImageMetadata;
+import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.proceduralclip.channelcopy.ChannelCopyProceduralClip;
@@ -49,6 +50,19 @@ public class CoreClipFactoryChainItemConfiguration {
             .withHeight(1080)
             .withLength(defaultLength)
             .build();
+
+    @PreferenceValue(name = "Default procedural clip length (ms)", defaultValue = "30000", group = "Clip")
+    public void setDefaultLength(Integer lengthInMilliseconds) {
+        if (lengthInMilliseconds <= 0) {
+            throw new RuntimeException("Length has to be greater or equal to 1");
+        }
+        defaultLength = TimelineLength.ofMillis(lengthInMilliseconds);
+        metadata = ImageMetadata.builder()
+                .withWidth(1920)
+                .withHeight(1080)
+                .withLength(defaultLength)
+                .build();
+    }
 
     @Bean
     public StandardProceduralClipFactoryChainItem singleColorProceduralClip(IndependentPixelOperation independentPixelOperation) {

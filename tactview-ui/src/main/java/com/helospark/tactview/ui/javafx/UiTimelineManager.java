@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
@@ -15,14 +16,11 @@ import javafx.application.Platform;
 
 @Component
 public class UiTimelineManager {
-    private static final int NUMBER_OF_FRAMES_TO_PRECACHE = 4;
+    private int numberOfFramesToCache = 4;
     // private IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
     private List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
     private List<Consumer<TimelinePosition>> playbackConsumers = new ArrayList<>();
     private List<Consumer<PlaybackStatus>> statusChangeConsumers = new ArrayList<>();
-    //    private double fps = 30;
-    //    private long sleepTime = (long) (1 / fps * 1000);
-    //    private BigDecimal increment = new BigDecimal(1).divide(new BigDecimal(fps), 100, RoundingMode.HALF_DOWN);
 
     private volatile TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
     private volatile boolean isPlaying;
@@ -123,7 +121,7 @@ public class UiTimelineManager {
     }
 
     public List<TimelinePosition> expectedNextFrames() {
-        return expectedNextFrames(NUMBER_OF_FRAMES_TO_PRECACHE);
+        return expectedNextFrames(numberOfFramesToCache);
 
     }
 
@@ -157,6 +155,11 @@ public class UiTimelineManager {
 
     public boolean isPlaybackInProgress() {
         return isPlaying;
+    }
+
+    @PreferenceValue(name = "Number of frames to preload during playback", defaultValue = "4", group = "Performance")
+    public void setImageClipLength(Integer numberOfFrames) {
+        numberOfFramesToCache = numberOfFrames;
     }
 
     public static enum PlaybackStatus {

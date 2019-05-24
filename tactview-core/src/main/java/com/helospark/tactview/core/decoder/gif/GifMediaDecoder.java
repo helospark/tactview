@@ -22,10 +22,12 @@ public class GifMediaDecoder implements VisualMediaDecoder {
     private static final int INFINITE_LOOP = 0;
     private GifFileReader gifFileReader;
     private BufferedImageToClipFrameResultConverter imageConverter;
+    private OpenCvImageDecorderDecorator imageLoader;
 
-    public GifMediaDecoder(GifFileReader gifFileReader, BufferedImageToClipFrameResultConverter imageConverter) {
+    public GifMediaDecoder(GifFileReader gifFileReader, BufferedImageToClipFrameResultConverter imageConverter, OpenCvImageDecorderDecorator imageLoader) {
         this.gifFileReader = gifFileReader;
         this.imageConverter = imageConverter;
+        this.imageLoader = imageLoader;
     }
 
     @Override
@@ -110,7 +112,7 @@ public class GifMediaDecoder implements VisualMediaDecoder {
 
             length = TimelineLength.ofMillis(lengthInMilliseconds);
         } else {
-            length = OpenCvImageDecorderDecorator.IMAGE_LENGTH;
+            length = imageLoader.getImageLength();
         }
         return length;
     }

@@ -13,18 +13,24 @@ import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
+import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
 public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
-    public static final TimelineLength IMAGE_LENGTH = TimelineLength.ofMillis(10000);
+    public TimelineLength imageLength = TimelineLength.ofMillis(10000);
     private ImageMediaLoader implementation;
     private MediaCache mediaCache;
 
     public OpenCvImageDecorderDecorator(ImageMediaLoader implementation, MediaCache mediaCache) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
+    }
+
+    @PreferenceValue(name = "Default image clip length (ms)", defaultValue = "10000", group = "Clip")
+    public void setImageClipLength(Integer lengthInMs) {
+        imageLength = TimelineLength.ofMillis(lengthInMs);
     }
 
     @Cacheable
@@ -36,7 +42,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
         return ImageMetadata.builder()
                 .withWidth(result.width)
                 .withHeight(result.height)
-                .withLength(IMAGE_LENGTH)
+                .withLength(imageLength)
                 .build();
     }
 
@@ -74,6 +80,10 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
         fromCopy.position(0);
         result.put(fromCopy);
 
+    }
+
+    public TimelineLength getImageLength() {
+        return imageLength;
     }
 
 }

@@ -8,6 +8,7 @@ import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.MenuContribution;
+import com.helospark.tactview.ui.javafx.preferences.PreferencesPage;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
 @Configuration
@@ -30,6 +31,12 @@ public class DefaultEditMenuItemConfiguration {
     @Order(1020)
     public MenuContribution deselectAllContributionMenuItem(SelectedNodeRepository selectedNodeRepository) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Clear selection"), event -> selectedNodeRepository.clearAllSelectedItems());
+    }
+
+    @Bean
+    @Order(2000)
+    public MenuContribution preferencesContributionMenuItem(PreferencesPage preferencesPage) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Preferences"), event -> preferencesPage.open());
     }
 
 }
