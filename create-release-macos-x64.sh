@@ -12,7 +12,7 @@ mvn clean install
 
 cp tactview-ui/target/tactview-ui*.jar release/macos/tactview.jar
 
-jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported,java.compiler,jdk.compiler,jdk.zipfs --output release/macos/java-runtime
+jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported,java.compiler,jdk.compiler,jdk.zipfs,java.sql,java.management --output release/macos/java-runtime
 
 g++ tactview-native/startup.cpp -o release/macos/tactview
 
@@ -26,6 +26,6 @@ otool -L tactview-native/*.dylib | awk '{print $1}' | sed 's/@rpath/\/usr\/local
 
 cd release
 
-builddate=`date '+%Y%M%d_%H%m%S'`
+builddate=`date '+%Y%m%d_%H%M%S'`
 filename="tactview_macos_$builddate.zip"
 zip -r $filename macos/

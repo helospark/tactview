@@ -13,6 +13,7 @@ target
 *.pdb
 *.exe
 *.dylib
+*.res
 
 .classpath
 .settings/

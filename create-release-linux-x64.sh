@@ -12,7 +12,7 @@ mvn clean install
 
 cp tactview-ui/target/tactview-ui*.jar release/linux64/tactview.jar
 
-jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported,java.compiler,jdk.compiler,jdk.zipfs --output release/linux64/java-runtime
+jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported,java.compiler,jdk.compiler,jdk.zipfs,java.sql,java.management --output release/linux64/java-runtime
 
 g++ tactview-native/startup.cpp -o release/linux64/tactview
 
@@ -31,6 +31,6 @@ ldd tactview-native/*.so | grep "=> /" | grep -v $BLACKLISTED_DEPENDENCIES | awk
 
 cd release
 
-builddate=`date '+%Y%M%d_%H%m%S'`
+builddate=`date '+%Y%m%d_%H%M%S'`
 filename="tactview_linux64_$builddate.zip"
 zip -r $filename linux64/
