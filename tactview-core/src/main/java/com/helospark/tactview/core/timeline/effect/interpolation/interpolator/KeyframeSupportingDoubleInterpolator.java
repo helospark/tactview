@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -80,6 +81,17 @@ public abstract class KeyframeSupportingDoubleInterpolator implements DoubleInte
             resultArea = resultArea.add(DoubleInterpolator.super.integrate(currentTime, to));
         }
         return resultArea;
+    }
+
+    @Override
+    public BigDecimal integrateUntil(TimelinePosition start, TimelineLength untilValue, BigDecimal max) {
+        if (!isUsingKeyframes()) {
+            BigDecimal constantValue = BigDecimal.valueOf(valueAt(start));
+
+            return untilValue.getSeconds().subtract(start.getSeconds()).divide(constantValue, 10, RoundingMode.HALF_UP);
+        } else {
+            return DoubleInterpolator.super.integrateUntil(start, untilValue, max);
+        }
     }
 
 }

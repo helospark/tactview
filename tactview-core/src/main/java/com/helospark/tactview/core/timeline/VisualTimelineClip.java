@@ -297,7 +297,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
             TimelineInterval originalInterval = this.interval;
             TimelinePosition originalStartPosition = originalInterval.getStartPosition();
             if (lengthCache == null || !this.interval.equals(cachedInterval)) {
-                lengthCache = timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), originalInterval.getLength(), new BigDecimal("1000"));
+                lengthCache = timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), originalInterval.getLength(), new BigDecimal("10000"));
                 cachedInterval = originalInterval;
             }
             return new TimelineInterval(originalStartPosition, new TimelineLength(lengthCache));

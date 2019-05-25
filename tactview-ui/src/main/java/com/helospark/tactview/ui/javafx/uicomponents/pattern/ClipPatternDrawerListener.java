@@ -148,17 +148,21 @@ public class ClipPatternDrawerListener {
 
             TimelineClip clipToUpdate = clipsToUpdateDomain.videoClip;
             Paint image;
-            if (clipToUpdate instanceof VisualTimelineClip) {
-                VisualTimelineClip videoClip = (VisualTimelineClip) clipToUpdate;
-                image = new ImagePattern(timelineImagePatternService.createTimelinePattern(videoClip, width));
-            } else if (clipToUpdate instanceof AudibleTimelineClip) {
-                AudibleTimelineClip audibleTimelineClip = (AudibleTimelineClip) clipToUpdate;
-                image = new ImagePattern(audioImagePatternService.createAudioImagePattern(audibleTimelineClip, width));
-            } else {
-                image = new Color(0, 0, 0, 1.0);
-            }
+            if (width <= 16000) {
+                if (clipToUpdate instanceof VisualTimelineClip) {
+                    VisualTimelineClip videoClip = (VisualTimelineClip) clipToUpdate;
+                    image = new ImagePattern(timelineImagePatternService.createTimelinePattern(videoClip, width));
+                } else if (clipToUpdate instanceof AudibleTimelineClip) {
+                    AudibleTimelineClip audibleTimelineClip = (AudibleTimelineClip) clipToUpdate;
+                    image = new ImagePattern(audioImagePatternService.createAudioImagePattern(audibleTimelineClip, width));
+                } else {
+                    image = new Color(0, 0, 0, 1.0);
+                }
 
-            Platform.runLater(() -> rectangle.setFill(image));
+                Platform.runLater(() -> rectangle.setFill(image));
+            } else {
+                Platform.runLater(() -> rectangle.setFill(Color.GRAY));
+            }
             clipsToUpdate.put(request.clipId, clipsToUpdateDomain.butWithZoomLevel(zoom));
         }
     }

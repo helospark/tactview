@@ -173,11 +173,11 @@ public class ClipAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX - rectangle.getLayoutX() < 15;
+        return currentX - rectangle.getLayoutX() < 15 / timelineState.getZoom();
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {
-        return rectangle.getLayoutX() + rectangle.getWidth() - currentX < 15;
+        return rectangle.getLayoutX() + rectangle.getWidth() - currentX < 15 / timelineState.getZoom();
     }
 
 }

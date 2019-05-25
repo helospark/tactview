@@ -165,11 +165,11 @@ public class EffectAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX < DRAG_PIXEL_DISTANCE;
+        return currentX < DRAG_PIXEL_DISTANCE / timelineState.getZoom();
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {
-        return rectangle.getWidth() - currentX < DRAG_PIXEL_DISTANCE;
+        return rectangle.getWidth() - currentX < DRAG_PIXEL_DISTANCE / timelineState.getZoom();
     }
 
 }

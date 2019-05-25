@@ -375,6 +375,7 @@ public class JavaFXUiMain extends Application {
 
         Platform.runLater(() -> {
             splashStage = new Stage(StageStyle.DECORATED);
+            splashStage.setTitle("Tactview starting...");
 
             splasViewh = new ImageView(new Image(getClass().getResource("/tactview-splash.png").toString()));
 

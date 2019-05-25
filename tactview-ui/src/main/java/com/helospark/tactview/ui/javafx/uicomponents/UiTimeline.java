@@ -2,6 +2,12 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
 
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -19,20 +25,19 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
+import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -42,38 +47,40 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 
 @Component
 public class UiTimeline {
 
+    private static final int MAX_CANVAS_WIDTH = 16000;
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManager;
     private UiTimelineManager uiTimelineManager;
     private LinkClipRepository linkClipRepository;
+    private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
 
     private Line positionIndicatorLine;
 
     private ZoomableScrollPane timeLineScrollPane;
     private VBox timelineTitlesPane;
     private BorderPane borderPane;
-    private Canvas timelineLabelCanvas;
+    private Rectangle timelineLabelCanvas;
 
     private Rectangle rectangle;
 
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
             TimelineManagerAccessor timelineManager, UiTimelineManager uiTimelineManager,
-            LinkClipRepository linkClipRepository) {
+            LinkClipRepository linkClipRepository, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter) {
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
         this.uiTimelineManager = uiTimelineManager;
         this.linkClipRepository = linkClipRepository;
+        this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
     }
 
     public BorderPane createTimeline(VBox lower, BorderPane root) {
@@ -180,21 +187,23 @@ public class UiTimeline {
         timelineTimeLabelsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
         Group timelineCanvasGroup = new Group();
-        timelineLabelCanvas = new Canvas(200, 35);
+        timelineLabelCanvas = new Rectangle(200, 35);
+        timelineLabelCanvas.widthProperty().bind(timelineBoxes.widthProperty());
+        timelineLabelCanvas.scaleXProperty().bind(timeLineScrollPane.zoomProperty());
 
         timelineBoxes.widthProperty()
-                .addListener(ipdateTimelineLabelCanvas(timelineBoxes));
+                .addListener((e, oldValue, newValue) -> updateTimelineLabels());
         timeLineScrollPane.zoomProperty()
-                .addListener(ipdateTimelineLabelCanvas(timelineBoxes));
+                .addListener((e, oldValue, newValue) -> updateTimelineLabels());
 
         //        timelineLabelCanvas.widthProperty()
         //                .bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
         timeLineScrollPane.hvalueProperty().bindBidirectional(timelineState.getHscroll());
         timeLineScrollPane.vvalueProperty().bindBidirectional(timelineState.getVscroll());
 
-        timelineLabelCanvas.widthProperty().addListener(newValue ->
-
-        updateTimelineLabels());
+        //        timelineLabelCanvas.widthProperty().addListener(newValue ->
+        //
+        //        updateTimelineLabels());
         //        timelineLabelCanvas.scaleXProperty().addListener(newValue -> updateTimelineLabels());
 
         timelineCanvasGroup.getChildren().add(timelineLabelCanvas);
@@ -252,94 +261,69 @@ public class UiTimeline {
         return borderPane;
     }
 
-    private ChangeListener<? super Number> ipdateTimelineLabelCanvas(VBox timelineBoxes) {
-        return (e, oldValue, newa) -> {
-            double newValue = timelineBoxes.widthProperty().get() * timeLineScrollPane.zoomProperty().get();
-            double newWidth = Math.min(newValue, 16000);
-            timelineLabelCanvas.widthProperty().set(newWidth);
-        };
-    }
-
     private void updateTimelineLabels() {
-        Platform.runLater(() -> {
-            System.out.println("Canvas width: " + timelineLabelCanvas.getWidth());
-            GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
+        System.out.println("Canvas width: " + timelineLabelCanvas.getWidth());
 
-            int width = (int) timelineLabelCanvas.getWidth();
-            int height = (int) timelineLabelCanvas.getHeight();
-            g.clearRect(0, 0, width, height);
-            drawLines(0.1, 29, 1.0, false);
-            drawLines(0.5, 27, 0.5, false);
-            drawLines(1.0, 24, 0.8, false);
-            drawLines(10.0, 20, 1.5, true);
-            drawLines(60.0, 16, 3.0, false);
-        });
+        int width = (int) (timelineLabelCanvas.getWidth() * timelineState.getZoom());
+        int height = (int) timelineLabelCanvas.getHeight();
+
+        if (width >= 16000) {
+            // this should be patched
+            timelineLabelCanvas.setFill(Color.BLACK);
+        } else {
+
+            BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+            Graphics2D g = (Graphics2D) result.getGraphics();
+
+            g.setComposite(AlphaComposite.Clear);
+            g.fillRect(0, 0, width, height);
+            g.setComposite(AlphaComposite.SrcOver);
+
+            drawLines(0.1, 29, 1.0, false, g, width);
+            drawLines(0.5, 28, 0.5, false, g, width);
+            drawLines(1.0, 25, 0.8, false, g, width);
+            drawLines(10.0, 23, 1.5, timelineState.getZoom() < 2.0 && timelineState.getZoom() > 1.0, g, width);
+            drawLines(60.0, 21, 3.0, timelineState.getZoom() < 1.0 && timelineState.getZoom() > 0.1, g, width);
+            drawLines(600.0, 19, 3.0, timelineState.getZoom() < 0.1 && timelineState.getZoom() > 0.01, g, width);
+            drawLines(3600.0, 17, 5.0, timelineState.getZoom() < 0.01, g, width);
+            Image texture = byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
+
+            Platform.runLater(() -> {
+                timelineLabelCanvas.setFill(new ImagePattern(texture));
+            });
+        }
     }
 
-    private void drawLines(double time, int lineStart, double lineWidth, boolean addLabel) {
+    private void drawLines(double time, int lineStart, double lineWidth, boolean addLabel, Graphics2D g, int width) {
         int startPosition = 4;
-        int width = (int) timelineLabelCanvas.getWidth();
         int height = (int) timelineLabelCanvas.getHeight();
-        GraphicsContext g = timelineLabelCanvas.getGraphicsContext2D();
         double secondLength = timelineState.secondsToPixelsWithZoom(new TimelineLength(BigDecimal.valueOf(time)));
 
         if (secondLength > 3) {
-            g.setStroke(Color.BLACK);
-            g.setLineWidth(lineWidth);
+            g.setColor(java.awt.Color.BLACK);
+            g.setStroke(new BasicStroke((float) lineWidth));
             for (double i = startPosition, j = 0; i <= width; i += secondLength, j += time) {
-                g.strokeLine(i, lineStart, i, height);
+                g.draw(new Line2D.Double(i, lineStart, i, height));
                 if (addLabel && secondLength > 30) {
                     String text = formatSeconds(j);
-                    double textWidth = computeTextWidth(g.getFont(), text, 0);
-                    g.fillText(text, i - (textWidth / 2), lineStart - 7);
+                    double textWidth = computeTextWidth(g, text);
+                    g.drawString(text, (int) (i - (textWidth / 2)), lineStart - 7);
                 }
             }
         }
     }
 
     private String formatSeconds(double j) {
-        int allSeconds = (int) j;
-
-        int hours = allSeconds / (60 * 60);
-        int minutes = (allSeconds % 3600) / 60;
-        int seconds = (allSeconds % 60);
-
-        String result = "";
-
-        if (hours > 0) {
-            result += hours;
-        }
-        if (minutes > 0) {
-            if (!result.isEmpty()) {
-                result += ":";
-                result += String.format("%02d", minutes);
-            } else {
-                result += String.format("%d", minutes);
-            }
-        }
-
-        if (!result.isEmpty()) {
-            result += ":";
-            result += String.format("%02d", seconds);
-        } else {
-            result += String.format("%d", seconds);
-        }
-
-        return result;
+        // https://stackoverflow.com/a/40487511/8258222
+        return java.time.Duration.ofMillis((int) (j * 1000))
+                .toString()
+                .substring(2)
+                .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+                .toLowerCase();
     }
 
-    private double computeTextWidth(Font font, String text, double wrappingWidth) {
-        Text helper = new Text();
-        helper.setFont(font);
-        helper.setText(text);
-        // Note that the wrapping width needs to be set to zero before
-        // getting the text's real preferred width.
-        helper.setWrappingWidth(0);
-        helper.setLineSpacing(0);
-        double w = Math.min(helper.prefWidth(-1), wrappingWidth);
-        helper.setWrappingWidth((int) Math.ceil(w));
-        double textWidth = Math.ceil(helper.getLayoutBounds().getWidth());
-        return textWidth;
+    private double computeTextWidth(Graphics g, String text) {
+        return g.getFontMetrics().stringWidth(text);
     }
 
     private void jumpTo(double xPosition) {
