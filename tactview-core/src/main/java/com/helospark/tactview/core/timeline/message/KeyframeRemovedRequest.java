@@ -7,11 +7,13 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 public class KeyframeRemovedRequest {
     private String descriptorId;
     private TimelinePosition globalTimelinePosition;
+    private TimelinePosition localTimelinePosition;
 
     @Generated("SparkTools")
     private KeyframeRemovedRequest(Builder builder) {
         this.descriptorId = builder.descriptorId;
         this.globalTimelinePosition = builder.globalTimelinePosition;
+        this.localTimelinePosition = builder.localTimelinePosition;
     }
 
     public String getDescriptorId() {
@@ -22,9 +24,13 @@ public class KeyframeRemovedRequest {
         return globalTimelinePosition;
     }
 
+    public TimelinePosition getLocalTimelinePosition() {
+        return localTimelinePosition;
+    }
+
     @Override
     public String toString() {
-        return "KeyframeRemovedRequest [descriptorId=" + descriptorId + ", globalTimelinePosition=" + globalTimelinePosition + "]";
+        return "KeyframeRemovedRequest [descriptorId=" + descriptorId + ", globalTimelinePosition=" + globalTimelinePosition + ", localTimelinePosition=" + localTimelinePosition + "]";
     }
 
     @Generated("SparkTools")
@@ -36,6 +42,7 @@ public class KeyframeRemovedRequest {
     public static final class Builder {
         private String descriptorId;
         private TimelinePosition globalTimelinePosition;
+        private TimelinePosition localTimelinePosition;
 
         private Builder() {
         }
@@ -47,6 +54,11 @@ public class KeyframeRemovedRequest {
 
         public Builder withGlobalTimelinePosition(TimelinePosition globalTimelinePosition) {
             this.globalTimelinePosition = globalTimelinePosition;
+            return this;
+        }
+
+        public Builder withLocalTimelinePosition(TimelinePosition localTimelinePosition) {
+            this.localTimelinePosition = localTimelinePosition;
             return this;
         }
 

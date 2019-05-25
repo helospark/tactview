@@ -5,7 +5,6 @@ import java.util.Map;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
-import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class RemoveAllKeyframeCommand implements UiCommand {
@@ -25,11 +24,7 @@ public class RemoveAllKeyframeCommand implements UiCommand {
         previousValues.keySet()
                 .stream()
                 .forEach(key -> {
-                    KeyframeRemovedRequest request = KeyframeRemovedRequest.builder()
-                            .withDescriptorId(id)
-                            .withGlobalTimelinePosition(key)
-                            .build();
-                    effectParametersRepository.removeKeyframe(request);
+                    effectParametersRepository.removeKeyframe(id, key);
                 });
     }
 

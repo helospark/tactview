@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.commands.impl;
 
 import java.util.Optional;
 
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
@@ -19,8 +20,20 @@ public class RemoveKeyframeCommand implements UiCommand {
 
     @Override
     public void execute() {
-        previousValue = effectParametersRepository.getKeyframeableEffectValue(request.getDescriptorId(), request.getGlobalTimelinePosition());
-        effectParametersRepository.removeKeyframe(request);
+        // TODO: this is a bug
+        TimelinePosition offset = effectParametersRepository.findGlobalPositionForValueProvider(request.getDescriptorId()).get();
+        TimelinePosition localPosition = request.getLocalTimelinePosition();
+        TimelinePosition globalPosition = request.getGlobalTimelinePosition();
+
+        if (localPosition == null) {
+            localPosition = globalPosition.subtract(offset);
+        }
+        if (globalPosition == null) {
+            globalPosition = localPosition.add(offset);
+        }
+
+        previousValue = effectParametersRepository.getKeyframeableEffectValue(request.getDescriptorId(), localPosition);
+        effectParametersRepository.removeKeyframe(request.getDescriptorId(), globalPosition);
     }
 
     @Override

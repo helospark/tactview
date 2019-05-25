@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
-import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class AddKeyframeForPropertyCommand implements UiCommand {
@@ -39,11 +38,7 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
                     .build();
             effectParametersRepository.keyframeAdded(keyframeAddedRequest);
         } else {
-            KeyframeRemovedRequest keyframeRemoveRequest = KeyframeRemovedRequest.builder()
-                    .withDescriptorId(request.getDescriptorId())
-                    .withGlobalTimelinePosition(request.getGlobalTimelinePosition())
-                    .build();
-            effectParametersRepository.removeKeyframe(keyframeRemoveRequest);
+            effectParametersRepository.removeKeyframe(request.getDescriptorId(), request.getGlobalTimelinePosition());
         }
     }
 

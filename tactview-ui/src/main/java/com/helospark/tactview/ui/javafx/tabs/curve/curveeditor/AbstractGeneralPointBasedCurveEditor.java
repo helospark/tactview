@@ -50,7 +50,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
                     KeyframeRemovedRequest keyframeRemoveRequest = KeyframeRemovedRequest.builder()
                             .withDescriptorId(request.currentProvider.getId())
-                            .withGlobalTimelinePosition(elementToRemove.timelinePosition)
+                            .withLocalTimelinePosition(elementToRemove.timelinePosition)
                             .build();
 
                     commandInterpreter.sendWithResult(new RemoveKeyframeCommand(effectParametersRepository, keyframeRemoveRequest));
@@ -71,7 +71,8 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
     protected void addNewPoint(Point remappedMousePosition, CurveEditorMouseRequest request) {
         // TODO: commandInterpreter
-        ((KeyframeSupportingDoubleInterpolator) request.currentKeyframeableEffect).valueAdded(new TimelinePosition(remappedMousePosition.x), String.valueOf(remappedMousePosition.y));
+        TimelinePosition offset = effectParametersRepository.findGlobalPositionForValueProvider(request.currentProvider.getId()).get();
+        ((KeyframeSupportingDoubleInterpolator) request.currentKeyframeableEffect).valueAdded(new TimelinePosition(remappedMousePosition.x).subtract(offset), String.valueOf(remappedMousePosition.y));
     }
 
     protected abstract List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request);

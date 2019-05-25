@@ -164,7 +164,7 @@ public class UiTimeline {
         timelineTitlesPane.getStyleClass().add("timeline-titles-pane");
         ScrollPane timelineTitlesScrollPane = new ScrollPane();
         timelineTitlesScrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
-        timelineTitlesScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
+        timelineTitlesScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         timelineTitlesScrollPane.vvalueProperty().bindBidirectional(timeLineScrollPane.vvalueProperty());
         VBox timelineTitles = new VBox();
         Bindings.bindContentBidirectional(timelineState.getChannelTitlesAsNodes(), timelineTitles.getChildren());

@@ -32,7 +32,6 @@ import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -132,11 +131,11 @@ public class EffectParametersRepository {
         }
     }
 
-    public void removeKeyframe(KeyframeRemovedRequest request) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(request.getDescriptorId());
-        valueToChange.effect.removeKeyframeAt(positionToLocal(request.getGlobalTimelinePosition(), valueToChange));
+    public void removeKeyframe(String id, TimelinePosition globalPosition) {
+        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(id);
+        valueToChange.effect.removeKeyframeAt(positionToLocal(globalPosition, valueToChange));
         valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
-        messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(request.getDescriptorId(), valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
+        messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(id, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
     }
 
     public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
