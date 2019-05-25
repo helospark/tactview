@@ -387,4 +387,8 @@
 
 .size-drop-down {
     -fx-background-color: transparent;
+    -fx-max-width: 70px;
+}
+.size-drop-down > .list-cell {
+    -fx-text-overrun: clip;
 }

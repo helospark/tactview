@@ -18,6 +18,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
@@ -35,6 +36,7 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
 
     public GaussianNoiseProceduralClip(GaussianNoiseProceduralClip gaussianNoiseProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(gaussianNoiseProceduralClip, cloneRequestMetadata);
+        ReflectionUtil.copyOrCloneFieldFromTo(gaussianNoiseProceduralClip, this);
     }
 
     public GaussianNoiseProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {

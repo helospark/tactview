@@ -1,10 +1,12 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.pojo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Point {
     public double x;
     public double y;
 
-    public Point(double x, double y) {
+    public Point(@JsonProperty("x") double x, @JsonProperty("y") double y) {
         this.x = x;
         this.y = y;
     }

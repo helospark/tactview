@@ -314,7 +314,7 @@ public class CoreClipFactoryChainItemConfiguration {
                     return new ScriptProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), scriptService, resourceReader);
                 },
                 (node, loadMetadata) -> {
-                    return new ScriptProceduralClip(metadata, node, loadMetadata, scriptService);
+                    return new ScriptProceduralClip(metadata, node, loadMetadata, scriptService, resourceReader);
                 });
     }
 

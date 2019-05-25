@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.util.bezier;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 
 public class CubicBezierPoint {
@@ -7,7 +8,7 @@ public class CubicBezierPoint {
     public Point controlPointIn;
     public Point controlPointOut;
 
-    public CubicBezierPoint(double value, Point controlPointIn, Point controlPointOut) {
+    public CubicBezierPoint(@JsonProperty("value") double value, @JsonProperty("controlPointIn") Point controlPointIn, @JsonProperty("controlPointOut") Point controlPointOut) {
         this.value = value;
         this.controlPointIn = controlPointIn;
         this.controlPointOut = controlPointOut;

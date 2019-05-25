@@ -21,6 +21,8 @@ import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.ClassPathResourceReader;
 
 @ExtendWith(TestResourceParameterResolver.class)
@@ -80,6 +82,48 @@ public class SaveAndLoadIT {
 
         IntegrationTestUtil.assertFrameEquals(actualFrame1.getVideoResult(), expectedFrame1.getVideoResult(), "Video frames not equal");
         IntegrationTestUtil.assertFrameEquals(actualFrame2.getVideoResult(), expectedFrame2.getVideoResult(), "Video frames not equal");
+    }
+
+    @Test
+    public void testSaveAndLoadOfAnimatedProperties() throws IOException {
+        TimelineClip addedClip = fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
+
+        // MultiKeyframeDoubleInterpolator
+        fakeUi.selectClipAndFindSettingByName(addedClip.getId(), "color")
+                .enableKeyframes()
+                .moveToPosition(TimelinePosition.ofZero())
+                .addKeyframe(new Color(1.0, 1.0, 1.0))
+                .moveToPosition(TimelinePosition.ofSeconds(10))
+                .addKeyframe(new Color(0.0, 1.0, 1.0));
+
+        // Bezier interpolator
+        fakeUi.selectClipAndFindSettingByName(addedClip.getId(), "translate")
+                .enableKeyframes()
+                .moveToPosition(TimelinePosition.ofSeconds(0))
+                .addKeyframe(new Point(0.0, 0.0))
+                .moveToPosition(TimelinePosition.ofSeconds(4))
+                .addKeyframe(new Point(300.0, 0.0));
+
+        AudioVideoFragment expectedFrame1 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(0.0));
+        AudioVideoFragment expectedFrame2 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(3.5));
+        AudioVideoFragment expectedFrame3 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(6.0));
+
+        File file = File.createTempFile("sample_save_2_" + System.currentTimeMillis(), ".tvs");
+        fakeUi.clickSaveMenuItem()
+                .selectFile(file);
+
+        fakeUi.deleteClip(addedClip.getId());
+
+        fakeUi.clickLoadMenuItem()
+                .selectFile(file);
+
+        AudioVideoFragment actualFrame1 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(0.0));
+        AudioVideoFragment actualFrame2 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(3.5));
+        AudioVideoFragment actualFrame3 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(6.0));
+
+        IntegrationTestUtil.assertFrameEquals(actualFrame1.getVideoResult(), expectedFrame1.getVideoResult(), "Video frames not equal");
+        IntegrationTestUtil.assertFrameEquals(actualFrame2.getVideoResult(), expectedFrame2.getVideoResult(), "Video frames not equal");
+        IntegrationTestUtil.assertFrameEquals(actualFrame3.getVideoResult(), expectedFrame3.getVideoResult(), "Video frames not equal");
     }
 
     private File copyTestFileFromClassPathToTmpDirectory() throws IOException {

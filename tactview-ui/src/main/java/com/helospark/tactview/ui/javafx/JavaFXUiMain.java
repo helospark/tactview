@@ -171,7 +171,7 @@ public class JavaFXUiMain extends Application {
 
         VBox rightVBox = new VBox(5);
         rightVBox.setAlignment(Pos.TOP_CENTER);
-        rightVBox.setPrefWidth(350);
+        rightVBox.setPrefWidth(360);
         rightVBox.setId("clip-view");
 
         canvas = new Canvas();

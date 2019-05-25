@@ -40,6 +40,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
@@ -98,6 +99,10 @@ public class TextProceduralClip extends ProceduralVisualClip {
             }
         }
 
+        if (maxWidth <= 0.00001 || totalHeight <= 0.00001) {
+            return ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
+        }
+
         BufferedImage bufferedImage = new BufferedImage((int) Math.ceil(maxWidth), (int) Math.ceil(totalHeight), BufferedImage.TYPE_4BYTE_ABGR);
         Graphics2D graphics = (Graphics2D) bufferedImage.getGraphics();
         graphics.setFont(font);
@@ -114,7 +119,7 @@ public class TextProceduralClip extends ProceduralVisualClip {
         double outlineWidth = outlineWidthProvider.getValueAt(relativePosition) * request.getScale();
         var outlineColor = outlineColorProvider.getValueAt(relativePosition);
 
-        float yPosition = fontMetrics.getHeight() * lineHeightMultiplier;
+        float yPosition = fontMetrics.getHeight() * lineHeightMultiplier - fontMetrics.getDescent();
         for (int i = 0; i < lines.size(); ++i) {
             String stringToPrint = lines.get(i);
             float xPosition = alignments.get(i).floatValue();
@@ -148,7 +153,8 @@ public class TextProceduralClip extends ProceduralVisualClip {
     }
 
     private float getLineHeight(Font font, FontMetrics fontMetrics, float lineHeightMultiplier) {
-        return (fontMetrics.getLeading() + fontMetrics.getDescent() + font.getSize2D()) * lineHeightMultiplier;
+        //  return (fontMetrics.getLeading() + fontMetrics.getDescent() + font.getSize2D()) * lineHeightMultiplier;
+        return fontMetrics.getHeight();
     }
 
     private FontMetrics getFontMetrics(Font font) {

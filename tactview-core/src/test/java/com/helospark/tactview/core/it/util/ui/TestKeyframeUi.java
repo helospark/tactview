@@ -6,6 +6,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.CompositeKeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
@@ -46,6 +47,13 @@ public class TestKeyframeUi {
         addKeyframeForChild(String.valueOf(interpolationLine.end.y), 1, point2);
     }
 
+    public TestKeyframeUi addKeyframe(Point point) {
+        PointProvider pointProvider = (PointProvider) descriptor.getKeyframeableEffect();
+        addKeyframeForChild(String.valueOf(point.x), 0, pointProvider);
+        addKeyframeForChild(String.valueOf(point.y), 1, pointProvider);
+        return this;
+    }
+
     public TestKeyframeUi addKeyframe(Color color) {
         ColorProvider colorProvider = (ColorProvider) descriptor.getKeyframeableEffect();
 
@@ -56,9 +64,9 @@ public class TestKeyframeUi {
         return this;
     }
 
-    private void addKeyframeForChild(String data, int index, CompositeKeyframeableEffect colorProvider) {
+    private void addKeyframeForChild(String data, int index, CompositeKeyframeableEffect composite) {
         KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
-                .withDescriptorId(colorProvider.getChildren().get(index).getId())
+                .withDescriptorId(composite.getChildren().get(index).getId())
                 .withGlobalTimelinePosition(position)
                 .withValue(data)
                 .build();

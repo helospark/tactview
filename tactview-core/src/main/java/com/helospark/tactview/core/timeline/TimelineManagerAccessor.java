@@ -234,15 +234,17 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
                     .map(effect -> effect.getId())
                     .forEach(effectId -> ignoredIds.add(effectId));
 
-            specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds)
-                    .stream()
-                    .filter(a -> {
-                        TimelinePosition relativeMove = originalInterval.getStartPosition().subtract(a.getClipPosition());
-                        boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
-                        return allClipsCanBePlaced;
-                    })
-                    .sorted()
-                    .findFirst();
+            synchronized (timelineChannelsState.fullLock) { // allLinkedClipsCanBeMoved requires state modification
+                specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds)
+                        .stream()
+                        .filter(a -> {
+                            TimelinePosition relativeMove = originalInterval.getStartPosition().subtract(a.getClipPosition());
+                            boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
+                            return allClipsCanBePlaced;
+                        })
+                        .sorted()
+                        .findFirst();
+            }
             if (specialPositionUsed.isPresent()) {
                 newPosition = specialPositionUsed.get().getClipPosition();
             }

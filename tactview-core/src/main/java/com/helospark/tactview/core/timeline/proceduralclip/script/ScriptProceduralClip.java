@@ -42,8 +42,9 @@ public class ScriptProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(checkerBoardProceduralClip, this);
     }
 
-    public ScriptProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, ScriptService scriptService) {
+    public ScriptProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, ScriptService scriptService, ClassPathResourceReader resourceReader) {
         super(metadata, node, loadMetadata);
+        this.template = resourceReader.readClasspathFile("template/procedural-clip-template.template");
         this.scriptService = scriptService;
     }
 
