@@ -14,6 +14,12 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         return computeIntersectingIntervals(interval).isEmpty();
     }
 
+    public boolean canAddIntervalAtExcluding(TimelineInterval interval, List<T> exclusions) {
+        List<T> intersectingIntervals = computeIntersectingIntervals(interval);
+        intersectingIntervals.removeAll(exclusions);
+        return intersectingIntervals.isEmpty();
+    }
+
     public List<T> computeIntersectingIntervals(TimelineInterval interval) {
         List<T> result = new ArrayList<>(); // could be an emptylist, to avoid creating instances here unless necessary
         int index = 0;

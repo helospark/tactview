@@ -179,6 +179,13 @@ public class TimelineChannel {
         }
     }
 
+    public boolean canAddResourceAtExcluding(TimelineInterval interval, Collection<String> excludeClipId) {
+        List<TimelineClip> excludedClips = excludeClipId.stream()
+                .flatMap(a -> findClipById(a).stream())
+                .collect(Collectors.toList());
+        return clips.canAddIntervalAtExcluding(interval, excludedClips);
+    }
+
     public List<String> getAllClipId() {
         return clips.stream()
                 .map(clip -> clip.getId())
@@ -193,10 +200,10 @@ public class TimelineChannel {
         return fullChannelLock;
     }
 
-    public boolean canAddResourceAtExcluding(TimelineInterval clipNewPosition, Collection<String> linkedClipIds) {
-        return linkedClipIds.stream()
-                .anyMatch(id -> canAddResourceAtExcluding(clipNewPosition, id));
-    }
+    //    public boolean canAddResourceAtExcluding(TimelineInterval clipNewPosition, Collection<String> linkedClipIds) {
+    //        return linkedClipIds.stream()
+    //                .anyMatch(id -> canAddResourceAtExcluding(clipNewPosition, id));
+    //    }
 
     public TimelinePosition findMaximumEndPosition() {
         TimelinePosition endPosition = TimelinePosition.ofZero();

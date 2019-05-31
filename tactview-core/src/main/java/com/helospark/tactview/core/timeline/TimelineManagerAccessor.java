@@ -306,7 +306,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
                         .stream()
                         .allMatch(clip -> {
                             TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow();
-                            return channel.canAddResourceAtExcluding(clip.getInterval().butAddOffset(relativeMove), clip.getId());
+                            return channel.canAddResourceAtExcluding(clip.getInterval().butAddOffset(relativeMove), linkedClipIds);
                         });
 
                 if (canAddResource) {

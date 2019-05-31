@@ -266,15 +266,15 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     public abstract TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata);
 
-    protected void changeRenderStartPosition(TimelinePosition position, TimelinePosition globalTimelinePosition) {
-        this.renderOffset = globalTimelinePosition.toLength();
+    protected void changeRenderStartPosition(TimelinePosition localPosition, TimelinePosition globalTimelinePosition, TimelineLength originalRenderOffset) {
+        this.renderOffset = localPosition.add(originalRenderOffset).toLength();
         TimelineInterval newInterval = this.interval.butWithStartPosition(globalTimelinePosition);
 
         this.setInterval(newInterval);
 
         getEffects()
                 .stream()
-                .forEach(a -> a.setInterval(a.getInterval().butAddOffset(position.negate())));
+                .forEach(a -> a.setInterval(a.getInterval().butAddOffset(localPosition.negate())));
     }
 
     protected void changeRenderEndPosition(TimelinePosition localPosition) {
@@ -289,7 +289,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
         clipOne.changeRenderEndPosition(globalTimelinePosition);
         // getEndPosition() should be globalTimelinePosition, however due to timescale interpolation, we might have lost some resolution, so let's just use endPosition of first clip
-        clipTwo.changeRenderStartPosition(localPosition, clipOne.getInterval().getEndPosition());
+        clipTwo.changeRenderStartPosition(localPosition, clipOne.getInterval().getEndPosition(), renderOffset);
 
         handleEffect(localPosition, clipOne, false);
         handleEffect(TimelinePosition.ofZero(), clipTwo, true);

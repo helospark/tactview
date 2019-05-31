@@ -73,8 +73,8 @@ public class TimelineDragAndDropHandler {
             String dbString = db.getString();
             double currentX = event.getX();
             AddClipRequest addClipRequest = addClipRequest(channelId, dbFiles, dbString, currentX);
-            selectedNodeRepository.clearAllSelectedItems();
             if (!isLoadingInprogress && dragRepository.currentlyDraggedClip() == null && ((dbFiles != null && !dbFiles.isEmpty()) || isStringClip(db))) {
+                selectedNodeRepository.clearAllSelectedItems();
                 isLoadingInprogress = true;
 
                 try {
