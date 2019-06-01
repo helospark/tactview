@@ -310,17 +310,26 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
                         });
 
                 if (canAddResource) {
+                    List<TimelineChannel> channelForClip = new ArrayList<>();
                     linkedClips
                             .stream()
                             .forEach(clip -> {
                                 TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow();
-                                TimelineInterval clipCurrentInterval = clip.getInterval();
-                                TimelinePosition clipNewPosition = clipCurrentInterval.getStartPosition().add(relativeMove);
-                                channel.moveClip(clip.getId(), clipNewPosition);
-                                messagingService.sendAsyncMessage(
-                                        new ClipMovedMessage(clip.getId(), clipNewPosition, channel.getId(), finalSpecialPositionUsed, clipCurrentInterval, clip.getGlobalInterval(),
-                                                moveClipRequest.moreMoveExpected));
+                                channel.removeClip(clip.getId());
+                                channelForClip.add(channel);
                             });
+
+                    for (int i = 0; i < linkedClips.size(); ++i) {
+                        TimelineClip clip = linkedClips.get(i);
+                        TimelineChannel channel = channelForClip.get(i);
+                        TimelineInterval clipCurrentInterval = clip.getInterval();
+                        TimelinePosition clipNewPosition = clipCurrentInterval.getStartPosition().add(relativeMove);
+                        clip.setInterval(new TimelineInterval(clipNewPosition, clipCurrentInterval.getLength()));
+                        channel.addResource(clip);
+                        messagingService.sendMessage(
+                                new ClipMovedMessage(clip.getId(), clipNewPosition, channel.getId(), finalSpecialPositionUsed, clipCurrentInterval, clip.getGlobalInterval(),
+                                        moveClipRequest.moreMoveExpected));
+                    }
 
                 }
 

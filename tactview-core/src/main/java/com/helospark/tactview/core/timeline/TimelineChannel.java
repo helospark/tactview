@@ -183,7 +183,7 @@ public class TimelineChannel {
         List<TimelineClip> excludedClips = excludeClipId.stream()
                 .flatMap(a -> findClipById(a).stream())
                 .collect(Collectors.toList());
-        return clips.canAddIntervalAtExcluding(interval, excludedClips);
+        return clips.canAddIntervalAtExcluding(interval, excludedClips) && interval.getStartPosition().isGreaterOrEqualToThan(TimelinePosition.ofZero());
     }
 
     public List<String> getAllClipId() {

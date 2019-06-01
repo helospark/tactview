@@ -269,7 +269,7 @@ public class TimelineDragAndDropHandler {
                         .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSeconds(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                         .build();
 
-                commandInterpreter.sendWithResult(command);
+                commandInterpreter.sendWithResult(command).join();
             }
         }
     }
