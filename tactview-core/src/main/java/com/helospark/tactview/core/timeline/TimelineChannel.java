@@ -186,6 +186,10 @@ public class TimelineChannel {
         return clips.canAddIntervalAtExcluding(interval, excludedClips) && interval.getStartPosition().isGreaterOrEqualToThan(TimelinePosition.ofZero());
     }
 
+    public boolean canAddResourceAtExcludingClips(TimelineInterval interval, List<TimelineClip> excludedClips) {
+        return clips.canAddIntervalAtExcluding(interval, excludedClips) && interval.getStartPosition().isGreaterOrEqualToThan(TimelinePosition.ofZero());
+    }
+
     public List<String> getAllClipId() {
         return clips.stream()
                 .map(clip -> clip.getId())
