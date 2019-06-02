@@ -3,9 +3,14 @@ package com.helospark.tactview.ui.javafx.tabs.curve.curveeditor;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.numerical.sine.SineDoubleInterpolator;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
 @Component
 public class SineDoubleCurveEditor extends EditableFieldSupportingCurveEditor {
+
+    public SineDoubleCurveEditor(UiCommandInterpreterService commandInterpreterService) {
+        super(commandInterpreterService);
+    }
 
     @Override
     public void initializeControl(ControlInitializationRequest request) {
