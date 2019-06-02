@@ -23,6 +23,12 @@ public class IntegerProvider extends KeyframeableEffect {
         this.interpolator = interpolator;
     }
 
+    public IntegerProvider(MultiKeyframeBasedDoubleInterpolator interpolator) {
+        this.min = Integer.MIN_VALUE;
+        this.max = Integer.MAX_VALUE;
+        this.interpolator = interpolator;
+    }
+
     @Override
     public Integer getValueAt(TimelinePosition position) {
         Double value = interpolator.valueAt(position);

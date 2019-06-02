@@ -35,6 +35,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptProcedur
 import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.text.StopWatchTextProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.water.CausticProceduralClip;
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
@@ -326,6 +327,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new CausticProceduralClip(metadata, node, loadMetadata, independentPixelOperation);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem stopWatchProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
+        return new StandardProceduralClipFactoryChainItem("stopwatchtext", "Stop watch text",
+                request -> {
+                    return new StopWatchTextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter);
+                },
+                (node, loadMetadata) -> {
+                    return new StopWatchTextProceduralClip(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter);
                 });
     }
 }

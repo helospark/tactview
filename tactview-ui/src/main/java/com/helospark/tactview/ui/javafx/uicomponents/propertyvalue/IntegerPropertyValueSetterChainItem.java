@@ -46,7 +46,8 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         HBox hbox = new HBox();
         hbox.getChildren().add(textField);
 
-        if (Objects.equals(descriptor.getRenderHints().get(RenderTypeHint.TYPE), SliderValueType.INPUT_FIELD)) {
+        if (Objects.equals(descriptor.getRenderHints().get(RenderTypeHint.TYPE), SliderValueType.INPUT_FIELD) || integerProvider.getMin().equals(Integer.MIN_VALUE)
+                || integerProvider.getMax().equals(Integer.MAX_VALUE)) {
             textField.setOnKeyReleased(newValue -> {
                 userChangedValueObservable.setValue(textField.getText());
             });

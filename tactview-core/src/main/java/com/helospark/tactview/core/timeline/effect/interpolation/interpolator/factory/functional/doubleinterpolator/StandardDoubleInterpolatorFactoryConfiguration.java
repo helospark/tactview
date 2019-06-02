@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mi
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.MixedDoubleInterpolatorElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.numerical.line.LineDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.numerical.sine.SineDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.numerical.square.SquareDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.bezier.CubicBezierPoint;
 
@@ -92,6 +93,18 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
                     .withMinValue(-1.0)
                     .withMaxValue(1.0)
                     .withStartOffset(0.0)
+                    .build();
+        });
+    }
+
+    @Bean
+    public StandardDoubleInterpolatorFactory<?> squareDoubleInterpolator() {
+        return new StandardDoubleInterpolatorFactory<>("squareDoubleInterpolator", SquareDoubleInterpolator.class, previous -> {
+            return SquareDoubleInterpolator.builder()
+                    .withMinValue(-1.0)
+                    .withMaxValue(1.0)
+                    .withOnTime(1.0)
+                    .withOffTime(1.0)
                     .build();
         });
     }
