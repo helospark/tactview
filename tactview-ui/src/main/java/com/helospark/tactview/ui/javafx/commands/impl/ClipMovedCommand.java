@@ -30,6 +30,8 @@ public class ClipMovedCommand implements UiCommand {
 
     private boolean moreMoveExpected;
 
+    private boolean wasOperationSuccessful = false;
+
     @Generated("SparkTools")
     private ClipMovedCommand(Builder builder) {
         this.isRevertable = builder.isRevertable;
@@ -57,18 +59,25 @@ public class ClipMovedCommand implements UiCommand {
                 .withEnableJumpingToSpecialPosition(enableJumpingToSpecialPosition)
                 .build();
 
-        timelineManager.moveClip(request);
+        wasOperationSuccessful = timelineManager.moveClip(request);
     }
 
     @Override
     public void revert() {
-        MoveClipRequest request = MoveClipRequest.builder()
-                .withClipId(clipId)
-                .withNewPosition(previousPosition)
-                .withNewChannelId(originalChannelId)
-                .withEnableJumpingToSpecialPosition(false)
-                .build();
-        timelineManager.moveClip(request);
+        if (wasOperationSuccessful) {
+            MoveClipRequest request = MoveClipRequest.builder()
+                    .withClipId(clipId)
+                    .withAdditionalClipIds(additionalClipIds)
+                    .withNewPosition(previousPosition)
+                    .withNewChannelId(originalChannelId)
+                    .withEnableJumpingToSpecialPosition(false)
+                    .build();
+            timelineManager.moveClip(request);
+        }
+    }
+
+    public boolean wasOperationSuccessful() {
+        return wasOperationSuccessful;
     }
 
     @Override

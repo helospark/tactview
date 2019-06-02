@@ -339,19 +339,23 @@
 }
 
 .timeline-clip.primary-active .clip-rectangle {
-   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
+   -fx-opacity: 0.95;
 }
 
 .timeline-effect.primary-active {
-   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
+   -fx-opacity: 0.95;
 }
 
 .timeline-clip.secondary-active .clip-rectangle {
-   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
+   -fx-opacity: 0.95;
 }
 
 .timeline-effect.secondary-active {
-   -fx-effect: dropshadow(three-pass-box, rgba(240,248,255,0.9), 3, 0, 0, 0);
+   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
+   -fx-opacity: 0.95;
 }
 
 .markdown-title-one {

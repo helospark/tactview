@@ -269,4 +269,29 @@ public class TimelineChannel {
         return maxBitRate;
     }
 
+    public Optional<TimelineClip> findFirstClipToLeft(String clipId) {
+        TimelineClip previous = null;
+        for (var clip : clips) {
+            if (clip.getId().equals(clipId)) {
+                return Optional.ofNullable(previous);
+            }
+            previous = clip;
+        }
+        return Optional.empty();
+    }
+
+    public Optional<TimelineClip> findFirstClipToRight(String clipId) {
+        int i = 0;
+        for (; i < clips.size(); ++i) {
+            if (clips.get(i).getId().equals(clipId)) {
+                break;
+            }
+        }
+        if (i + 1 >= clips.size()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(clips.get(i + 1));
+        }
+    }
+
 }

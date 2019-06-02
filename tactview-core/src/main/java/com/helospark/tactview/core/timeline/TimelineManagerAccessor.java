@@ -208,13 +208,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
         TimelineInterval originalInterval = clipToMove.getGlobalInterval();
 
-        Set<String> linkedClipIds = new HashSet<>(linkClipRepository.getLinkedClips(clipId));
-        linkedClipIds.add(clipToMove.getId());
-
-        for (String additionalClipId : moveClipRequest.additionalClipIds) {
-            linkedClipIds.addAll(linkClipRepository.getLinkedClips(additionalClipId));
-            linkedClipIds.add(additionalClipId);
-        }
+        Set<String> linkedClipIds = fillWithAllTransitiveLinkedClips(moveClipRequest);
 
         List<TimelineClip> linkedClips = linkedClipIds
                 .stream()
@@ -299,6 +293,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
                                 messagingService.sendAsyncMessage(new ClipMovedMessage(clip.getId(), clipNewPosition.getStartPosition(), newMovedChannel.getId(), finalSpecialPositionUsed,
                                         clipCurrentInterval, clip.getGlobalInterval(), moveClipRequest.moreMoveExpected));
                             });
+                } else {
+                    return false;
                 }
 
             } else {
@@ -331,11 +327,34 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
                                         moveClipRequest.moreMoveExpected));
                     }
 
+                } else {
+                    return false;
                 }
 
             }
         }
         return true;
+    }
+
+    private Set<String> fillWithAllTransitiveLinkedClips(MoveClipRequest moveClipRequest) {
+        Set<String> linkedClipIds = new HashSet<>(linkClipRepository.getLinkedClips(moveClipRequest.clipId));
+        linkedClipIds.add(moveClipRequest.clipId);
+        linkedClipIds.addAll(moveClipRequest.additionalClipIds);
+
+        int i = 0;
+        do {
+            Set<String> newLinkedClips = new HashSet<>(linkedClipIds);
+            for (String clipId : linkedClipIds) {
+                newLinkedClips.addAll(linkClipRepository.getLinkedClips(clipId));
+                newLinkedClips.add(clipId);
+            }
+            if (newLinkedClips.size() == linkedClipIds.size()) {
+                break;
+            }
+            linkedClipIds = newLinkedClips;
+            ++i;
+        } while (i < 10);
+        return linkedClipIds;
     }
 
     private boolean allLinkedClipsCanBeMoved(List<TimelineClip> linkedClips, TimelinePosition relativeMove) {
@@ -754,6 +773,16 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
                 .map(channel -> channel.findMaximumAudioBitRate())
                 .max(Integer::compareTo)
                 .orElse(0);
+    }
+
+    public Optional<TimelineClip> findFirstClipToLeft(String clipId) {
+        TimelineChannel channel = findChannelForClipId(clipId).get();
+        return channel.findFirstClipToLeft(clipId);
+    }
+
+    public Optional<TimelineClip> findFirstClipToRight(String clipId) {
+        TimelineChannel channel = findChannelForClipId(clipId).get();
+        return channel.findFirstClipToRight(clipId);
     }
 
 }
