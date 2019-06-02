@@ -36,7 +36,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Boolea
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -46,7 +45,6 @@ import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
-    private StringProvider textProvider;
     private IntegerProvider sizeProvider;
     private DoubleProvider lineHeightMultiplierProvider;
     private ColorProvider colorProvider;
@@ -67,7 +65,7 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
 
     public AbstractTextProceduralClip(AbstractTextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(textProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this, AbstractTextProceduralClip.class);
     }
 
     public AbstractTextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {
@@ -206,7 +204,6 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
-        textProvider = new StringProvider(new StepStringInterpolator());
         sizeProvider = new IntegerProvider(0, 700, new BezierDoubleInterpolator(250.0));
         sizeProvider.setScaleDependent();
         colorProvider = new ColorProvider(new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
@@ -225,10 +222,6 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
-        ValueProviderDescriptor textDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(textProvider)
-                .withName("Text")
-                .build();
         ValueProviderDescriptor sizeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(sizeProvider)
                 .withName("Size")
@@ -275,7 +268,6 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
                 .withGroup("outline")
                 .build();
 
-        result.add(textDescriptor);
         result.add(sizeDescriptor);
         result.add(colorDescriptor);
         result.add(fontDescriptor);
