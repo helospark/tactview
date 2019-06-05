@@ -136,19 +136,19 @@ public class EffectAddedListener {
                 .withEffectId(statelessEffect.getId())
                 .withLeft(true)
                 .withMoreResizeExpected(false)
-                .withGlobalPosition(TimelinePosition.ofZero())
+                .withGlobalPosition(clip.getInterval().getStartPosition())
                 .withRevertable(true)
                 .withTimelineManager(timelineManagerAccessor)
                 .withUseSpecialPoints(false)
                 .build();
 
-        TimelinePosition clipLength = clip.getInterval().getEndPosition().from(clip.getInterval().getStartPosition());
+        TimelinePosition clipRight = clip.getInterval().getEndPosition();
 
         EffectResizedCommand moveRight = EffectResizedCommand.builder()
                 .withEffectId(statelessEffect.getId())
                 .withLeft(false)
                 .withMoreResizeExpected(false)
-                .withGlobalPosition(clipLength)
+                .withGlobalPosition(clipRight)
                 .withRevertable(true)
                 .withTimelineManager(timelineManagerAccessor)
                 .withUseSpecialPoints(false)
