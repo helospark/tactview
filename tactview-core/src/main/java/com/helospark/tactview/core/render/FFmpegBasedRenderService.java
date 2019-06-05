@@ -8,6 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -52,7 +58,6 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
     @Override
     public void renderInternal(RenderRequest renderRequest) {
-        TimelinePosition currentPosition = renderRequest.getStartPosition();
 
         int videoBitRate = (int) renderRequest.getOptions().get("videobitrate").getValue();
 
@@ -90,7 +95,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.renderWidth = width;
         initNativeRequest.renderHeight = height;
 
-        AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, currentPosition, Optional.empty(), Optional.empty(), false, true);//tmp solution
+        AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, renderRequest.getStartPosition(), Optional.empty(), Optional.empty(), false, true);//tmp solution
 
         initNativeRequest.actualWidth = width;
         initNativeRequest.actualHeight = height;
@@ -117,41 +122,99 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         boolean needsVideo = !videoCodec.equals(NONE_VALUE);
         boolean needsAudio = !audioCodec.equals(NONE_VALUE);
 
-        while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
-            AudioVideoFragment frame = queryFrameAt(renderRequest, currentPosition, Optional.of(audioSampleRate), Optional.of(bytesPerSample), needsVideo, needsAudio);
+        // Producer consumer pattern below
 
-            FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
-            nativeRequest.frame = new RenderFFMpegFrame();
-            RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
-            if (needsVideo) {
-                array[0].imageData = frame.getVideoResult().getBuffer();
-            }
-            if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
-                array[0].audioData = convertAudio(frame.getAudioResult());
-                array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
-            }
-            nativeRequest.encoderIndex = encoderIndex;
-            nativeRequest.startFrameIndex = frameIndex;
+        int threads = Runtime.getRuntime().availableProcessors() - 1;
+        if (threads < 1) {
+            threads = 1;
+        }
 
-            int encodeResult = ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
-            if (encodeResult < 0) {
-                throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
+        BlockingQueue<CompletableFuture<AudioVideoFragment>> queue = new ArrayBlockingQueue<>(threads);
+        ExecutorService executorService = Executors.newFixedThreadPool(threads);
+
+        var producerThread = new Thread() {
+            public volatile boolean isFinished = false;
+
+            @Override
+            public void run() {
+                TimelinePosition currentPosition = renderRequest.getStartPosition();
+                try {
+                    while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
+                        TimelinePosition position = currentPosition; // thanks Java...
+                        CompletableFuture<AudioVideoFragment> job = CompletableFuture
+                                .supplyAsync(() -> queryFrameAt(renderRequest, position, Optional.of(audioSampleRate), Optional.of(bytesPerSample), needsVideo, needsAudio), executorService);
+                        queue.put(job);
+                        currentPosition = currentPosition.add(renderRequest.getStep());
+                    }
+                } catch (Exception e) {
+                    isFinished = true;
+                    throw new RuntimeException(e);
+                }
+                isFinished = true;
+            }
+        };
+        producerThread.start();
+
+        // Encoding must be done in single thread
+        while (!producerThread.isFinished) {
+            CompletableFuture<AudioVideoFragment> future = pollQueue(queue);
+            if (future != null) {
+                AudioVideoFragment frame = future.join();
+                FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
+                nativeRequest.frame = new RenderFFMpegFrame();
+                RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
+                if (needsVideo) {
+                    array[0].imageData = frame.getVideoResult().getBuffer();
+                }
+                if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
+                    array[0].audioData = convertAudio(frame.getAudioResult());
+                    array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
+                }
+                nativeRequest.encoderIndex = encoderIndex;
+                nativeRequest.startFrameIndex = frameIndex;
+
+                int encodeResult = ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
+                if (encodeResult < 0) {
+                    throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
+                }
+
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
+                for (var buffer : frame.getAudioResult().getChannels()) {
+                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
+                }
+
+                messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));
+                ++frameIndex;
             }
 
-            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
-            for (var buffer : frame.getAudioResult().getChannels()) {
-                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
-            }
+        }
 
-            currentPosition = currentPosition.add(renderRequest.getStep());
-            messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));
-            ++frameIndex;
+        try {
+            producerThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         FFmpegClearEncoderRequest clearRequest = new FFmpegClearEncoderRequest();
         clearRequest.encoderIndex = encoderIndex;
 
         ffmpegBasedMediaEncoder.clearEncoder(clearRequest);
+    }
+
+    private CompletableFuture<AudioVideoFragment> pollQueue(BlockingQueue<CompletableFuture<AudioVideoFragment>> queue) {
+        try {
+            return queue.poll(1, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    class JobProducer {
+
+        public void asd() {
+
+        }
+
     }
 
     private ByteBuffer convertAudio(AudioFrameResult audioResult) {
