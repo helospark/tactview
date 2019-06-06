@@ -132,73 +132,76 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         BlockingQueue<CompletableFuture<AudioVideoFragment>> queue = new ArrayBlockingQueue<>(threads);
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
 
-        var producerThread = new Thread() {
-            public volatile boolean isFinished = false;
-
-            @Override
-            public void run() {
-                TimelinePosition currentPosition = renderRequest.getStartPosition();
-                try {
-                    while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
-                        TimelinePosition position = currentPosition; // thanks Java...
-                        CompletableFuture<AudioVideoFragment> job = CompletableFuture
-                                .supplyAsync(() -> queryFrameAt(renderRequest, position, Optional.of(audioSampleRate), Optional.of(bytesPerSample), needsVideo, needsAudio), executorService);
-                        queue.put(job);
-                        currentPosition = currentPosition.add(renderRequest.getStep());
-                    }
-                } catch (Exception e) {
-                    isFinished = true;
-                    throw new RuntimeException(e);
-                }
-                isFinished = true;
-            }
-        };
-        producerThread.start();
-
-        // Encoding must be done in single thread
-        while (!producerThread.isFinished) {
-            CompletableFuture<AudioVideoFragment> future = pollQueue(queue);
-            if (future != null) {
-                AudioVideoFragment frame = future.join();
-                FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
-                nativeRequest.frame = new RenderFFMpegFrame();
-                RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
-                if (needsVideo) {
-                    array[0].imageData = frame.getVideoResult().getBuffer();
-                }
-                if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
-                    array[0].audioData = convertAudio(frame.getAudioResult());
-                    array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
-                }
-                nativeRequest.encoderIndex = encoderIndex;
-                nativeRequest.startFrameIndex = frameIndex;
-
-                int encodeResult = ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
-                if (encodeResult < 0) {
-                    throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
-                }
-
-                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
-                for (var buffer : frame.getAudioResult().getChannels()) {
-                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
-                }
-
-                messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));
-                ++frameIndex;
-            }
-
-        }
-
         try {
-            producerThread.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            var producerThread = new Thread() {
+                public volatile boolean isFinished = false;
+
+                @Override
+                public void run() {
+                    TimelinePosition currentPosition = renderRequest.getStartPosition();
+                    try {
+                        while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
+                            TimelinePosition position = currentPosition; // thanks Java...
+                            CompletableFuture<AudioVideoFragment> job = CompletableFuture
+                                    .supplyAsync(() -> queryFrameAt(renderRequest, position, Optional.of(audioSampleRate), Optional.of(bytesPerSample), needsVideo, needsAudio), executorService);
+                            queue.put(job);
+                            currentPosition = currentPosition.add(renderRequest.getStep());
+                        }
+                    } catch (Exception e) {
+                        isFinished = true;
+                        throw new RuntimeException(e);
+                    }
+                    isFinished = true;
+                }
+            };
+            producerThread.start();
+
+            // Encoding must be done in single thread
+            while (!producerThread.isFinished) {
+                CompletableFuture<AudioVideoFragment> future = pollQueue(queue);
+                if (future != null) {
+                    AudioVideoFragment frame = future.join();
+                    FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
+                    nativeRequest.frame = new RenderFFMpegFrame();
+                    RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
+                    if (needsVideo) {
+                        array[0].imageData = frame.getVideoResult().getBuffer();
+                    }
+                    if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
+                        array[0].audioData = convertAudio(frame.getAudioResult());
+                        array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
+                    }
+                    nativeRequest.encoderIndex = encoderIndex;
+                    nativeRequest.startFrameIndex = frameIndex;
+
+                    int encodeResult = ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
+                    if (encodeResult < 0) {
+                        throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
+                    }
+
+                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
+                    for (var buffer : frame.getAudioResult().getChannels()) {
+                        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
+                    }
+
+                    messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));
+                    ++frameIndex;
+                }
+
+            }
+
+            try {
+                producerThread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+        } finally {
+            FFmpegClearEncoderRequest clearRequest = new FFmpegClearEncoderRequest();
+            clearRequest.encoderIndex = encoderIndex;
+            ffmpegBasedMediaEncoder.clearEncoder(clearRequest);
+            executorService.shutdownNow();
         }
-
-        FFmpegClearEncoderRequest clearRequest = new FFmpegClearEncoderRequest();
-        clearRequest.encoderIndex = encoderIndex;
-
-        ffmpegBasedMediaEncoder.clearEncoder(clearRequest);
     }
 
     private CompletableFuture<AudioVideoFragment> pollQueue(BlockingQueue<CompletableFuture<AudioVideoFragment>> queue) {
@@ -261,7 +264,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         int maximumVideoBitRate = timelineManagerAccessor.findMaximumVideoBitRate();
         OptionProvider<Integer> bitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Video bitrate")
-                .withDefaultValue(maximumVideoBitRate > 0 ? maximumVideoBitRate : 1600000)
+                .withDefaultValue(maximumVideoBitRate > 0 ? maximumVideoBitRate : 3200000)
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {

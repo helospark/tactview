@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormat;
@@ -28,7 +29,10 @@ import com.helospark.tactview.ui.javafx.util.DurationFormatter;
 
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -163,47 +167,52 @@ public class RenderDialog {
 
         Button okButton = new Button("Render");
         okButton.setOnMouseClicked(e -> {
-            cancelButton.setText("Cancel render");
-            okButton.setDisable(true);
+            String filePath = fileNameTextField.getText();
+            boolean continueRender = showConfirmationDialogIfNeeded(filePath);
 
-            RenderRequest request = RenderRequest.builder()
-                    .withWidth(Integer.parseInt(widthTextField.getText()))
-                    .withHeight(Integer.parseInt(heightTextField.getText()))
-                    .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
-                    .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
-                    .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
-                    .withEndPosition(new TimelinePosition(DurationFormatter.toSeconds(endPositionTextField.getText())))
-                    .withFileName(fileNameTextField.getText())
-                    .withOptions(optionProviders)
-                    .withIsCancelledSupplier(() -> isRenderCancelled)
-                    .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
-                    .build();
+            if (continueRender) {
+                cancelButton.setText("Cancel render");
+                okButton.setDisable(true);
 
-            String id = request.getRenderId();
+                RenderRequest request = RenderRequest.builder()
+                        .withWidth(Integer.parseInt(widthTextField.getText()))
+                        .withHeight(Integer.parseInt(heightTextField.getText()))
+                        .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
+                        .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
+                        .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
+                        .withEndPosition(new TimelinePosition(DurationFormatter.toSeconds(endPositionTextField.getText())))
+                        .withFileName(filePath)
+                        .withOptions(optionProviders)
+                        .withIsCancelledSupplier(() -> isRenderCancelled)
+                        .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
+                        .build();
 
-            ProgressAdvancer progressAdvancer = new ProgressAdvancer(messagingService, id);
-            stage.setTitle("Rendering inprogress...");
-            progressAdvancer.updateProgress(info -> {
-                progressBar.setProgress(info.percent);
-                String formattedRemaining = PeriodFormat.getDefault().print(new Period(info.expectedMilliseconds).withMillis(0));
+                String id = request.getRenderId();
 
-                progressText.setText(String.format("%d%% (remaining: %s, fps: %.3f)", (int) (info.percent * 100.0), formattedRemaining, info.jobsPerSecond));
-            }, () -> {
-                stage.close();
-            });
+                ProgressAdvancer progressAdvancer = new ProgressAdvancer(messagingService, id);
+                stage.setTitle("Rendering inprogress...");
+                progressAdvancer.updateProgress(info -> {
+                    progressBar.setProgress(info.percent);
+                    String formattedRemaining = PeriodFormat.getDefault().print(new Period(info.expectedMilliseconds).withMillis(0));
 
-            renderService.render(request)
-                    .thenAccept(a -> {
-                        cancelButton.setDisable(false);
-                        okButton.setDisable(false);
-                    })
-                    .exceptionally(ex -> {
-                        ex.printStackTrace();
-                        DialogHelper.showExceptionDialog("Error rendering", "Unable to render to file, see stacktrace below, more details in logs", ex);
-                        cancelButton.setDisable(false);
-                        okButton.setDisable(false);
-                        return null;
-                    });
+                    progressText.setText(String.format("%d%% (remaining: %s, fps: %.3f)", (int) (info.percent * 100.0), formattedRemaining, info.jobsPerSecond));
+                }, () -> {
+                    stage.close();
+                });
+
+                renderService.render(request)
+                        .thenAccept(a -> {
+                            cancelButton.setDisable(false);
+                            okButton.setDisable(false);
+                        })
+                        .exceptionally(ex -> {
+                            ex.printStackTrace();
+                            DialogHelper.showExceptionDialog("Error rendering", "Unable to render to file, see stacktrace below, more details in logs", ex);
+                            cancelButton.setDisable(false);
+                            okButton.setDisable(false);
+                            return null;
+                        });
+            }
 
         });
 
@@ -237,6 +246,19 @@ public class RenderDialog {
 
         stage.setTitle("Render");
         stage.setScene(dialog);
+    }
+
+    private boolean showConfirmationDialogIfNeeded(String filePath) {
+        boolean continueRender = true;
+        if (new File(filePath).exists()) {
+            Alert alert = new Alert(AlertType.CONFIRMATION);
+            alert.setTitle("File exists, override?");
+            alert.setHeaderText("File exists \"" + filePath + "\".\nOverride?");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            continueRender = result.map(buttonType -> buttonType.equals(ButtonType.OK)).orElse(true);
+        }
+        return continueRender;
     }
 
     private void updateRenderOptions(GridPane rendererOptions) {
