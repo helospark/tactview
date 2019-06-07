@@ -35,7 +35,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     @Override
     public MediaDataResponse readFrames(AudioMediaDataRequest request) {
         BigDecimal sampleRate = new BigDecimal(request.getExpectedSampleRate());
-        String hashKey = request.getFile().getAbsolutePath() + " " + request.getExpectedSampleRate() + " " + request.getExpectedBytesPerSample();
+        String hashKey = request.getFile().getAbsolutePath() + " " + request.getExpectedSampleRate() + " " + request.getExpectedBytesPerSample() + " " + request.getExpectedChannels();
         int startSample = secondsToBytes(request.getStart().getSeconds(), request.getExpectedBytesPerSample(), sampleRate);
 
         Optional<MediaHashValue> cachedResult = mediaCache.findInCache(hashKey, startSample);

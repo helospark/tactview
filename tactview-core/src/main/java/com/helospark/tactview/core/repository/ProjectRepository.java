@@ -24,6 +24,7 @@ public class ProjectRepository implements SaveLoadContributor {
     private int height = 1080;
     private int sampleRate = 44100;
     private int bytesPerSample = 4;
+    private int numberOfChannels = 2;
     private BigDecimal fps = BigDecimal.valueOf(24);
     private BigDecimal frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
 
@@ -39,10 +40,11 @@ public class ProjectRepository implements SaveLoadContributor {
         this.frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
     }
 
-    public void initializeAudio(int samleRate, int bytesPerSample) {
+    public void initializeAudio(int samleRate, int bytesPerSample, int numberOfChannels) {
         this.isAudioInitialized = true;
         this.sampleRate = samleRate;
         this.bytesPerSample = bytesPerSample;
+        this.numberOfChannels = numberOfChannels;
     }
 
     public boolean isVideoInitialized() {
@@ -75,6 +77,16 @@ public class ProjectRepository implements SaveLoadContributor {
 
     public int getBytesPerSample() {
         return bytesPerSample;
+    }
+
+    public int getNumberOfChannels() {
+        return numberOfChannels;
+    }
+
+    @Override
+    public String toString() {
+        return "ProjectRepository [objectMapper=" + objectMapper + ", isVideoInitialized=" + isVideoInitialized + ", isAudioInitialized=" + isAudioInitialized + ", width=" + width + ", height="
+                + height + ", sampleRate=" + sampleRate + ", bytesPerSample=" + bytesPerSample + ", numberOfChannels=" + numberOfChannels + ", fps=" + fps + ", frameTime=" + frameTime + "]";
     }
 
     @Override

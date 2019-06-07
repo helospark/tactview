@@ -7,6 +7,7 @@ public class AudioRequest {
     private TimelineLength length;
     private int sampleRate;
     private int bytesPerSample;
+    private int numberOfChannels;
     private boolean applyEffects;
 
     @Generated("SparkTools")
@@ -15,6 +16,7 @@ public class AudioRequest {
         this.length = builder.length;
         this.sampleRate = builder.sampleRate;
         this.bytesPerSample = builder.bytesPerSample;
+        this.numberOfChannels = builder.numberOfChannels;
         this.applyEffects = builder.applyEffects;
     }
 
@@ -38,6 +40,10 @@ public class AudioRequest {
         return bytesPerSample;
     }
 
+    public int getNumberOfChannels() {
+        return numberOfChannels;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -49,6 +55,7 @@ public class AudioRequest {
         private TimelineLength length;
         private int sampleRate;
         private int bytesPerSample;
+        private int numberOfChannels;
         private boolean applyEffects;
 
         private Builder() {
@@ -71,6 +78,11 @@ public class AudioRequest {
 
         public Builder withBytesPerSample(int bytesPerSample) {
             this.bytesPerSample = bytesPerSample;
+            return this;
+        }
+
+        public Builder withNumberOfChannels(int numberOfChannels) {
+            this.numberOfChannels = numberOfChannels;
             return this;
         }
 

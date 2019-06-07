@@ -44,7 +44,7 @@ public class SoundClip extends AudibleTimelineClip {
                 .withStart(audioRequest.getPosition().from(interval.getStartPosition()).add(renderOffset))
                 .withExpectedBytesPerSample(audioRequest.getBytesPerSample())
                 .withExpectedSampleRate(audioRequest.getSampleRate())
-                .withExpectedChannels(mediaMetadata.getChannels())
+                .withExpectedChannels(audioRequest.getNumberOfChannels())
                 .withLength(audioRequest.getLength())
                 .build();
 

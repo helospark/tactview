@@ -39,7 +39,7 @@ public class AudioImagePatternService {
     public Image createAudioImagePattern(AudibleTimelineClip audibleTimelineClip, int width) {
         int scaledFrameWidth = width;
         int scaledFrameHeight = RECTANGLE_HEIGHT;
-        int numberOfChannels = audibleTimelineClip.getMediaMetadata().getChannels();
+        int numberOfChannels = projectRepository.getNumberOfChannels();
         int channelHeight = scaledFrameHeight / numberOfChannels;
 
         List<MutableInteger> lastPointPerChannel = new ArrayList<>();
@@ -68,7 +68,7 @@ public class AudioImagePatternService {
             int y = ((i + 1) * channelHeight) + 1;
             graphics.drawLine(0, y, width, y);
         }
-        graphics.setColor(Color.GREEN);
+        graphics.setColor(new Color(0, 255, 0, 200));
 
         for (int i = 0; i < numberOfSamplesToCollect; ++i) {
             AudioRequest frameRequest = AudioRequest.builder()
@@ -77,6 +77,7 @@ public class AudioImagePatternService {
                     .withLength(TimelineLength.ofMillis(1))
                     .withSampleRate(projectRepository.getSampleRate())
                     .withBytesPerSample(projectRepository.getBytesPerSample())
+                    .withNumberOfChannels(projectRepository.getNumberOfChannels())
                     .build();
             AudioFrameResult frame = audibleTimelineClip.requestAudioFrame(frameRequest);
 
@@ -85,7 +86,7 @@ public class AudioImagePatternService {
 
                 MutableInteger lastPoint = lastPointPerChannel.get(j);
                 int newPointY = ((j + 1) * channelHeight) - point - 1;
-                graphics.drawLine(i * NUMBER_OF_PIXELS_FOR_SAMPLE, lastPoint.y, (i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, newPointY);
+                graphics.drawLine((i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, ((j + 1) * channelHeight), (i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, newPointY);
                 lastPoint.y = newPointY;
             }
             frame.getChannels()

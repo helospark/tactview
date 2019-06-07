@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
 
+import javax.annotation.Generated;
+
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
@@ -42,8 +44,15 @@ public abstract class AbstractRenderService implements RenderService {
         messagingService.sendAsyncMessage(new ProgressDoneMessage(renderRequest.getRenderId()));
     }
 
-    protected AudioVideoFragment queryFrameAt(RenderRequest renderRequest, TimelinePosition currentPosition, Optional<Integer> sampleRate, Optional<Integer> bytesPerSample, boolean needsVideo,
-            boolean needsSound) { // <- TODO: request object and builder
+    protected AudioVideoFragment queryFrameAt(RenderRequestFrameRequest request) {
+        RenderRequest renderRequest = request.renderRequest;
+        TimelinePosition currentPosition = request.currentPosition;
+        Optional<Integer> sampleRate = request.sampleRate;
+        Optional<Integer> bytesPerSample = request.bytesPerSample;
+        Optional<Integer> numberOfChannels = request.numberOfChannels;
+        boolean needsVideo = request.needsVideo;
+        boolean needsSound = request.needsSound;
+
         double upscale = renderRequest.getUpscale().doubleValue();
 
         double scaleMultiplier = (double) renderRequest.getWidth() / projectRepository.getWidth();
@@ -57,6 +66,7 @@ public abstract class AbstractRenderService implements RenderService {
                 .withAudioBytesPerSample(bytesPerSample)
                 .withNeedVideo(needsVideo)
                 .withNeedSound(needsSound)
+                .withNumberOfChannels(numberOfChannels)
                 .build();
 
         AudioVideoFragment frame = timelineManagerRenderService.getFrame(frameRequest);
@@ -75,5 +85,84 @@ public abstract class AbstractRenderService implements RenderService {
     }
 
     protected abstract void renderInternal(RenderRequest renderRequest);
+
+    static class RenderRequestFrameRequest {
+        RenderRequest renderRequest;
+        TimelinePosition currentPosition;
+        Optional<Integer> sampleRate;
+        Optional<Integer> bytesPerSample;
+        Optional<Integer> numberOfChannels;
+        boolean needsVideo;
+        boolean needsSound;
+
+        @Generated("SparkTools")
+        private RenderRequestFrameRequest(Builder builder) {
+            this.renderRequest = builder.renderRequest;
+            this.currentPosition = builder.currentPosition;
+            this.sampleRate = builder.sampleRate;
+            this.bytesPerSample = builder.bytesPerSample;
+            this.numberOfChannels = builder.numberOfChannels;
+            this.needsVideo = builder.needsVideo;
+            this.needsSound = builder.needsSound;
+        }
+
+        @Generated("SparkTools")
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        @Generated("SparkTools")
+        public static final class Builder {
+            private RenderRequest renderRequest;
+            private TimelinePosition currentPosition;
+            private Optional<Integer> sampleRate = Optional.empty();
+            private Optional<Integer> bytesPerSample = Optional.empty();
+            private Optional<Integer> numberOfChannels = Optional.empty();
+            private boolean needsVideo;
+            private boolean needsSound;
+
+            private Builder() {
+            }
+
+            public Builder withRenderRequest(RenderRequest renderRequest) {
+                this.renderRequest = renderRequest;
+                return this;
+            }
+
+            public Builder withCurrentPosition(TimelinePosition currentPosition) {
+                this.currentPosition = currentPosition;
+                return this;
+            }
+
+            public Builder withSampleRate(Optional<Integer> sampleRate) {
+                this.sampleRate = sampleRate;
+                return this;
+            }
+
+            public Builder withBytesPerSample(Optional<Integer> bytesPerSample) {
+                this.bytesPerSample = bytesPerSample;
+                return this;
+            }
+
+            public Builder withNumberOfChannels(Optional<Integer> numberOfChannels) {
+                this.numberOfChannels = numberOfChannels;
+                return this;
+            }
+
+            public Builder withNeedsVideo(boolean needsVideo) {
+                this.needsVideo = needsVideo;
+                return this;
+            }
+
+            public Builder withNeedsSound(boolean needsSound) {
+                this.needsSound = needsSound;
+                return this;
+            }
+
+            public RenderRequestFrameRequest build() {
+                return new RenderRequestFrameRequest(this);
+            }
+        }
+    }
 
 }

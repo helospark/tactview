@@ -200,10 +200,10 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
           av_opt_set_int       (swrContext, "in_sample_rate",     codec->sample_rate,    0);
           av_opt_set_sample_fmt(swrContext, "in_sample_fmt",      codec->sample_fmt, 0);
           av_opt_set_channel_layout(swrContext, "in_channel_layout",  codec->channel_layout, 0);
-          av_opt_set_int       (swrContext, "out_channel_count",  codec->channels,       0);
+          av_opt_set_int       (swrContext, "out_channel_count",  (int)request->numberOfChannels,       0);
           av_opt_set_int       (swrContext, "out_sample_rate",    request->sampleRate,    0);
           av_opt_set_sample_fmt(swrContext, "out_sample_fmt",     outputSampleFormat,     0);
-          av_opt_set_channel_layout(swrContext, "out_channel_layout", codec->channel_layout,  0);
+          av_opt_set_channel_layout(swrContext, "out_channel_layout", av_get_default_channel_layout((int)request->numberOfChannels),  0); // TODO: channel layout could also be extracted
 
           //std::cout << "Initializing SWR" << std::endl;
           if ((swr_init(swrContext)) < 0) {

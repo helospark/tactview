@@ -239,14 +239,21 @@ extern "C" {
                     c->sample_rate = request->audioSampleRate;
             }
         }
-        c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
-        c->channel_layout = AV_CH_LAYOUT_STEREO;
+        c->channel_layout = AV_CH_LAYOUT_STEREO; // default
+
+        int64_t expectedChannelLayout = av_get_default_channel_layout(request->audioChannels);
+
         if ((*codec)->channel_layouts) {
             c->channel_layout = (*codec)->channel_layouts[0];
             for (i = 0; (*codec)->channel_layouts[i]; i++) {
-                if ((*codec)->channel_layouts[i] == AV_CH_LAYOUT_STEREO)
-                    c->channel_layout = AV_CH_LAYOUT_STEREO;
+                if ((*codec)->channel_layouts[i] == expectedChannelLayout) {
+                    std::cout << "Supported channel layout " << (*codec)->channel_layouts[i] << " " << av_get_channel_layout_nb_channels((*codec)->channel_layouts[i]) << std::endl; 
+                    c->channel_layout = expectedChannelLayout;
+                    break;
+                }
             }
+        } else {
+            std::cout << "Channel layouts are unknown, falling back to stereo" << std::endl;
         }
         c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
         ost->st->time_base.num = 1;

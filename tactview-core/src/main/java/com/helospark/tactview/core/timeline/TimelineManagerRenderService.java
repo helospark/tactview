@@ -127,12 +127,14 @@ public class TimelineManagerRenderService {
                     futures.add(CompletableFuture.supplyAsync(() -> {
                         int sampleRateToUse = request.getAudioSampleRate().orElse(projectRepository.getSampleRate());
                         int bytesPerSampleToUse = request.getAudioBytesPerSample().orElse(projectRepository.getBytesPerSample());
+                        int numberOfChannels = request.getNumberOfChannels().orElse(projectRepository.getNumberOfChannels());
                         AudioRequest audioRequest = AudioRequest.builder()
                                 .withApplyEffects(request.isEffectsEnabled())
                                 .withPosition(request.getPosition())
                                 .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 100, RoundingMode.HALF_DOWN)))
                                 .withSampleRate(sampleRateToUse)
                                 .withBytesPerSample(bytesPerSampleToUse)
+                                .withNumberOfChannels(numberOfChannels)
                                 .build();
 
                         return audibleClip.requestAudioFrame(audioRequest);

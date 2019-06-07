@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -88,7 +87,15 @@ public class ImageSequenceRenderService extends AbstractRenderService {
         String fileNameWithoutExtension = fileName.substring(0, extensionIndex);
         for (int i = 0; i < FRAME_PER_BATCH; ++i) {
             try {
-                ByteBuffer frame = queryFrameAt(renderRequest, new TimelinePosition(currentPosition), Optional.empty(), Optional.empty(), true, false).getVideoResult().getBuffer();
+
+                RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
+                        .withRenderRequest(renderRequest)
+                        .withCurrentPosition(new TimelinePosition(position))
+                        .withNeedsSound(false)
+                        .withNeedsVideo(true)
+                        .build();
+
+                ByteBuffer frame = queryFrameAt(superRequest).getVideoResult().getBuffer();
 
                 BufferedImage image = byteBufferToImageConverter.byteBufferToBufferedImage(frame, renderRequest.getWidth(), renderRequest.getHeight());
 

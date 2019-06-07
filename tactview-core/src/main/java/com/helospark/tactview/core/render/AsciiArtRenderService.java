@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 
@@ -58,7 +57,15 @@ public class AsciiArtRenderService extends AbstractRenderService {
 
             BigDecimal position = startSeconds;
             while (position.compareTo(endSeconds) < 0 && !renderRequest.getIsCancelledSupplier().get()) {
-                AudioVideoFragment videoResult = queryFrameAt(renderRequest, new TimelinePosition(position), Optional.empty(), Optional.empty(), true, false);
+
+                RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
+                        .withRenderRequest(renderRequest)
+                        .withCurrentPosition(new TimelinePosition(position))
+                        .withNeedsSound(false)
+                        .withNeedsVideo(true)
+                        .build();
+
+                AudioVideoFragment videoResult = queryFrameAt(superRequest);
 
                 BufferedImage image = byteBufferToImageConverter.byteBufferToBufferedImage(videoResult.getVideoResult().getBuffer(), renderRequest.getWidth(), renderRequest.getHeight());
 

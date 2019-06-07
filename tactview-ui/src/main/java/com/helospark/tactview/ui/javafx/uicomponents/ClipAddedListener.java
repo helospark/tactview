@@ -92,7 +92,8 @@ public class ClipAddedListener {
             AudibleTimelineClip audioClip = (AudibleTimelineClip) clip;
             int sampleRate = audioClip.getMediaMetadata().getSampleRate();
             int bytesPerSample = audioClip.getMediaMetadata().getBytesPerSample();
-            projectRepository.initializeAudio(sampleRate, bytesPerSample);
+            int numberOfChannels = audioClip.getMediaMetadata().getChannels();
+            projectRepository.initializeAudio(sampleRate, bytesPerSample, numberOfChannels);
         }
     }
 

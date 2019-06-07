@@ -6,6 +6,8 @@ import com.helospark.tactview.core.repository.ProjectRepository;
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -54,6 +56,10 @@ public class ChangeProjectSizeDialog {
         gridPane.add(new Label("Bytes/sample"), 0, 4);
         gridPane.add(bytesPerSampleText, 1, 4);
 
+        TextField numberOfChannelsText = new TextField(getOrDefaultAudio(projectRepository, projectRepository.getNumberOfChannels(), BigDecimal.valueOf(4)));
+        gridPane.add(new Label("Number of channels"), 0, 5);
+        gridPane.add(numberOfChannelsText, 1, 5);
+
         borderPane.setCenter(gridPane);
 
         HBox buttonBar = new HBox();
@@ -79,8 +85,20 @@ public class ChangeProjectSizeDialog {
             int width = Integer.valueOf(canvasWidthText.getText());
             int height = Integer.valueOf(canvasHeightText.getText());
             BigDecimal fps = new BigDecimal(fpsText.getText());
+            int numberOfChannels = Integer.parseInt(numberOfChannelsText.getText());
+
+            if (numberOfChannels < 1 || numberOfChannels > 7) {
+                Alert alert = new Alert(AlertType.WARNING);
+                alert.setTitle("Invalid number of channels");
+                alert.setHeaderText("Channel number must be between 1 and 7, but was " + numberOfChannels);
+
+                alert.showAndWait();
+                return;
+            }
+
             projectSizeInitializer.initializeProjectSize(width, height, fps);
-            projectRepository.initializeAudio(Integer.parseInt(sampleRateText.getText()), Integer.parseInt(bytesPerSampleText.getText()));
+
+            projectRepository.initializeAudio(Integer.parseInt(sampleRateText.getText()), Integer.parseInt(bytesPerSampleText.getText()), numberOfChannels);
             stage.close();
         });
         cancelButton.setOnMouseClicked(e -> {

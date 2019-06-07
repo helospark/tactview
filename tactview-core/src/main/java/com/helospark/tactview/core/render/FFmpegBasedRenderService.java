@@ -14,6 +14,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -81,6 +83,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         String videoPixelFormat = (String) renderRequest.getOptions().get("videoPixelFormat").getValue();
         System.out.println("videoPixelFormat: " + videoPixelFormat);
 
+        int numberOfChannels = Integer.parseInt(renderRequest.getOptions().get("audionumberofchannels").getValue().toString());
+        System.out.println("numberOfChannels: " + numberOfChannels);
+
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
         initNativeRequest.fps = renderRequest.getFps();
@@ -95,12 +100,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.renderWidth = width;
         initNativeRequest.renderHeight = height;
 
-        AudioVideoFragment tmpFrame = queryFrameAt(renderRequest, renderRequest.getStartPosition(), Optional.empty(), Optional.empty(), false, true);//tmp solution
-
         initNativeRequest.actualWidth = width;
         initNativeRequest.actualHeight = height;
         initNativeRequest.bytesPerSample = bytesPerSample;
-        initNativeRequest.audioChannels = tmpFrame.getAudioResult().getChannels().size();
+        initNativeRequest.audioChannels = numberOfChannels;
         initNativeRequest.sampleRate = audioSampleRate;
 
         initNativeRequest.audioBitRate = audioBitRate;
@@ -142,8 +145,20 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     try {
                         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
                             TimelinePosition position = currentPosition; // thanks Java...
+
                             CompletableFuture<AudioVideoFragment> job = CompletableFuture
-                                    .supplyAsync(() -> queryFrameAt(renderRequest, position, Optional.of(audioSampleRate), Optional.of(bytesPerSample), needsVideo, needsAudio), executorService);
+                                    .supplyAsync(() -> {
+                                        RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
+                                                .withBytesPerSample(Optional.of(bytesPerSample))
+                                                .withCurrentPosition(position)
+                                                .withNeedsSound(needsAudio)
+                                                .withNeedsVideo(needsVideo)
+                                                .withNumberOfChannels(Optional.of(numberOfChannels))
+                                                .withRenderRequest(renderRequest)
+                                                .withSampleRate(Optional.of(audioSampleRate))
+                                                .build();
+                                        return queryFrameAt(superRequest);
+                                    }, executorService);
                             queue.put(job);
                             currentPosition = currentPosition.add(renderRequest.getStep());
                         }
@@ -210,14 +225,6 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    class JobProducer {
-
-        public void asd() {
-
-        }
-
     }
 
     private ByteBuffer convertAudio(AudioFrameResult audioResult) {
@@ -298,6 +305,15 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 .withDefaultValue(projectRepository.getBytesPerSample() + "")
                 .withValidValues(List.of(createElement("1"), createElement("2"), createElement("4")))
                 .build();
+        OptionProvider<String> numberOfChannelsProvider = OptionProvider.stringOptionBuilder()
+                .withTitle("Number of channels")
+                .withDefaultValue(projectRepository.getNumberOfChannels() + "")
+                .withValidValues(
+                        IntStream.range(1, 3) // TODO: Check why can't we use more channels
+                                .mapToObj(a -> String.valueOf(a))
+                                .map(a -> createElement(a))
+                                .collect(Collectors.toList()))
+                .build();
 
         CodecValueElements codecs = queryCodecInformation();
 
@@ -327,6 +343,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         result.put("audiobitrate", audioBitRateProvider);
         result.put("audiosamplerate", audioSampleRateProvider);
         result.put("audiobytespersample", audioBytesPerSampelProvider);
+        result.put("audionumberofchannels", numberOfChannelsProvider);
         result.put("videocodec", videoCodecProvider);
         result.put("audiocodec", audioCodecProvider);
         result.put("videoPixelFormat", videoPixelFormatProvider);
