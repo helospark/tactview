@@ -411,6 +411,26 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
     private void removeEffect(TimelineClip clip, String effectId) {
         StatelessEffect removedElement = clip.removeEffectById(effectId);
         messagingService.sendAsyncMessage(new EffectRemovedMessage(removedElement.getId(), clip.getId(), removedElement.getGlobalInterval()));
+
+        removeEmptyEffectChannel(clip);
+    }
+
+    private void removeEmptyEffectChannel(TimelineClip clip) {
+        List<NonIntersectingIntervalList<StatelessEffect>> effectChannels = clip.getEffectChannels();
+        for (int i = 0; i < effectChannels.size(); ++i) {
+            if (effectChannels.get(i).size() == 0) {
+                for (int j = i + 1; j < effectChannels.size(); ++j) {
+                    int newChannelIndex = j - 1;
+                    effectChannels.get(j)
+                            .stream()
+                            .forEach(statelessEffect -> {
+                                messagingService.sendAsyncMessage(new EffectChannelChangedMessage(statelessEffect.id, newChannelIndex, statelessEffect.interval));
+                            });
+                }
+                effectChannels.remove(i);
+                --i;
+            }
+        }
     }
 
     public Optional<StatelessEffect> findEffectById(String effectId) {

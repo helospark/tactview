@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,8 +30,8 @@ public class SaveAndLoadHandler {
     public void save(SaveRequest saveRequest) {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
         File rootDirectory = new File(tmpDir, "tactview_save_" + System.currentTimeMillis());
-        if (rootDirectory.exists() || !rootDirectory.isDirectory()) {
-            rootDirectory.delete();
+        if (rootDirectory.exists() || rootDirectory.isDirectory()) {
+            deleteDirectory(rootDirectory);
         }
         rootDirectory.mkdirs();
         File saveDataJson = new File(rootDirectory, SAVEDATA_FILENAME);
@@ -55,6 +56,16 @@ public class SaveAndLoadHandler {
         resultFile.delete();
 
         ZipUtil.pack(rootDirectory, resultFile);
+
+        deleteDirectory(rootDirectory);
+    }
+
+    private void deleteDirectory(File rootDirectory) {
+        try {
+            FileUtils.deleteDirectory(rootDirectory);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void load(LoadRequest loadRequest) {

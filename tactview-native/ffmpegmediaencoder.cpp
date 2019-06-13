@@ -738,6 +738,14 @@ extern "C" {
          * close the CodecContexts open when you wrote the header; otherwise
          * av_write_trailer() may try to use memory that was freed on
          * av_codec_close(). */
+
+        /*
+        bool proceeding=true;
+        while(proceeding) {
+           // DELAYED frames
+           std::cout << "Writing delayed frames" << std::endl;
+           proceeding = write_video_frame(renderContext.oc, renderContext.video_st, NULL);
+        }*/
         av_write_trailer(renderContext.oc);
 
         /* Close each codec. */
