@@ -173,6 +173,12 @@ public class ClipImage implements ReadOnlyClipImage {
         return this;
     }
 
+    public static ClipImage copyOf(ReadOnlyClipImage from) {
+        ClipImage result = ClipImage.sameSizeAs(from);
+        result.copyFrom(from);
+        return result;
+    }
+
     public void copyColorFrom(ReadOnlyClipImage from, int fromX, int fromY, int toX, int toY) {
         for (int i = 0; i < 4; ++i) {
             byte component = from.getBuffer().get(fromY * from.getWidth() * 4 + fromX * 4 + i);

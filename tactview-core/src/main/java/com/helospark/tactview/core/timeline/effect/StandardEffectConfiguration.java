@@ -86,6 +86,7 @@ import com.helospark.tactview.core.timeline.effect.shadow.DirectionalShadowEffec
 import com.helospark.tactview.core.timeline.effect.shadow.DropShadowEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.SharpenEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.implementation.OpenCVSharpenImplementation;
+import com.helospark.tactview.core.timeline.effect.stabilize.StabilizeVideoEffect;
 import com.helospark.tactview.core.timeline.effect.television.TelevisionRgbLinesEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.AdaptiveThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.SimpleThresholdEffect;
@@ -847,6 +848,18 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new MagnifierEffect(node, loadMetadata, independentPixelOperation))
                 .withName("Magnifier")
                 .withSupportedEffectId("magnifier")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory stabilizerVideoEffect() {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new StabilizeVideoEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000))))
+                .withRestoreFactory((node, loadMetadata) -> new StabilizeVideoEffect(node, loadMetadata))
+                .withName("Stabilize")
+                .withSupportedEffectId("stabilize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .build();

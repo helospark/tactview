@@ -11,6 +11,8 @@ import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +21,7 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelSettingUpdatedMessage;
@@ -49,14 +52,21 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
     private EffectFactoryChain effectFactoryChain;
     private LinkClipRepository linkClipRepository;
     private TimelineChannelsState timelineChannelsState;
+    private LongProcessRequestor longProcessRequestor;
 
     public TimelineManagerAccessor(MessagingService messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
-            TimelineChannelsState timelineChannelsState) {
+            TimelineChannelsState timelineChannelsState, LongProcessRequestor longProcessRequestor) {
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
         this.effectFactoryChain = effectFactoryChain;
         this.linkClipRepository = linkClipRepository;
         this.timelineChannelsState = timelineChannelsState;
+        this.longProcessRequestor = longProcessRequestor;
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        longProcessRequestor.setTimelineManagerAccessor(this);
     }
 
     public TimelineClip addClip(AddClipRequest request) {
