@@ -1,15 +1,22 @@
 package com.helospark.tactview.core.timeline.effect.stabilize;
 
+import java.io.File;
+import java.math.RoundingMode;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.stabilize.impl.AddStabilizeFrameRequest;
+import com.helospark.tactview.core.timeline.effect.stabilize.impl.OpenCVStabilizeVideoService;
+import com.helospark.tactview.core.timeline.effect.stabilize.impl.StabilizationInitRequest;
+import com.helospark.tactview.core.timeline.effect.stabilize.impl.StabilizeFrameRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessAware;
@@ -22,8 +29,15 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 public class StabilizeVideoEffect extends StatelessVideoEffect implements LongProcessAware, LongProcessVisualImagePushAware {
     private LongProcessRequestor longProcessRequestor;
 
-    public StabilizeVideoEffect(TimelineInterval interval) {
+    private OpenCVStabilizeVideoService openCVStabilizeVideoService;
+    private ProjectRepository projectRepository;
+
+    private volatile boolean uptoDateData = false;
+
+    public StabilizeVideoEffect(TimelineInterval interval, OpenCVStabilizeVideoService openCVStabilizeVideoService, ProjectRepository projectRepository) {
         super(interval);
+        this.openCVStabilizeVideoService = openCVStabilizeVideoService;
+        this.projectRepository = projectRepository;
     }
 
     public StabilizeVideoEffect(StabilizeVideoEffect blurEffect, CloneRequestMetadata cloneRequestMetadata) {
@@ -31,14 +45,32 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
     }
 
-    public StabilizeVideoEffect(JsonNode node, LoadMetadata loadMetadata) {
+    public StabilizeVideoEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVStabilizeVideoService openCVStabilizeVideoService, ProjectRepository projectRepository) {
         super(node, loadMetadata);
+        this.openCVStabilizeVideoService = openCVStabilizeVideoService;
+        this.projectRepository = projectRepository;
 
     }
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        return ClipImage.copyOf(request.getCurrentFrame());
+        if (uptoDateData) {
+            StabilizeFrameRequest nativeRequest = new StabilizeFrameRequest();
+
+            ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
+
+            nativeRequest.input = request.getCurrentFrame().getBuffer();
+            nativeRequest.width = request.getCurrentFrame().getWidth();
+            nativeRequest.height = request.getCurrentFrame().getHeight();
+            nativeRequest.output = result.getBuffer();
+            nativeRequest.frameIndex = request.getEffectPosition().getSeconds().divide(projectRepository.getFrameTime(), 10, RoundingMode.HALF_UP).intValue();
+
+            openCVStabilizeVideoService.createStabilizedFrame(nativeRequest);
+
+            return result;
+        } else {
+            return ClipImage.copyOf(request.getCurrentFrame());
+        }
     }
 
     @Override
@@ -78,10 +110,28 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
     @Override
     public void beginToPushLongImages() {
         System.out.println("Beginning to receive long images");
+
+        uptoDateData = false;
+
+        StabilizationInitRequest nativeRequest = new StabilizationInitRequest();
+        nativeRequest.width = projectRepository.getWidth();
+        nativeRequest.height = projectRepository.getHeight();
+        nativeRequest.motionFile = new File(System.getProperty("java.io.tmpdir"), "motion_" + getId()).getAbsolutePath();
+        nativeRequest.motion2File = new File(System.getProperty("java.io.tmpdir"), "motion_2_" + getId()).getAbsolutePath();
+        nativeRequest.radius = 300;
+
+        openCVStabilizeVideoService.initializeStabilizer(nativeRequest);
     }
 
     @Override
     public void longProcessImage(LongProcessImagePushRequest pushRequest) {
+        AddStabilizeFrameRequest addFrameRequest = new AddStabilizeFrameRequest();
+        addFrameRequest.width = pushRequest.getImage().getWidth();
+        addFrameRequest.height = pushRequest.getImage().getHeight();
+        addFrameRequest.input = pushRequest.getImage().getBuffer();
+
+        openCVStabilizeVideoService.addFrame(addFrameRequest);
+
         System.out.println("Long process image " + pushRequest.getPosition());
         try {
             Thread.sleep(100);
@@ -92,6 +142,8 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
 
     @Override
     public void endToPushLongImages() {
+        openCVStabilizeVideoService.finishedAddingFrames();
+        uptoDateData = true;
         System.out.println("End to receive long images");
     }
 

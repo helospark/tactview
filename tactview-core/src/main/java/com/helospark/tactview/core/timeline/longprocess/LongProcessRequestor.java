@@ -31,7 +31,7 @@ public class LongProcessRequestor {
         VisualTimelineClip clip = (VisualTimelineClip) timelineManagerAccessor.findClipForEffect(target.getId()).get();
         Optional<Integer> effectChannel = clip.getEffectChannelIndex(target.getId());
         executor.submit(() -> {
-            TimelineInterval interval = target.getInterval();
+            TimelineInterval interval = target.getGlobalInterval();
 
             TimelinePosition currentPosition = interval.getStartPosition();
 

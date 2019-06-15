@@ -131,7 +131,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
     }
 
     private StatelessEffect createEffect(String effectId, TimelinePosition position, TimelineClip clipById) {
-        CreateEffectRequest request = new CreateEffectRequest(position, effectId, clipById.getType());
+        CreateEffectRequest request = new CreateEffectRequest(position, effectId, clipById.getType(), clipById.getInterval());
         return effectFactoryChain.createEffect(request);
     }
 

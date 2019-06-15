@@ -34,7 +34,7 @@ public class AddScaleCommand implements UiCommand {
     public void execute() {
         VisualTimelineClip clip = (VisualTimelineClip) timelineManager.findClipById(clipId).orElseThrow();
 
-        CreateEffectRequest request = new CreateEffectRequest(TimelinePosition.ofZero(), scaleEffectFactory.getEffectId(), TimelineClipType.VIDEO);
+        CreateEffectRequest request = new CreateEffectRequest(TimelinePosition.ofZero(), scaleEffectFactory.getEffectId(), TimelineClipType.VIDEO, clip.getInterval());
 
         VisualMediaMetadata metadata = clip.getMediaMetadata();
         double scaleX = (double) projectRepository.getWidth() / metadata.getWidth();

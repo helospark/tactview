@@ -35,7 +35,7 @@ public class CommonEffectTest {
         VisualTimelineClip clip = (VisualTimelineClip) fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
 
         for (var effectFactory : effectFactories) {
-            StatelessEffect effect = effectFactory.createEffect(new CreateEffectRequest(TimelinePosition.ofZero(), effectFactory.getEffectId(), TimelineClipType.VIDEO));
+            StatelessEffect effect = effectFactory.createEffect(new CreateEffectRequest(TimelinePosition.ofZero(), effectFactory.getEffectId(), TimelineClipType.VIDEO, clip.getInterval()));
             if (!(effect instanceof StatelessVideoEffect) || effectFactory.getEffectId().equals("lensdistort")) { /** trello.201, check why this occasionally fails */
                 continue;
             }
@@ -63,7 +63,7 @@ public class CommonEffectTest {
         VisualTimelineClip clip = (VisualTimelineClip) fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
 
         for (var effectFactory : effectFactories) {
-            StatelessEffect effect = effectFactory.createEffect(new CreateEffectRequest(TimelinePosition.ofZero(), effectFactory.getEffectId(), TimelineClipType.VIDEO));
+            StatelessEffect effect = effectFactory.createEffect(new CreateEffectRequest(TimelinePosition.ofZero(), effectFactory.getEffectId(), TimelineClipType.VIDEO, clip.getInterval()));
             if (!(effect instanceof StatelessVideoEffect)) {
                 continue;
             }

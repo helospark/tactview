@@ -28,4 +28,5 @@ public interface EffectFactory {
 
     TimelineEffectType getEffectType();
 
+    boolean isFullWidth();
 }

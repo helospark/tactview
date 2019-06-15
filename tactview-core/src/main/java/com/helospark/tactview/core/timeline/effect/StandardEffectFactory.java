@@ -16,6 +16,7 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 public class StandardEffectFactory implements EffectFactory {
     protected List<TimelineClipType> supportedClipTypes;
     protected TimelineEffectType effectType;
+    protected boolean isFullWidth;
 
     private String supportedEffectId;
     private String name;
@@ -30,6 +31,7 @@ public class StandardEffectFactory implements EffectFactory {
         this.name = builder.name;
         this.factory = builder.factory;
         this.restoreFactory = builder.restoreFactory;
+        this.isFullWidth = builder.isFullWidth;
     }
 
     @Override
@@ -72,6 +74,11 @@ public class StandardEffectFactory implements EffectFactory {
         return supportedClipTypes;
     }
 
+    @Override
+    public boolean isFullWidth() {
+        return isFullWidth;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -85,6 +92,7 @@ public class StandardEffectFactory implements EffectFactory {
         private String name;
         private Function<CreateEffectRequest, StatelessEffect> factory;
         private BiFunction<JsonNode, LoadMetadata, StatelessEffect> restoreFactory;
+        private boolean isFullWidth;
 
         private Builder() {
         }
@@ -116,6 +124,11 @@ public class StandardEffectFactory implements EffectFactory {
 
         public Builder withRestoreFactory(BiFunction<JsonNode, LoadMetadata, StatelessEffect> restoreFactory) {
             this.restoreFactory = restoreFactory;
+            return this;
+        }
+
+        public Builder withIsFullWidth(boolean isFullWidth) {
+            this.isFullWidth = isFullWidth;
             return this;
         }
 

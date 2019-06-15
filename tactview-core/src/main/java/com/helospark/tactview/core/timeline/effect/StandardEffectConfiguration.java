@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
@@ -87,6 +88,7 @@ import com.helospark.tactview.core.timeline.effect.shadow.DropShadowEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.SharpenEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.implementation.OpenCVSharpenImplementation;
 import com.helospark.tactview.core.timeline.effect.stabilize.StabilizeVideoEffect;
+import com.helospark.tactview.core.timeline.effect.stabilize.impl.OpenCVStabilizeVideoService;
 import com.helospark.tactview.core.timeline.effect.television.TelevisionRgbLinesEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.AdaptiveThresholdEffect;
 import com.helospark.tactview.core.timeline.effect.threshold.SimpleThresholdEffect;
@@ -854,14 +856,15 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory stabilizerVideoEffect() {
+    public StandardEffectFactory stabilizerVideoEffect(OpenCVStabilizeVideoService openCVStabilizeVideoService, ProjectRepository projectRepository) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new StabilizeVideoEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000))))
-                .withRestoreFactory((node, loadMetadata) -> new StabilizeVideoEffect(node, loadMetadata))
+                .withFactory(request -> new StabilizeVideoEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVStabilizeVideoService, projectRepository))
+                .withRestoreFactory((node, loadMetadata) -> new StabilizeVideoEffect(node, loadMetadata, openCVStabilizeVideoService, projectRepository))
                 .withName("Stabilize")
                 .withSupportedEffectId("stabilize")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .withIsFullWidth(true)
                 .build();
     }
 }

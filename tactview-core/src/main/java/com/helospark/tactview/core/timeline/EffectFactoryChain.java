@@ -32,6 +32,10 @@ public class EffectFactoryChain {
             ((LongProcessAware) result).setLongProcessRequestor(longProcessRequestor);
         }
 
+        if (factory.isFullWidth()) {
+            result.setInterval(new TimelineInterval(TimelinePosition.ofZero(), request.getClipInterval().getLength()));
+        }
+
         return result;
     }
 
