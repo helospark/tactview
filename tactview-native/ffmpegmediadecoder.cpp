@@ -338,7 +338,8 @@ extern "C" {
         //std::cout << "Want to read " << request->startMicroseconds << " current packet pts " << element.lastPts << std::endl;
 
         std::cout << "Seeking info " << request->startMicroseconds << " current_position=" << decodeStructure->lastPts << " expected=" << seek_target << " distance=" << seek_distance << std::endl;
-        if (seek_distance > minimumTimeRequiredToSeek || seek_distance < 0)
+        int FRAME_TIME = 1; // rounding imprecision???
+        if (seek_distance > minimumTimeRequiredToSeek || seek_distance < -FRAME_TIME)
         {
             std::cout << "Seeking required" << std::endl;
             av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
@@ -387,7 +388,7 @@ extern "C" {
 
                 if (element.timestamp < seek_target)
                 {
-                    std::cout << "Skipping package " << packet.pts << std::endl;
+                    std::cout << "Skipping package " << element.timestamp << std::endl;
                 }
                 else
                 {

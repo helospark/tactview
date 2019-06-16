@@ -47,22 +47,6 @@ MotionModel motionModel(const string &str)
 }
 
 
-class SingleFrameFrameSource : public IFrameSource {
-    Mat singleFrame;
-
-    public:
-        SingleFrameFrameSource(Mat singleFrame) {
-            this->singleFrame = singleFrame;
-        }
-
-        Mat nextFrame() {
-            return singleFrame;
-        }
-        void reset() {
-        }
-
-};
-
 class AddStabilizeFrameRequest {
 public:
     unsigned char* input;
@@ -88,10 +72,10 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
 
 
     void addFrame(Mat frame) {
-            std::cout << "Stabilize frame " << frameCount_ << std::endl;
+           // std::cout << "Stabilize frame " << frameCount_ << std::endl;
             if (frameCount_ > 0)
             {
-                //imwrite("/tmp/frame" + std::to_string(frameCount_) + ".jpg", frame);
+                //imwrite("/tmp/frame_bad_" + std::to_string(frameCount_) + ".png", frame);
                 //imwrite("/tmp/motion_" + std::to_string(frameCount_) + ".jpg", frame);
                 if (maskSource_)
                     motionEstimator_->setFrameMask(maskSource_->nextFrame());
@@ -148,19 +132,10 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
         }
 
         Mat getStabilizedFrame(Mat inputFrame, int frameIndex) {
-            this->setFrameSource(makePtr<SingleFrameFrameSource>(inputFrame));
-            this->curStabilizedPos_ = frameIndex;
-
             Mat result = stabilizeFrameCustom(inputFrame, frameIndex);
 
-            std::cout << "Iteration done " << curStabilizedPos_ << std::endl;
-            std::cout << result.size() << std::endl;
-
-            if (curStabilizedPos_ == -1)
-            {
-                logProcessingTime();
-                return inputFrame;
-            }
+            //std::cout << "Iteration done " << frameIndex << std::endl;
+            //std::cout << result.size() << std::endl;
 
             Mat result2 = postProcessFrame(result);
             std::cout << result2.size() << std::endl;
@@ -171,8 +146,6 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
         }
 
         void resetBeforePass() {
-            this->curStabilizedPos_ = 0;
-
             WobbleSuppressorBase *wobble = wobbleSuppressor_.get();
             doWobbleSuppression_ = dynamic_cast<NullWobbleSuppressor*>(wobble) == 0;
             if (doWobbleSuppression_)
@@ -184,34 +157,41 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
             }
         }
 
+        Mat estimateStabilizationMotionCustom(int index)
+        {
+            return stabilizationMotions_[index].clone();
+        }
+
         Mat stabilizeFrameCustom(Mat frame, int index)
         {
+            std::cout << "Custom stabilizing " << index << std::endl;
             Mat result = Mat();
-            Mat stabilizationMotion = estimateStabilizationMotion();
+            Mat stabilizationMotion = estimateStabilizationMotionCustom(index);
             if (doCorrectionForInclusion_)
                 stabilizationMotion = ensureInclusionConstraint(stabilizationMotion, frameSize_, trimRatio_);
 
            // at(curStabilizedPos_, stabilizationMotions_) = stabilizationMotion;
 
+            Mat preprocessedFrame;
             if (doDeblurring_)
             {
-                frame.copyTo(preProcessedFrame_); // TODO: local variable
-                deblurer_->deblur(curStabilizedPos_, preProcessedFrame_);
+                frame.copyTo(preprocessedFrame); // TODO: local variable
+                deblurer_->deblur(index, preprocessedFrame);
             }
             else
-                preProcessedFrame_ = frame;
+                preprocessedFrame = frame;
 
             // apply stabilization transformation
 
 
             if (motionEstimator_->motionModel() != MM_HOMOGRAPHY) {
-                std::cout << frameSize_ << " " << preProcessedFrame_.size() << " " << stabilizationMotion(Rect(0,0,3,2)) << std::endl;
+                std::cout << frameSize_ << " " << preprocessedFrame.size() << " " << stabilizationMotion(Rect(0,0,3,2)) << std::endl;
                 warpAffine(
-                        preProcessedFrame_, result,
+                        preprocessedFrame, result,
                         stabilizationMotion(Rect(0,0,3,2)), frameSize_, INTER_LINEAR, borderMode_);
             } else
                 warpPerspective(
-                        preProcessedFrame_, result,
+                        preprocessedFrame, result,
                         stabilizationMotion, frameSize_, INTER_LINEAR, borderMode_);
 
             if (doInpainting_)
@@ -225,13 +205,13 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
                             frameMask_, result,
                             stabilizationMotion, frameSize_, INTER_NEAREST);
 
-                erode(at(curStabilizedPos_, stabilizedMasks_), at(curStabilizedPos_, stabilizedMasks_),
+                erode(at(index, stabilizedMasks_), at(index, stabilizedMasks_),
                       Mat());
 
-                at(curStabilizedPos_, stabilizedMasks_).copyTo(inpaintingMask_);
+                at(index, stabilizedMasks_).copyTo(inpaintingMask_);
 
                 inpainter_->inpaint(
-                    curStabilizedPos_, result, inpaintingMask_);
+                    index, result, inpaintingMask_);
             }
             return result;
         }
@@ -641,12 +621,14 @@ extern "C" {
 
 /*
 int main(int argc, char** args) {
+    int width=1280;
+    int height=720;
     StabilizationInitRequest* initRequest = new StabilizationInitRequest();
-    initRequest->motionFile="/tmp/wrong2";
-    initRequest->motion2File="/tmp/wrong2_2";
+    initRequest->motionFile="/tmp/wrong4";
+    initRequest->motion2File="/tmp/wrong4_2";
     initRequest->radius = 300;
-    initRequest->width = 1280;
-    initRequest->height = 720;
+    initRequest->width = width;
+    initRequest->height = height;
     initializeStabilizer(initRequest);
 
 
@@ -699,9 +681,9 @@ int main(int argc, char** args) {
         cv::cvtColor(inputFrame, rgba, cv::COLOR_BGR2BGRA, 4);
         StabilizeFrameRequest* sfr = new StabilizeFrameRequest();
         sfr->input = rgba.data;
-        sfr->output = new unsigned char[1280*720*4];
-        sfr->width = 1280;
-        sfr->height = 720;
+        sfr->output = new unsigned char[width*height*4];
+        sfr->width = width;
+        sfr->height = height;
         sfr->frameIndex = nframes;
 
         createStabilizedFrame(sfr);
@@ -711,8 +693,8 @@ int main(int argc, char** args) {
 
         // init writer (once) and save stabilized frame
             if (!writer.isOpened())
-                writer.open("/home/black/shaky_out11.mp4", VideoWriter::fourcc('X','V','I','D'),
-                            30, cv::Size(1280, 720));
+                writer.open("/home/black/shaky_out13.mp4", VideoWriter::fourcc('X','V','I','D'),
+                            30, cv::Size(width, height));
             Mat rgb;
             cv::cvtColor(outputMat, rgb, cv::COLOR_BGRA2BGR, 3);
             std::cout << "Writing frame " << rgb.type() << " " << inputFrame.type() << std::endl;

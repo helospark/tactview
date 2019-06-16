@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
@@ -59,6 +60,7 @@ public class LongProcessRequestor {
                 target.longProcessImage(pushRequest);
 
                 currentPosition = currentPosition.add(step);
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
             }
             target.endToPushLongImages();
 

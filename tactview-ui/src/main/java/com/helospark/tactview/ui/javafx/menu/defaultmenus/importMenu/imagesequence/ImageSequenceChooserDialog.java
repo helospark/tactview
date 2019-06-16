@@ -108,9 +108,7 @@ public class ImageSequenceChooserDialog {
 
                         return null;
                     }).thenAccept(a -> {
-                        if (a != null) {
-                            stage.close();
-                        }
+                        stage.close();
                     });
         });
 
