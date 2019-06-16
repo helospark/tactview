@@ -397,7 +397,7 @@ public class JavaFXUiMain extends Application {
         uiTimelineManager.registerUiPlaybackConsumer(position -> effectPropertyView.updateValues(position));
         uiTimelineManager.registerUiPlaybackConsumer(position -> updateTime(position));
         displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
-        uiTimelineManager.registerPlaybackConsumer(position -> displayUpdateService.updateDisplay(position));
+        uiTimelineManager.registerPlaybackConsumer(position -> displayUpdateService.updateDisplayWithCacheInvalidation(position));
         AudioUpdaterService audioUpdaterService = lightDi.getBean(AudioUpdaterService.class);
         uiTimelineManager.registerPlaybackConsumer(position -> audioUpdaterService.updateAtPosition(position));
         uiTimelineManager.registerStoppedConsumer(type -> {

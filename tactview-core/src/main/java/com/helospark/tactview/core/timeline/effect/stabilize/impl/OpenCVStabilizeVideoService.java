@@ -14,7 +14,9 @@ public interface OpenCVStabilizeVideoService extends Library {
 
     void addFrame(AddStabilizeFrameRequest request);
 
-    void finishedAddingFrames();
+    void finishedAddingFrames(int index);
 
     void createStabilizedFrame(StabilizeFrameRequest request);
+
+    void deallocate(int index);
 }

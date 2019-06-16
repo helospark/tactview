@@ -145,7 +145,7 @@ public class InputModeRepository implements CleanableMode {
             updateCanvas(e);
         });
         canvas.setOnMouseExited(e -> {
-            displayUpdaterService.updateCurrentPosition();
+            displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
             updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null);
         });
     }
@@ -154,7 +154,7 @@ public class InputModeRepository implements CleanableMode {
         GraphicsContext graphics = canvas.getGraphicsContext2D();
         if (inputModeInput != null) {
             // TODO: should not be here
-            displayUpdaterService.updateCurrentPosition();
+            displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
             Platform.runLater(() -> {
                 graphics.setStroke(javafx.scene.paint.Color.RED);
                 graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());

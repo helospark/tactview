@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePattern
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -108,7 +109,9 @@ public class ImageSequenceChooserDialog {
 
                         return null;
                     }).thenAccept(a -> {
-                        stage.close();
+                        Platform.runLater(() -> {
+                            stage.close();
+                        });
                     });
         });
 

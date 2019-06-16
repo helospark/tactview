@@ -6,6 +6,7 @@ import java.util.List;
 import com.sun.jna.Structure;
 
 public class StabilizeFrameRequest extends Structure implements Structure.ByReference {
+    public int index;
     public ByteBuffer input;
     public ByteBuffer output;
     public int width;
@@ -14,6 +15,6 @@ public class StabilizeFrameRequest extends Structure implements Structure.ByRefe
 
     @Override
     protected List<String> getFieldOrder() {
-        return List.of("input", "output", "width", "height", "frameIndex");
+        return List.of("index", "input", "output", "width", "height", "frameIndex");
     }
 }

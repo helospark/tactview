@@ -33,6 +33,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
     private ProjectRepository projectRepository;
 
     private volatile boolean uptoDateData = false;
+    private volatile int stabilizerContextIndex = -1;
 
     public StabilizeVideoEffect(TimelineInterval interval, OpenCVStabilizeVideoService openCVStabilizeVideoService, ProjectRepository projectRepository) {
         super(interval);
@@ -63,6 +64,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
             nativeRequest.width = request.getCurrentFrame().getWidth();
             nativeRequest.height = request.getCurrentFrame().getHeight();
             nativeRequest.output = result.getBuffer();
+            nativeRequest.index = stabilizerContextIndex;
             nativeRequest.frameIndex = request.getEffectPosition().getSeconds().divide(projectRepository.getFrameTime(), 10, RoundingMode.HALF_UP).intValue();
 
             openCVStabilizeVideoService.createStabilizedFrame(nativeRequest);
@@ -120,7 +122,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         nativeRequest.motion2File = new File(System.getProperty("java.io.tmpdir"), "motion_2_" + getId()).getAbsolutePath();
         nativeRequest.radius = 300;
 
-        openCVStabilizeVideoService.initializeStabilizer(nativeRequest);
+        stabilizerContextIndex = openCVStabilizeVideoService.initializeStabilizer(nativeRequest);
     }
 
     @Override
@@ -129,6 +131,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         addFrameRequest.width = pushRequest.getImage().getWidth();
         addFrameRequest.height = pushRequest.getImage().getHeight();
         addFrameRequest.input = pushRequest.getImage().getBuffer();
+        addFrameRequest.index = stabilizerContextIndex;
 
         openCVStabilizeVideoService.addFrame(addFrameRequest);
 
@@ -142,7 +145,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
 
     @Override
     public void endToPushLongImages() {
-        openCVStabilizeVideoService.finishedAddingFrames();
+        openCVStabilizeVideoService.finishedAddingFrames(stabilizerContextIndex);
         uptoDateData = true;
         System.out.println("End to receive long images");
     }

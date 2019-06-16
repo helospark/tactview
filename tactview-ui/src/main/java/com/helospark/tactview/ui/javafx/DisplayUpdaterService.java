@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
@@ -24,6 +26,7 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 
 @Component
 public class DisplayUpdaterService implements ScenePostProcessor {
@@ -37,6 +40,13 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private UiTimelineManager uiTimelineManager;
     private GlobalDirtyClipManager globalDirtyClipManager;
     private List<DisplayUpdatedListener> displayUpdateListeners;
+    private MessagingService messagingService;
+
+    // cache current frame
+    private Image cacheCurrentImage;
+    private long cacheLastModifiedTime;
+    private TimelinePosition cachePosition;
+    // end of current frame cache
 
     @Slf4j
     private Logger logger;
@@ -44,12 +54,24 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private Canvas canvas;
 
     public DisplayUpdaterService(PlaybackController playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
-            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners) {
+            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService) {
         this.playbackController = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
         this.globalDirtyClipManager = globalDirtyClipManager;
         this.displayUpdateListeners = displayUpdateListeners;
+        this.messagingService = messagingService;
+    }
+
+    @PostConstruct
+    public void init() {
+        messagingService.register(DisplayUpdateRequestMessage.class, message -> {
+            if (message.isInvalidateCache()) {
+                updateCurrentPositionWithInvalidatedCache();
+            } else {
+                updateCurrentPositionWithoutInvalidatedCache();
+            }
+        });
     }
 
     @Override
@@ -61,7 +83,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                     TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
                     long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
                     if (currentPostionLastModified > currentPositionLastRendered) {
-                        updateCurrentPosition();
+                        updateCurrentPositionWithInvalidatedCache();
                         logger.debug("Current position changed, updating {}", currentPosition);
                     }
                 } catch (Exception e) {
@@ -83,34 +105,55 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         this.canvas = canvas;
     }
 
-    public void updateCurrentPosition() {
+    public void updateCurrentPositionWithInvalidatedCache() {
+        cacheCurrentImage = null;
         updateDisplay(uiTimelineManager.getCurrentPosition());
     }
 
+    public void updateCurrentPositionWithoutInvalidatedCache() {
+        cacheCurrentImage = null;
+        updateDisplay(uiTimelineManager.getCurrentPosition());
+    }
+
+    public void updateDisplayWithCacheInvalidation(TimelinePosition currentPosition) {
+        cacheCurrentImage = null;
+        updateDisplay(currentPosition);
+    }
+
     public void updateDisplay(TimelinePosition currentPosition) {
-        Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
+        long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
         JavaDisplayableAudioVideoFragment actualAudioVideoFragment;
-        if (cachedKey == null) {
-            actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
+        if (cacheCurrentImage != null && currentPosition.equals(cachePosition) && cacheLastModifiedTime == currentPostionLastModified) {
+            actualAudioVideoFragment = new JavaDisplayableAudioVideoFragment(cacheCurrentImage, null);
         } else {
-            try {
-                actualAudioVideoFragment = cachedKey.get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
+            if (cachedKey == null) {
+                actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
+            } else {
+                try {
+                    actualAudioVideoFragment = cachedKey.get();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
+            currentPositionLastRendered = System.currentTimeMillis();
+            logger.debug("Rendered at {}", currentPositionLastRendered);
         }
-        currentPositionLastRendered = System.currentTimeMillis();
-        logger.debug("Rendered at {}", currentPositionLastRendered);
         Platform.runLater(() -> {
             int width = uiProjectRepostiory.getPreviewWidth();
             int height = uiProjectRepostiory.getPreviewHeight();
             GraphicsContext gc = canvas.getGraphicsContext2D();
-            gc.drawImage(actualAudioVideoFragment.getImage(), 0, 0, width, height);
+            Image image = actualAudioVideoFragment.getImage();
+            gc.drawImage(image, 0, 0, width, height);
 
             DisplayUpdatedRequest displayUpdateRequest = DisplayUpdatedRequest.builder()
-                    .withImage(actualAudioVideoFragment.getImage())
+                    .withImage(image)
                     .withPosition(currentPosition)
+                    .withGraphics(gc)
                     .build();
+            cacheCurrentImage = image;
+            cachePosition = currentPosition;
+            cacheLastModifiedTime = currentPostionLastModified;
 
             displayUpdateListeners.stream()
                     .forEach(a -> a.displayUpdated(displayUpdateRequest));

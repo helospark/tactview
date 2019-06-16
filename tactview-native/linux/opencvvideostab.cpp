@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <map>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
 #include <opencv2/video.hpp>
@@ -49,6 +50,7 @@ MotionModel motionModel(const string &str)
 
 class AddStabilizeFrameRequest {
 public:
+    int index;
     unsigned char* input;
     int width;
     int height;
@@ -219,8 +221,15 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
     };
 
 // TODO map
-CustomTwoPassStabilizer *twoPassStabilizer;
-int expectedWidth, expectedHeight;
+class StabilizationContext {
+public:
+  CustomTwoPassStabilizer *twoPassStabilizer;
+  int expectedWidth, expectedHeight;
+};
+
+int indexCounter = 0;
+
+std::map<int, StabilizationContext*> contexts;
 
 class IMotionEstimatorBuilder
 {
@@ -341,6 +350,7 @@ public:
 
 class StabilizeFrameRequest {
 public:
+    int index;
     unsigned char* input;
     unsigned char* output;
     int width;
@@ -358,8 +368,11 @@ extern "C" {
   EXPORTED int initializeStabilizer(StabilizationInitRequest* request)
   {
       std::cout << "prepare to initialize video stabilizer " << request->width << " " << request->height << " " << request->motionFile << " " << request->motion2File << " " << request->radius << std::endl;
-      expectedWidth = request->width;
-      expectedHeight = request->height;
+      
+      StabilizationContext* newContext = new StabilizationContext();
+
+      newContext->expectedWidth = request->width;
+      newContext->expectedHeight = request->height;
       try
       {
           const char *keys =
@@ -446,7 +459,7 @@ extern "C" {
           else
               wsMotionEstBuilder.reset(new MotionEstimatorRansacL2Builder(cmd, arg("gpu") == "yes", "ws-"));
 
-          twoPassStabilizer = new CustomTwoPassStabilizer();
+          CustomTwoPassStabilizer* twoPassStabilizer = new CustomTwoPassStabilizer();
           stabilizer = twoPassStabilizer;
           twoPassStabilizer->setEstimateTrimRatio(arg("est-trim") == "yes");
 
@@ -579,6 +592,11 @@ extern "C" {
 
 
           twoPassStabilizer->prepass(request->width, request->height);
+          newContext->twoPassStabilizer = twoPassStabilizer;
+          int index = indexCounter++;
+          contexts.insert(std::make_pair(index, newContext));
+
+          return index;
       }
       catch (const exception &e)
       {
@@ -588,33 +606,56 @@ extern "C" {
       return 0;
   }
 
-  EXPORTED void finishedAddingFrames() {
-      twoPassStabilizer->postPass();
-      twoPassStabilizer->resetBeforePass();
+  EXPORTED void finishedAddingFrames(int index) {
+     try {
+        StabilizationContext* context = contexts.at(index);
+        context->twoPassStabilizer->postPass();
+        context->twoPassStabilizer->resetBeforePass();
+      } catch (const std::out_of_range& oor) {
+          std::cout << index << " is not found in stabilizationContext" << std::endl;
+      }
   }
 
 
   EXPORTED void createStabilizedFrame(StabilizeFrameRequest* request) {
+     try {
+          StabilizationContext* context = contexts.at(request->index);
           std::cout << "stabilize frame index " << request->frameIndex << std::endl;
           Mat inputFrame(request->height, request->width, CV_8UC4, (void*)request->input);
           Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
 
-          if (request->width != expectedWidth || request->height != expectedHeight) {
+          if (request->width != context->expectedWidth || request->height != context->expectedHeight) {
             Mat scaledFrame;
-            cv::resize(inputFrame, scaledFrame, cv::Size(expectedWidth, expectedHeight));
+            cv::resize(inputFrame, scaledFrame, cv::Size(context->expectedWidth, context->expectedHeight));
             inputFrame = scaledFrame;
           }
 
-          Mat stabilizedFrame = twoPassStabilizer->getStabilizedFrame(inputFrame, request->frameIndex);
+          Mat stabilizedFrame = context->twoPassStabilizer->getStabilizedFrame(inputFrame, request->frameIndex);
 
           cv::resize(stabilizedFrame, outputMat, cv::Size(request->width, request->height));
+    } catch (const std::out_of_range& oor) {
+          std::cout << request->index << " is not found in stabilizationContext" << std::endl;
+    }
   }
 
   EXPORTED void addFrame(AddStabilizeFrameRequest* frameRequest) {
-      Mat frame(frameRequest->height, frameRequest->width, CV_8UC4, (void*)frameRequest->input);
-      Mat rgb;
-      cv::cvtColor(frame, rgb, cv::COLOR_RGBA2BGR, 3);
-      twoPassStabilizer->addFrame(rgb);
+     try {
+          StabilizationContext* context = contexts.at(frameRequest->index);
+          Mat frame(frameRequest->height, frameRequest->width, CV_8UC4, (void*)frameRequest->input);
+          Mat rgb;
+          cv::cvtColor(frame, rgb, cv::COLOR_RGBA2BGR, 3);
+          context->twoPassStabilizer->addFrame(rgb);
+    } catch (const std::out_of_range& oor) {
+          std::cout << frameRequest->index << " is not found in stabilizationContext" << std::endl;
+    }
+  }
+
+  EXPORTED void deallocate(int index) {
+    try {
+      contexts.erase(index);
+    } catch (const std::out_of_range& oor) {
+          std::cout << std::to_string(index) << " is not found in stabilizationContext" << std::endl;
+    }
   }
 
 }
