@@ -32,6 +32,7 @@ public class JnaBeanDefinitionCollectorChainItem implements BeanDefinitionCollec
                     .withIsLazy(IsLazyExtractor.isLazy(clazz))
                     .withIsPrimary(IsPrimaryExtractor.isPrimary(clazz))
                     .withConditions(conditionalExtractor.extractConditions(clazz))
+                    .withMergedAnnotations(AnnotationUtil.getAllMergedAnnotations(clazz))
                     .withBackingLibrary(backingLibrary)
                     .build());
         } else {

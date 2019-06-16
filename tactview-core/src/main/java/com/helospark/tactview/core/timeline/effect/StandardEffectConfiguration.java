@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline.effect;
 
+import static com.helospark.tactview.core.util.conditional.TactviewPlatform.LINUX;
+
 import java.util.List;
 
 import com.helospark.lightdi.annotation.Bean;
@@ -106,6 +108,7 @@ import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.conditional.ConditionalOnPlatform;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Configuration
@@ -856,6 +859,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
+    @ConditionalOnPlatform(LINUX) // until we get compilation working on other platforms
     public StandardEffectFactory stabilizerVideoEffect(OpenCVStabilizeVideoService openCVStabilizeVideoService, ProjectRepository projectRepository) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new StabilizeVideoEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), openCVStabilizeVideoService, projectRepository))

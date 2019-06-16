@@ -52,5 +52,5 @@ cp libopencvcartoon.so ../tactview-core/src/main/resources/linux-x86-64/.
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvpencil.so -o libopencvpencil.so opencvpencil.cpp `pkg-config --libs opencv4`
 cp libopencvpencil.so ../tactview-core/src/main/resources/linux-x86-64/.
 
-gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvvideostab.so -o libopencvvideostab.so opencvvideostab.cpp `pkg-config --libs opencv4` -lopencv_videostab
+gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvvideostab.so -o libopencvvideostab.so linux/opencvvideostab.cpp `pkg-config --libs opencv4` -lopencv_videostab
 cp libopencvvideostab.so ../tactview-core/src/main/resources/linux-x86-64/.

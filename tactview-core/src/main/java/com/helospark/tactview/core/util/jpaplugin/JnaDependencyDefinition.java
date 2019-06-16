@@ -4,11 +4,13 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Generated;
 
 import com.helospark.lightdi.conditional.condition.DependencyCondition;
 import com.helospark.lightdi.descriptor.DependencyDescriptor;
+import com.helospark.lightdi.util.LightDiAnnotation;
 
 public class JnaDependencyDefinition extends DependencyDescriptor {
     private String backingLibrary;
@@ -28,6 +30,7 @@ public class JnaDependencyDefinition extends DependencyDescriptor {
         this.postConstructMethods = builder.postConstructMethods;
         this.preDestroyMethods = builder.preDestroyMethods;
         this.conditions = builder.conditions;
+        this.mergedAnnotations = builder.mergedAnnotations;
         this.initalizationFinished = builder.initalizationFinished;
         this.importingClass = builder.importingClass;
         this.backingLibrary = builder.backingLibrary;
@@ -51,6 +54,7 @@ public class JnaDependencyDefinition extends DependencyDescriptor {
         private List<Method> postConstructMethods = Collections.emptyList();
         private List<Method> preDestroyMethods = Collections.emptyList();
         private List<DependencyCondition> conditions = Collections.emptyList();
+        private Set<LightDiAnnotation> mergedAnnotations = Collections.emptySet();
         private boolean initalizationFinished;
         private Optional<Class<?>> importingClass = Optional.empty();
         private String backingLibrary;
@@ -102,6 +106,11 @@ public class JnaDependencyDefinition extends DependencyDescriptor {
 
         public Builder withConditions(List<DependencyCondition> conditions) {
             this.conditions = conditions;
+            return this;
+        }
+
+        public Builder withMergedAnnotations(Set<LightDiAnnotation> mergedAnnotations) {
+            this.mergedAnnotations = mergedAnnotations;
             return this;
         }
 
