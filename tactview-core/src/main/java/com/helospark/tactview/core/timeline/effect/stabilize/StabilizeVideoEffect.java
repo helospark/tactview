@@ -11,8 +11,11 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.stabilize.impl.AddStabilizeFrameRequest;
 import com.helospark.tactview.core.timeline.effect.stabilize.impl.OpenCVStabilizeVideoService;
 import com.helospark.tactview.core.timeline.effect.stabilize.impl.StabilizationInitRequest;
@@ -31,6 +34,8 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
 
     private OpenCVStabilizeVideoService openCVStabilizeVideoService;
     private ProjectRepository projectRepository;
+
+    private IntegerProvider smoothingRadiusProvider;
 
     private volatile boolean uptoDateData = false;
     private volatile int stabilizerContextIndex = -1;
@@ -77,11 +82,17 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
 
     @Override
     public void initializeValueProvider() {
+        smoothingRadiusProvider = new IntegerProvider(1, 500, new ConstantInterpolator(200.0));
     }
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        return List.of();
+        ValueProviderDescriptor radiusDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(smoothingRadiusProvider)
+                .withName("Smoothing radius")
+                .build();
+
+        return List.of(radiusDescriptor);
     }
 
     @Override
@@ -93,15 +104,13 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
     public void notifyAfterResize() {
         super.notifyAfterResize();
 
-        LongProcessFrameRequest request = LongProcessFrameRequest.builder().build();
-
-        longProcessRequestor.requestFrames(this, request);
+        requestLongProcess();
     }
 
     @Override
     public void notifyAfterInitialized() {
         super.notifyAfterInitialized();
-        longProcessRequestor.requestFrames(this, null);
+        requestLongProcess();
     }
 
     @Override
@@ -120,7 +129,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         nativeRequest.height = projectRepository.getHeight();
         nativeRequest.motionFile = new File(System.getProperty("java.io.tmpdir"), "motion_" + getId()).getAbsolutePath();
         nativeRequest.motion2File = new File(System.getProperty("java.io.tmpdir"), "motion_2_" + getId()).getAbsolutePath();
-        nativeRequest.radius = 300;
+        nativeRequest.radius = smoothingRadiusProvider.getValueAt(TimelinePosition.ofZero());
 
         stabilizerContextIndex = openCVStabilizeVideoService.initializeStabilizer(nativeRequest);
     }
@@ -134,12 +143,12 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         addFrameRequest.index = stabilizerContextIndex;
 
         openCVStabilizeVideoService.addFrame(addFrameRequest);
+    }
 
-        System.out.println("Long process image " + pushRequest.getPosition());
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    @Override
+    public void abortedLongImagePush() {
+        if (stabilizerContextIndex != -1) {
+            openCVStabilizeVideoService.deallocate(stabilizerContextIndex);
         }
     }
 
@@ -148,6 +157,17 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         openCVStabilizeVideoService.finishedAddingFrames(stabilizerContextIndex);
         uptoDateData = true;
         System.out.println("End to receive long images");
+    }
+
+    @Override
+    public void effectChanged(EffectChangedRequest request) {
+        super.effectChanged(request);
+        requestLongProcess();
+    }
+
+    private void requestLongProcess() {
+        LongProcessFrameRequest request = LongProcessFrameRequest.builder().build();
+        longProcessRequestor.requestFrames(this, request);
     }
 
 }

@@ -10,6 +10,10 @@ public interface LongProcessVisualImagePushAware {
 
     }
 
+    public default void abortedLongImagePush() {
+
+    }
+
     public void longProcessImage(LongProcessImagePushRequest pushRequest);
 
 }

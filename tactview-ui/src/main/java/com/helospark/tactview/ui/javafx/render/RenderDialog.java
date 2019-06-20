@@ -190,6 +190,7 @@ public class RenderDialog {
                 String id = request.getRenderId();
 
                 ProgressAdvancer progressAdvancer = new ProgressAdvancer(messagingService, id);
+                progressText.setText("Preparing render...");
                 stage.setTitle("Rendering inprogress...");
                 progressAdvancer.updateProgress(info -> {
                     progressBar.setProgress(info.percent);

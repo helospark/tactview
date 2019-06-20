@@ -9,23 +9,37 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
+import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 
 @Component
 public class RenderServiceChain {
     private List<RenderService> renderServiceChainItem;
+    private LongProcessRequestor longProcessRequestor;
     @Slf4j
     private Logger logger;
 
-    public RenderServiceChain(List<RenderService> renderServiceChainItem) {
+    public RenderServiceChain(List<RenderService> renderServiceChainItem, LongProcessRequestor longProcessRequestor) {
         this.renderServiceChainItem = renderServiceChainItem;
+        this.longProcessRequestor = longProcessRequestor;
     }
 
     public CompletableFuture<Void> render(RenderRequest renderRequest) {
         RenderService chainItem = getRenderer(renderRequest);
 
         return CompletableFuture
-                .runAsync(() -> chainItem.render(renderRequest));
+                .runAsync(() -> {
+                    int i = 0;
+                    while (!longProcessRequestor.isFinished()) {
+                        ThreadSleep.sleep(1000);
+                        ++i;
+                        if (i % 10 == 0) {
+                            logger.info("Doing long processes, number of unscheduled processes " + longProcessRequestor.getRunningJobs().size());
+                        }
+                    }
+                })
+                .thenRunAsync(() -> chainItem.render(renderRequest));
     }
 
     public RenderService getRenderer(RenderRequest renderRequest) {
