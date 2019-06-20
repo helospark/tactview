@@ -6,7 +6,6 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
-import com.helospark.tactview.core.timeline.audioeffect.volume.VolumeAudioEffect;
 
 public abstract class StatelessAudioEffect extends StatelessEffect {
 
@@ -14,8 +13,8 @@ public abstract class StatelessAudioEffect extends StatelessEffect {
         super(interval);
     }
 
-    public StatelessAudioEffect(VolumeAudioEffect volumeAudioEffect, CloneRequestMetadata cloneRequestMetadata) {
-        super(volumeAudioEffect, cloneRequestMetadata);
+    public StatelessAudioEffect(StatelessAudioEffect statelessAudioEffect, CloneRequestMetadata cloneRequestMetadata) {
+        super(statelessAudioEffect, cloneRequestMetadata);
     }
 
     public StatelessAudioEffect(JsonNode node, LoadMetadata loadMetadata) {

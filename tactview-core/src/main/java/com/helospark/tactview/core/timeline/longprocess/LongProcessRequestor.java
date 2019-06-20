@@ -1,10 +1,7 @@
 package com.helospark.tactview.core.timeline.longprocess;
 
 import static com.helospark.tactview.core.timeline.longprocess.LongProcessDuplaceRequestStrategy.ONLY_KEEP_LATEST_REQUEST;
-import static com.helospark.tactview.core.timeline.message.progress.ProgressType.LONG_PROCESS;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,37 +18,34 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.repository.ProjectRepository;
-import com.helospark.tactview.core.timeline.GetFrameRequest;
+import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
-import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
-import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.audioeffect.StatelessAudioEffect;
+import com.helospark.tactview.core.timeline.longprocess.factory.AudioLongProcessRunnableFactory;
+import com.helospark.tactview.core.timeline.longprocess.factory.VisualLongProcessRunnableFactory;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
-import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
-import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
-import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class LongProcessRequestor {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    private ProjectRepository projectRepository;
     private MessagingService messagingService;
     private TimelineManagerAccessor timelineManagerAccessor;
+    private VisualLongProcessRunnableFactory visualLongProcessRunnableFactory;
+    private AudioLongProcessRunnableFactory audioLongProcessRunnableFactory;
 
     private LinkedBlockingQueue<LongProcessDescriptor> requestedJobs = new LinkedBlockingQueue<>();
     private ConcurrentHashMap<String, LongProcessDescriptor> runningJobs = new ConcurrentHashMap<>();
 
     private volatile boolean running = true;
 
-    public LongProcessRequestor(ProjectRepository projectRepository, MessagingService messagingService) {
-        this.projectRepository = projectRepository;
+    public LongProcessRequestor(MessagingService messagingService, VisualLongProcessRunnableFactory visualLongProcessRunnableFactory,
+            AudioLongProcessRunnableFactory audioLongProcessRunnableFactory) {
         this.messagingService = messagingService;
+        this.visualLongProcessRunnableFactory = visualLongProcessRunnableFactory;
+        this.audioLongProcessRunnableFactory = audioLongProcessRunnableFactory;
     }
 
     @PostConstruct
@@ -102,50 +96,26 @@ public class LongProcessRequestor {
             removeAndStopAllJobsWithEffectId(target.getId());
         }
 
-        Runnable runnable = () -> {
-            String jobId = descriptor.jobId;
-            try {
-                TimelineInterval interval = target.getGlobalInterval();
-                BigDecimal step = BigDecimal.ONE.divide(projectRepository.getFps(), 10, RoundingMode.HALF_UP);
-                messagingService.sendAsyncMessage(new ProgressInitializeMessage(jobId, interval.getLength().getSeconds().divide(step, 10, RoundingMode.HALF_UP).intValue(), LONG_PROCESS));
+        Runnable runnable = visualLongProcessRunnableFactory.createVisualRunnable(target, clip, effectChannel, descriptor);
+        descriptor.setRunnable(runnable);
 
-                TimelinePosition currentPosition = interval.getStartPosition();
+        requestedJobs.add(descriptor);
+    }
 
-                target.beginToPushLongImages();
+    public <T extends StatelessAudioEffect & LongProcessAudibleImagePushAware> void requestAudioFrames(T target, LongProcessFrameRequest longProcessFrameRequest) {
+        AudibleTimelineClip clip = (AudibleTimelineClip) timelineManagerAccessor.findClipForEffect(target.getId()).get();
+        Optional<Integer> effectChannel = clip.getEffectChannelIndex(target.getId());
 
-                while (currentPosition.isLessThan(interval.getEndPosition()) && !descriptor.isAborted()) {
-                    GetFrameRequest frameRequest = GetFrameRequest.builder()
-                            .withScale(1.0)
-                            .withPosition(currentPosition)
-                            .withExpectedWidth(projectRepository.getWidth())
-                            .withExpectedHeight(projectRepository.getHeight())
-                            .withApplyEffects(true)
-                            .withApplyEffectsLessThanEffectChannel(effectChannel)
-                            .build();
+        LongProcessDescriptor descriptor = new LongProcessDescriptor();
+        descriptor.setClipId(clip.getId());
+        descriptor.setEffectId(Optional.of(target.getId()));
+        descriptor.setJobId(UUID.randomUUID().toString());
 
-                    ReadOnlyClipImage frameResult = clip.getFrame(frameRequest);
+        if (longProcessFrameRequest.getDuplaceRequestStrategy().equals(ONLY_KEEP_LATEST_REQUEST)) {
+            removeAndStopAllJobsWithEffectId(target.getId());
+        }
 
-                    LongProcessImagePushRequest pushRequest = LongProcessImagePushRequest.builder()
-                            .withImage(frameResult)
-                            .withPosition(currentPosition)
-                            .build();
-
-                    target.longProcessImage(pushRequest);
-
-                    messagingService.sendAsyncMessage(new ProgressAdvancedMessage(jobId, 1));
-
-                    currentPosition = currentPosition.add(step);
-                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
-                }
-            } finally {
-                if (!descriptor.isAborted()) {
-                    target.endToPushLongImages();
-                } else {
-                    target.abortedLongImagePush();
-                }
-                messagingService.sendAsyncMessage(new ProgressDoneMessage(jobId));
-            }
-        };
+        Runnable runnable = audioLongProcessRunnableFactory.createAudibleRunnable(target, clip, effectChannel, descriptor);
         descriptor.setRunnable(runnable);
 
         requestedJobs.add(descriptor);
