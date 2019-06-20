@@ -150,6 +150,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                     .withImage(image)
                     .withPosition(currentPosition)
                     .withGraphics(gc)
+                    .withCanvas(canvas)
                     .build();
             cacheCurrentImage = image;
             cachePosition = currentPosition;

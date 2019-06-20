@@ -30,6 +30,12 @@ import com.helospark.tactview.core.timeline.longprocess.LongProcessVisualImagePu
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class StabilizeVideoEffect extends StatelessVideoEffect implements LongProcessAware, LongProcessVisualImagePushAware {
+    private static final String FINISHED_POSTFIX = "_finished";
+
+    private static final String WOBBLE_FILE_NAME = "motion_2_";
+
+    private static final String MOTION_FILE_NAME = "motion_";
+
     private LongProcessRequestor longProcessRequestor;
 
     private OpenCVStabilizeVideoService openCVStabilizeVideoService;
@@ -123,15 +129,39 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         System.out.println("Beginning to receive long images");
 
         uptoDateData = false;
+        File motionFile = getOrCreateMotionFile(MOTION_FILE_NAME, FINISHED_POSTFIX);
+        File wobbleFile = getOrCreateMotionFile(WOBBLE_FILE_NAME, FINISHED_POSTFIX);
 
         StabilizationInitRequest nativeRequest = new StabilizationInitRequest();
         nativeRequest.width = projectRepository.getWidth();
         nativeRequest.height = projectRepository.getHeight();
-        nativeRequest.motionFile = new File(System.getProperty("java.io.tmpdir"), "motion_" + getId()).getAbsolutePath();
-        nativeRequest.motion2File = new File(System.getProperty("java.io.tmpdir"), "motion_2_" + getId()).getAbsolutePath();
+        nativeRequest.motionFile = motionFile.getAbsolutePath();
+        nativeRequest.motion2File = wobbleFile.getAbsolutePath();
         nativeRequest.radius = smoothingRadiusProvider.getValueAt(TimelinePosition.ofZero());
 
         stabilizerContextIndex = openCVStabilizeVideoService.initializeStabilizer(nativeRequest);
+    }
+
+    private File getOrCreateMotionFile(String filename, String finishedPostfix) {
+        File inProgressFile = getMotionFileName(filename);
+        File finishedFile = getFinishedMotionFile(filename, finishedPostfix);
+        if (finishedFile.exists()) {
+            return finishedFile;
+        } else if (inProgressFile.exists()) {
+            inProgressFile.delete();
+            // will be created on native file
+            return inProgressFile;
+        } else {
+            return inProgressFile;
+        }
+    }
+
+    private File getFinishedMotionFile(String filename, String finishedPostfix) {
+        return new File(System.getProperty("java.io.tmpdir"), filename + getId() + finishedPostfix);
+    }
+
+    private File getMotionFileName(String filename) {
+        return new File(System.getProperty("java.io.tmpdir"), filename + getId());
     }
 
     @Override
@@ -156,7 +186,15 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
     public void endToPushLongImages() {
         openCVStabilizeVideoService.finishedAddingFrames(stabilizerContextIndex);
         uptoDateData = true;
+        renamedToFinishedFile(MOTION_FILE_NAME);
+        renamedToFinishedFile(WOBBLE_FILE_NAME);
         System.out.println("End to receive long images");
+    }
+
+    private void renamedToFinishedFile(String motionFileName) {
+        File inProgressFile = getMotionFileName(motionFileName);
+        File finishedFile = getFinishedMotionFile(motionFileName, FINISHED_POSTFIX);
+        inProgressFile.renameTo(finishedFile);
     }
 
     @Override

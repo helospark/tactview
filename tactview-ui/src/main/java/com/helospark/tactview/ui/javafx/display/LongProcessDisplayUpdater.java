@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.display;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,10 +22,13 @@ import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListe
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
 
 import javafx.application.Platform;
+import javafx.geometry.Bounds;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 
 @Component
 public class LongProcessDisplayUpdater implements DisplayUpdatedListener {
+    private static final int BORDER = 20;
     private LongProcessRequestor longProcessRequestor;
     private MessagingService messagingService;
     private NameToIdRepository nameToIdRepository;
@@ -64,23 +69,46 @@ public class LongProcessDisplayUpdater implements DisplayUpdatedListener {
 
     @Override
     public void displayUpdated(DisplayUpdatedRequest request) {
-        Platform.runLater(() -> {
-            int y = 40;
-            request.graphics.setStroke(Color.RED);
-            if (currentLongProcesses.size() > 0) {
-                request.graphics.strokeText("Long process update in progress", 10, 20);
+        request.graphics.setStroke(Color.RED);
+        List<String> texts = new ArrayList<>();
+        if (currentLongProcesses.size() > 0) {
+            texts.add("Long process update in progress");
+        }
+        for (var entry : currentLongProcesses.entrySet()) {
+            var domain = entry.getValue();
+            int percent = (int) ((double) domain.finishedJobs / domain.allJobs * 100.0);
+            LongProcessDescriptor longProcessEntry = longProcessRequestor.getRunningJobs().get(entry.getKey());
+            if (longProcessEntry != null) {
+                String elementName = Optional.ofNullable(nameToIdRepository.getNameForId(longProcessEntry.effectId.orElse(longProcessEntry.clipId))).orElse("???");
+                texts.add(elementName + " " + percent + "%");
             }
-            for (var entry : currentLongProcesses.entrySet()) {
-                var domain = entry.getValue();
-                int percent = (int) ((double) domain.finishedJobs / domain.allJobs * 100.0);
-                LongProcessDescriptor longProcessEntry = longProcessRequestor.getRunningJobs().get(entry.getKey());
-                if (longProcessEntry != null) {
-                    String elementName = Optional.ofNullable(nameToIdRepository.getNameForId(longProcessEntry.effectId.orElse(longProcessEntry.clipId))).orElse("???");
-                    request.graphics.strokeText(elementName + " " + percent + "%", 10, y);
+        }
+        if (texts.size() > 0) {
+            Platform.runLater(() -> {
+                double sumHeights = texts.stream()
+                        .mapToDouble(s -> computeBounds(s).getHeight())
+                        .sum();
+
+                double startYPosition = (request.canvas.getHeight() - sumHeights) / 2;
+
+                request.graphics.setFill(new Color(0.1, 0.1, 0.1, 0.5));
+                request.graphics.fillRect(0, startYPosition - BORDER, request.canvas.getWidth(), sumHeights + 2 * BORDER);
+
+                request.graphics.setStroke(Color.WHITE);
+                double position = startYPosition + computeBounds(texts.get(0)).getHeight();
+                for (String text : texts) {
+                    Bounds bounds = computeBounds(text);
+                    double startXPosition = (request.canvas.getWidth() - bounds.getWidth()) / 2.0;
+                    request.graphics.strokeText(text, startXPosition, position);
+                    position += bounds.getHeight();
                 }
-                y += 20;
-            }
-        });
+            });
+        }
+    }
+
+    private Bounds computeBounds(String string) {
+        Text text = new Text(string);
+        return text.getLayoutBounds();
     }
 
 }

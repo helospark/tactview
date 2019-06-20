@@ -61,8 +61,10 @@ public class LongProcessRequestor {
                 try {
                     LongProcessDescriptor element = requestedJobs.poll(2, TimeUnit.SECONDS);
                     if (element != null) {
-                        runningJobs.put(element.jobId, element);
-                        CompletableFuture.runAsync(element.runnable, executor)
+                        CompletableFuture.runAsync(() -> {
+                            runningJobs.put(element.jobId, element);
+                            element.runnable.run();
+                        }, executor)
                                 .exceptionally(e -> {
                                     e.printStackTrace();
                                     return null;
