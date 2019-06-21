@@ -54,8 +54,7 @@ extern "C" {
         const char* videoCodec;
         const char* audioCodec;
         const char* videoPixelFormat;
-
-        SwsContext * swsContext;
+        const char* videoPreset;
     };
 
 
@@ -498,6 +497,11 @@ extern "C" {
         AVDictionary *opt = NULL;
 
         av_dict_copy(&opt, opt_arg, 0);
+  
+        if (request->videoPreset != NULL) {
+          av_dict_set( &opt, "preset", request->videoPreset, 0 );
+          std::cout << "Set preset " << request->videoPreset << std::endl;
+        }
 
         /* open the codec */
         ret = avcodec_open2(c, codec, &opt);

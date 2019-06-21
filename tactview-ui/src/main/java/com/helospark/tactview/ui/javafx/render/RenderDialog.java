@@ -234,6 +234,7 @@ public class RenderDialog {
                 optionProviders = currentRenderService.getOptionProviders(CreateValueProvidersRequest.builder().withFileName(fileNameTextField.getText()).build());
                 previousRenderService = currentRenderService;
                 updateRenderOptions(rendererOptions);
+                updateProvidersAfterUpdate();
             } else {
                 updateProvidersAfterUpdate();
             }

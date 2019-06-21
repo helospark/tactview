@@ -86,6 +86,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         int numberOfChannels = Integer.parseInt(renderRequest.getOptions().get("audionumberofchannels").getValue().toString());
         System.out.println("numberOfChannels: " + numberOfChannels);
 
+        String videoPresetOrNull = (String) Optional.ofNullable(renderRequest.getOptions().get("preset")).map(a -> a.getValue()).orElse(null);
+        System.out.println("video preset: " + videoPresetOrNull);
+
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
         initNativeRequest.fps = renderRequest.getFps();
@@ -112,6 +115,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.videoCodec = videoCodec;
         initNativeRequest.audioCodec = audioCodec;
         initNativeRequest.videoPixelFormat = videoPixelFormat;
+        initNativeRequest.videoPreset = videoPresetOrNull;
         // frame not freed
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
@@ -371,6 +375,30 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         if (videoCodecProvider.getValue().equals(NONE_VALUE) && isVideoContainer(extension)) {
             videoCodecProvider.setValue(DEFAULT_VALUE);
             optionsToUpdate.put("videocodec", videoCodecProvider);
+        }
+        if (request.fileName.endsWith(".mp4") && !optionsToUpdate.containsKey("preset")) {
+            List<ValueListElement> presets = new ArrayList<>();
+            presets.add(new ValueListElement("ultrafast", "ultrafast"));
+            presets.add(new ValueListElement("superfast", "superfast"));
+            presets.add(new ValueListElement("veryfast", "veryfast"));
+            presets.add(new ValueListElement("faster", "faster"));
+            presets.add(new ValueListElement("fast", "fast"));
+            presets.add(new ValueListElement("medium", "medium"));
+            presets.add(new ValueListElement("slow", "slow"));
+            presets.add(new ValueListElement("slower", "slower"));
+            presets.add(new ValueListElement("veryslow", "veryslow"));
+
+            OptionProvider<String> presetProviders = OptionProvider.stringOptionBuilder()
+                    .withTitle("Preset")
+                    .withDefaultValue("medium")
+                    .withValidValues(presets)
+                    .withShouldTriggerUpdate(false)
+                    .build();
+
+            optionsToUpdate.put("preset", presetProviders);
+        }
+        if (!request.fileName.endsWith(".mp4")) {
+            optionsToUpdate.remove("preset");
         }
 
         return optionsToUpdate;
