@@ -16,6 +16,7 @@ public class GetFrameRequest {
     private int expectedHeight;
     private boolean applyEffects;
     private boolean useApproximatePosition;
+    private boolean lowResolutionPreview;
     private Optional<Integer> applyEffectsLessThanEffectChannel;
     private Map<String, ReadOnlyClipImage> requestedClips;
     private Map<String, ReadOnlyClipImage> requestedChannelClips;
@@ -32,6 +33,7 @@ public class GetFrameRequest {
         this.applyEffectsLessThanEffectChannel = builder.applyEffectsLessThanEffectChannel;
         this.requestedClips = builder.requestedClips;
         this.requestedChannelClips = builder.requestedChannelClips;
+        this.lowResolutionPreview = builder.lowResolutionPreview;
     }
 
     public TimelinePosition getGlobalPosition() {
@@ -40,6 +42,10 @@ public class GetFrameRequest {
 
     public TimelinePosition getRelativePosition() {
         return relativePosition;
+    }
+
+    public boolean isLowResolutionPreview() {
+        return lowResolutionPreview;
     }
 
     public double getScale() {
@@ -101,6 +107,7 @@ public class GetFrameRequest {
         private int expectedHeight;
         private boolean applyEffects;
         private boolean useApproximatePosition;
+        private boolean lowResolutionPreview;
         private Optional<Integer> applyEffectsLessThanEffectChannel = Optional.empty();
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
@@ -119,6 +126,7 @@ public class GetFrameRequest {
             this.applyEffectsLessThanEffectChannel = getFrameRequest.applyEffectsLessThanEffectChannel;
             this.requestedClips = getFrameRequest.requestedClips;
             this.requestedChannelClips = getFrameRequest.requestedChannelClips;
+            this.lowResolutionPreview = getFrameRequest.lowResolutionPreview;
         }
 
         public Builder withPosition(TimelinePosition position) {
@@ -153,6 +161,11 @@ public class GetFrameRequest {
 
         public Builder withUseApproximatePosition(boolean useApproximatePosition) {
             this.useApproximatePosition = useApproximatePosition;
+            return this;
+        }
+
+        public Builder withLowResolutionPreview(boolean lowResolutionPreview) {
+            this.lowResolutionPreview = lowResolutionPreview;
             return this;
         }
 

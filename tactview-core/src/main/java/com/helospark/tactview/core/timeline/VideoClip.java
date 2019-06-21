@@ -4,6 +4,7 @@ import static com.helospark.tactview.core.timeline.TimelineClipType.VIDEO;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
@@ -15,6 +16,8 @@ import com.helospark.tactview.core.util.StaticObjectMapper;
 public class VideoClip extends VisualTimelineClip {
     protected VisualMediaMetadata mediaMetadata;
     protected TimelinePosition startPosition;
+
+    protected Optional<LowResolutionProxyData> lowResolutionProxySource = Optional.empty(); // We could also have multiple proxies
 
     public VideoClip(VisualMediaMetadata mediaMetadata, VisualMediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
         super(mediaMetadata, new TimelineInterval(startPosition, length), VIDEO);
@@ -35,25 +38,38 @@ public class VideoClip extends VisualTimelineClip {
         this.mediaMetadata = metadata;
         this.backingSource = videoSource;
         this.startPosition = StaticObjectMapper.toValue(savedClip, loadMetadata, "startPosition", TimelinePosition.class);
+        // savedClip.get("shouldHaveLowResolutionProxy").asBoolean(false); // TODO
     }
 
     @Override
     protected void generateSavedContentInternal(Map<String, Object> savedContent) {
         super.generateSavedContentInternal(savedContent);
         savedContent.put("startPosition", startPosition);
+        savedContent.put("shouldHaveLowResolutionProxy", lowResolutionProxySource.isPresent());
     }
 
     @Override
     public ByteBuffer requestFrame(RequestFrameParameter frameRequest) {
+        VisualMediaMetadata metadataToUse;
+        VisualMediaSource mediaSourceToUse;
+
+        if (frameRequest.isLowResolutionPreview() && lowResolutionProxySource.isPresent()) {
+            metadataToUse = lowResolutionProxySource.get().mediaMetadata;
+            mediaSourceToUse = lowResolutionProxySource.get().source;
+        } else {
+            metadataToUse = mediaMetadata;
+            mediaSourceToUse = backingSource;
+        }
+
         VideoMediaDataRequest request = VideoMediaDataRequest.builder()
-                .withFilePath(backingSource.backingFile)
+                .withFilePath(mediaSourceToUse.backingFile)
                 .withHeight(frameRequest.getHeight())
                 .withWidth(frameRequest.getWidth())
-                .withMetadata(mediaMetadata)
+                .withMetadata(metadataToUse)
                 .withStart(frameRequest.getPosition())
                 .withUseApproximatePosition(frameRequest.useApproximatePosition())
                 .build();
-        return backingSource.decoder.readFrames(request)
+        return mediaSourceToUse.decoder.readFrames(request)
                 .getFrame();
     }
 
@@ -70,6 +86,14 @@ public class VideoClip extends VisualTimelineClip {
         return startPosition;
     }
 
+    public boolean containsLowResolutionProxy() {
+        return lowResolutionProxySource.isPresent();
+    }
+
+    public void setLowResolutionProxy(LowResolutionProxyData proxyData) {
+        this.lowResolutionProxySource = Optional.ofNullable(proxyData);
+    }
+
     @Override
     public boolean isResizable() {
         return mediaMetadata.isResizable();
@@ -78,6 +102,17 @@ public class VideoClip extends VisualTimelineClip {
     @Override
     public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
         return new VideoClip(this, cloneRequestMetadata);
+    }
+
+    public static class LowResolutionProxyData {
+        VisualMediaSource source;
+        VisualMediaMetadata mediaMetadata;
+
+        public LowResolutionProxyData(VisualMediaSource source, VisualMediaMetadata mediaMetadata) {
+            this.source = source;
+            this.mediaMetadata = mediaMetadata;
+        }
+
     }
 
 }

@@ -82,6 +82,7 @@ public class PlaybackController {
                 .withPreviewHeight(height)
                 .withNeedSound(false)
                 .withNeedVideo(true)
+                .withLowResolutionPreview(true)
                 .withEffectsEnabled(enableEffect)
                 .build();
         AudioVideoFragment frame = timelineManager.getFrame(request);

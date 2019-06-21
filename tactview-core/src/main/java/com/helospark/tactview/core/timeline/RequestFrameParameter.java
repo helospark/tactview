@@ -7,6 +7,7 @@ public class RequestFrameParameter {
     private int width;
     private int height;
     private boolean useApproximatePosition;
+    private boolean lowResolutionPreview;
 
     @Generated("SparkTools")
     private RequestFrameParameter(Builder builder) {
@@ -14,6 +15,7 @@ public class RequestFrameParameter {
         this.width = builder.width;
         this.height = builder.height;
         this.useApproximatePosition = builder.useApproximatePosition;
+        this.lowResolutionPreview = builder.lowResolutionPreview;
     }
 
     public TimelinePosition getPosition() {
@@ -32,6 +34,10 @@ public class RequestFrameParameter {
         return useApproximatePosition;
     }
 
+    public boolean isLowResolutionPreview() {
+        return lowResolutionPreview;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -43,6 +49,7 @@ public class RequestFrameParameter {
         private int width;
         private int height;
         private boolean useApproximatePosition;
+        private boolean lowResolutionPreview;
 
         private Builder() {
         }
@@ -64,6 +71,11 @@ public class RequestFrameParameter {
 
         public Builder withUseApproximatePosition(boolean useApproximatePosition) {
             this.useApproximatePosition = useApproximatePosition;
+            return this;
+        }
+
+        public Builder withLowResolutionPreview(boolean lowResolutionPreview) {
+            this.lowResolutionPreview = lowResolutionPreview;
             return this;
         }
 

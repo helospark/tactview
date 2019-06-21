@@ -102,6 +102,7 @@ public class TimelineManagerRenderService {
                                 .withApplyEffects(request.isEffectsEnabled())
                                 .withRequestedClips(requiredClips)
                                 .withRequestedChannelClips(channelCopiedClips)
+                                .withLowResolutionPreview(request.isLowResolutionPreview())
                                 .build();
 
                         ReadOnlyClipImage frameResult = visualClip.getFrame(frameRequest);

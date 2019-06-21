@@ -81,6 +81,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withWidth(width)
                 .withHeight(height)
                 .withUseApproximatePosition(request.useApproximatePosition())
+                .withLowResolutionPreview(request.isLowResolutionPreview())
                 .build();
 
         ByteBuffer frame = requestFrame(frameRequest);

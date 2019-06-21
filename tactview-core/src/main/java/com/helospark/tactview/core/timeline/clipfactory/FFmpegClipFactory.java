@@ -51,7 +51,7 @@ public class FFmpegClipFactory implements ClipFactory {
         return readMetadataFromFile(request.getFile());
     }
 
-    private VideoMetadata readMetadataFromFile(File file) {
+    public VideoMetadata readMetadataFromFile(File file) {
         return mediaDecoder.readMetadata(file);
     }
 
