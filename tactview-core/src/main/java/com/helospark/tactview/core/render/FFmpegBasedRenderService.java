@@ -28,6 +28,8 @@ import com.helospark.tactview.core.render.ffmpeg.FFmpegBasedMediaEncoder;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegClearEncoderRequest;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegEncodeFrameRequest;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegInitEncoderRequest;
+import com.helospark.tactview.core.render.ffmpeg.NativeMap;
+import com.helospark.tactview.core.render.ffmpeg.NativePair;
 import com.helospark.tactview.core.render.ffmpeg.QueryCodecRequest;
 import com.helospark.tactview.core.render.ffmpeg.RenderFFMpegFrame;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -116,6 +118,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.audioCodec = audioCodec;
         initNativeRequest.videoPixelFormat = videoPixelFormat;
         initNativeRequest.videoPreset = videoPresetOrNull;
+        initNativeRequest.metadata = convertToNativeMap(renderRequest.getMetadata());;
         // frame not freed
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
@@ -220,6 +223,26 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             clearRequest.encoderIndex = encoderIndex;
             ffmpegBasedMediaEncoder.clearEncoder(clearRequest);
             executorService.shutdownNow();
+        }
+    }
+
+    private NativeMap convertToNativeMap(Map<String, String> metadataMap) {
+        if (metadataMap.size() == 0) {
+            return null;
+        } else {
+            NativePair nativePairs = new NativePair();
+            NativePair[] nativePairMap = (NativePair[]) nativePairs.toArray(metadataMap.size());
+            int i = 0;
+            for (var entry : metadataMap.entrySet()) {
+                nativePairMap[i].key = entry.getKey();
+                nativePairMap[i].value = entry.getValue();
+                ++i;
+            }
+
+            NativeMap map = new NativeMap();
+            map.size = metadataMap.size();
+            map.data = nativePairs;
+            return map;
         }
     }
 

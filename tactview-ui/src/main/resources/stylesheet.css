@@ -202,6 +202,7 @@
 
 .render-dialog-grid-pane {
     -fx-padding: 10px;
+    -fx-pref-width: 800px;
 }
 
 .render-dialog-button-bar {
@@ -378,7 +379,7 @@
     -fx-pref-width: 100px;
 }
 
-.effect-property-group .title {
+.titled-pane .title {
     -fx-background-color: transparent;
     -fx-border-color: rgba(10,10,10,0.2);
 }

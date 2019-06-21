@@ -25,9 +25,11 @@ public class FFmpegInitEncoderRequest extends Structure implements Structure.ByR
     public String videoPixelFormat;
     public String videoPreset;
 
+    public NativeMap metadata;
+
     @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("fileName", "actualWidth", "actualHeight", "renderWidth", "renderHeight", "fps", "audioChannels", "bytesPerSample", "sampleRate",
-                "videoBitRate", "audioBitRate", "audioSampleRate", "videoCodec", "audioCodec", "videoPixelFormat", "videoPreset");
+                "videoBitRate", "audioBitRate", "audioSampleRate", "videoCodec", "audioCodec", "videoPixelFormat", "videoPreset", "metadata");
     }
 }

@@ -55,6 +55,8 @@ extern "C" {
         const char* audioCodec;
         const char* videoPixelFormat;
         const char* videoPreset;
+
+        NativeMap* metadata;
     };
 
 
@@ -640,6 +642,14 @@ extern "C" {
         }
         if (!oc)
             return -1;
+
+        if (request->metadata != NULL) {
+          for (int i = 0; i < request->metadata->size; ++i) {
+            const char* key = request->metadata->data[i].key;
+            const char* value = request->metadata->data[i].value;
+            av_dict_set(&oc->metadata, key, value, 0);
+          }
+        }
 
         fmt = oc->oformat;
 

@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormat;
@@ -36,13 +37,17 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -127,7 +132,24 @@ public class RenderDialog {
 
         linePosition += (linePosition % COLUMNS);
 
-        addGridElementForFullLine("File name", linePosition++, gridPane, fileNameGrid);
+        addGridElementForFullLine("File name", linePosition += 2, gridPane, fileNameGrid);
+
+        VBox metadataVBox = new VBox();
+        TitledPane metadataPane = new TitledPane();
+        metadataPane.setExpanded(false);
+        metadataPane.setText("metadata table");
+        metadataPane.setCollapsible(true);
+        metadataPane.setContent(metadataVBox);
+
+        Button addMetadataLine = new Button("Add new metadata");
+        metadataVBox.getChildren().add(addMetadataLine);
+
+        addMetadataLine.setOnAction(e -> {
+            metadataVBox.getChildren().add(createMetadataBox("", "", a -> metadataVBox.getChildren().remove(a)));
+        });
+        metadataVBox.getChildren().add(createMetadataBox("Description", "Edited with TactView", a -> metadataVBox.getChildren().remove(a)));
+
+        addGridElementForFullLine("Metadata", linePosition += 2, gridPane, metadataPane);
 
         linePosition += (linePosition % COLUMNS);
 
@@ -149,7 +171,11 @@ public class RenderDialog {
         GridPane.setColumnSpan(stackPane, COLUMNS * 2);
         gridPane.add(stackPane, 0, linePosition++);
 
-        borderPane.setCenter(gridPane);
+        ScrollPane centerScrollPane = new ScrollPane(gridPane);
+        centerScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        centerScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+
+        borderPane.setCenter(centerScrollPane);
 
         HBox buttonBar = new HBox();
         buttonBar.getStyleClass().add("render-dialog-button-bar");
@@ -185,6 +211,7 @@ public class RenderDialog {
                         .withOptions(optionProviders)
                         .withIsCancelledSupplier(() -> isRenderCancelled)
                         .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
+                        .withMetadata(collectMetadata(metadataVBox))
                         .build();
 
                 String id = request.getRenderId();
@@ -248,6 +275,29 @@ public class RenderDialog {
 
         stage.setTitle("Render");
         stage.setScene(dialog);
+    }
+
+    private Map<String, String> collectMetadata(VBox metadataVBox) {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (int i = 1; i < metadataVBox.getChildren().size(); ++i) {
+            // TODO: bit too much dependence on UI layout
+            String key = ((TextField) (((HBox) metadataVBox.getChildren().get(i)).getChildren().get(0))).getText();
+            String value = ((TextField) (((HBox) metadataVBox.getChildren().get(i)).getChildren().get(1))).getText();
+            result.put(key, value);
+        }
+        return result;
+    }
+
+    private HBox createMetadataBox(String key, String value, Consumer<HBox> removeConsumer) {
+        HBox metadataHBox = new HBox();
+        TextField metadataKey = new TextField(key);
+        TextField metadataValue = new TextField(value);
+        Button removeButton = new Button("x");
+        metadataHBox.getChildren().addAll(metadataKey, metadataValue, removeButton);
+        removeButton.setOnAction(e -> {
+            removeConsumer.accept(metadataHBox);
+        });
+        return metadataHBox;
     }
 
     private boolean showConfirmationDialogIfNeeded(String filePath) {
@@ -371,7 +421,7 @@ public class RenderDialog {
         gridPane.add(node, column * COLUMNS + 1, row);
     }
 
-    private void addGridElementForFullLine(String name, int linePosition, GridPane gridPane, GridPane node) {
+    private void addGridElementForFullLine(String name, int linePosition, GridPane gridPane, Node node) {
         int row = linePosition / COLUMNS;
         int column = linePosition % COLUMNS;
 

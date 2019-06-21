@@ -23,6 +23,7 @@ public class RenderRequest {
     private String fileName;
     private Map<String, OptionProvider<?>> options;
     private Supplier<Boolean> isCancelledSupplier;
+    private Map<String, String> metadata;
 
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
@@ -35,6 +36,7 @@ public class RenderRequest {
         this.upscale = builder.upscale;
         this.fileName = builder.fileName;
         this.options = builder.options;
+        this.metadata = builder.metadata;
         this.isCancelledSupplier = builder.isCancelledSupplier;
     }
 
@@ -82,6 +84,10 @@ public class RenderRequest {
         return isCancelledSupplier;
     }
 
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -99,6 +105,7 @@ public class RenderRequest {
         private String fileName;
         private Map<String, OptionProvider<?>> options = Collections.emptyMap();
         private Supplier<Boolean> isCancelledSupplier;
+        private Map<String, String> metadata = Collections.emptyMap();
 
         private Builder() {
         }
@@ -145,6 +152,11 @@ public class RenderRequest {
 
         public Builder withOptions(Map<String, OptionProvider<?>> options) {
             this.options = options;
+            return this;
+        }
+
+        public Builder withMetadata(Map<String, String> metadata) {
+            this.metadata = metadata;
             return this;
         }
 
