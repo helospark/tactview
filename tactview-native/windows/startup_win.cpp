@@ -50,26 +50,88 @@ std::string getCommandLine() {
   }
     
   jars.push_back("tactview.jar");
-  natives.insert(natives.begin(), "libs");
-  natives.push_back("$LD_LIBRARY_PATH");
 
-  std::string classpathString = mergeWithDelimiter(jars, ":");
-  std::string nativesString = mergeWithDelimiter(natives, ":");
+  std::string classpathString = mergeWithDelimiter(jars, ";");
+  std::string nativesString = mergeWithDelimiter(natives, ";");
 
 //  std::cout << classpathString << " " << nativesString << std::endl;
 
-  std::string commandLine = "LD_LIBRARY_PATH=" + nativesString + " java-runtime/bin/java -classpath " + classpathString + " -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir;
+  std::string commandLine = "\"java-runtime/bin/java\" -classpath " + classpathString + " -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir;
   std::cout << commandLine << std::endl;
 
+  if (nativesString.size() > 0) {
+    std::string path = std::string(getenv("PATH")) + nativesString;
+    _putenv_s("PATH", path.c_str());
+    std::cout << "Set PATH=" << path << std::endl;
+  }
   return commandLine;
+}
+
+int execute(std::string commandLine) {
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(sa);
+    sa.lpSecurityDescriptor = NULL;
+    sa.bInheritHandle = TRUE;   
+
+	std::cout << "Create file" << std::endl;
+    HANDLE h = CreateFile("out.log",
+        FILE_APPEND_DATA,
+        FILE_SHARE_WRITE | FILE_SHARE_READ,
+        &sa,
+        OPEN_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL );
+
+    ZeroMemory( &si, sizeof(si) );
+    si.cb = sizeof(si);
+    si.dwFlags |= STARTF_USESTDHANDLES;
+    si.hStdInput = NULL;
+    si.hStdError = h;
+    si.hStdOutput = h;
+    ZeroMemory( &pi, sizeof(pi) );
+
+	LPSTR lpstr = const_cast<LPSTR>(commandLine.c_str());
+    // Start the child process. 
+    if( !CreateProcess( NULL,   // No module name (use command line)
+        lpstr,        // Command line
+        NULL,           // Process handle not inheritable
+        NULL,           // Thread handle not inheritable
+        FALSE,          // Set handle inheritance to FALSE
+        0,              // No creation flags
+        NULL,           // Use parent's environment block
+        NULL,           // Use parent's starting directory 
+        &si,            // Pointer to STARTUPINFO structure
+        &pi )           // Pointer to PROCESS_INFORMATION structure
+    ) 
+    {
+        printf( "CreateProcess failed (%d).\n", GetLastError() );
+        return -1;
+    }
+
+    // Wait until child process exits.
+    WaitForSingleObject( pi.hProcess, INFINITE );
+	
+	DWORD returnCode;
+	GetExitCodeProcess(pi.hProcess, &returnCode);
+
+    // Close process and thread handles. 
+    CloseHandle( pi.hProcess );
+    CloseHandle( pi.hThread );
+    CloseHandle( h );
+	
+	return (int)returnCode;
 }
 
 int main() {
   int statusCode = 0;
   do {
 	std::string commandLine = getCommandLine();
-    statusCode = WinExec(commandLine.c_str(), SW_HIDE);
+    statusCode = execute(commandLine.c_str());
     std::cout << "Tactview returned " << statusCode << std::endl;
   } while (statusCode == 3);
   std::cout << "Exiting tactview, bye!" << std::endl;
 }
+
