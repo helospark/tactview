@@ -12,10 +12,12 @@ import java.util.function.Consumer;
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.helospark.lightdi.LightDi;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
+import com.helospark.tactview.core.plugin.PluginMainClassProviders;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
@@ -73,6 +75,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaFXUiMain.class);
     public static Stage STAGE = null;
     public static final int W = 320; // canvas dimensions.
     public static final int H = 260;
@@ -389,7 +392,12 @@ public class JavaFXUiMain extends Application {
                 .withAdditionalDependencies(Collections.singletonList(new JnaLightDiPlugin()))
                 .withUseClasspathFile(false)
                 .build();
-        lightDi = LightDi.initContextByClass(MainApplicationConfiguration.class, configuration);
+        List<Class<?>> allClasses = new ArrayList<>();
+        allClasses.add(MainApplicationConfiguration.class);
+        allClasses.addAll(PluginMainClassProviders.getPluginClasses());
+        lightDi = new LightDiContext(configuration);
+        lightDi.loadDependencies(List.of(), allClasses);
+
         uiTimeline = lightDi.getBean(UiTimeline.class);
         uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
         effectPropertyView = lightDi.getBean(PropertyView.class);
