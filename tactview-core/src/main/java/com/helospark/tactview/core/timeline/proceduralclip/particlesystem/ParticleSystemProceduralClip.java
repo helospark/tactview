@@ -10,10 +10,12 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.RepeatableRandom;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -31,8 +33,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointP
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.ReflectionUtil;
-import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class ParticleSystemProceduralClip extends ProceduralVisualClip {
     private static final BigDecimal SIMULATION_TIME = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_DOWN);

@@ -3,10 +3,10 @@ package com.helospark.tactview.core.timeline;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.save.LoadMetadata;
 
 public class ImageSequenceVideoClip extends VideoClip {
 

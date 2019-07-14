@@ -5,7 +5,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 
 public class StandardProceduralClipFactoryChainItem implements ProceduralClipFactoryChainItem {

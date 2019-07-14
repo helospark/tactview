@@ -5,9 +5,10 @@ import java.math.RoundingMode;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.repository.ProjectRepository;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -27,7 +28,6 @@ import com.helospark.tactview.core.timeline.longprocess.LongProcessFrameRequest;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessImagePushRequest;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessVisualImagePushAware;
-import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class StabilizeVideoEffect extends StatelessVideoEffect implements LongProcessAware, LongProcessVisualImagePushAware {
     private static final String FINISHED_POSTFIX = "_finished";

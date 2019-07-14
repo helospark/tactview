@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.lightdi.annotation.Qualifier;
-import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 
 import javafx.beans.property.SimpleIntegerProperty;

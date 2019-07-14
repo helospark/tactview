@@ -20,8 +20,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class BresenhemPixelProvider {
+public class BresenhemPixelProvider implements BresenhemPixelProviderInterface {
 
+    /* (non-Javadoc)
+     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#ellipsePixels(int, int, int, int)
+     */
+    @Override
     @Cacheable
     public List<Vector2D> ellipsePixels(int xc, int yc, int width, int height) {
         List<Vector2D> points = new ArrayList<>();
@@ -72,6 +76,10 @@ public class BresenhemPixelProvider {
         return points;
     }
 
+    /* (non-Javadoc)
+     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#linePixels(com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point, com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point)
+     */
+    @Override
     @Cacheable
     public List<Vector2D> linePixels(Point startPoint, Point endPoint) {
         List<Vector2D> result = new ArrayList<>();
@@ -132,6 +140,10 @@ public class BresenhemPixelProvider {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#polygonPixels(com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon)
+     */
+    @Override
     @Cacheable
     public List<Vector2D> polygonPixels(Polygon polygon) {
         List<Vector2D> result = new ArrayList<>();
@@ -150,6 +162,10 @@ public class BresenhemPixelProvider {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#nurbsPixels(com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon, boolean)
+     */
+    @Override
     @Cacheable
     public List<Vector2D> nurbsPixels(Polygon polygon, boolean connect) {
         ControlPath controlPath = new ControlPath();

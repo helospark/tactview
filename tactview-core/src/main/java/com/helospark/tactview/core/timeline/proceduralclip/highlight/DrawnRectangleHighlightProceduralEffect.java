@@ -3,10 +3,11 @@ package com.helospark.tactview.core.timeline.proceduralclip.highlight;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -26,8 +27,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineRequest;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
-import com.helospark.tactview.core.util.BresenhemPixelProvider;
-import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.BresenhemPixelProviderInterface;
 
 public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualClip {
     private RectangleProvider rectangleProvider;
@@ -38,9 +38,9 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
     private FileProvider brushFileProvider;
 
     private DrawLineService drawLineService;
-    private BresenhemPixelProvider bresenhemPixelProvider;
+    private BresenhemPixelProviderInterface bresenhemPixelProvider;
 
-    public DrawnRectangleHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public DrawnRectangleHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;
@@ -52,7 +52,7 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DrawnRectangleHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {
+    public DrawnRectangleHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider2) {
         super(metadata, node, loadMetadata);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider2;

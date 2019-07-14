@@ -13,7 +13,7 @@ import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class ScaledBrushProvider {
+public class ScaledBrushProvider implements ScaledBrushProviderInterface {
     private static final Logger logger = LoggerFactory.getLogger(ScaledBrushProvider.class);
     private RawBrushProvider rawBrushProvider;
     private ScaleService scaleService;
@@ -25,6 +25,10 @@ public class ScaledBrushProvider {
         this.independentPixelOperation = independentPixelOperation;
     }
 
+    /* (non-Javadoc)
+     * @see com.helospark.tactview.core.util.brush.ScaledBrushProviderInterface#getBrushImage(com.helospark.tactview.core.util.brush.GetBrushRequest)
+     */
+    @Override
     @Cacheable(cacheTimeInMilliseconds = 600000, size = 100)
     public ClipImage getBrushImage(GetBrushRequest brushRequest) {
         logger.info("Loading brush {}", brushRequest);

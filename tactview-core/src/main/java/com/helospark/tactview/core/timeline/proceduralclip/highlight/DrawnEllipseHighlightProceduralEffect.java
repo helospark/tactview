@@ -5,10 +5,11 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -28,8 +29,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineRequest;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
-import com.helospark.tactview.core.util.BresenhemPixelProvider;
-import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.BresenhemPixelProviderInterface;
 
 public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip {
     private PointProvider topLeftProvider;
@@ -40,9 +40,9 @@ public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip 
     private FileProvider brushFileProvider;
 
     private DrawLineService drawLineService;
-    private BresenhemPixelProvider bresenhemPixelProvider;
+    private BresenhemPixelProviderInterface bresenhemPixelProvider;
 
-    public DrawnEllipseHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public DrawnEllipseHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;
@@ -54,7 +54,7 @@ public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip 
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DrawnEllipseHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {
+    public DrawnEllipseHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider2) {
         super(metadata, node, loadMetadata);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider2;

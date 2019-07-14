@@ -3,8 +3,9 @@ package com.helospark.tactview.core.timeline.effect.levels;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
-import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -14,7 +15,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRang
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleRangeProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
-import com.helospark.tactview.core.util.ReflectionUtil;
 
 // Some logic adapter from Gimp: https://github.com/GNOME/gimp/blob/e09e563a70fef5d7dd55e5e8d0e280348f1ef9d4/app/operations/gimpoperationlevels.c
 public class LevelsEffect extends StatelessVideoEffect {

@@ -8,13 +8,13 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.decoder.MediaMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.imagesequence.ImageSequenceDecoderDecorator;
 import com.helospark.tactview.core.decoder.opencv.ImageMetadataRequest;
 import com.helospark.tactview.core.decoder.opencv.ImageMetadataResponse;
 import com.helospark.tactview.core.decoder.opencv.ImageMediaLoader;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.ImageSequenceVideoClip;

@@ -11,15 +11,15 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.framemerge.AlphaBlitService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.brush.GetBrushRequest;
-import com.helospark.tactview.core.util.brush.ScaledBrushProvider;
+import com.helospark.tactview.core.util.brush.ScaledBrushProviderInterface;
 
 @Component
 public class DrawLineService {
     private AlphaBlitService alphaBlitService;
     private NormalBlendModeStrategy normalBlendModeStrategy;
-    private ScaledBrushProvider scaledBrushProvider;
+    private ScaledBrushProviderInterface scaledBrushProvider;
 
-    public DrawLineService(AlphaBlitService alphaBlitService, NormalBlendModeStrategy normalBlendModeStrategy, ScaledBrushProvider scaledBrushProvider) {
+    public DrawLineService(AlphaBlitService alphaBlitService, NormalBlendModeStrategy normalBlendModeStrategy, ScaledBrushProviderInterface scaledBrushProvider) {
         this.alphaBlitService = alphaBlitService;
         this.normalBlendModeStrategy = normalBlendModeStrategy;
         this.scaledBrushProvider = scaledBrushProvider;

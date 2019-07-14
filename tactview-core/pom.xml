@@ -20,6 +20,10 @@
       <artifactId>tactview-3rd-party</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.helospark.tactview</groupId>
+      <artifactId>tactview-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.helospark</groupId>
       <artifactId>lightdi</artifactId>
     </dependency>

@@ -3,9 +3,10 @@ package com.helospark.tactview.core.timeline.effect.transition.shape;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
@@ -21,7 +22,6 @@ import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessV
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientRequest;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
-import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class CircleTransition extends AbstractVideoTransitionEffect {
     private RadialGradientService radialGradientService;

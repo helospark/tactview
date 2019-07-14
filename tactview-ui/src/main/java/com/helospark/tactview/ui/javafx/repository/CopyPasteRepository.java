@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.AddExistingClipRequest;
 import com.helospark.tactview.core.timeline.AddExistingEffectRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;

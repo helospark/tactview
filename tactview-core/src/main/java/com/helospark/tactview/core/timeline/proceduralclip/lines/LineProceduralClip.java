@@ -5,10 +5,11 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -29,11 +30,10 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineRequest;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
-import com.helospark.tactview.core.util.BresenhemPixelProvider;
-import com.helospark.tactview.core.util.ReflectionUtil;
+import com.helospark.tactview.core.util.BresenhemPixelProviderInterface;
 
 public class LineProceduralClip extends ProceduralVisualClip {
-    private BresenhemPixelProvider bresenhemPixelProvider;
+    private BresenhemPixelProviderInterface bresenhemPixelProvider;
     private DrawLineService drawLineService;
 
     private DoubleProvider progressProvider;
@@ -43,7 +43,7 @@ public class LineProceduralClip extends ProceduralVisualClip {
     private PointProvider endPointProvider;
     private IntegerProvider brushSizeProvider;
 
-    public LineProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public LineProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
         this.bresenhemPixelProvider = bresenhemPixelProvider;
         this.drawLineService = drawLineService;
@@ -54,7 +54,7 @@ public class LineProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(lineProceduralClip, this);
     }
 
-    public LineProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public LineProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         super(metadata, node, loadMetadata);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;

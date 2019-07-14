@@ -1,7 +1,7 @@
 package com.helospark.tactview.core.timeline.proceduralclip;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 
 public interface ProceduralClipFactoryChainItem {

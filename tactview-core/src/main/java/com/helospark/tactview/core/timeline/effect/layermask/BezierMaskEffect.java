@@ -3,9 +3,10 @@ package com.helospark.tactview.core.timeline.effect.layermask;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -23,9 +24,9 @@ import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.Lay
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderServiceImpl;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderServiceRequest;
-import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BezierMaskEffect extends StatelessVideoEffect {
     private BezierPolygonProvider polygonProvider;
@@ -37,7 +38,7 @@ public class BezierMaskEffect extends StatelessVideoEffect {
     private LayerMaskApplier layerMaskApplier;
     private LayerMaskAlphaToAlpha layerMaskAlphaToAlpha;
 
-    public BezierMaskEffect(TimelineInterval interval, BezierPolygonRenderService bezierPolygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha) {
+    public BezierMaskEffect(TimelineInterval interval, BezierPolygonRenderServiceImpl bezierPolygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha) {
         super(interval);
         this.bezierPolygonRenderService = bezierPolygonRenderService;
         this.layerMaskApplier = layerMaskApplier;

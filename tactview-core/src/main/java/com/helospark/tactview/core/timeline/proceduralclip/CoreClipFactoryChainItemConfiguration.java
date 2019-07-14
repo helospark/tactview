@@ -30,7 +30,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.DrawnPolygonP
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderServiceImpl;
 import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
@@ -38,7 +38,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralC
 import com.helospark.tactview.core.timeline.proceduralclip.text.StopWatchTextProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.water.CausticProceduralClip;
-import com.helospark.tactview.core.util.BresenhemPixelProvider;
+import com.helospark.tactview.core.util.BresenhemPixelProviderInterface;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.ClassPathResourceReader;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -121,7 +121,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem drawnHighlightProceduralEffect(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem drawnHighlightProceduralEffect(DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("drawnhighlight", "Drawn ellipse highlight",
                 request -> {
                     return new DrawnEllipseHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
@@ -132,7 +132,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem drawnRectangleHighlightProceduralEffect(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem drawnRectangleHighlightProceduralEffect(DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("drawnrectanglehighlight", "Drawn rectangle highlight",
                 request -> {
                     return new DrawnRectangleHighlightProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
@@ -143,7 +143,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem highlighterPenProceduralEffect(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem highlighterPenProceduralEffect(DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("highlighterpen", "Highlighter pen",
                 request -> {
                     return new HighlightPenProceduralEffect(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
@@ -198,7 +198,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem lineProceduralClip(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem lineProceduralClip(DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("line", "Line",
                 request -> {
                     return new LineProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
@@ -209,7 +209,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem gridProceduralClip(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem gridProceduralClip(DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("grid", "Grid",
                 request -> {
                     return new GridProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
@@ -264,7 +264,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem drawnPolygonProceduralClip(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem drawnPolygonProceduralClip(DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("drawnpolygon", "Drawn polygon",
                 request -> {
                     return new DrawnPolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
@@ -275,7 +275,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem drawnNurbsProceduralClip(DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
+    public StandardProceduralClipFactoryChainItem drawnNurbsProceduralClip(DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
         return new StandardProceduralClipFactoryChainItem("drawnnurbs", "NURBS",
                 request -> {
                     return new DrawnNurbsProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), drawLineService, bresenhemPixelProvider);
@@ -297,7 +297,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem bezierPolygonProceduralClip(BezierPolygonRenderService bezierPolygonRenderService) {
+    public StandardProceduralClipFactoryChainItem bezierPolygonProceduralClip(BezierPolygonRenderServiceImpl bezierPolygonRenderService) {
         return new StandardProceduralClipFactoryChainItem("bezierpolygon", "Bezier polygon",
                 request -> {
                     return new BezierPolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bezierPolygonRenderService);

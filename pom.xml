@@ -11,6 +11,7 @@
     <module>tactview-ui</module>
     <module>tactview-core</module>
     <module>tactview-3rd-party</module>
+    <module>tactview-api</module>
   </modules>
 
   <properties>
@@ -29,10 +30,15 @@
         <artifactId>tactview-3rd-party</artifactId>
         <version>0.0.1-SNAPSHOT</version>
       </dependency>
+    <dependency>
+      <groupId>com.helospark.tactview</groupId>
+      <artifactId>tactview-api</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
       <dependency>
         <groupId>com.helospark</groupId>
         <artifactId>lightdi</artifactId>
-        <version>0.0.7-SNAPSHOT</version>
+        <version>0.0.6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
