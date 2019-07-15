@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.shadow;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -21,6 +20,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.LinePr
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class DirectionalShadowEffect extends StatelessVideoEffect {
     private IndependentPixelOperation independentPixelOperation;

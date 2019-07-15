@@ -14,8 +14,8 @@ import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
-import com.helospark.tactview.core.decoder.opencv.ImageRequest;
 import com.helospark.tactview.core.decoder.opencv.ImageMediaLoader;
+import com.helospark.tactview.core.decoder.opencv.ImageRequest;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileHolder;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
 

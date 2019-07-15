@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.proceduralclip.lines;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -20,6 +19,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class GridProceduralClip extends ProceduralVisualClip {
     private DoubleProvider lineWidthProvider;

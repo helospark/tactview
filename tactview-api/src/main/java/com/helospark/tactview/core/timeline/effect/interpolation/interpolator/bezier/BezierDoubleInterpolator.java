@@ -4,11 +4,11 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.bezier.CubicBezierPoint;
 
 public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolator {

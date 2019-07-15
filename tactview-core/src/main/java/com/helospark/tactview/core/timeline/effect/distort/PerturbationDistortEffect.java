@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -26,6 +25,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.service.PerturbationNoiseService;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.service.PerturbationRequestParameter;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class PerturbationDistortEffect extends StatelessVideoEffect {
     private PerturbationNoiseService perturbationNoiseService;

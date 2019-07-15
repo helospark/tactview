@@ -1,10 +1,9 @@
-package com.helospark.tactview.core;
+package com.helospark.tactview.core.util;
 
 import java.math.BigDecimal;
 import java.util.Random;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class RepeatableRandom implements SavedContentAddable<RepeatableRandom> {
     int seed;

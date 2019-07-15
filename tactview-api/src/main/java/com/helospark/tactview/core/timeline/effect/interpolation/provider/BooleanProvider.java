@@ -1,11 +1,11 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class BooleanProvider extends KeyframeableEffect {
     DoubleInterpolator doubleInterpolator;

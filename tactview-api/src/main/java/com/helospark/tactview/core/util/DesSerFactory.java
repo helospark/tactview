@@ -1,10 +1,9 @@
-package com.helospark.tactview.core;
+package com.helospark.tactview.core.util;
 
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
-import com.helospark.tactview.core.util.SavedContentAddable;
 
 public interface DesSerFactory<T> {
 

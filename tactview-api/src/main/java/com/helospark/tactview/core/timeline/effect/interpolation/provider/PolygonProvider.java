@@ -9,11 +9,11 @@ import java.util.TreeMap;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class PolygonProvider extends KeyframeableEffect {
     protected boolean useKeyframes;

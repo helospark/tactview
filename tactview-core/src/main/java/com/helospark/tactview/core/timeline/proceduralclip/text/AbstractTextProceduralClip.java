@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -43,6 +42,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
     private IntegerProvider sizeProvider;

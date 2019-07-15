@@ -1,4 +1,4 @@
-package com.helospark.tactview.core;
+package com.helospark.tactview.core.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
-import com.helospark.tactview.core.util.SavedContentAddable;
-import com.helospark.tactview.core.util.StatefulCloneable;
 
 public class ReflectionUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtil.class);

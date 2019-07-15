@@ -149,17 +149,11 @@ public class MemoryManagerImpl implements MemoryManager {
         running = false;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.decoder.framecache.MemoryManager#requestBuffer(java.lang.Integer)
-     */
     @Override
     public ByteBuffer requestBuffer(Integer bytes) {
         return requestBuffers(bytes, 1).get(0);
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.decoder.framecache.MemoryManager#requestBuffers(java.lang.Integer, int)
-     */
     @Override
     public List<ByteBuffer> requestBuffers(Integer bytes, int count) {
         List<ByteBuffer> result = new ArrayList<>(count);
@@ -214,17 +208,11 @@ public class MemoryManagerImpl implements MemoryManager {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.decoder.framecache.MemoryManager#returnBuffer(java.nio.ByteBuffer)
-     */
     @Override
     public void returnBuffer(ByteBuffer buffer) {
         returnBuffers(Collections.singletonList(buffer));
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.decoder.framecache.MemoryManager#returnBuffers(java.util.List)
-     */
     @Override
     public void returnBuffers(List<ByteBuffer> buffers) {
         for (ByteBuffer buffer : buffers) {

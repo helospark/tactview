@@ -16,15 +16,15 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 public abstract class AbstractRenderService implements RenderService {
     protected TimelineManagerRenderService timelineManagerRenderService;
-    protected MessagingServiceImpl messagingService;
+    protected MessagingService messagingService;
     protected ScaleService scaleService;
     protected ProjectRepository projectRepository;
 
-    public AbstractRenderService(TimelineManagerRenderService timelineManagerRenderService, MessagingServiceImpl messagingService, ScaleService scaleService, ProjectRepository projectRepository) {
+    public AbstractRenderService(TimelineManagerRenderService timelineManagerRenderService, MessagingService messagingService, ScaleService scaleService, ProjectRepository projectRepository) {
         this.timelineManagerRenderService = timelineManagerRenderService;
         this.messagingService = messagingService;
         this.scaleService = scaleService;

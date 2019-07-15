@@ -27,7 +27,7 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
@@ -36,9 +36,9 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
 
-    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingServiceImpl messagingService) {
+    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.messagingService = messagingService;

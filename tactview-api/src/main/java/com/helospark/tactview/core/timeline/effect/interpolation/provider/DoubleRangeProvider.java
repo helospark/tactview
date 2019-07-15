@@ -3,11 +3,11 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Arrays;
 import java.util.List;
 
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRange;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class DoubleRangeProvider extends CompositeKeyframeableEffect {
     DoubleProvider lowEndProvider;

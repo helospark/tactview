@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.valueprovidereffect.impl;
 
 import java.util.List;
 
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -15,6 +14,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFu
 import com.helospark.tactview.core.timeline.valueprovidereffect.EffectValue;
 import com.helospark.tactview.core.timeline.valueprovidereffect.StatelessValueProviderEffect;
 import com.helospark.tactview.core.timeline.valueprovidereffect.StatelessValueProviderRequest;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class PivotPointValueProviderEffect extends StatelessValueProviderEffect {
     private PointProvider pointProvider;

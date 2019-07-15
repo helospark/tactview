@@ -12,11 +12,11 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 // TODO: Too many copypaste from PolygonProvider
 public class BezierPolygonProvider extends KeyframeableEffect {

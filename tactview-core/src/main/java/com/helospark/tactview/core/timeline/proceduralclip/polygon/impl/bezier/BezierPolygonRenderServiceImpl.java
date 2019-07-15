@@ -22,6 +22,7 @@ public class BezierPolygonRenderServiceImpl implements BezierPolygonRenderServic
         this.blurService = blurService;
     }
 
+    @Override
     public ReadOnlyClipImage drawBezierPolygon(BezierPolygonRenderServiceRequest request) {
         BezierPolygon polygon = request.getPolygon();
         Color color = request.getColor();

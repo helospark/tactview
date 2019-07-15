@@ -30,7 +30,7 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 @Order(value = -1)
@@ -42,7 +42,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
     private ByteBufferToImageConverter byteBufferToImageConverter;
 
-    public ImageSequenceRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingServiceImpl messagingService,
+    public ImageSequenceRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService,
             ScaleService scaleService, ProjectRepository projectRepository) {
         super(timelineManager, messagingService, scaleService, projectRepository);
         this.byteBufferToImageConverter = byteBufferToImageConverter;

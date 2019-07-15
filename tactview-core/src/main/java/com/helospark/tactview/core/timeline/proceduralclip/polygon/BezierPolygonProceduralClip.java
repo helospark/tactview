@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.proceduralclip.polygon;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -24,8 +23,9 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderServiceImpl;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderServiceRequest;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class BezierPolygonProceduralClip extends ProceduralVisualClip {
     private BezierPolygonProvider polygonProvider;
@@ -34,7 +34,7 @@ public class BezierPolygonProceduralClip extends ProceduralVisualClip {
 
     private BezierPolygonRenderService polygonRenderService;
 
-    public BezierPolygonProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, BezierPolygonRenderServiceImpl polygonRenderService) {
+    public BezierPolygonProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, BezierPolygonRenderService polygonRenderService) {
         super(visualMediaMetadata, interval);
         this.polygonRenderService = polygonRenderService;
     }

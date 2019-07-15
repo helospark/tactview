@@ -30,7 +30,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.DrawnPolygonP
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.PolygonProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.RectangleProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderServiceImpl;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
 import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
@@ -297,7 +297,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem bezierPolygonProceduralClip(BezierPolygonRenderServiceImpl bezierPolygonRenderService) {
+    public StandardProceduralClipFactoryChainItem bezierPolygonProceduralClip(BezierPolygonRenderService bezierPolygonRenderService) {
         return new StandardProceduralClipFactoryChainItem("bezierpolygon", "Bezier polygon",
                 request -> {
                     return new BezierPolygonProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bezierPolygonRenderService);

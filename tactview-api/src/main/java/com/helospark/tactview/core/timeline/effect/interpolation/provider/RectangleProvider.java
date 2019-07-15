@@ -3,11 +3,11 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class RectangleProvider extends CompositeKeyframeableEffect {
     List<PointProvider> pointProviders;

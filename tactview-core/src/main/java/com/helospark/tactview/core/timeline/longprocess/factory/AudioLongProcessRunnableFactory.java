@@ -22,14 +22,14 @@ import com.helospark.tactview.core.timeline.longprocess.LongProcessDescriptor;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class AudioLongProcessRunnableFactory {
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
     private ProjectRepository projectRepository;
 
-    public AudioLongProcessRunnableFactory(MessagingServiceImpl messagingService, ProjectRepository projectRepository) {
+    public AudioLongProcessRunnableFactory(MessagingService messagingService, ProjectRepository projectRepository) {
         this.messagingService = messagingService;
         this.projectRepository = projectRepository;
     }

@@ -4,8 +4,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.helospark.lightdi.annotation.Component;
 
-import com.helospark.lightdi.annotation.Component;
-
 @Component
 public class TimelineChannelsState {
     Object fullLock = new Object();

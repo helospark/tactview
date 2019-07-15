@@ -85,7 +85,6 @@ import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.timeline.effect.scale.ZoomEffect;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
-import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.effect.shadow.DirectionalShadowEffect;
 import com.helospark.tactview.core.timeline.effect.shadow.DropShadowEffect;
 import com.helospark.tactview.core.timeline.effect.sharpen.SharpenEffect;
@@ -104,7 +103,7 @@ import com.helospark.tactview.core.timeline.effect.warp.TrigonometricWrapEffect;
 import com.helospark.tactview.core.timeline.effect.warp.rasterizer.Simple2DRasterizer;
 import com.helospark.tactview.core.timeline.proceduralclip.noise.service.PerturbationNoiseService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
-import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderServiceImpl;
+import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonRenderService;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
@@ -773,7 +772,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory bezierPolygonEffect(BezierPolygonRenderServiceImpl bezierPolygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha) {
+    public StandardEffectFactory bezierPolygonEffect(BezierPolygonRenderService bezierPolygonRenderService, LayerMaskApplier layerMaskApplier, LayerMaskAlphaToAlpha layerMaskAlphaToAlpha) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new BezierMaskEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), bezierPolygonRenderService, layerMaskApplier,
                         layerMaskAlphaToAlpha))

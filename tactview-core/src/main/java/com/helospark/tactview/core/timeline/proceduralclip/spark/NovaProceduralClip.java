@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -24,6 +23,7 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.MathUtil;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 // Code adapted from GIMP: https://github.com/piksels-and-lines-orchestra/gimp/blob/master/plug-ins/common/nova.c
 public class NovaProceduralClip extends ProceduralVisualClip {

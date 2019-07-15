@@ -1,12 +1,10 @@
-package com.helospark.tactview.core;
+package com.helospark.tactview.core.util;
 
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
-import com.helospark.tactview.core.util.StatefulCloneable;
 
 public class ReflectionUtilTest {
 

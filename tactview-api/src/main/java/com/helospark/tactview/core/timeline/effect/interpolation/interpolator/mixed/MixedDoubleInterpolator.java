@@ -7,10 +7,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolator {
     protected TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> values;

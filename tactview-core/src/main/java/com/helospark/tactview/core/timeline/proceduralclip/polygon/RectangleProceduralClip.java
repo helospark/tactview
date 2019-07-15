@@ -5,7 +5,6 @@ import static com.helospark.tactview.core.timeline.effect.interpolation.provider
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -28,6 +27,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.MathUtil;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RectangleProceduralClip extends ProceduralVisualClip {
     private IndependentPixelOperation independentPixelOperation;

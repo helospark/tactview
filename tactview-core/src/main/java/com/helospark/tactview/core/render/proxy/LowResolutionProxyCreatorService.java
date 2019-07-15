@@ -26,7 +26,7 @@ import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMes
 import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressType;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 // TODO: consider configurable image sequence
 @Component
@@ -34,11 +34,11 @@ public class LowResolutionProxyCreatorService {
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private FFmpegBasedMediaDecoderDecorator mediaDecoder;
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
 
     private String path = System.getProperty("java.io.tmpdir");
 
-    public LowResolutionProxyCreatorService(FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, FFmpegBasedMediaDecoderDecorator mediaDecoder, MessagingServiceImpl messagingService) {
+    public LowResolutionProxyCreatorService(FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, FFmpegBasedMediaDecoderDecorator mediaDecoder, MessagingService messagingService) {
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
         this.mediaDecoder = mediaDecoder;
         this.messagingService = messagingService;

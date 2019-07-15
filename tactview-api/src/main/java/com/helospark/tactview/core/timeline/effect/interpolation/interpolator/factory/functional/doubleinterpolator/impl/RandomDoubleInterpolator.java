@@ -4,11 +4,11 @@ import java.math.BigDecimal;
 
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 
-import com.helospark.tactview.core.DesSerFactory;
-import com.helospark.tactview.core.RepeatableRandom;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
+import com.helospark.tactview.core.util.RepeatableRandom;
 
 public class RandomDoubleInterpolator implements DoubleInterpolator {
     double min;

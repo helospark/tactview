@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.ReflectionUtil;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -24,6 +23,7 @@ import com.helospark.tactview.core.timeline.effect.warp.rasterizer.SimpleVertex;
 import com.helospark.tactview.core.timeline.effect.warp.rasterizer.TriangleRasterizationRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RectangleWarpEffect extends StatelessVideoEffect {
     private Simple2DRasterizer simple2DRasterizer;

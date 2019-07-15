@@ -2,10 +2,10 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.n
 
 import java.math.BigDecimal;
 
-import com.helospark.tactview.core.DesSerFactory;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 public class LineDoubleInterpolator implements DoubleInterpolator {
     BigDecimal tangent;
