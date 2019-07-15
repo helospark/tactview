@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 import com.helospark.tactview.ui.javafx.repository.selection.ChangeType;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
 import com.helospark.tactview.ui.javafx.repository.selection.EffectSelectionChangedMessage;
@@ -22,10 +22,10 @@ public class SelectionChangedListener {
     private static final Map<ChangeType, List<String>> CHANGE_TYPE_TO_REMOVE = Map.of(
             ChangeType.ALL_SELECTION_REMOVED, List.of("primary-active", "secondary-active"));
 
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     private PropertyView propertyView;
 
-    public SelectionChangedListener(MessagingService messagingService, PropertyView propertyView) {
+    public SelectionChangedListener(MessagingServiceImpl messagingService, PropertyView propertyView) {
         this.messagingService = messagingService;
         this.propertyView = propertyView;
     }

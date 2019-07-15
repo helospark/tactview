@@ -13,13 +13,13 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class InvertEffect extends StatelessVideoEffect {
     private static final int MAX_PIXEL_VALUE = 255;
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public InvertEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public InvertEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -29,7 +29,7 @@ public class InvertEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public InvertEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations) {
+    public InvertEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperations) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperations;
     }

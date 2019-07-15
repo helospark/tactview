@@ -22,17 +22,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 // Known limitation: cannot be used on a clip which depends on other clips
 public class GhostingEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private IntegerProvider numberOfGhostProvider;
     private DoubleProvider ghostTimeProvider;
     private DoubleProvider alphaProvider;
 
-    public GhostingEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public GhostingEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -42,7 +42,7 @@ public class GhostingEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(ghostingEffect, this);
     }
 
-    public GhostingEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public GhostingEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

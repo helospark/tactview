@@ -20,16 +20,16 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class DirectionalShadowEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private DoubleProvider shadowAlphaProvider;
     private ColorProvider shadowColorProvider;
     private LineProvider directionProvider;
 
-    public DirectionalShadowEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public DirectionalShadowEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -39,7 +39,7 @@ public class DirectionalShadowEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this);
     }
 
-    public DirectionalShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public DirectionalShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

@@ -19,14 +19,14 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 import com.helospark.tactview.core.util.MathUtil;
 
 // Logic adapted from http://www.jhlabs.com/ie/index.html
 public class MagnifierEffect extends StatelessVideoEffect {
     private static final double HALF_PI = Math.PI / 2.0;
 
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private PointProvider centerProvider;
     private DoubleProvider refractionProvider;
@@ -34,7 +34,7 @@ public class MagnifierEffect extends StatelessVideoEffect {
     private DoubleProvider widthProvider;
     private DoubleProvider heightProvider;
 
-    public MagnifierEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public MagnifierEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -44,7 +44,7 @@ public class MagnifierEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
     }
 
-    public MagnifierEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public MagnifierEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

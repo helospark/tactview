@@ -19,12 +19,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 import com.helospark.tactview.core.util.MathUtil;
 
 // Logic adapted from https://github.com/lbalazscs/Pixelitor
 public class GlassTilesEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private DoubleProvider sizeXProvider;
     private DoubleProvider sizeYProvider;
@@ -34,7 +34,7 @@ public class GlassTilesEffect extends StatelessVideoEffect {
     private DoubleProvider curvatureXProvider;
     private DoubleProvider curvatureYProvider;
 
-    public GlassTilesEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public GlassTilesEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -44,7 +44,7 @@ public class GlassTilesEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
     }
 
-    public GlassTilesEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public GlassTilesEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

@@ -20,7 +20,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class BresenhemPixelProvider implements BresenhemPixelProviderInterface {
+public class BresenhemPixelProviderImpl implements BresenhemPixelProvider {
 
     /* (non-Javadoc)
      * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#ellipsePixels(int, int, int, int)

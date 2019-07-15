@@ -21,16 +21,16 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class CropEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private IntegerProvider strengthProvider;
     private PointProvider topLeftPointProvider;
     private PointProvider bottomRightPointProvider;
 
-    public CropEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public CropEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -40,7 +40,7 @@ public class CropEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cropEffect, this);
     }
 
-    public CropEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public CropEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

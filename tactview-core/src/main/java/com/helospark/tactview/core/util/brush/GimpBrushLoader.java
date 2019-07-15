@@ -9,12 +9,16 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class GimpBrushLoader {
+public class GimpBrushLoader implements BrushLoader {
     private static final Logger logger = LoggerFactory.getLogger(GimpBrushLoader.class);
     public static final int GIMP_BRUSH_MAGIC = (('G' << 24) + ('I' << 16) + ('M' << 8) + ('P' << 0));
     public static final int GIMP_BRUSH_MAX_SIZE = 10000;
     public static final int GIMP_BRUSH_MAX_NAME = 256;
 
+    /* (non-Javadoc)
+     * @see com.helospark.tactview.core.util.brush.BrushLoaderInterface#loadBrush(java.io.InputStream)
+     */
+    @Override
     @Cacheable(cacheTimeInMilliseconds = 100000, size = 100)
     public GimpBrush loadBrush(InputStream inputStream) {
         try {

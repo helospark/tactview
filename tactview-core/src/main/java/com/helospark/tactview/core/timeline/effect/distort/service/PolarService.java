@@ -4,13 +4,13 @@ import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.timeline.effect.distort.PolarOperationRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 @Service
 public class PolarService {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public PolarService(IndependentPixelOperation independentPixelOperation) {
+    public PolarService(IndependentPixelOperationImpl independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 

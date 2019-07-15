@@ -22,7 +22,7 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMess
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
@@ -36,13 +36,13 @@ public class EffectPatternDrawerListener {
     private Set<EffectPatternUpdateRequest> updateRequests = new ConcurrentSkipListSet<>();
     private volatile boolean running = true;
 
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     private TimelineEffectPatternService timelineEffectPatternService;
     private TimelineState timelineState;
     @Slf4j
     private Logger logger;
 
-    public EffectPatternDrawerListener(MessagingService messagingService,
+    public EffectPatternDrawerListener(MessagingServiceImpl messagingService,
             TimelineState timelineState, TimelineEffectPatternService timelineEffectPatternService) {
         this.messagingService = messagingService;
         this.timelineEffectPatternService = timelineEffectPatternService;

@@ -15,14 +15,14 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
     private static final int NUMBER_OF_COLOR_COMPONENTS = 3;
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
     private IntegerProvider pixelColumnWidthProvider;
 
-    public TelevisionRgbLinesEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public TelevisionRgbLinesEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -32,7 +32,7 @@ public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public TelevisionRgbLinesEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public TelevisionRgbLinesEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

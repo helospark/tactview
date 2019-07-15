@@ -17,15 +17,15 @@ import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTrans
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class WhipPanTransition extends AbstractVideoTransitionEffect {
     private BlurService blurService;
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private IntegerProvider blurProvider;
 
-    public WhipPanTransition(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BlurService blurService) {
+    public WhipPanTransition(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation, BlurService blurService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
         this.blurService = blurService;
@@ -36,7 +36,7 @@ public class WhipPanTransition extends AbstractVideoTransitionEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public WhipPanTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation, BlurService blurService) {
+    public WhipPanTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation, BlurService blurService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
         this.blurService = blurService;

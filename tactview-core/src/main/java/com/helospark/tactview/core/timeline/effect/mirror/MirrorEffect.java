@@ -16,15 +16,15 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.fa
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class MirrorEffect extends StatelessVideoEffect {
     private BooleanProvider mirrorVerticallyProvider;
     private BooleanProvider mirrorHorizontalProvider;
 
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public MirrorEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public MirrorEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -34,7 +34,7 @@ public class MirrorEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public MirrorEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public MirrorEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

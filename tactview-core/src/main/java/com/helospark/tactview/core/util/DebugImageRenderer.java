@@ -21,7 +21,7 @@ public class DebugImageRenderer {
 
     public static void render(ByteBuffer buffer, int width, int height) {
         try {
-            ByteBufferToImageConverter converter = new ByteBufferToImageConverter(new IndependentPixelOperation());
+            ByteBufferToImageConverter converter = new ByteBufferToImageConverterImpl(new IndependentPixelOperationImpl());
             BufferedImage image = converter.byteBufferToBufferedImageWithAlpha(buffer, width, height);
             String filename = "/tmp/debug_" + System.currentTimeMillis();
             ImageIO.write(image, "png", new File(filename));

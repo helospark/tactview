@@ -15,13 +15,13 @@ import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTrans
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
     private DoubleProvider keepAtWhitePercentage;
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public WhiteFlashTransition(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public WhiteFlashTransition(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -31,7 +31,7 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this);
     }
 
-    public WhiteFlashTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public WhiteFlashTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

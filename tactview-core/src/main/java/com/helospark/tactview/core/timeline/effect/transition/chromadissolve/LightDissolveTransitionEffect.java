@@ -16,17 +16,17 @@ import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTrans
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect {
     private static final String DISSOLVE_LIGHT_FIRST = "light";
     private static final String DISSOLVE_DARK_FIRST = "dark";
 
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private ValueListProvider<ValueListElement> directionProvider;
 
-    public LightDissolveTransitionEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public LightDissolveTransitionEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -36,7 +36,7 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public LightDissolveTransitionEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public LightDissolveTransitionEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

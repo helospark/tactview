@@ -17,17 +17,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class ShearEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private DoubleProvider shearXProvider;
     private DoubleProvider shearYProvider;
 
     private PointProvider offsetProvider;
 
-    public ShearEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public ShearEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -37,7 +37,7 @@ public class ShearEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
     }
 
-    public ShearEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public ShearEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

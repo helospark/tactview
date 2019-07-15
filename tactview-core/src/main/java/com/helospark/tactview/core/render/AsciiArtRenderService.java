@@ -25,7 +25,7 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 import io.korhner.asciimg.image.AsciiImgCache;
 import io.korhner.asciimg.image.character_fit_strategy.StructuralSimilarityFitStrategy;
@@ -39,7 +39,7 @@ public class AsciiArtRenderService extends AbstractRenderService {
     private StructuralSimilarityFitStrategy characterFirStrategy = new StructuralSimilarityFitStrategy();
     private ByteBufferToImageConverter byteBufferToImageConverter;
 
-    public AsciiArtRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingService messagingService,
+    public AsciiArtRenderService(TimelineManagerRenderService timelineManager, ByteBufferToImageConverter byteBufferToImageConverter, MessagingServiceImpl messagingService,
             ScaleService scaleService, ProjectRepository projectRepository) {
         super(timelineManager, messagingService, scaleService, projectRepository);
         this.byteBufferToImageConverter = byteBufferToImageConverter;

@@ -26,12 +26,12 @@ import com.helospark.tactview.core.timeline.audioeffect.StatelessAudioEffect;
 import com.helospark.tactview.core.timeline.longprocess.factory.AudioLongProcessRunnableFactory;
 import com.helospark.tactview.core.timeline.longprocess.factory.VisualLongProcessRunnableFactory;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class LongProcessRequestor {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     private TimelineManagerAccessor timelineManagerAccessor;
     private VisualLongProcessRunnableFactory visualLongProcessRunnableFactory;
     private AudioLongProcessRunnableFactory audioLongProcessRunnableFactory;
@@ -41,7 +41,7 @@ public class LongProcessRequestor {
 
     private volatile boolean running = true;
 
-    public LongProcessRequestor(MessagingService messagingService, VisualLongProcessRunnableFactory visualLongProcessRunnableFactory,
+    public LongProcessRequestor(MessagingServiceImpl messagingService, VisualLongProcessRunnableFactory visualLongProcessRunnableFactory,
             AudioLongProcessRunnableFactory audioLongProcessRunnableFactory) {
         this.messagingService = messagingService;
         this.visualLongProcessRunnableFactory = visualLongProcessRunnableFactory;

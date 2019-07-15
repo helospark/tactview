@@ -8,13 +8,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.image.ClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 @Service
 public class LinearGradientService {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public LinearGradientService(IndependentPixelOperation independentPixelOperation) {
+    public LinearGradientService(IndependentPixelOperationImpl independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 

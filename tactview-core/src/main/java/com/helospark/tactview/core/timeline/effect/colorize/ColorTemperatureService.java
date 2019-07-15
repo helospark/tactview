@@ -3,13 +3,13 @@ package com.helospark.tactview.core.timeline.effect.colorize;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 @Component
 public class ColorTemperatureService {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public ColorTemperatureService(IndependentPixelOperation independentPixelOperation) {
+    public ColorTemperatureService(IndependentPixelOperationImpl independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 

@@ -17,7 +17,7 @@ import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 import com.helospark.tactview.ui.javafx.TabCloseListener;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
@@ -57,7 +57,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
     private KeyframeableEffect currentKeyframeableEffect;
     private DoubleInterpolator currentInterpolator;
     private CurveEditor currentlyOpenEditor;
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
 
     private double maxValue;
     private double minValue;
@@ -71,7 +71,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
     private double lastDraggedX = 0;
     ///
 
-    public CurveEditorTab(List<CurveEditor> curveEditors, MessagingService messagingService, UiTimelineManager timelineManager, EffectParametersRepository effectParametersRepository) {
+    public CurveEditorTab(List<CurveEditor> curveEditors, MessagingServiceImpl messagingService, UiTimelineManager timelineManager, EffectParametersRepository effectParametersRepository) {
         this.curveEditors = curveEditors;
         this.timelineManager = timelineManager;
         this.messagingService = messagingService;

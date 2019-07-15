@@ -4,13 +4,13 @@ import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.image.ClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 @Service
 public class RadialGradientService {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public RadialGradientService(IndependentPixelOperation independentPixelOperation) {
+    public RadialGradientService(IndependentPixelOperationImpl independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 

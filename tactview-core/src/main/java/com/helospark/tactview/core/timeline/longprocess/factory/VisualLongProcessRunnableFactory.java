@@ -21,14 +21,14 @@ import com.helospark.tactview.core.timeline.longprocess.LongProcessVisualImagePu
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class VisualLongProcessRunnableFactory {
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     private ProjectRepository projectRepository;
 
-    public VisualLongProcessRunnableFactory(MessagingService messagingService, ProjectRepository projectRepository) {
+    public VisualLongProcessRunnableFactory(MessagingServiceImpl messagingService, ProjectRepository projectRepository) {
         this.messagingService = messagingService;
         this.projectRepository = projectRepository;
     }

@@ -13,12 +13,12 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class DesaturizeEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperations;
+    private IndependentPixelOperationImpl independentPixelOperations;
 
-    public DesaturizeEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperations) {
+    public DesaturizeEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperations) {
         super(interval);
         this.independentPixelOperations = independentPixelOperations;
     }
@@ -28,7 +28,7 @@ public class DesaturizeEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations2) {
+    public DesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperations2) {
         super(node, loadMetadata);
         this.independentPixelOperations = independentPixelOperations2;
     }

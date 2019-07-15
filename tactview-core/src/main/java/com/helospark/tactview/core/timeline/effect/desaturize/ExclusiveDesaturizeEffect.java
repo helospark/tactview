@@ -20,16 +20,16 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class ExclusiveDesaturizeEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private ColorProvider excludedColorProvider;
     private DoubleProvider excludedHueRangeProvider;
     private DoubleProvider falloffFactorProvider;
 
-    public ExclusiveDesaturizeEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public ExclusiveDesaturizeEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -39,7 +39,7 @@ public class ExclusiveDesaturizeEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(exclusiveDesaturizeEffect, this);
     }
 
-    public ExclusiveDesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public ExclusiveDesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

@@ -6,14 +6,14 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 @Service
 public class DisplacementMapService {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
     private ScaleService scaleService;
 
-    public DisplacementMapService(IndependentPixelOperation independentPixelOperation, ScaleService scaleService) {
+    public DisplacementMapService(IndependentPixelOperationImpl independentPixelOperation, ScaleService scaleService) {
         this.independentPixelOperation = independentPixelOperation;
         this.scaleService = scaleService;
     }

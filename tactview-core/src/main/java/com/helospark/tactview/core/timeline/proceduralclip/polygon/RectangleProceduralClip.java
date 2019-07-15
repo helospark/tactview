@@ -26,17 +26,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.LinePr
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 import com.helospark.tactview.core.util.MathUtil;
 
 public class RectangleProceduralClip extends ProceduralVisualClip {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private ColorProvider colorProvider;
     private LineProvider lineProvider;
     private DoubleProvider fuzzyDistanceProvider;
 
-    public RectangleProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public RectangleProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -46,7 +46,7 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(gradientProceduralEffect, this);
     }
 
-    public RectangleProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public RectangleProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(metadata, node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

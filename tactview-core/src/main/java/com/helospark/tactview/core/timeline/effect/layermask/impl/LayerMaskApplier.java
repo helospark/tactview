@@ -6,14 +6,14 @@ import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplem
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 @Component
 public class LayerMaskApplier {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
     private OpenCVScaleEffectImplementation scaleImplementation;
 
-    public LayerMaskApplier(IndependentPixelOperation independentPixelOperation, OpenCVScaleEffectImplementation scaleImplementation) {
+    public LayerMaskApplier(IndependentPixelOperationImpl independentPixelOperation, OpenCVScaleEffectImplementation scaleImplementation) {
         this.independentPixelOperation = independentPixelOperation;
         this.scaleImplementation = scaleImplementation;
     }

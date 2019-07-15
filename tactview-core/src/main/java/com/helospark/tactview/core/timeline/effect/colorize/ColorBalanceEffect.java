@@ -24,7 +24,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorP
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 /**
  * 3 way color balance
@@ -48,12 +48,12 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
 
     private boolean preserveLuminosity = true;
 
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
     private BrignessContrastService brignessContrastService;
     private ColorizeService colorizeService;
     private ColorTemperatureService colorTemperatureService;
 
-    public ColorBalanceEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
+    public ColorBalanceEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
             ColorTemperatureService colorTemperatureService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
@@ -67,7 +67,7 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(colorBalance, this);
     }
 
-    public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2,
+    public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2, BrignessContrastService brignessContrastService2,
             ColorizeService colorizeService2, ColorTemperatureService colorTemperatureService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;

@@ -16,10 +16,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class TrigonometricWrapEffect extends StatelessVideoEffect {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private DoubleProvider waveSpeedProvider;
     private DoubleProvider frequencyProviderX;
@@ -27,7 +27,7 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
     private DoubleProvider amplitudeProviderX;
     private DoubleProvider amplitudeProviderY;
 
-    public TrigonometricWrapEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public TrigonometricWrapEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -37,7 +37,7 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public TrigonometricWrapEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
+    public TrigonometricWrapEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

@@ -22,12 +22,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 import com.helospark.tactview.core.util.MathUtil;
 
 // Code adapted from GIMP: https://github.com/piksels-and-lines-orchestra/gimp/blob/master/plug-ins/common/nova.c
 public class NovaProceduralClip extends ProceduralVisualClip {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private IntegerProvider randomHueProvider;
     private IntegerProvider numberOfSpokesProvider;
@@ -37,7 +37,7 @@ public class NovaProceduralClip extends ProceduralVisualClip {
     private DoubleProvider centerXProvider;
     private DoubleProvider centerYProvider;
 
-    public NovaProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public NovaProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -47,7 +47,7 @@ public class NovaProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(novaProceduralClip, this);
     }
 
-    public NovaProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public NovaProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(metadata, node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

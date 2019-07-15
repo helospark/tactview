@@ -27,7 +27,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineRequest;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
-import com.helospark.tactview.core.util.BresenhemPixelProviderInterface;
+import com.helospark.tactview.core.util.BresenhemPixelProvider;
 
 public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualClip {
     private RectangleProvider rectangleProvider;
@@ -38,9 +38,9 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
     private FileProvider brushFileProvider;
 
     private DrawLineService drawLineService;
-    private BresenhemPixelProviderInterface bresenhemPixelProvider;
+    private BresenhemPixelProvider bresenhemPixelProvider;
 
-    public DrawnRectangleHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
+    public DrawnRectangleHighlightProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;
@@ -52,7 +52,7 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DrawnRectangleHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider2) {
+    public DrawnRectangleHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {
         super(metadata, node, loadMetadata);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider2;

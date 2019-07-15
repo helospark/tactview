@@ -27,7 +27,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineRequest;
 import com.helospark.tactview.core.timeline.proceduralclip.lines.impl.DrawLineService;
-import com.helospark.tactview.core.util.BresenhemPixelProviderInterface;
+import com.helospark.tactview.core.util.BresenhemPixelProvider;
 
 public class HighlightPenProceduralEffect extends ProceduralVisualClip {
     private LineProvider lineProvider;
@@ -37,9 +37,9 @@ public class HighlightPenProceduralEffect extends ProceduralVisualClip {
     private FileProvider brushFileProvider;
 
     private DrawLineService drawLineService;
-    private BresenhemPixelProviderInterface bresenhemPixelProvider;
+    private BresenhemPixelProvider bresenhemPixelProvider;
 
-    public HighlightPenProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
+    public HighlightPenProceduralEffect(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
         super(visualMediaMetadata, interval);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;
@@ -51,7 +51,7 @@ public class HighlightPenProceduralEffect extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public HighlightPenProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProviderInterface bresenhemPixelProvider) {
+    public HighlightPenProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {
         super(metadata, node, loadMetadata);
         this.drawLineService = drawLineService;
         this.bresenhemPixelProvider = bresenhemPixelProvider;

@@ -31,7 +31,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 import me.jordanpeck.FastNoise;
 import me.jordanpeck.FastNoise.CellularDistanceFunction;
@@ -39,7 +39,7 @@ import me.jordanpeck.FastNoise.CellularReturnType;
 import me.jordanpeck.FastNoise.FractalType;
 
 public class NoiseProceduralClip extends ProceduralVisualClip {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private ColorProvider colorProvider;
 
@@ -58,7 +58,7 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
     private DoubleProvider xOffsetProvider;
     private DoubleProvider yOffsetProvider;
 
-    public NoiseProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public NoiseProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -68,7 +68,7 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(noiseProceduralEffect, this);
     }
 
-    public NoiseProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public NoiseProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(metadata, node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

@@ -23,7 +23,7 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class ZoomEffect extends StatelessVideoEffect {
 
@@ -32,11 +32,11 @@ public class ZoomEffect extends StatelessVideoEffect {
 
     private BooleanProvider keepRatioProvider;
 
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
     private ScaleService scaleService;
     private FrameExtender frameExtender;
 
-    public ZoomEffect(TimelineInterval interval, ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
+    public ZoomEffect(TimelineInterval interval, ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.scaleService = scaleService;
         this.frameExtender = frameExtender;
@@ -48,7 +48,7 @@ public class ZoomEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public ZoomEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
+    public ZoomEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2, FrameExtender frameExtender, IndependentPixelOperationImpl independentPixelOperation) {
         super(node, loadMetadata);
         this.scaleService = scaleService2;
         this.frameExtender = frameExtender;

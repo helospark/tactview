@@ -108,7 +108,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.B
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 import com.helospark.tactview.core.util.conditional.ConditionalOnPlatform;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -128,7 +128,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory desaturizeEffect(OpenCVBasedGaussianBlur gaussianBlur, IndependentPixelOperation independentPixelOperations) {
+    public StandardEffectFactory desaturizeEffect(OpenCVBasedGaussianBlur gaussianBlur, IndependentPixelOperationImpl independentPixelOperations) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new DesaturizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
                 .withRestoreFactory((node, loadMetadata) -> new DesaturizeEffect(node, loadMetadata, independentPixelOperations))
@@ -176,7 +176,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory gammaEffect(IndependentPixelOperation independentPixelOperations) {
+    public StandardEffectFactory gammaEffect(IndependentPixelOperationImpl independentPixelOperations) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new GammaEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
                 .withRestoreFactory((node, loadMetadata) -> new GammaEffect(node, loadMetadata, independentPixelOperations))
@@ -188,7 +188,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory invertEffect(IndependentPixelOperation independentPixelOperations) {
+    public StandardEffectFactory invertEffect(IndependentPixelOperationImpl independentPixelOperations) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new InvertEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperations))
                 .withRestoreFactory((node, loadMetadata) -> new InvertEffect(node, loadMetadata, independentPixelOperations))
@@ -224,7 +224,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory thresholdEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory thresholdEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new SimpleThresholdEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new SimpleThresholdEffect(node, loadMetadata, independentPixelOperation))
@@ -236,7 +236,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory mirrorEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory mirrorEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new MirrorEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new MirrorEffect(node, loadMetadata, independentPixelOperation))
@@ -260,7 +260,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory pixelize(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory pixelize(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new PixelizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new PixelizeEffect(node, loadMetadata, independentPixelOperation))
@@ -344,7 +344,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory warpEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory warpEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new TrigonometricWrapEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new TrigonometricWrapEffect(node, loadMetadata, independentPixelOperation))
@@ -356,7 +356,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory televisionRgbLinesEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory televisionRgbLinesEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new TelevisionRgbLinesEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new TelevisionRgbLinesEffect(node, loadMetadata, independentPixelOperation))
@@ -368,7 +368,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory lightGlowEffect(IndependentPixelOperation independentPixelOperation, OpenCVBasedGaussianBlur blueImplementation) {
+    public StandardEffectFactory lightGlowEffect(IndependentPixelOperationImpl independentPixelOperation, OpenCVBasedGaussianBlur blueImplementation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LightGlowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), blueImplementation, independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new LightGlowEffect(node, loadMetadata, blueImplementation, independentPixelOperation))
@@ -380,7 +380,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory vignetteEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory vignetteEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new VignetteEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new VignetteEffect(node, loadMetadata, independentPixelOperation))
@@ -392,7 +392,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory colorChannelChangeEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory colorChannelChangeEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ColorChannelChangeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new ColorChannelChangeEffect(node, loadMetadata, independentPixelOperation))
@@ -428,7 +428,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory cropEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory cropEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new CropEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new CropEffect(node, loadMetadata, independentPixelOperation))
@@ -440,7 +440,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory colorBalanceEffect(IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
+    public StandardEffectFactory colorBalanceEffect(IndependentPixelOperationImpl independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
             ColorTemperatureService colorTemperatureService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ColorBalanceEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, brignessContrastService,
@@ -454,7 +454,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory lutEffect(IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
+    public StandardEffectFactory lutEffect(IndependentPixelOperationImpl independentPixelOperation, LutProviderService lutProviderService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LutEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, lutProviderService))
                 .withRestoreFactory((node, loadMetadata) -> new LutEffect(node, loadMetadata, independentPixelOperation, lutProviderService))
@@ -466,7 +466,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory ghostingEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory ghostingEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new GhostingEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new GhostingEffect(node, loadMetadata, independentPixelOperation))
@@ -478,7 +478,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory dropShadowEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService, ScaleService scaleService) {
+    public StandardEffectFactory dropShadowEffect(IndependentPixelOperationImpl independentPixelOperation, BlurService blurService, ScaleService scaleService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new DropShadowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, blurService, scaleService))
                 .withRestoreFactory((node, loadMetadata) -> new DropShadowEffect(node, loadMetadata, independentPixelOperation, blurService, scaleService))
@@ -514,7 +514,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory mirrorLine(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory mirrorLine(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new MirrorLineEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new MirrorLineEffect(node, loadMetadata, independentPixelOperation))
@@ -526,7 +526,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory medianEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory medianEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new MedianEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new MedianEffect(node, loadMetadata, independentPixelOperation))
@@ -538,7 +538,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory exclusiveDesaturizeEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory exclusiveDesaturizeEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ExclusiveDesaturizeEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new ExclusiveDesaturizeEffect(node, loadMetadata, independentPixelOperation))
@@ -550,7 +550,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory maximumRgbEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory maximumRgbEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new MaximumRgbEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new MaximumRgbEffect(node, loadMetadata, independentPixelOperation))
@@ -562,7 +562,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory levelsEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory levelsEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LevelsEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new LevelsEffect(node, loadMetadata, independentPixelOperation))
@@ -574,7 +574,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory mozaicEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory mozaicEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new MozaicEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new MozaicEffect(node, loadMetadata, independentPixelOperation))
@@ -610,7 +610,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory blurExtendEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService, ScaleService scaleService) {
+    public StandardEffectFactory blurExtendEffect(IndependentPixelOperationImpl independentPixelOperation, BlurService blurService, ScaleService scaleService) {
         return StandardEffectFactory.builder()
                 .withFactory(
                         request -> new ExtendClipWithBlurredImage(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, blurService, scaleService))
@@ -623,7 +623,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory blendEffect(List<BlendModeStrategy> strategies, ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory blendEffect(List<BlendModeStrategy> strategies, ScaleService scaleService, IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(
                         request -> new BlendEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), strategies, scaleService, independentPixelOperation))
@@ -737,7 +737,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory shearEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory shearEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ShearEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new ShearEffect(node, loadMetadata, independentPixelOperation))
@@ -761,7 +761,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory curvesEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory curvesEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new CurvesEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new CurvesEffect(node, loadMetadata, independentPixelOperation))
@@ -799,7 +799,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory zoomEffect(ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory zoomEffect(ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new ZoomEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), scaleService, frameExtender, independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new ZoomEffect(node, loadMetadata, scaleService, frameExtender, independentPixelOperation))
@@ -811,7 +811,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory directionalShadowEffect(ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory directionalShadowEffect(ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new DirectionalShadowEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new DirectionalShadowEffect(node, loadMetadata, independentPixelOperation))
@@ -836,7 +836,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory glassTilesEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory glassTilesEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new GlassTilesEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new GlassTilesEffect(node, loadMetadata, independentPixelOperation))
@@ -848,7 +848,7 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory magnifierEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory magnifierEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new MagnifierEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new MagnifierEffect(node, loadMetadata, independentPixelOperation))

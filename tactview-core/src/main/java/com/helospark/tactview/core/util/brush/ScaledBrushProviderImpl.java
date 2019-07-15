@@ -9,25 +9,22 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class ScaledBrushProvider implements ScaledBrushProviderInterface {
-    private static final Logger logger = LoggerFactory.getLogger(ScaledBrushProvider.class);
-    private RawBrushProvider rawBrushProvider;
+public class ScaledBrushProviderImpl implements ScaledBrushProvider {
+    private static final Logger logger = LoggerFactory.getLogger(ScaledBrushProviderImpl.class);
+    private RawBrushProviderImpl rawBrushProvider;
     private ScaleService scaleService;
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
-    public ScaledBrushProvider(RawBrushProvider rawBrushProvider, ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
+    public ScaledBrushProviderImpl(RawBrushProviderImpl rawBrushProvider, ScaleService scaleService, IndependentPixelOperationImpl independentPixelOperation) {
         this.rawBrushProvider = rawBrushProvider;
         this.scaleService = scaleService;
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.brush.ScaledBrushProviderInterface#getBrushImage(com.helospark.tactview.core.util.brush.GetBrushRequest)
-     */
     @Override
     @Cacheable(cacheTimeInMilliseconds = 600000, size = 100)
     public ClipImage getBrushImage(GetBrushRequest brushRequest) {

@@ -7,16 +7,16 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class GlobalDirtyClipManager {
     private DirtyIntervalList dirtyIntervalList = new DirtyIntervalList();
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     @Slf4j
     private Logger logger;
 
-    public GlobalDirtyClipManager(MessagingService messagingService) {
+    public GlobalDirtyClipManager(MessagingServiceImpl messagingService) {
         this.messagingService = messagingService;
     }
 

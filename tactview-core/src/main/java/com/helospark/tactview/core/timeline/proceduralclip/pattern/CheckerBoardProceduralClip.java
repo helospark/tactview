@@ -20,10 +20,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class CheckerBoardProceduralClip extends ProceduralVisualClip {
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private DoubleProvider xScaleProvider;
     private DoubleProvider yScaleProvider;
@@ -34,7 +34,7 @@ public class CheckerBoardProceduralClip extends ProceduralVisualClip {
     private ColorProvider color1Provider;
     private ColorProvider color2Provider;
 
-    public CheckerBoardProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
+    public CheckerBoardProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
         super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -44,7 +44,7 @@ public class CheckerBoardProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(checkerBoardProceduralClip, this);
     }
 
-    public CheckerBoardProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
+    public CheckerBoardProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
         super(metadata, node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

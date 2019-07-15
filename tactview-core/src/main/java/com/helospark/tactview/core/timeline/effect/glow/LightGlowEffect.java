@@ -21,11 +21,11 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 public class LightGlowEffect extends StatelessVideoEffect {
     private OpenCVBasedGaussianBlur blurImplementation;
-    private IndependentPixelOperation independentPixelOperation;
+    private IndependentPixelOperationImpl independentPixelOperation;
 
     private IntegerProvider kernelWidthProvider;
     private IntegerProvider kernelHeightProvider;
@@ -33,7 +33,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
     private DoubleProvider lightStrengthMultiplierProvider;
     private DoubleProvider blurMultiplierProvider;
 
-    public LightGlowEffect(TimelineInterval interval, OpenCVBasedGaussianBlur blur, IndependentPixelOperation independentPixelOperation) {
+    public LightGlowEffect(TimelineInterval interval, OpenCVBasedGaussianBlur blur, IndependentPixelOperationImpl independentPixelOperation) {
         super(interval);
         this.blurImplementation = blur;
         this.independentPixelOperation = independentPixelOperation;
@@ -44,7 +44,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public LightGlowEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedGaussianBlur blurImplementation, IndependentPixelOperation independentPixelOperation) {
+    public LightGlowEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedGaussianBlur blurImplementation, IndependentPixelOperationImpl independentPixelOperation) {
         super(node, loadMetadata);
         this.blurImplementation = blurImplementation;
         this.independentPixelOperation = independentPixelOperation;

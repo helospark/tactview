@@ -41,7 +41,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class FFmpegBasedRenderService extends AbstractRenderService {
@@ -53,7 +53,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private TimelineManagerAccessor timelineManagerAccessor;
 
-    public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService,
+    public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingServiceImpl messagingService,
             ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository) {
         super(timelineManager, messagingService, scaleService, projectRepository);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;

@@ -7,15 +7,15 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.valueprovidereffect.StatelessValueProviderEffect;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class DynamicValueEffectRepository {
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
 
     private List<StatelessValueProviderEffect> effects;
 
-    public DynamicValueEffectRepository(MessagingService messagingService) {
+    public DynamicValueEffectRepository(MessagingServiceImpl messagingService) {
         this.messagingService = messagingService;
     }
 

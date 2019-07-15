@@ -35,11 +35,11 @@ import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMes
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class EffectParametersRepository {
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     private TimelineManagerAccessor timelineManagerAccessor;
     private List<DoubleInterpolatorFactory> doubleInterpolatorFactories;
     private List<StringInterpolatorFactory> stringInterpolatorFactories;
@@ -49,7 +49,7 @@ public class EffectParametersRepository {
     private Map<String, EffectStore> primitiveEffectIdToEffectMap = new ConcurrentHashMap<>();
     private Map<String, EffectStore> allEffectIdToEffectMap = new ConcurrentHashMap<>();
 
-    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories,
+    public EffectParametersRepository(MessagingServiceImpl messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories,
             TimelineManagerAccessor timelineManagerAccessor) {
         this.messagingService = messagingService;
         this.doubleInterpolatorFactories = interpolatorFactories;

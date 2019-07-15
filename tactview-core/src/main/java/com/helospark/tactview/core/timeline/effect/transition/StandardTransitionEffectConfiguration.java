@@ -29,13 +29,13 @@ import com.helospark.tactview.core.timeline.effect.transition.shape.LinearGradie
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.LinearGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.PolygonRenderService;
-import com.helospark.tactview.core.util.IndependentPixelOperation;
+import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
 
 @Configuration
 public class StandardTransitionEffectConfiguration {
 
     @Bean
-    public StandardEffectFactory alphaTransitionEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory alphaTransitionEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new AlphaTransitionEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new AlphaTransitionEffect(node, loadMetadata, independentPixelOperation))
@@ -47,7 +47,7 @@ public class StandardTransitionEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory floatOutTransitionEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory floatOutTransitionEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new FloatOutTransitionEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new FloatOutTransitionEffect(node, loadMetadata, independentPixelOperation))
@@ -71,7 +71,7 @@ public class StandardTransitionEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory lightDossolveTransitionEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory lightDossolveTransitionEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new LightDissolveTransitionEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new LightDissolveTransitionEffect(node, loadMetadata, independentPixelOperation))
@@ -83,7 +83,7 @@ public class StandardTransitionEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory whiteFlashTransitionEffect(IndependentPixelOperation independentPixelOperation) {
+    public StandardEffectFactory whiteFlashTransitionEffect(IndependentPixelOperationImpl independentPixelOperation) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new WhiteFlashTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(1000)), independentPixelOperation))
                 .withRestoreFactory((node, loadMetadata) -> new WhiteFlashTransition(node, loadMetadata, independentPixelOperation))
@@ -161,7 +161,7 @@ public class StandardTransitionEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory whipPanTransitionEffect(IndependentPixelOperation independentPixelOperation, BlurService blurService) {
+    public StandardEffectFactory whipPanTransitionEffect(IndependentPixelOperationImpl independentPixelOperation, BlurService blurService) {
         return StandardEffectFactory.builder()
                 .withFactory(request -> new WhipPanTransition(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(250)), independentPixelOperation, blurService))
                 .withRestoreFactory((node, loadMetadata) -> new WhipPanTransition(node, loadMetadata, independentPixelOperation, blurService))

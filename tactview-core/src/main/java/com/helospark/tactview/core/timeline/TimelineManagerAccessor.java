@@ -38,7 +38,7 @@ import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class TimelineManagerAccessor implements SaveLoadContributor {
@@ -47,14 +47,14 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
     private Logger logger;
 
     // stateless
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     private ClipFactoryChain clipFactoryChain;
     private EffectFactoryChain effectFactoryChain;
     private LinkClipRepository linkClipRepository;
     private TimelineChannelsState timelineChannelsState;
     private LongProcessRequestor longProcessRequestor;
 
-    public TimelineManagerAccessor(MessagingService messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
+    public TimelineManagerAccessor(MessagingServiceImpl messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
             TimelineChannelsState timelineChannelsState, LongProcessRequestor longProcessRequestor) {
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;

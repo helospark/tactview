@@ -17,15 +17,15 @@ import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
 
 @Component
 public class LinkClipRepository implements SaveLoadContributor {
     private Map<String, List<String>> linkedClips = new ConcurrentHashMap<>();
-    private MessagingService messagingService;
+    private MessagingServiceImpl messagingService;
     private ObjectMapper objectMapper;
 
-    public LinkClipRepository(MessagingService messagingService, @Qualifier("simpleObjectMapper") ObjectMapper objectMapper) {
+    public LinkClipRepository(MessagingServiceImpl messagingService, @Qualifier("simpleObjectMapper") ObjectMapper objectMapper) {
         this.messagingService = messagingService;
         this.objectMapper = objectMapper;
     }
