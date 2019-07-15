@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -37,7 +37,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Intege
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.jhlabs.math.Noise;
 
 // Adapted code from http://www.jhlabs.com/ip/filters/download.html CausticsFilter
@@ -45,7 +45,7 @@ public class CausticProceduralClip extends ProceduralVisualClip {
     double sin = Math.sin(0.1);
     double cos = Math.cos(0.1);
 
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
     private DoubleProvider scaleProvider;
     private DoubleProvider amountProvider;
@@ -59,7 +59,7 @@ public class CausticProceduralClip extends ProceduralVisualClip {
 
     private ColorProvider backgroundColorProvider;
 
-    public CausticProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
+    public CausticProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(visualMediaMetadata, interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -69,7 +69,7 @@ public class CausticProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(proceduralClip, this);
     }
 
-    public CausticProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
+    public CausticProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
         super(metadata, node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

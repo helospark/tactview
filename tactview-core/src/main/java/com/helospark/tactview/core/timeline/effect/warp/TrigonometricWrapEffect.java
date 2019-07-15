@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -16,10 +16,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 public class TrigonometricWrapEffect extends StatelessVideoEffect {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
     private DoubleProvider waveSpeedProvider;
     private DoubleProvider frequencyProviderX;
@@ -27,7 +27,7 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
     private DoubleProvider amplitudeProviderX;
     private DoubleProvider amplitudeProviderY;
 
-    public TrigonometricWrapEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
+    public TrigonometricWrapEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -37,7 +37,7 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public TrigonometricWrapEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2) {
+    public TrigonometricWrapEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
     }

@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.repository.selection.ChangeType;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
 import com.helospark.tactview.ui.javafx.repository.selection.EffectSelectionChangedMessage;
@@ -22,9 +22,9 @@ public class SelectedNodeRepository implements CleanableMode {
     private List<Node> selectedClips = new ArrayList<>();
     private List<Node> selectedEffects = new ArrayList<>();
 
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
 
-    public SelectedNodeRepository(MessagingServiceImpl messagingService) {
+    public SelectedNodeRepository(MessagingService messagingService) {
         this.messagingService = messagingService;
     }
 

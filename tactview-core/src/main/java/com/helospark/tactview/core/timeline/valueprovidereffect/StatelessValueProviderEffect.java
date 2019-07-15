@@ -2,7 +2,7 @@ package com.helospark.tactview.core.timeline.valueprovidereffect;
 
 import java.util.List;
 
-import com.helospark.tactview.core.CloneRequestMetadata;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.valueprovidereffect.impl.PivotPointValueProviderEffect;

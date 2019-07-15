@@ -4,9 +4,9 @@ import java.io.File;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -19,17 +19,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.lut.AbstractLut;
 
 public class LutEffect extends StatelessVideoEffect {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
     private LutProviderService lutProviderService;
     private DoubleProvider intensityProvider;
 
     private FileProvider lutFileProvider;
 
-    public LutEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation, LutProviderService lutProviderService) {
+    public LutEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
         this.lutProviderService = lutProviderService;
@@ -40,7 +40,7 @@ public class LutEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(lutEffect, this);
     }
 
-    public LutEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation, LutProviderService lutProviderService) {
+    public LutEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
         this.lutProviderService = lutProviderService;

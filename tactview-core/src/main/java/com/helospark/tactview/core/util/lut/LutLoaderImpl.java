@@ -14,9 +14,6 @@ public class LutLoaderImpl implements LutLoader {
         this.cubeLutLoader = cubeLutLoader;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.lut.LutLoader#load(java.lang.String)
-     */
     @Override
     public AbstractLut load(String filename) {
         if (filename.toLowerCase().endsWith(".cube")) {

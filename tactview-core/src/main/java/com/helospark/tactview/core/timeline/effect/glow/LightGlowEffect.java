@@ -3,10 +3,10 @@ package com.helospark.tactview.core.timeline.effect.glow;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -21,11 +21,11 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 public class LightGlowEffect extends StatelessVideoEffect {
     private OpenCVBasedGaussianBlur blurImplementation;
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
     private IntegerProvider kernelWidthProvider;
     private IntegerProvider kernelHeightProvider;
@@ -33,7 +33,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
     private DoubleProvider lightStrengthMultiplierProvider;
     private DoubleProvider blurMultiplierProvider;
 
-    public LightGlowEffect(TimelineInterval interval, OpenCVBasedGaussianBlur blur, IndependentPixelOperationImpl independentPixelOperation) {
+    public LightGlowEffect(TimelineInterval interval, OpenCVBasedGaussianBlur blur, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.blurImplementation = blur;
         this.independentPixelOperation = independentPixelOperation;
@@ -44,7 +44,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public LightGlowEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedGaussianBlur blurImplementation, IndependentPixelOperationImpl independentPixelOperation) {
+    public LightGlowEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedGaussianBlur blurImplementation, IndependentPixelOperation independentPixelOperation) {
         super(node, loadMetadata);
         this.blurImplementation = blurImplementation;
         this.independentPixelOperation = independentPixelOperation;

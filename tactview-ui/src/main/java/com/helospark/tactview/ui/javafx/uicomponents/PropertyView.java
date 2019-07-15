@@ -25,7 +25,7 @@ import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMes
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
@@ -61,7 +61,7 @@ public class PropertyView {
     private Map<String, EffectPropertyPage> effectProperties = new HashMap<>();
     private Map<String, EffectPropertyPage> clipProperties = new HashMap<>();
 
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
     private UiTimelineManager uiTimelineManager;
     private EffectPropertyPage shownEntries;
     private PropertyValueSetterChain propertyValueSetterChain;
@@ -74,7 +74,7 @@ public class PropertyView {
     @Slf4j
     private Logger logger;
 
-    public PropertyView(MessagingServiceImpl messagingService, UiTimelineManager uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain,
+    public PropertyView(MessagingService messagingService, UiTimelineManager uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain,
             DetailsGridChain detailsGridChain, NameToIdRepository nameToIdRepository, NotificationService notificationService, UiCommandInterpreterService commandInterpreter,
             EffectParametersRepository effectParametersRepository) {
         this.messagingService = messagingService;

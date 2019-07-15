@@ -8,9 +8,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.math.DoubleMath;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -24,7 +24,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorP
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 /**
  * 3 way color balance
@@ -48,12 +48,12 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
 
     private boolean preserveLuminosity = true;
 
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
     private BrignessContrastService brignessContrastService;
     private ColorizeService colorizeService;
     private ColorTemperatureService colorTemperatureService;
 
-    public ColorBalanceEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
+    public ColorBalanceEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BrignessContrastService brignessContrastService, ColorizeService colorizeService,
             ColorTemperatureService colorTemperatureService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
@@ -67,7 +67,7 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(colorBalance, this);
     }
 
-    public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2, BrignessContrastService brignessContrastService2,
+    public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2,
             ColorizeService colorizeService2, ColorTemperatureService colorTemperatureService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;

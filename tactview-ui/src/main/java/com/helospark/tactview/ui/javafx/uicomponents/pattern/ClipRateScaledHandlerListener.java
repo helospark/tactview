@@ -8,7 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
@@ -16,11 +16,11 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipRateScaledHandlerListener {
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
     private TimelineState timelineState;
     private TimelineManagerAccessor timelineManager;
 
-    public ClipRateScaledHandlerListener(MessagingServiceImpl messagingService, TimelineState timelineState, TimelineManagerAccessor timelineManager) {
+    public ClipRateScaledHandlerListener(MessagingService messagingService, TimelineState timelineState, TimelineManagerAccessor timelineManager) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.timelineManager = timelineManager;

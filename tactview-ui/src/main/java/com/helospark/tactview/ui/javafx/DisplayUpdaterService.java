@@ -16,7 +16,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
@@ -40,7 +40,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private UiTimelineManager uiTimelineManager;
     private GlobalDirtyClipManager globalDirtyClipManager;
     private List<DisplayUpdatedListener> displayUpdateListeners;
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
 
     // cache current frame
     private Image cacheCurrentImage;
@@ -54,7 +54,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private Canvas canvas;
 
     public DisplayUpdaterService(PlaybackController playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
-            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingServiceImpl messagingService) {
+            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService) {
         this.playbackController = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;

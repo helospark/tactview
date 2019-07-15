@@ -11,7 +11,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.DesSerFactory;
-import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.core.util.SavedContentAddable;

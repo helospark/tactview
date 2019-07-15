@@ -3,9 +3,9 @@ package com.helospark.tactview.core.timeline.effect.transition.floatout;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.blur.BlurRequest;
@@ -17,15 +17,15 @@ import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTrans
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 public class WhipPanTransition extends AbstractVideoTransitionEffect {
     private BlurService blurService;
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
     private IntegerProvider blurProvider;
 
-    public WhipPanTransition(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation, BlurService blurService) {
+    public WhipPanTransition(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BlurService blurService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
         this.blurService = blurService;
@@ -36,7 +36,7 @@ public class WhipPanTransition extends AbstractVideoTransitionEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public WhipPanTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation, BlurService blurService) {
+    public WhipPanTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation, BlurService blurService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
         this.blurService = blurService;

@@ -1,4 +1,4 @@
-package com.helospark.tactview.core;
+package com.helospark.tactview.core.save;
 
 public class LoadMetadata {
     private String fileLocation;

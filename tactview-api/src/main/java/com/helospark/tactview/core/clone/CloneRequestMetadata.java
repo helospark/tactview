@@ -1,4 +1,4 @@
-package com.helospark.tactview.core;
+package com.helospark.tactview.core.clone;
 
 public class CloneRequestMetadata {
     private boolean deepCloneId;

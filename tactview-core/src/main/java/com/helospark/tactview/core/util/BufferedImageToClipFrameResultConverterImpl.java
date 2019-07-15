@@ -12,15 +12,12 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class BufferedImageToClipFrameResultConverterImpl implements BufferedImageToClipFrameResultConverter {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
-    public BufferedImageToClipFrameResultConverterImpl(IndependentPixelOperationImpl independentPixelOperation) {
+    public BufferedImageToClipFrameResultConverterImpl(IndependentPixelOperation independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter#convertFromAbgr(java.awt.image.BufferedImage)
-     */
     @Override
     public ClipImage convertFromAbgr(BufferedImage bufferedImage) {
         int width = bufferedImage.getWidth();
@@ -55,9 +52,6 @@ public class BufferedImageToClipFrameResultConverterImpl implements BufferedImag
         return value;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter#convertFromIntArgb(java.awt.image.BufferedImage)
-     */
     @Override
     public ReadOnlyClipImage convertFromIntArgb(BufferedImage bufferedImage) {
         int width = bufferedImage.getWidth();
@@ -83,9 +77,6 @@ public class BufferedImageToClipFrameResultConverterImpl implements BufferedImag
         return frameResult;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter#convert(java.awt.image.BufferedImage)
-     */
     @Override
     public ReadOnlyClipImage convert(BufferedImage bufferedImage) {
         int width = bufferedImage.getWidth();

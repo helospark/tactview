@@ -17,9 +17,6 @@ public class ClasspathJsonParserImpl implements ClasspathJsonParser {
         this.classPathResourceReader = classPathResourceReader;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.ClasspathJsonParser#readClasspathFile(java.lang.String, com.fasterxml.jackson.core.type.TypeReference)
-     */
     @Override
     public <T> T readClasspathFile(String fileName, TypeReference<T> reference) {
         try {

@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -23,7 +23,7 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 public class ZoomEffect extends StatelessVideoEffect {
 
@@ -32,11 +32,11 @@ public class ZoomEffect extends StatelessVideoEffect {
 
     private BooleanProvider keepRatioProvider;
 
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
     private ScaleService scaleService;
     private FrameExtender frameExtender;
 
-    public ZoomEffect(TimelineInterval interval, ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperationImpl independentPixelOperation) {
+    public ZoomEffect(TimelineInterval interval, ScaleService scaleService, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.scaleService = scaleService;
         this.frameExtender = frameExtender;
@@ -48,7 +48,7 @@ public class ZoomEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public ZoomEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2, FrameExtender frameExtender, IndependentPixelOperationImpl independentPixelOperation) {
+    public ZoomEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {
         super(node, loadMetadata);
         this.scaleService = scaleService2;
         this.frameExtender = frameExtender;

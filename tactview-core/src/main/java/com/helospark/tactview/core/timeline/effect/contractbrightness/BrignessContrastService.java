@@ -3,13 +3,13 @@ package com.helospark.tactview.core.timeline.effect.contractbrightness;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Component
 public class BrignessContrastService {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
-    public BrignessContrastService(IndependentPixelOperationImpl independentPixelOperation) {
+    public BrignessContrastService(IndependentPixelOperation independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 

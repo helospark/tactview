@@ -11,17 +11,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
-import com.helospark.tactview.core.util.ClasspathJsonParserImpl;
+import com.helospark.tactview.core.util.ClasspathJsonParser;
 
 @Component
 public class LocalizedDetailRepository {
     private static final TypeReference<List<LocalizedDetailDomain>> TYPE_REFERENCE = new TypeReference<List<LocalizedDetailDomain>>() {
     };
     private Map<String, LocalizedDetailDomain> classToDetail = new HashMap<>();
-    private ClasspathJsonParserImpl classpathJsonParser;
+    private ClasspathJsonParser classpathJsonParser;
     private List<LocalizedDetailFileHolder> fileHolders;
 
-    public LocalizedDetailRepository(ClasspathJsonParserImpl classpathJsonParser, List<LocalizedDetailFileHolder> fileHolders) {
+    public LocalizedDetailRepository(ClasspathJsonParser classpathJsonParser, List<LocalizedDetailFileHolder> fileHolders) {
         this.classpathJsonParser = classpathJsonParser;
         this.fileHolders = fileHolders;
     }

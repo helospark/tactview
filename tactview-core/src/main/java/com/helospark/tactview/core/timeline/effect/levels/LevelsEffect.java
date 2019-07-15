@@ -3,9 +3,9 @@ package com.helospark.tactview.core.timeline.effect.levels;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -14,11 +14,11 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRange;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleRangeProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 // Some logic adapter from Gimp: https://github.com/GNOME/gimp/blob/e09e563a70fef5d7dd55e5e8d0e280348f1ef9d4/app/operations/gimpoperationlevels.c
 public class LevelsEffect extends StatelessVideoEffect {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
     private DoubleRangeProvider fromValueRangeProvider;
     private DoubleRangeProvider fromRedRangeProvider;
@@ -30,7 +30,7 @@ public class LevelsEffect extends StatelessVideoEffect {
     private DoubleRangeProvider toGreenRangeProvider;
     private DoubleRangeProvider toBlueRangeProvider;
 
-    public LevelsEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation) {
+    public LevelsEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
     }
@@ -40,7 +40,7 @@ public class LevelsEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(levelsEffect, this);
     }
 
-    public LevelsEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation) {
+    public LevelsEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
     }

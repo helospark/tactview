@@ -18,17 +18,11 @@ public class IndependentPixelOperationImpl implements IndependentPixelOperation 
     private ExecutorService workerExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.IndependentPixelOperation#createNewImageWithAppliedTransformation(com.helospark.tactview.core.timeline.image.ReadOnlyClipImage, com.helospark.tactview.core.util.SimplePixelTransformer)
-     */
     @Override
     public ClipImage createNewImageWithAppliedTransformation(ReadOnlyClipImage currentFrame, SimplePixelTransformer pixelTransformer) {
         return createNewImageWithAppliedTransformation(currentFrame, List.of(), pixelTransformer);
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.IndependentPixelOperation#createNewImageWithAppliedTransformation(com.helospark.tactview.core.timeline.image.ReadOnlyClipImage, java.util.List, com.helospark.tactview.core.util.SimplePixelTransformer)
-     */
     @Override
     public ClipImage createNewImageWithAppliedTransformation(ReadOnlyClipImage currentFrame, List<ThreadLocalProvider<?>> threadLocalProviders, SimplePixelTransformer pixelTransformer) {
         ClipImage resultFrame = ClipImage.sameSizeAs(currentFrame);
@@ -75,9 +69,6 @@ public class IndependentPixelOperationImpl implements IndependentPixelOperation 
         return resultFrame;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.IndependentPixelOperation#executePixelTransformation(int, int, java.util.function.BiConsumer)
-     */
     @Override
     public void executePixelTransformation(int width, int height, BiConsumer<Integer, Integer> consumer) {
         int taskSize = height / numberOfThreads;

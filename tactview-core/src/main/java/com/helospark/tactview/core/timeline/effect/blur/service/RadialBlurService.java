@@ -3,15 +3,15 @@ package com.helospark.tactview.core.timeline.effect.blur.service;
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Service
 public class RadialBlurService {
     final int img_bpp = 4;
 
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
-    public RadialBlurService(IndependentPixelOperationImpl independentPixelOperation) {
+    public RadialBlurService(IndependentPixelOperation independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 

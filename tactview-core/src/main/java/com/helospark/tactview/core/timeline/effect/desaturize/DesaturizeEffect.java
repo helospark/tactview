@@ -4,21 +4,21 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 public class DesaturizeEffect extends StatelessVideoEffect {
-    private IndependentPixelOperationImpl independentPixelOperations;
+    private IndependentPixelOperation independentPixelOperations;
 
-    public DesaturizeEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperations) {
+    public DesaturizeEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperations) {
         super(interval);
         this.independentPixelOperations = independentPixelOperations;
     }
@@ -28,7 +28,7 @@ public class DesaturizeEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public DesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperations2) {
+    public DesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations2) {
         super(node, loadMetadata);
         this.independentPixelOperations = independentPixelOperations2;
     }

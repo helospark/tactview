@@ -15,7 +15,7 @@ import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMes
 import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressType;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.DisplayUpdateRequestMessage;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
@@ -30,12 +30,12 @@ import javafx.scene.text.Text;
 public class LongProcessDisplayUpdater implements DisplayUpdatedListener {
     private static final int BORDER = 20;
     private LongProcessRequestor longProcessRequestor;
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
     private NameToIdRepository nameToIdRepository;
 
     private Map<String, LongProgressProcessDomain> currentLongProcesses = new ConcurrentHashMap<>();
 
-    public LongProcessDisplayUpdater(LongProcessRequestor longProcessRequestor, MessagingServiceImpl messagingService, NameToIdRepository nameToIdRepository) {
+    public LongProcessDisplayUpdater(LongProcessRequestor longProcessRequestor, MessagingService messagingService, NameToIdRepository nameToIdRepository) {
         this.longProcessRequestor = longProcessRequestor;
         this.messagingService = messagingService;
         this.nameToIdRepository = nameToIdRepository;

@@ -22,9 +22,6 @@ import com.helospark.tactview.core.util.cacheable.Cacheable;
 @Component
 public class BresenhemPixelProviderImpl implements BresenhemPixelProvider {
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#ellipsePixels(int, int, int, int)
-     */
     @Override
     @Cacheable
     public List<Vector2D> ellipsePixels(int xc, int yc, int width, int height) {
@@ -76,9 +73,6 @@ public class BresenhemPixelProviderImpl implements BresenhemPixelProvider {
         return points;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#linePixels(com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point, com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point)
-     */
     @Override
     @Cacheable
     public List<Vector2D> linePixels(Point startPoint, Point endPoint) {
@@ -162,9 +156,6 @@ public class BresenhemPixelProviderImpl implements BresenhemPixelProvider {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#nurbsPixels(com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon, boolean)
-     */
     @Override
     @Cacheable
     public List<Vector2D> nurbsPixels(Polygon polygon, boolean connect) {

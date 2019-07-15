@@ -7,11 +7,11 @@ import com.helospark.tactview.core.util.FilePathToInputStream;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
-public class RawBrushProviderImpl {
+public class RawBrushProvider {
     private BrushLoader brushLoader;
     private FilePathToInputStream filePathToInputStream;
 
-    public RawBrushProviderImpl(BrushLoader brushLoader, FilePathToInputStream filePathToInputStream) {
+    public RawBrushProvider(BrushLoader brushLoader, FilePathToInputStream filePathToInputStream) {
         this.brushLoader = brushLoader;
         this.filePathToInputStream = filePathToInputStream;
     }

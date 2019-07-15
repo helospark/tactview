@@ -8,23 +8,17 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
 public class ByteBufferToImageConverterImpl implements ByteBufferToImageConverter {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
-    public ByteBufferToImageConverterImpl(IndependentPixelOperationImpl independentPixelOperation) {
+    public ByteBufferToImageConverterImpl(IndependentPixelOperation independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.ByteBufferToImageConverter#frameToBufferedImage(com.helospark.tactview.core.timeline.image.ReadOnlyClipImage)
-     */
     @Override
     public BufferedImage frameToBufferedImage(ReadOnlyClipImage currentFrame) {
         return byteBufferToBufferedImage(currentFrame.getBuffer(), currentFrame.getWidth(), currentFrame.getHeight());
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.ByteBufferToImageConverter#byteBufferToBufferedImage(java.nio.ByteBuffer, int, int)
-     */
     @Override
     public BufferedImage byteBufferToBufferedImage(ByteBuffer byteBuffer, int width, int height) {
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -38,9 +32,6 @@ public class ByteBufferToImageConverterImpl implements ByteBufferToImageConverte
         return bufferedImage;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.ByteBufferToImageConverter#byteBufferToBufferedImageWithAlpha(java.nio.ByteBuffer, int, int)
-     */
     @Override
     public BufferedImage byteBufferToBufferedImageWithAlpha(ByteBuffer byteBuffer, int width, int height) {
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
@@ -55,9 +46,6 @@ public class ByteBufferToImageConverterImpl implements ByteBufferToImageConverte
         return bufferedImage;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.ByteBufferToImageConverter#printByte(byte)
-     */
     @Override
     public int printByte(byte b) {
         int value;

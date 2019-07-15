@@ -4,7 +4,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.DesSerFactory;
-import com.helospark.tactview.core.LoadMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class SquareDoubleInterpolatorFactory implements DesSerFactory<SquareDoubleInterpolator> {

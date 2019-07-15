@@ -21,7 +21,7 @@ import com.helospark.tactview.core.plugin.PluginMainClassProviders;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
@@ -158,7 +158,7 @@ public class JavaFXUiMain extends Application {
             Tab tab = tabFactory.createTabContent();
             tabPane.getTabs().add(tab);
         });
-        lightDi.getBean(MessagingServiceImpl.class).register(TabActiveRequest.class, message -> {
+        lightDi.getBean(MessagingService.class).register(TabActiveRequest.class, message -> {
             tabPane.getTabs()
                     .stream()
                     .filter(tab -> Objects.equals(tab.getId(), message.getEditorId()))

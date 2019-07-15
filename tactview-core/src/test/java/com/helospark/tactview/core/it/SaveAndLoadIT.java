@@ -24,7 +24,6 @@ import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.ClassPathResourceReader;
-import com.helospark.tactview.core.util.ClassPathResourceReaderImpl;
 
 @ExtendWith(TestResourceParameterResolver.class)
 public class SaveAndLoadIT {
@@ -128,7 +127,7 @@ public class SaveAndLoadIT {
     }
 
     private File copyTestFileFromClassPathToTmpDirectory() throws IOException {
-        ClassPathResourceReader fileReader = lightDi.getBean(ClassPathResourceReaderImpl.class);
+        ClassPathResourceReader fileReader = lightDi.getBean(ClassPathResourceReader.class);
         byte[] tmpData = fileReader.readClasspathFileToByteArray("sample_save.tvs");
 
         File tmpFile = File.createTempFile("sample_save", "tvs");

@@ -8,9 +8,6 @@ import com.helospark.lightdi.annotation.Component;
 @Component
 public class ClassPathResourceReaderImpl implements ClassPathResourceReader {
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.ClassPathResourceReader#readClasspathFile(java.lang.String)
-     */
     @Override
     public String readClasspathFile(String fileName) {
         try {
@@ -20,9 +17,6 @@ public class ClassPathResourceReaderImpl implements ClassPathResourceReader {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.ClassPathResourceReader#readClasspathFileToByteArray(java.lang.String)
-     */
     @Override
     public byte[] readClasspathFileToByteArray(String fileName) {
         try {

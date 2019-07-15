@@ -9,17 +9,17 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
 public class ScaledBrushProviderImpl implements ScaledBrushProvider {
     private static final Logger logger = LoggerFactory.getLogger(ScaledBrushProviderImpl.class);
-    private RawBrushProviderImpl rawBrushProvider;
+    private RawBrushProvider rawBrushProvider;
     private ScaleService scaleService;
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
-    public ScaledBrushProviderImpl(RawBrushProviderImpl rawBrushProvider, ScaleService scaleService, IndependentPixelOperationImpl independentPixelOperation) {
+    public ScaledBrushProviderImpl(RawBrushProvider rawBrushProvider, ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
         this.rawBrushProvider = rawBrushProvider;
         this.scaleService = scaleService;
         this.independentPixelOperation = independentPixelOperation;

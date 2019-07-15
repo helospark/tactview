@@ -3,13 +3,13 @@ package com.helospark.tactview.core.timeline.effect.blur.service;
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.image.ClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Service
 public class LinearBlurService {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
-    public LinearBlurService(IndependentPixelOperationImpl independentPixelOperation) {
+    public LinearBlurService(IndependentPixelOperation independentPixelOperation) {
         this.independentPixelOperation = independentPixelOperation;
     }
 

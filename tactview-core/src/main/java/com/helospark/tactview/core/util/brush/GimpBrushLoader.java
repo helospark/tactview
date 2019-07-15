@@ -15,9 +15,6 @@ public class GimpBrushLoader implements BrushLoader {
     public static final int GIMP_BRUSH_MAX_SIZE = 10000;
     public static final int GIMP_BRUSH_MAX_NAME = 256;
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.brush.BrushLoaderInterface#loadBrush(java.io.InputStream)
-     */
     @Override
     @Cacheable(cacheTimeInMilliseconds = 100000, size = 100)
     public GimpBrush loadBrush(InputStream inputStream) {

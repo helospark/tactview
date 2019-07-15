@@ -41,7 +41,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.water.CausticProcedur
 import com.helospark.tactview.core.util.BresenhemPixelProvider;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 import com.helospark.tactview.core.util.ClassPathResourceReader;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Configuration
 public class CoreClipFactoryChainItemConfiguration {
@@ -66,7 +66,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem singleColorProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem singleColorProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("singlecolor", "Single color",
                 request -> {
                     return new SingleColorProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
@@ -110,7 +110,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem gaussianNoiseProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem gaussianNoiseProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("gaussianNoise", "Gaussian noise",
                 request -> {
                     return new GaussianNoiseProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
@@ -165,7 +165,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem noiseProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem noiseProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("noise", "Noise",
                 request -> {
                     return new NoiseProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
@@ -176,7 +176,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem novaProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem novaProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("nova", "Nova",
                 request -> {
                     return new NovaProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
@@ -187,7 +187,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem checkerboardProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem checkerboardProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("checkerboard", "Checkerboard",
                 request -> {
                     return new CheckerBoardProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
@@ -220,7 +220,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem rectangleProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem rectangleProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("rectangle", "Rectangle",
                 request -> {
                     return new RectangleProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);
@@ -231,7 +231,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem particleSystemProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem particleSystemProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("particlesystem", "Particle system",
                 request -> {
                     return new ParticleSystemProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
@@ -242,7 +242,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem channelCopyProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem channelCopyProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("channelcopy", "Copy channel",
                 request -> {
                     return new ChannelCopyProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
@@ -253,7 +253,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem linesProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem linesProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("lines", "vertical/horizontal lines",
                 request -> {
                     return new LinesProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
@@ -308,7 +308,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem scriptProceduralClip(IndependentPixelOperationImpl independentPixelOperation, ScriptService scriptService,
+    public StandardProceduralClipFactoryChainItem scriptProceduralClip(IndependentPixelOperation independentPixelOperation, ScriptService scriptService,
             ClassPathResourceReader resourceReader) {
         return new StandardProceduralClipFactoryChainItem("scriptClip", "Script",
                 request -> {
@@ -320,7 +320,7 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem scriptProceduralClip(IndependentPixelOperationImpl independentPixelOperation) {
+    public StandardProceduralClipFactoryChainItem scriptProceduralClip(IndependentPixelOperation independentPixelOperation) {
         return new StandardProceduralClipFactoryChainItem("caustics", "Caustics",
                 request -> {
                     return new CausticProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), independentPixelOperation);

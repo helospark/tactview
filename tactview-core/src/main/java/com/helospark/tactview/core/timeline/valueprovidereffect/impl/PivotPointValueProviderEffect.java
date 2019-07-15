@@ -2,8 +2,8 @@ package com.helospark.tactview.core.timeline.valueprovidereffect.impl;
 
 import java.util.List;
 
-import com.helospark.tactview.core.CloneRequestMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;

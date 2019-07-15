@@ -20,9 +20,6 @@ public class MessagingServiceImpl implements MessagingService {
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
     private Map<Class<?>, Queue<MessageListener<?>>> messageListeners = new ConcurrentHashMap<>();
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.messaging.MessagingService#register(java.lang.Class, com.helospark.tactview.core.util.messaging.MessageListener)
-     */
     @Override
     public <T> void register(Class<T> messageType, MessageListener<T> listener) {
         messageListeners.compute(messageType, (a, value) -> {
@@ -37,9 +34,6 @@ public class MessagingServiceImpl implements MessagingService {
         });
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.messaging.MessagingService#sendMessage(T)
-     */
     @Override
     public <T> void sendMessage(T message) {
         logger.debug("Sending message {}", message);

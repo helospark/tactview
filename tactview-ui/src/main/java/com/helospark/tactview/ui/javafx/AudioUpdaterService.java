@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
@@ -23,7 +23,7 @@ public class AudioUpdaterService {
     private UiTimelineManager uiTimelineManager;
     private PlaybackController playbackController;
     private AudioStreamService audioStreamService;
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
     private AudioVisualizationComponent audioVisualizationComponent;
 
     private LinkedHashMap<BigDecimal, AudioData> buffer = new LinkedHashMap<>();
@@ -33,7 +33,7 @@ public class AudioUpdaterService {
     private volatile TimelinePosition lastPlayedTimelinePosition = TimelinePosition.ofZero();
     private volatile boolean playbackRunning = false;
 
-    public AudioUpdaterService(UiTimelineManager uiTimelineManager, PlaybackController playbackController, AudioStreamService audioStreamService, MessagingServiceImpl messagingService,
+    public AudioUpdaterService(UiTimelineManager uiTimelineManager, PlaybackController playbackController, AudioStreamService audioStreamService, MessagingService messagingService,
             AudioVisualizationComponent audioVisualizationComponent) {
         this.uiTimelineManager = uiTimelineManager;
         this.playbackController = playbackController;

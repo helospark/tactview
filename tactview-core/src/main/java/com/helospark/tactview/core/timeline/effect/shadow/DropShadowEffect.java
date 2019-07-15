@@ -3,10 +3,10 @@ package com.helospark.tactview.core.timeline.effect.shadow;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -23,11 +23,11 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.MathUtil;
 
 public class DropShadowEffect extends StatelessVideoEffect {
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
     private DoubleProvider shadowBlurXProvider;
     private DoubleProvider shadowBlurYProvider;
     private DoubleProvider shadowMultiplierProvider;
@@ -41,7 +41,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
     private BlurService blurService;
     private ScaleService scaleService;
 
-    public DropShadowEffect(TimelineInterval interval, IndependentPixelOperationImpl independentPixelOperation, BlurService blurService, ScaleService scaleService) {
+    public DropShadowEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, BlurService blurService, ScaleService scaleService) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
         this.blurService = blurService;
@@ -53,7 +53,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this);
     }
 
-    public DropShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperationImpl independentPixelOperation2, BlurService blurService2, ScaleService scaleService) {
+    public DropShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BlurService blurService2, ScaleService scaleService) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation2;
         this.blurService = blurService2;

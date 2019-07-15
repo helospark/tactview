@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 @Component

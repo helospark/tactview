@@ -5,10 +5,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.tactview.core.CloneRequestMetadata;
-import com.helospark.tactview.core.LoadMetadata;
 import com.helospark.tactview.core.ReflectionUtil;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -27,19 +27,19 @@ import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
-import com.helospark.tactview.core.util.IndependentPixelOperationImpl;
+import com.helospark.tactview.core.util.IndependentPixelOperation;
 import com.helospark.tactview.core.util.ThreadLocalProvider;
 
 public class BlendEffect extends StatelessVideoEffect {
     private List<BlendModeStrategy> strategies;
     private ScaleService scaleService;
-    private IndependentPixelOperationImpl independentPixelOperation;
+    private IndependentPixelOperation independentPixelOperation;
 
     private DependentClipProvider dependentClipProvider;
     private ValueListProvider<BlendModeValueListElement> blendModeProvider;
     private BooleanProvider scaleOnDifferentSizePrivder;
 
-    public BlendEffect(TimelineInterval interval, List<BlendModeStrategy> strategies, ScaleService scaleService, IndependentPixelOperationImpl independentPixelOperation) {
+    public BlendEffect(TimelineInterval interval, List<BlendModeStrategy> strategies, ScaleService scaleService, IndependentPixelOperation independentPixelOperation) {
         super(interval);
         this.strategies = strategies;
         this.scaleService = scaleService;
@@ -51,7 +51,7 @@ public class BlendEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(blendEffect, this);
     }
 
-    public BlendEffect(JsonNode node, LoadMetadata loadMetadata, List<BlendModeStrategy> strategies2, ScaleService scaleService2, IndependentPixelOperationImpl independentPixelOperation2) {
+    public BlendEffect(JsonNode node, LoadMetadata loadMetadata, List<BlendModeStrategy> strategies2, ScaleService scaleService2, IndependentPixelOperation independentPixelOperation2) {
         super(node, loadMetadata);
         this.strategies = strategies2;
         this.scaleService = scaleService2;

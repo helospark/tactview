@@ -25,7 +25,7 @@ import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMess
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.core.util.messaging.MessagingServiceImpl;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllImagePatternsMessage;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
@@ -42,7 +42,7 @@ public class ClipPatternDrawerListener {
     private Set<ClipPatternUpdateRequest> updateRequests = new ConcurrentSkipListSet<>();
     private volatile boolean running = true;
 
-    private MessagingServiceImpl messagingService;
+    private MessagingService messagingService;
     private TimelineImagePatternService timelineImagePatternService;
     private AudioImagePatternService audioImagePatternService;
     private TimelineState timelineState;
@@ -52,7 +52,7 @@ public class ClipPatternDrawerListener {
 
     private boolean patternDrawingEnabled = true;
 
-    public ClipPatternDrawerListener(MessagingServiceImpl messagingService, TimelineImagePatternService timelineImagePatternService,
+    public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
             TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
