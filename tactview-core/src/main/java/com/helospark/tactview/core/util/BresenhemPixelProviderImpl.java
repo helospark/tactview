@@ -134,9 +134,6 @@ public class BresenhemPixelProviderImpl implements BresenhemPixelProvider {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.BresenhemPixelProviderInterface#polygonPixels(com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon)
-     */
     @Override
     @Cacheable
     public List<Vector2D> polygonPixels(Polygon polygon) {

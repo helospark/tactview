@@ -27,12 +27,10 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.helospark</groupId>
       <artifactId>lightdi</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

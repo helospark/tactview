@@ -59,9 +59,6 @@ public class MessagingServiceImpl implements MessagingService {
         });
     }
 
-    /* (non-Javadoc)
-     * @see com.helospark.tactview.core.util.messaging.MessagingService#removeListener(java.lang.Class, java.lang.Object)
-     */
     @Override
     public void removeListener(Class<?> clazz, Object progressAdvancer) {
         messageListeners.get(clazz).remove(progressAdvancer);
