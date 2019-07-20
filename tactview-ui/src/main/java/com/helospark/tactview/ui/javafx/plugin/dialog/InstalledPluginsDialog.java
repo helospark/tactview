@@ -1,8 +1,12 @@
 package com.helospark.tactview.ui.javafx.plugin.dialog;
 
 import java.io.InputStream;
+import java.util.List;
 
+import com.helospark.tactview.core.plugin.PluginDescriptor;
 import com.helospark.tactview.core.plugin.PluginManager;
+import com.helospark.tactview.ui.javafx.plugin.RestartDialogOpener;
+import com.helospark.tactview.ui.javafx.plugin.service.PluginInstallationService;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -22,9 +26,14 @@ import javafx.stage.Stage;
 public class InstalledPluginsDialog {
     private Stage stage;
     private PluginManager pluginManager;
+    private RestartDialogOpener restartDialogOpener;
+    private PluginInstallationService pluginInstallationService;
 
-    public InstalledPluginsDialog(PluginManager pluginManager) {
+    public InstalledPluginsDialog(PluginManager pluginManager, PluginInstallationService pluginInstallationService, RestartDialogOpener restartDialogOpener) {
         this.pluginManager = pluginManager;
+        this.pluginInstallationService = pluginInstallationService;
+        this.restartDialogOpener = restartDialogOpener;
+
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
 
@@ -32,7 +41,7 @@ public class InstalledPluginsDialog {
         dialog.getStylesheets().add("stylesheet.css");
         stage = new Stage();
         stage.setHeight(400);
-        stage.setWidth(600);
+        stage.setWidth(400);
 
         GridPane pluginsGridPane = createGridPane();
 
@@ -44,6 +53,12 @@ public class InstalledPluginsDialog {
 
         HBox buttonBar = new HBox();
         buttonBar.getStyleClass().add("render-dialog-button-bar");
+
+        Button installButton = new Button("Install...");
+        installButton.setOnMouseClicked(e -> {
+            pluginInstallationService.installPlugin();
+        });
+        buttonBar.getChildren().add(installButton);
 
         Region emptyRegion = new Region();
         HBox.setHgrow(emptyRegion, Priority.ALWAYS);
@@ -68,36 +83,52 @@ public class InstalledPluginsDialog {
         pluginsGridPane.setHgap(15.0);
         pluginsGridPane.getStyleClass().add("render-dialog-grid-pane");
 
-        int index = 0;
-        for (var pluginDescriptor : pluginManager.getInstalledPlugins()) {
-            Image image = loadPluginLogo(pluginDescriptor.getLogo());
-            ImageView imageView = new ImageView(image);
-            imageView.setFitHeight(64);
-            imageView.setFitWidth(64);
+        List<PluginDescriptor> installedPlugins = pluginManager.getInstalledPlugins();
 
-            HBox pluginHbox = new HBox();
-            pluginHbox.getChildren().add(imageView);
-            pluginHbox.getStyleClass().add("plugin-list-element");
+        if (installedPlugins.isEmpty()) {
+            pluginsGridPane.add(new Text("You have no plugins installed yet"), 0, 0);
+        } else {
+            int index = 0;
+            for (var pluginDescriptor : installedPlugins) {
+                Image image = loadPluginLogo(pluginDescriptor.getLogo());
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(64);
+                imageView.setFitWidth(64);
 
-            VBox pluginDescriptionVbox = new VBox();
-            Text pluginListTitle = new Text(pluginDescriptor.getName());
-            pluginListTitle.getStyleClass().add("plugin-list-title");
+                HBox pluginHbox = new HBox(20);
+                pluginHbox.getChildren().add(imageView);
+                pluginHbox.getStyleClass().add("plugin-list-element");
 
-            Text pluginListDescription = new Text(pluginDescriptor.getDescription());
-            pluginListDescription.getStyleClass().add("plugin-list-description");
+                VBox pluginDescriptionVbox = new VBox();
+                Text pluginListTitle = new Text(pluginDescriptor.getName());
+                pluginListTitle.getStyleClass().add("plugin-list-title");
 
-            Text pluginListAuthor = new Text(pluginDescriptor.getAuthor());
-            pluginListAuthor.getStyleClass().add("plugin-list-author");
+                Text pluginListDescription = new Text(pluginDescriptor.getDescription());
+                pluginListDescription.getStyleClass().add("plugin-list-description");
 
-            pluginDescriptionVbox.getChildren().add(pluginListTitle);
-            pluginDescriptionVbox.getChildren().add(pluginListDescription);
-            pluginDescriptionVbox.getChildren().add(pluginListAuthor);
+                Text pluginListAuthor = new Text(pluginDescriptor.getAuthor());
+                pluginListAuthor.getStyleClass().add("plugin-list-author");
 
-            pluginHbox.getChildren().add(pluginDescriptionVbox);
+                pluginDescriptionVbox.getChildren().add(pluginListTitle);
+                pluginDescriptionVbox.getChildren().add(pluginListDescription);
+                pluginDescriptionVbox.getChildren().add(pluginListAuthor);
 
-            pluginsGridPane.add(pluginHbox, 0, index++);
+                pluginHbox.getChildren().add(pluginDescriptionVbox);
+
+                VBox operationsBox = new VBox();
+
+                Button deletePluginButton = new Button("Delete");
+                deletePluginButton.setOnMouseClicked(e -> {
+                    pluginManager.deletePlugin(pluginDescriptor.getId());
+                    restartDialogOpener.confirmRestart("Plugin successfully deleted.");
+                });
+
+                operationsBox.getChildren().add(deletePluginButton);
+                pluginHbox.getChildren().add(operationsBox);
+
+                pluginsGridPane.add(pluginHbox, 0, index++);
+            }
         }
-
         return pluginsGridPane;
     }
 

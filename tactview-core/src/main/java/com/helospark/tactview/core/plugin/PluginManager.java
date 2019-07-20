@@ -29,12 +29,14 @@ public class PluginManager {
         try {
             PluginDescriptor pluginDescriptor = objectMapper.readValue(ZipUtil.unpackEntry(file, PLUGIN_DESCRIPTOR_JSON), PluginDescriptor.class);
 
+            validatePluginDescriptor(pluginDescriptor);
+
             File pluginDirectory = new File(pluginDirectoryPath);
             if (!pluginDirectory.exists()) {
                 pluginDirectory.mkdirs();
             }
 
-            File thisPluginDirectory = new File(pluginDirectory, pluginDescriptor.getName());
+            File thisPluginDirectory = new File(pluginDirectory, pluginDescriptor.getId());
 
             if (!thisPluginDirectory.exists()) {
                 thisPluginDirectory.mkdirs();
@@ -57,6 +59,24 @@ public class PluginManager {
         }
     }
 
+    private void validatePluginDescriptor(PluginDescriptor pluginDescriptor) {
+        if (pluginDescriptor.getId() == null) {
+            throw new RuntimeException("Plugin ID cannot be null");
+        }
+        if (pluginDescriptor.getId().matches("[a-zA-Z0-9\\-]")) {
+            throw new RuntimeException("Plugin ID contains invalid characters");
+        }
+        if (pluginDescriptor.getName() == null) {
+            throw new RuntimeException("Plugin name cannot be null");
+        }
+        if (pluginDescriptor.getDescription() == null) {
+            throw new RuntimeException("Plugin description cannot be null");
+        }
+        if (pluginDescriptor.getVersion() == null) {
+            throw new RuntimeException("Plugin version cannot be null");
+        }
+    }
+
     private boolean isInstallationValid(File thisPluginDirectory) {
         boolean hasJarFile = false;
         for (File file : thisPluginDirectory.listFiles()) {
@@ -74,15 +94,31 @@ public class PluginManager {
     public List<PluginDescriptor> getInstalledPlugins() {
         File pluginDirectory = new File(pluginDirectoryPath);
 
+        if (!pluginDirectory.exists()) {
+            return List.of();
+        }
+
         return Arrays.stream(pluginDirectory.listFiles())
                 .filter(a -> a.isDirectory())
-                .map(a -> {
-                    try {
-                        return objectMapper.readValue(new File(a, PLUGIN_DESCRIPTOR_JSON), PluginDescriptor.class);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toList());
+                .map(a -> readMetadata(a))
+                .collect(Collectors.toList());
+    }
+
+    public void deletePlugin(String id) {
+        try {
+            File pluginDirectory = new File(pluginDirectoryPath, id);
+            FileUtils.deleteDirectory(pluginDirectory);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private PluginDescriptor readMetadata(File a) {
+        try {
+            return objectMapper.readValue(new File(a, PLUGIN_DESCRIPTOR_JSON), PluginDescriptor.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

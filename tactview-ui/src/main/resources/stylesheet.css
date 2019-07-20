@@ -397,3 +397,25 @@
 .size-drop-down > .list-cell {
     -fx-text-overrun: clip;
 }
+
+<!-- plugins dialog -->
+
+.plugin-list-element {
+    -fx-stroke: black;
+    -fx-stroke-width: 1;
+    -fx-pref-width: 400px;
+}
+
+.plugin-list-title {
+    -fx-font-size: 14pt;
+    -fx-font-weight bolder;
+}
+
+.plugin-list-description {
+    -fx-font-size: 10pt;
+}
+
+.plugin-list-author {
+    -fx-font-size: 8pt;
+    -fx-font-style: italic;
+}

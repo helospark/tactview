@@ -1,11 +1,20 @@
 package com.helospark.tactview.core.plugin;
 
 public class PluginDescriptor {
+    private String id;
     private String name;
     private String version;
     private String logo;
     private String description;
     private String author;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getDescription() {
         return description;
