@@ -3,6 +3,25 @@ package com.helospark.tactview.core.plugin;
 public class PluginDescriptor {
     private String name;
     private String version;
+    private String logo;
+    private String description;
+    private String author;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
     public String getVersion() {
         return version;
@@ -18,6 +37,14 @@ public class PluginDescriptor {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
     }
 
 }
