@@ -23,12 +23,14 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class MediaCache {
     private ConcurrentHashMap<String, NavigableMap<Integer, MediaHashValue>> backCache = new ConcurrentHashMap<>();
     private Set<CacheRemoveDomain> toRemove = new ConcurrentSkipListSet<>();
     private MemoryManager memoryManager;
+    private MessagingService messagingService;
 
     @Slf4j
     private Logger logger;
@@ -37,39 +39,24 @@ public class MediaCache {
     private volatile long maximumSizeHint;
     private volatile boolean running = true;
 
-    public MediaCache(MemoryManager memoryManager, @Value("${mediacache.max.size}") Long maximumSize) {
+    public MediaCache(MemoryManager memoryManager, @Value("${mediacache.max.size}") Long maximumSize, MessagingService messagingService) {
         this.memoryManager = memoryManager;
         this.maximumSizeHint = maximumSize;
+        this.messagingService = messagingService;
     }
 
     @PostConstruct
     public void init() {
+        messagingService.register(MemoryPressureMessage.class, message -> {
+            doImmediateCleanup(0);
+        });
+
         new Thread(() -> {
             try {
                 while (running) {
                     ThreadSleep.sleep(1000);
                     if (approximateSize >= maximumSizeHint * 0.8) {
-                        TreeSet<CacheRemoveDomain> elements = new TreeSet<>(toRemove);
-                        while (approximateSize > maximumSizeHint * 0.5) {
-                            if (elements.isEmpty()) {
-                                logger.debug("ToRemove elements is empty");
-                                break;
-                            }
-                            CacheRemoveDomain firstElement = elements.pollFirst();
-                            //                            logger.debug("Trying to clean {}", firstElement);
-                            if (firstElement != null) {
-                                NavigableMap<Integer, MediaHashValue> line = backCache.get(firstElement.key);
-                                if (line != null) {
-                                    MediaHashValue removedElement = line.remove(firstElement.value.frameStart);
-                                    if (removedElement != null) {
-                                        for (var buffer : removedElement.frames) {
-                                            returnBuffer(buffer);
-                                        }
-                                        logger.debug("Removed buffer {} {}, current buffer size: {}", firstElement.key, removedElement, approximateSize);
-                                    }
-                                }
-                            }
-                        }
+                        doImmediateCleanup((int) (maximumSizeHint * 0.5));
                     } else {
                         logger.debug("Mediacache is within size limits, fill ratio {}", (double) approximateSize / maximumSizeHint);
                     }
@@ -80,6 +67,30 @@ public class MediaCache {
 
         }, "cache-cleaner-thread").start();
 
+    }
+
+    private void doImmediateCleanup(int size) {
+        TreeSet<CacheRemoveDomain> elements = new TreeSet<>(toRemove);
+        while (approximateSize >= maximumSizeHint * 0.5) {
+            if (elements.isEmpty()) {
+                logger.debug("ToRemove elements is empty");
+                break;
+            }
+            CacheRemoveDomain firstElement = elements.pollFirst();
+            //                            logger.debug("Trying to clean {}", firstElement);
+            if (firstElement != null) {
+                NavigableMap<Integer, MediaHashValue> line = backCache.get(firstElement.key);
+                if (line != null) {
+                    MediaHashValue removedElement = line.remove(firstElement.value.frameStart);
+                    if (removedElement != null) {
+                        for (var buffer : removedElement.frames) {
+                            returnBuffer(buffer);
+                        }
+                        logger.debug("Removed buffer {} {}, current buffer size: {}", firstElement.key, removedElement, approximateSize);
+                    }
+                }
+            }
+        }
     }
 
     @PreDestroy

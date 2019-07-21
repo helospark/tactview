@@ -25,6 +25,7 @@ import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.DebugImageRenderer;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 import sun.misc.Unsafe;
 
@@ -37,6 +38,8 @@ public class MemoryManagerImpl implements MemoryManager {
     private Logger logger;
     private boolean debug;
 
+    private MessagingService messagingService;
+
     private Unsafe unsafe;
 
     private AtomicLong currentSize = new AtomicLong(0);
@@ -44,10 +47,11 @@ public class MemoryManagerImpl implements MemoryManager {
 
     private boolean firstOutOfMemoryError = true;
 
-    public MemoryManagerImpl(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug) {
+    public MemoryManagerImpl(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug, MessagingService messagingService) {
         this.maximumSizeHint = maximumSizeHint;
         this.unsafe = getUnsafe();
         this.debug = debug;
+        this.messagingService = messagingService;
     }
 
     @PostConstruct
@@ -167,7 +171,6 @@ public class MemoryManagerImpl implements MemoryManager {
         while (result.size() < count && (element = freeBuffers.buffers.poll()) != null) {
             result.add(element);
         }
-        logger.debug("{} {} buffer requested, from this {} was server from free buffer map, rest are newly allocated", count, bytes, result.size());
         int remainingElements = count - result.size();
         if (remainingElements > 0) {
             freeBuffers.lastNeededAnUpdate = System.currentTimeMillis();
@@ -179,6 +182,7 @@ public class MemoryManagerImpl implements MemoryManager {
                 resultBuffer = ByteBuffer.allocateDirect(bytes);
             } catch (OutOfMemoryError e) {
                 logger.warn("No more memory left, trying to free some", e);
+                messagingService.sendMessage(new MemoryPressureMessage());
                 doForcefulCleanup(maximumSizeHint * 0.3);
                 try {
                     resultBuffer = ByteBuffer.allocateDirect(bytes);
@@ -192,6 +196,7 @@ public class MemoryManagerImpl implements MemoryManager {
             }
             resultBuffer.order(ByteOrder.nativeOrder());
             result.add(resultBuffer);
+            logger.debug("{} {} buffer requested, from this {} was server from free buffer map, rest are newly allocated", count, bytes, result.size());
         }
 
         if (debug) {
@@ -200,12 +205,16 @@ public class MemoryManagerImpl implements MemoryManager {
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Returned buffers are: {}", result.stream()
-                    .map(a -> System.identityHashCode(a))
-                    .collect(Collectors.toList()));
+            logger.debug("Requested buffers are: {}", bufferDebugString(result));
         }
 
         return result;
+    }
+
+    private List<Integer> bufferDebugString(List<ByteBuffer> result) {
+        return result.stream()
+                .map(a -> System.identityHashCode(a))
+                .collect(Collectors.toList());
     }
 
     @Override
