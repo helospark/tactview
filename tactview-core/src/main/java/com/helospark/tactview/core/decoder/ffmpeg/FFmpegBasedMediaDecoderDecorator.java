@@ -32,7 +32,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedMediaDecoderDecorator.class);
-    private static final int CHUNK_SIZE = 25;
+    private static final int CHUNK_SIZE = 40;
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
