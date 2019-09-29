@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Value;
+import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
@@ -21,8 +23,11 @@ public class UiCommandInterpreterService {
     private Deque<UiCommand> commandHistory = new ConcurrentLinkedDeque<>();
     private Deque<UiCommand> redoHistory = new ConcurrentLinkedDeque<>();
 
-    public UiCommandInterpreterService(DirtyRepository dirtyRepository) {
+    private int historySize;
+
+    public UiCommandInterpreterService(DirtyRepository dirtyRepository, @Value("${commandinterpreter.history.size}") int redoSize) {
         this.dirtyRepository = dirtyRepository;
+        this.historySize = 20;
     }
 
     public <T extends UiCommand> T synchronousSend(T uiCommand) {
@@ -32,6 +37,12 @@ public class UiCommandInterpreterService {
         uiCommand.execute();
         if (uiCommand.isRevertable()) {
             commandHistory.push(uiCommand);
+            while (commandHistory.size() > historySize) {
+                UiCommand command = commandHistory.pollFirst();
+                if (command != null) {
+                    command.preDestroy();
+                }
+            }
         }
         return uiCommand;
     }
@@ -76,5 +87,10 @@ public class UiCommandInterpreterService {
             logger.error("Unable to redo command {}", e);
             return null;
         });
+    }
+
+    @PreferenceValue(name = "Revert history size", defaultValue = "20", group = "Clip")
+    public void setPreferenceValue(int historySize) {
+        this.historySize = historySize;
     }
 }

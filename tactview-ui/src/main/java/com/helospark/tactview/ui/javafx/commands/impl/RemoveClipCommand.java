@@ -30,4 +30,9 @@ public class RemoveClipCommand implements UiCommand {
         timelineManager.addClip(removedFromChannel, removedClip);
     }
 
+    @Override
+    public void preDestroy() {
+        removedClip.preDestroy();
+    }
+
 }

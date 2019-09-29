@@ -30,4 +30,9 @@ public class RemoveEffectCommand implements UiCommand {
         timelineManager.addEffectForClip(removedFromClip, removedEffect);
     }
 
+    @Override
+    public void preDestroy() {
+        removedEffect.preDestroy();
+    }
+
 }

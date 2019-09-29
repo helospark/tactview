@@ -1,11 +1,14 @@
 package com.helospark.tactview.ui.javafx;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -17,6 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
+import com.helospark.lightdi.properties.Environment;
+import com.helospark.lightdi.properties.PropertySourceHolder;
 import com.helospark.tactview.core.plugin.PluginMainClassProviders;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -396,6 +401,7 @@ public class JavaFXUiMain extends Application {
         allClasses.add(MainApplicationConfiguration.class);
         allClasses.addAll(PluginMainClassProviders.getPluginClasses());
         lightDi = new LightDiContext(configuration);
+        lightDi.addPropertySource(createInitialPropertySource());
         lightDi.loadDependencies(List.of(), allClasses);
 
         uiTimeline = lightDi.getBean(UiTimeline.class);
@@ -417,6 +423,18 @@ public class JavaFXUiMain extends Application {
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
         renderService = lightDi.getBean(RenderDialogOpener.class);
         lightDi.eagerInitAllBeans();
+    }
+
+    private PropertySourceHolder createInitialPropertySource() {
+        Map<String, String> propertyMap = new HashMap<>();
+        try {
+            propertyMap.put("tactview.installation.folder", new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParent());
+        } catch (Throwable t) {
+            System.out.println("Cannot determine installation location");
+            t.printStackTrace();
+        }
+
+        return new PropertySourceHolder(Environment.ENVIRONMENT_PROPERTY_ORDER + 1, propertyMap);
     }
 
     public static void main(String[] args) {

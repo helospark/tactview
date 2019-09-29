@@ -41,7 +41,7 @@ import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMess
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
-public class TimelineManagerAccessor implements SaveLoadContributor {
+public class TimelineManagerAccessor implements SaveLoadContributor, TimelineManagerAccessorInterface {
 
     @Slf4j
     private Logger logger;
@@ -443,6 +443,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor {
         }
     }
 
+    @Override
     public Optional<StatelessEffect> findEffectById(String effectId) {
         return findClipForEffect(effectId).flatMap(clip -> clip.getEffect(effectId));
     }

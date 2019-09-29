@@ -410,4 +410,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return renderOffset;
     }
 
+    public void preDestroy() {
+    }
+
 }

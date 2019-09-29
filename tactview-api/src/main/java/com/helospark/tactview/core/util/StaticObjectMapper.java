@@ -38,4 +38,5 @@ public class StaticObjectMapper {
             throw new RuntimeException(e);
         }
     }
+
 }

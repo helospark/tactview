@@ -94,6 +94,9 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
 
     }
 
+    public void preDestroy() {
+    }
+
     public List<String> getClipDependency(TimelinePosition position) {
         return new ArrayList<>();
     }

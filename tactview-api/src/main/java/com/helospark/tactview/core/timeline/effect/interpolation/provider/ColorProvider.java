@@ -10,9 +10,9 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class ColorProvider extends CompositeKeyframeableEffect {
-    DoubleProvider redProvider;
-    DoubleProvider greenProvider;
-    DoubleProvider blueProvider;
+    protected DoubleProvider redProvider;
+    protected DoubleProvider greenProvider;
+    protected DoubleProvider blueProvider;
 
     public ColorProvider(DoubleProvider redProvider, DoubleProvider greenProvider, DoubleProvider blueProvider) {
         super(List.of(redProvider, greenProvider, blueProvider));

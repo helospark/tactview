@@ -13,4 +13,8 @@ public interface UiCommand {
     public default boolean isRevertable() {
         return true;
     }
+
+    public default void preDestroy() {
+
+    }
 }
