@@ -4,15 +4,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.save.LoadMetadata;
 
 @Component
 public class ClipFactoryChain {
-    private List<ClipFactory> clipFactoryChain;
+    private LightDiContext context;
 
-    public ClipFactoryChain(List<ClipFactory> clipFactoryChain) {
-        this.clipFactoryChain = clipFactoryChain;
+    public ClipFactoryChain(LightDiContext context) {
+        this.context = context;
     }
 
     public List<TimelineClip> createClips(AddClipRequest request) {
@@ -24,7 +25,7 @@ public class ClipFactoryChain {
     }
 
     private List<ClipFactory> findFactory(AddClipRequest request) {
-        return clipFactoryChain
+        return context.getListOfBeans(ClipFactory.class)
                 .parallelStream()
                 .filter(factory -> factory.doesSupport(request))
                 .collect(Collectors.toList());
@@ -32,7 +33,8 @@ public class ClipFactoryChain {
 
     public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata metadata) {
         String factoryId = savedClip.get("creatorFactoryId").asText();
-        ClipFactory foundFactory = clipFactoryChain.stream()
+        ClipFactory foundFactory = context.getListOfBeans(ClipFactory.class)
+                .stream()
                 .filter(factory -> factory.getId().equals(factoryId))
                 .findFirst()
                 .orElseThrow();

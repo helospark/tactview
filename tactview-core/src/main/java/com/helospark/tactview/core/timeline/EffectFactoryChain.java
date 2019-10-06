@@ -1,8 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
@@ -12,16 +11,18 @@ import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
 
 @Component
 public class EffectFactoryChain {
-    private List<EffectFactory> effectFactoryChain;
     private LongProcessRequestor longProcessRequestor;
+    private LightDiContext context;
 
-    public EffectFactoryChain(List<EffectFactory> effectFactoryChain, LongProcessRequestor longProcessRequestor) {
-        this.effectFactoryChain = effectFactoryChain;
+    public EffectFactoryChain(LongProcessRequestor longProcessRequestor,
+            LightDiContext context) {
+        this.context = context;
         this.longProcessRequestor = longProcessRequestor;
     }
 
     public StatelessEffect createEffect(CreateEffectRequest request) {
-        EffectFactory factory = effectFactoryChain.stream()
+        EffectFactory factory = context.getListOfBeans(EffectFactory.class)
+                .stream()
                 .filter(effectFactory -> effectFactory.doesSupport(request))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No factory for " + request));
@@ -41,7 +42,8 @@ public class EffectFactoryChain {
 
     public StatelessEffect restoreEffect(JsonNode node, LoadMetadata loadMetadata) {
         String factoryId = node.get("factoryId").asText();
-        EffectFactory factory = effectFactoryChain.stream()
+        EffectFactory factory = context.getListOfBeans(EffectFactory.class)
+                .stream()
                 .filter(effectFactory -> effectFactory.getId().equals(factoryId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No factory for " + factoryId));

@@ -151,6 +151,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         messagingService.sendMessage(new ClipRemovedMessage(clipId, originalInterval));
     }
 
+    @Override
     public Optional<TimelineClip> findClipById(String id) {
         return timelineChannelsState.channels
                 .stream()
@@ -200,6 +201,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
     }
 
+    @Override
     public Optional<TimelineClip> findClipForEffect(String effectId) {
         return timelineChannelsState.channels.stream()
                 .map(channel -> channel.findClipContainingEffect(effectId))
@@ -680,6 +682,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
     }
 
+    @Override
     public Optional<Integer> findChannelIndexForClipId(String clipId) {
         return findChannelForClipId(clipId)
                 .flatMap(a -> findChannelIndex(a.getId()));
