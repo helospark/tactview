@@ -146,20 +146,19 @@ extern "C" {
         /* find the encoder */
         *codec = avcodec_find_encoder(codec_id);
         if (!(*codec)) {
-            fprintf(stderr, "Could not find encoder for '%s'\n",
-                    avcodec_get_name(codec_id));
+            std::cout << "[ERROR] Could not find encoder for '" << avcodec_get_name(codec_id) << "'" << std::endl;
             return -1;
         }
 
         ost->st = avformat_new_stream(oc, NULL);
         if (!ost->st) {
-            fprintf(stderr, "Could not allocate stream\n");
+            std::cout << "[ERROR] Could not allocate stream" << std::endl;
             return -1;
         }
         ost->st->id = oc->nb_streams-1;
         c = avcodec_alloc_context3(*codec);
         if (!c) {
-            fprintf(stderr, "Could not alloc an encoding context\n");
+            std::cout << "[ERROR] Could not alloc an encoding context" << std::endl;
             return -1;
         }
         ost->enc = c;
@@ -211,20 +210,19 @@ extern "C" {
         /* find the encoder */
         *codec = avcodec_find_encoder(codec_id);
         if (!(*codec)) {
-            fprintf(stderr, "Could not find encoder for '%s'\n",
-                    avcodec_get_name(codec_id));
+            std::cout << "[ERROR] Could not find encoder for '" << avcodec_get_name(codec_id) << "'" << std::endl;
             return -1;
         }
 
         ost->st = avformat_new_stream(oc, NULL);
         if (!ost->st) {
-            fprintf(stderr, "Could not allocate stream\n");
+            std::cout << "[ERROR] Could not allocate stream" << std::endl;
             return -1;
         }
         ost->st->id = oc->nb_streams-1;
         c = avcodec_alloc_context3(*codec);
         if (!c) {
-            fprintf(stderr, "Could not alloc an encoding context\n");
+            std::cout << "[ERROR] Could not alloc an encoding context" << std::endl;
             return -1;
         }
         ost->enc = c;
@@ -278,7 +276,7 @@ extern "C" {
         int ret;
 
         if (!frame) {
-            fprintf(stderr, "Error allocating an audio frame\n");
+            std::cout << "[ERROR] Error allocating an audio frame" << std::endl;
             return NULL;
         }
 
@@ -290,7 +288,7 @@ extern "C" {
         if (nb_samples) {
             ret = av_frame_get_buffer(frame, 0);
             if (ret < 0) {
-                fprintf(stderr, "Error allocating an audio buffer\n");
+                std::cout << "[ERROR] Error allocating an audio buffer" << std::endl;
                 return NULL;
             }
         }
@@ -312,7 +310,7 @@ extern "C" {
         ret = avcodec_open2(c, codec, &opt);
         av_dict_free(&opt);
         if (ret < 0) {
-            fprintf(stderr, "Could not open audio codec:");
+            std::cout << "[ERROR] Could not open audio codec:" << std::endl;
             return -1;
         }
 
@@ -353,7 +351,7 @@ extern "C" {
         /* create resampler context */
             ost->swr_ctx = swr_alloc();
             if (!ost->swr_ctx) {
-                fprintf(stderr, "Could not allocate resampler context\n");
+                std::cout << "[ERROR] Could not allocate resampler context" << std::endl;
                 return -1;
             }
 
@@ -369,7 +367,7 @@ extern "C" {
 
             /* initialize the resampling context */
             if ((ret = swr_init(ost->swr_ctx)) < 0) {
-                fprintf(stderr, "Failed to initialize the resampling context\n");
+                std::cout << "[ERROR] Failed to initialize the resampling context" << std::endl;
                 return -1;
             }
             return 0;
@@ -435,7 +433,7 @@ extern "C" {
                               ost->frame->data, dst_nb_samples,
                               (const uint8_t **)frame->data, frame->nb_samples);
             if (ret < 0) {
-                fprintf(stderr, "Error while converting %d\n", ret);
+                std::cout << "[ERROR] Error while converting " << ret << std::endl;
                 return ret;
             }
             frame = ost->frame;
@@ -450,14 +448,14 @@ extern "C" {
 
         ret = avcodec_encode_audio2(c, &pkt, frame, &got_packet);
         if (ret < 0) {
-            fprintf(stderr, "Error encoding audio frame: %d\n",ret);
+            std::cout << "[ERROR] Error encoding audio frame: " << ret << std::endl;
             return ret;
         }
 
         if (got_packet) {
             ret = write_frame(oc, &c->time_base, ost->st, &pkt);
             if (ret < 0) {
-                fprintf(stderr, "Error while writing audio frame: %d \n", ret);
+                std::cout << "[ERROR] Error while writing audio frame: " << ret << std::endl;
                 return ret;
             }
             av_free_packet(&pkt);
@@ -485,7 +483,7 @@ extern "C" {
         /* allocate the buffers for the frame data */
         ret = av_frame_get_buffer(picture, 32);
         if (ret < 0) {
-            fprintf(stderr, "Could not allocate frame data.\n");
+            std::cout << "[ERROR] Could not allocate frame data." << std::endl;
             return NULL;
         }
 
@@ -509,14 +507,14 @@ extern "C" {
         ret = avcodec_open2(c, codec, &opt);
         av_dict_free(&opt);
         if (ret < 0) {
-            fprintf(stderr, "Could not open video codec: %s\n", request->fileName);
+            std::cout << "[ERROR] Could not open video codec for " << request->fileName << ", statuscode: " << ret << std::endl;
             return -1;
         }
 
         /* allocate and init a re-usable frame */
         ost->frame = alloc_picture(videoPixelFormat, c->width, c->height);
         if (!ost->frame) {
-            fprintf(stderr, "Could not allocate video frame\n");
+            std::cout << "[ERROR] Could not allocate video frame" << std::endl;
             return -1;
         }
 
@@ -529,7 +527,7 @@ extern "C" {
         /* copy the stream parameters to the muxer */
         ret = avcodec_parameters_from_context(ost->st->codecpar, c);
         if (ret < 0) {
-            fprintf(stderr, "Could not copy the stream parameters\n");
+            std::cout << "[ERROR] Could not copy the stream parameters" << std::endl;
             return -1;
         }
         return 0;
@@ -575,7 +573,7 @@ extern "C" {
         /* encode the image */
         ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
         if (ret < 0) {
-            fprintf(stderr, "Error encoding video frame: \n");
+            std::cout << "[ERROR] Error encoding video frame:" << std::endl;
             return -1;
         }
 
@@ -587,7 +585,7 @@ extern "C" {
         }
 
         if (ret < 0) {
-            fprintf(stderr, "Error while writing video frame: \n");
+            std::cout << "[ERROR] Error while writing video frame" << std::endl;
             return -1;
         }
 
@@ -615,6 +613,7 @@ extern "C" {
     /* media file output */
 
     EXPORTED int initEncoder(FFmpegInitEncoderRequest* request) {
+        std::cout << "[INFO] Initializing encoder " << request->actualWidth << " " << request->actualHeight << std::endl;
         av_register_all();
         AVFormatContext *oc;
         AVOutputFormat *fmt;
@@ -637,7 +636,7 @@ extern "C" {
         /* allocate the output media context */
         avformat_alloc_output_context2(&oc, NULL, NULL, filename);
         if (!oc) {
-            printf("Could not deduce output format from file extension: using MPEG.\n");
+            std::cout << "[INFO] Could not deduce output format from file extension: using MPEG." << std::endl;
             avformat_alloc_output_context2(&oc, NULL, "mpeg", filename);
         }
         if (!oc)
@@ -718,7 +717,7 @@ extern "C" {
         /* Write the stream header, if any. */
         ret = avformat_write_header(oc, &opt);
         if (ret < 0) {
-            fprintf(stderr, "Error occurred when opening output file: \n");
+            std::cout <<  "[ERROR] Error occurred when opening output file"<<std::endl;
             return -1;
         }
         renderContext.oc = oc;

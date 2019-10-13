@@ -100,6 +100,8 @@ extern "C" {
         mediaMetadata.bitRate = 0;
 
         av_register_all();
+        avcodec_register_all();
+        
 
         if(avformat_open_input(&pFormatCtx, path, NULL, NULL)!=0)
             return mediaMetadata;
@@ -120,6 +122,8 @@ extern "C" {
             return mediaMetadata;
 
         pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
+
+        std::cout << "[INFO] Codec ID for decoding " << pCodecCtxOrig->codec_id << std::endl;
 
         pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
         if(pCodec==NULL)

@@ -10,10 +10,10 @@ cp libopencvlensdistort.so ../tactview-core/src/main/resources/linux-x86-64/.
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libgenericconvolutionmatrix.so -o libgenericconvolutionmatrix.so genericconvolutionmatrix.cpp `pkg-config --libs opencv4`
 cp libgenericconvolutionmatrix.so ../tactview-core/src/main/resources/linux-x86-64/.
 
-gcc -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  -lavcodec -lavformat -lavutil -lswscale
+gcc -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
 cp libffmpegmediadecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
-gcc -w -shared -fPIC -Wl,-soname,libavcodecaudiodecoder.so -o libavcodecaudiodecoder.so avcodecaudiodecoder.cpp  -lavcodec -lavformat -lavutil -lswscale
+gcc -w -shared -fPIC -Wl,-soname,libavcodecaudiodecoder.so -o libavcodecaudiodecoder.so avcodecaudiodecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
 cp libavcodecaudiodecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvblur.so -o libopencvblur.so opencvblur.cpp `pkg-config --libs opencv4` 
@@ -37,7 +37,7 @@ cp libopencvedgedetect.so ../tactview-core/src/main/resources/linux-x86-64/.
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvrotate.so -o libopencvrotate.so opencvrotate.cpp `pkg-config --libs opencv4` 
 cp libopencvrotate.so ../tactview-core/src/main/resources/linux-x86-64/.
 
-g++ -w -shared -fPIC -Wl,-soname,libffmpegmediaencoder.so -o libffmpegmediaencoder.so ffmpegmediaencoder.cpp -lavcodec -lavformat -lavutil -lswscale
+g++ -w -shared -fPIC -Wl,-soname,libffmpegmediaencoder.so -o libffmpegmediaencoder.so ffmpegmediaencoder.cpp `pkg-config --libs libavcodec libavformat libavutil libswscale`
 cp libffmpegmediaencoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvgreenscreen.so -o libopencvgreenscreen.so opencvgreenscreen.cpp `pkg-config --libs opencv4`

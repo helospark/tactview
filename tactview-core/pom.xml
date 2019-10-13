@@ -62,11 +62,16 @@
       <artifactId>curvesapi</artifactId>
       <version>1.06</version>
     </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.6</version>
-    </dependency>
+	<dependency>
+	  <groupId>org.apache.httpcomponents</groupId>
+	  <artifactId>httpclient</artifactId>
+	  <version>4.5.10</version>
+	</dependency>
+	<dependency>
+	  <groupId>commons-io</groupId>
+	  <artifactId>commons-io</artifactId>
+	  <version>2.6</version>
+	</dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
@@ -233,13 +238,12 @@
       <scope>test</scope>
     </dependency>
 
-
-
+<!--
     <dependency>
       <groupId>com.helospark</groupId>
       <artifactId>tactview-openfx-host-plugin</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
-
+-->
   </dependencies>
 </project>
