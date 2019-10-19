@@ -65,6 +65,10 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
         this.factoryId = factoryId;
     }
 
+    public String getFactoryId() {
+        return factoryId;
+    }
+
     public String getId() {
         return id;
     }

@@ -19,6 +19,7 @@ import javafx.scene.layout.VBox;
 
 @Component
 public class DraggableIconFactory {
+    private static final int ICON_SIZE = 50;
 
     public VBox createIcon(String effectId, String name, String iconUri) {
         return createIcon(effectId, name, iconUri, Optional.empty());
@@ -27,7 +28,7 @@ public class DraggableIconFactory {
     public VBox createIcon(String effectId, String name, String iconUri, Optional<String> description) {
         ImageView image = loadImageFromUri(iconUri);
         image.setPreserveRatio(true);
-        image.setFitWidth(50);
+        image.setFitWidth(ICON_SIZE);
         Label text = new Label();
         text.setTextOverrun(OverrunStyle.ELLIPSIS);
         text.setEllipsisString("...");
@@ -68,17 +69,19 @@ public class DraggableIconFactory {
     }
 
     private ImageView loadImageFromUri(String iconUri) {
+        Image image;
         if (iconUri.startsWith("file:")) {
-            return new ImageView(iconUri);
+            image = new Image(iconUri, ICON_SIZE, ICON_SIZE, true, false);
         } else if (iconUri.startsWith("classpath:")) {
             InputStream loadIconFile = this.getClass().getResourceAsStream(iconUri.replaceFirst("classpath:", ""));
             if (loadIconFile == null) {
                 throw new IllegalArgumentException("File " + iconUri + " does not exist");
             }
-            Image image = new Image(loadIconFile); // TODO: may be cached
-            return new ImageView(image);
+            image = new Image(loadIconFile, ICON_SIZE, ICON_SIZE, true, false); // TODO: may be cached
         } else {
             throw new IllegalArgumentException("Uri " + iconUri + " must start with 'classpath:' or 'file:'");
         }
+
+        return new ImageView(image);
     }
 }

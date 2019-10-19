@@ -8,7 +8,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
-import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepositoryChain;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -18,11 +18,11 @@ import javafx.scene.layout.GridPane;
 @Component
 public class DetailsGridChain {
     private TimelineManagerAccessor timelineManager;
-    private LocalizedDetailRepository localizedDetailRepository;
+    private LocalizedDetailRepositoryChain localizedDetailRepository;
     private List<ClipDetailGridChainElement> clipDetailChainElements;
     private List<EffectDetailGridChainElement> effectDetailChainElements;
 
-    public DetailsGridChain(TimelineManagerAccessor timelineManager, LocalizedDetailRepository localizedDetailRepository,
+    public DetailsGridChain(TimelineManagerAccessor timelineManager, LocalizedDetailRepositoryChain localizedDetailRepository,
             List<ClipDetailGridChainElement> chainElements, List<EffectDetailGridChainElement> effectDetailChainElements) {
         this.timelineManager = timelineManager;
         this.localizedDetailRepository = localizedDetailRepository;
@@ -59,7 +59,7 @@ public class DetailsGridChain {
 
         result.put("type", new Label(effect.getClass().getSimpleName()));
 
-        localizedDetailRepository.queryDetail(effect.getId())
+        localizedDetailRepository.queryDetail(effect.getFactoryId())
                 .ifPresent(a -> {
                     Label text = new Label(a);
                     text.getStyleClass().add("description-text-area");

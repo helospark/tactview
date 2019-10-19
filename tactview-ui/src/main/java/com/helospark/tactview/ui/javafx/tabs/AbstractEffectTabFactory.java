@@ -8,7 +8,7 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.TimelineEffectType;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailDomain;
-import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepositoryChain;
 
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
@@ -19,11 +19,11 @@ public abstract class AbstractEffectTabFactory extends AbstractSearchableTabFact
     private static final String DEFAULT_URI = "classpath:/icons/effect/fallback.png";
     private LightDiContext lightDi;
     private DraggableIconFactory iconFactory;
-    private LocalizedDetailRepository localizedDetailRepository;
+    private LocalizedDetailRepositoryChain localizedDetailRepository;
 
     private TimelineEffectType effectType;
 
-    public AbstractEffectTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepository localizedDetailRepository, TimelineEffectType effectType, String tabName,
+    public AbstractEffectTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepositoryChain localizedDetailRepository, TimelineEffectType effectType, String tabName,
             String className) {
         super(tabName, className);
         this.lightDi = lightDi;

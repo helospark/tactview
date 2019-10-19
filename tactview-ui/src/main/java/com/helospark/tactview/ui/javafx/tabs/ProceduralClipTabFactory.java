@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactory
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailDomain;
-import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepositoryChain;
 
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
@@ -26,11 +26,11 @@ public class ProceduralClipTabFactory extends AbstractSearchableTabFactory {
     private static final String DEFAULT_URI = "classpath:/icons/effect/fallback.png";
     private LightDiContext lightDi;
     private DraggableIconFactory iconFactory;
-    private LocalizedDetailRepository localizedDetailRepository;
+    private LocalizedDetailRepositoryChain localizedDetailRepository;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManager;
 
-    public ProceduralClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepository localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
+    public ProceduralClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepositoryChain localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
             TimelineManagerAccessor timelineManager) {
         super("video clips", "clip-view");
         this.lightDi = lightDi;
@@ -47,7 +47,7 @@ public class ProceduralClipTabFactory extends AbstractSearchableTabFactory {
 
         proceduralClips.stream()
                 .forEach(chainItem -> {
-                    Optional<LocalizedDetailDomain> localizedDetail = localizedDetailRepository.queryData("proceduralClipFactory:" + chainItem.getProceduralClipId());
+                    Optional<LocalizedDetailDomain> localizedDetail = localizedDetailRepository.queryData(chainItem.getProceduralClipId());
 
                     int score = getScore(localizedDetail, chainItem.getProceduralClipId(), chainItem.getProceduralClipName(), searchData);
                     if (score > 0) {

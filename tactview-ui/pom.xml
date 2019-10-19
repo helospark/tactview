@@ -51,6 +51,10 @@
       <artifactId>tactview-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.helospark.tactview</groupId>
+      <artifactId>tactview-ui-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>5.3.1</version>

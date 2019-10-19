@@ -1,19 +1,19 @@
 [
     {
-        "type": "proceduralClipFactory:radialgradient",
+        "type": "radialgradient",
         "description": "Draws a gradient between two colors"
     },
     {
-        "type": "proceduralClipFactory:gaussianNoise",
+        "type": "gaussianNoise",
         "description": "Renders Gaussian noise that can be used as a simple film grain effect"
     },
     {
-        "type": "proceduralClipFactory:text",
+        "type": "text",
         "description": "Renders a text",
         "iconUrl": "classpath:/icons/proceduralclip/text.png"
     },
     {
-        "type": "proceduralClipFactory:singlecolor",
+        "type": "singlecolor",
         "description": "Creates a layer out of a single color",
         "iconUrl": "classpath:/icons/proceduralclip/single_color.png"
     }

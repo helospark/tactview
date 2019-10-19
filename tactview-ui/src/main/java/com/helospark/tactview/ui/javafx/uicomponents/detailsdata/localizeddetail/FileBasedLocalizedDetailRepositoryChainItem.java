@@ -14,14 +14,14 @@ import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.ClasspathJsonParser;
 
 @Component
-public class LocalizedDetailRepository {
+public class FileBasedLocalizedDetailRepositoryChainItem implements LocalizedDetailRepositoryChainItem {
     private static final TypeReference<List<LocalizedDetailDomain>> TYPE_REFERENCE = new TypeReference<List<LocalizedDetailDomain>>() {
     };
     private Map<String, LocalizedDetailDomain> classToDetail = new HashMap<>();
     private ClasspathJsonParser classpathJsonParser;
     private List<LocalizedDetailFileHolder> fileHolders;
 
-    public LocalizedDetailRepository(ClasspathJsonParser classpathJsonParser, List<LocalizedDetailFileHolder> fileHolders) {
+    public FileBasedLocalizedDetailRepositoryChainItem(ClasspathJsonParser classpathJsonParser, List<LocalizedDetailFileHolder> fileHolders) {
         this.classpathJsonParser = classpathJsonParser;
         this.fileHolders = fileHolders;
     }
@@ -41,24 +41,23 @@ public class LocalizedDetailRepository {
                 });
     }
 
-    public Optional<String> queryDetail(String id) {
-        return Optional.ofNullable(classToDetail.get(id))
-                .map(data -> data.getDescription());
-    }
-
-    public Optional<String> queryDetailForClip(TimelineClip clip) {
-        return queryDataForClip(clip).map(data -> data.getDescription());
-    }
-
-    public Optional<LocalizedDetailDomain> queryData(String id) {
-        return Optional.ofNullable(classToDetail.get(id));
+    @Override
+    public LocalizedDetailDomain queryData(String id) {
+        return classToDetail.get(id);
     }
 
     public Optional<LocalizedDetailDomain> queryDataForClip(TimelineClip clip) {
-        String id = clip.getCreatorFactoryId();
+        String id;
         if (clip instanceof ProceduralVisualClip) {
-            id += ":" + ((ProceduralVisualClip) clip).getProceduralFactoryId();
+            id = ((ProceduralVisualClip) clip).getProceduralFactoryId();
+        } else {
+            id = clip.getCreatorFactoryId();
         }
         return Optional.ofNullable(classToDetail.get(id));
+    }
+
+    @Override
+    public boolean supports(String id) {
+        return classToDetail.get(id) != null;
     }
 }
