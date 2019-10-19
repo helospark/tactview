@@ -93,6 +93,8 @@ public class ImageSequenceRenderService extends AbstractRenderService {
                         .withCurrentPosition(new TimelinePosition(position))
                         .withNeedsSound(false)
                         .withNeedsVideo(true)
+                        .withExpectedWidth(renderRequest.getWidth())
+                        .withExpectedHeight(renderRequest.getHeight())
                         .build();
 
                 ByteBuffer frame = queryFrameAt(superRequest).getVideoResult().getBuffer();

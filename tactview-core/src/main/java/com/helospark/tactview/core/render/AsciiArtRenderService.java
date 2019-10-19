@@ -63,6 +63,8 @@ public class AsciiArtRenderService extends AbstractRenderService {
                         .withCurrentPosition(new TimelinePosition(position))
                         .withNeedsSound(false)
                         .withNeedsVideo(true)
+                        .withExpectedWidth(renderRequest.getWidth())
+                        .withExpectedHeight(renderRequest.getHeight())
                         .build();
 
                 AudioVideoFragment videoResult = queryFrameAt(superRequest);

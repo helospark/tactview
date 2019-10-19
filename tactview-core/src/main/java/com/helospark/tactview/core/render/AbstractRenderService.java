@@ -59,8 +59,8 @@ public abstract class AbstractRenderService implements RenderService {
 
         TimelineManagerFramesRequest frameRequest = TimelineManagerFramesRequest.builder()
                 .withPosition(currentPosition)
-                .withPreviewWidth((int) (renderRequest.getWidth() * upscale))
-                .withPreviewHeight((int) (renderRequest.getHeight() * upscale))
+                .withPreviewWidth((int) (request.expectedWidth * upscale))
+                .withPreviewHeight((int) (request.expectedHeight * upscale))
                 .withScale(scaleMultiplier * upscale)
                 .withAudioBytesPerSample(sampleRate)
                 .withAudioBytesPerSample(bytesPerSample)
@@ -71,11 +71,13 @@ public abstract class AbstractRenderService implements RenderService {
 
         AudioVideoFragment frame = timelineManagerRenderService.getFrame(frameRequest);
 
-        if (renderRequest.getUpscale().compareTo(BigDecimal.ONE) > 0.0) {
+        if (renderRequest.getUpscale().compareTo(BigDecimal.ONE) > 0.0 ||
+                frame.getVideoResult().getWidth() != request.expectedWidth || // due to +1 for width/height on odd size
+                frame.getVideoResult().getHeight() != request.expectedHeight) {
             ScaleRequest scaleRequest = ScaleRequest.builder()
                     .withImage(frame.getVideoResult())
-                    .withNewWidth(renderRequest.getWidth())
-                    .withNewHeight(renderRequest.getHeight())
+                    .withNewWidth(request.expectedWidth)
+                    .withNewHeight(request.expectedHeight)
                     .build();
             ClipImage scaledImage = scaleService.createScaledImage(scaleRequest);
             frame = frame.butFreeAndReplaceVideoFrame(scaledImage);
@@ -94,6 +96,8 @@ public abstract class AbstractRenderService implements RenderService {
         Optional<Integer> numberOfChannels;
         boolean needsVideo;
         boolean needsSound;
+        int expectedWidth;
+        int expectedHeight;
 
         @Generated("SparkTools")
         private RenderRequestFrameRequest(Builder builder) {
@@ -104,6 +108,8 @@ public abstract class AbstractRenderService implements RenderService {
             this.numberOfChannels = builder.numberOfChannels;
             this.needsVideo = builder.needsVideo;
             this.needsSound = builder.needsSound;
+            this.expectedWidth = builder.expectedWidth;
+            this.expectedHeight = builder.expectedHeight;
         }
 
         @Generated("SparkTools")
@@ -120,6 +126,8 @@ public abstract class AbstractRenderService implements RenderService {
             private Optional<Integer> numberOfChannels = Optional.empty();
             private boolean needsVideo;
             private boolean needsSound;
+            private int expectedWidth;
+            private int expectedHeight;
 
             private Builder() {
             }
@@ -156,6 +164,16 @@ public abstract class AbstractRenderService implements RenderService {
 
             public Builder withNeedsSound(boolean needsSound) {
                 this.needsSound = needsSound;
+                return this;
+            }
+
+            public Builder withExpectedWidth(int expectedWidth) {
+                this.expectedWidth = expectedWidth;
+                return this;
+            }
+
+            public Builder withExpectedHeight(int expectedHeight) {
+                this.expectedHeight = expectedHeight;
                 return this;
             }
 

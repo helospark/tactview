@@ -118,7 +118,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.audioCodec = audioCodec;
         initNativeRequest.videoPixelFormat = videoPixelFormat;
         initNativeRequest.videoPreset = videoPresetOrNull;
-        initNativeRequest.metadata = convertToNativeMap(renderRequest.getMetadata());;
+        initNativeRequest.metadata = convertToNativeMap(renderRequest.getMetadata());
         // frame not freed
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
@@ -163,6 +163,8 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                                                 .withNumberOfChannels(Optional.of(numberOfChannels))
                                                 .withRenderRequest(renderRequest)
                                                 .withSampleRate(Optional.of(audioSampleRate))
+                                                .withExpectedHeight(initNativeRequest.renderHeight)
+                                                .withExpectedWidth(initNativeRequest.renderWidth)
                                                 .build();
                                         return queryFrameAt(superRequest);
                                     }, executorService);
@@ -266,13 +268,13 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             }
         }
 
-        //        int sum = 0;
-        //        System.out.println("#############################x");
-        //        for (int i = 0; i < result.capacity(); ++i) {
-        //            System.out.print(result.get(i) + " ");
-        //            sum += result.get(i);
-        //        }
-        //        System.out.println("\n/////////////////////////////\n" + sum);
+        // int sum = 0;
+        // System.out.println("#############################x");
+        // for (int i = 0; i < result.capacity(); ++i) {
+        // System.out.print(result.get(i) + " ");
+        // sum += result.get(i);
+        // }
+        // System.out.println("\n/////////////////////////////\n" + sum);
 
         return result;
     }
@@ -289,7 +291,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
     @Override
     public boolean supports(RenderRequest renderRequest) {
-        //        return renderRequest.getFileName().endsWith(".mpeg");
+        // return renderRequest.getFileName().endsWith(".mpeg");
         return true;
     }
 
@@ -380,7 +382,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
     @Override
     public Map<String, OptionProvider<?>> updateValueProviders(UpdateValueProvidersRequest request) {
-        Map<String, OptionProvider<?>> optionsToUpdate = new LinkedHashMap<String, OptionProvider<?>>(request.options);
+        Map<String, OptionProvider<?>> optionsToUpdate = new LinkedHashMap<>(request.options);
 
         // update pixel formats
         String codec = (String) optionsToUpdate.get("videocodec").getValue();

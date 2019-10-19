@@ -1,3 +1,5 @@
+set -e
+
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root"
    exit 1
@@ -45,7 +47,9 @@ apt-get -y install \
   libtwolame-dev \
   libwavpack-dev \
   libwebp-dev \
-  libxvidcore-dev
+  libxvidcore-dev \
+  libbz2-dev \
+  libbz2-1.0
 
 cd /tmp
 
