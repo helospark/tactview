@@ -21,6 +21,11 @@ public class MathUtil {
         return linearInterpolate(linearInterpolate(c00, c10, tx), linearInterpolate(c01, c11, tx), ty);
     }
 
+    public static int increaseToMakeDivideableBy(int number, int dividableWith) {
+        int modulo = number % dividableWith;
+        return number + (modulo != 0 ? dividableWith - modulo : 0);
+    }
+
     public static double min(double... elements) {
         double result = elements[0];
 
