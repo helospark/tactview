@@ -1,7 +1,7 @@
 package com.helospark.tactview.ui.javafx.clip.chain;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.render.proxy.LowResolutionProxyCreatorService;
+import com.helospark.tactview.core.render.proxy.ProxyCreationService;
 import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
@@ -9,11 +9,12 @@ import javafx.scene.control.MenuItem;
 
 @Component
 public class CreateLowResolutionProxyChainItem implements ClipContextMenuChainItem {
-    private LowResolutionProxyCreatorService lowResolutionProxyCreatorService;
+    //    private LowResolutionProxyCreatorService lowResolutionProxyCreatorService;
+    private ProxyCreationService proxyCreationService;
     private UiProjectRepository uiProjectRepository;
 
-    public CreateLowResolutionProxyChainItem(LowResolutionProxyCreatorService lowResolutionProxyCreatorService, UiProjectRepository uiProjectRepository) {
-        this.lowResolutionProxyCreatorService = lowResolutionProxyCreatorService;
+    public CreateLowResolutionProxyChainItem(ProxyCreationService proxyCreationService, UiProjectRepository uiProjectRepository) {
+        this.proxyCreationService = proxyCreationService;
         this.uiProjectRepository = uiProjectRepository;
     }
 
@@ -24,7 +25,7 @@ public class CreateLowResolutionProxyChainItem implements ClipContextMenuChainIt
         MenuItem menuItem = new MenuItem("Create lowres proxy");
 
         menuItem.setOnAction(e -> {
-            lowResolutionProxyCreatorService.createLowResolutionProxy(videoClip, uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
+            proxyCreationService.createProxy(videoClip, uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
         });
 
         return menuItem;

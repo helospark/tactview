@@ -79,7 +79,7 @@ public class ImageSequenceClipFactory implements ClipFactory {
         return new ImageSequenceVideoClip(mediaMetadata, videoSource, savedClip, metadata);
     }
 
-    private MediaMetadata readMetadataFromFileAndFps(BigDecimal fps, String backingFiles) {
+    public MediaMetadata readMetadataFromFileAndFps(BigDecimal fps, String backingFiles) {
         List<FileHolder> files = fileNamePatternToFileResolverService.filenamePatternToFileResolver(backingFiles);
         FileHolder firstImage = files.get(0);
         FileHolder lastImage = files.get(files.size() - 1);

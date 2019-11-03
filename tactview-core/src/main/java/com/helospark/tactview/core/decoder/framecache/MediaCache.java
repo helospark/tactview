@@ -71,7 +71,7 @@ public class MediaCache {
 
     private void doImmediateCleanup(int size) {
         TreeSet<CacheRemoveDomain> elements = new TreeSet<>(toRemove);
-        while (approximateSize >= maximumSizeHint * 0.5) {
+        while (approximateSize >= size) {
             if (elements.isEmpty()) {
                 logger.debug("ToRemove elements is empty");
                 break;

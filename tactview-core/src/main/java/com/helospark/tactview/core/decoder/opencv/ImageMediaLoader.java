@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.BufferedImageToClipFrameResultConverter;
 
 @Component
-public class ImageMediaLoader {
+public class ImageMediaLoader implements IImageMediaLoader {
     private BufferedImageToClipFrameResultConverter converter;
     private ScaleService scaleService;
 
@@ -43,6 +43,7 @@ public class ImageMediaLoader {
         }
     }
 
+    @Override
     public void readImage(ImageRequest request) {
         try {
             BufferedImage image = ImageIO.read(new File(request.path));

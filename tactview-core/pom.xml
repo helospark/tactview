@@ -62,16 +62,16 @@
       <artifactId>curvesapi</artifactId>
       <version>1.06</version>
     </dependency>
-	<dependency>
-	  <groupId>org.apache.httpcomponents</groupId>
-	  <artifactId>httpclient</artifactId>
-	  <version>4.5.10</version>
-	</dependency>
-	<dependency>
-	  <groupId>commons-io</groupId>
-	  <artifactId>commons-io</artifactId>
-	  <version>2.6</version>
-	</dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.10</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.6</version>
+    </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
@@ -193,6 +193,11 @@
       <artifactId>commons-lang3</artifactId>
       <version>3.9</version>
     </dependency>
+    <dependency>
+      <groupId>org.lz4</groupId>
+      <artifactId>lz4-java</artifactId>
+      <version>1.6.0</version>
+    </dependency>
 
     <!-- Test -->
     <dependency>
@@ -237,10 +242,10 @@
       <version>3.1.3</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.helospark</groupId>
-      <artifactId>tactview-openfx-host-plugin</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
+    <!-- <dependency> -->
+    <!-- <groupId>com.helospark.tactview</groupId> -->
+    <!-- <artifactId>tactview-frei0r-plugin</artifactId> -->
+    <!-- <version>0.0.1-SNAPSHOT</version> -->
+    <!-- </dependency> -->
   </dependencies>
 </project>

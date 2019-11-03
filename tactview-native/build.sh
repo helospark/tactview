@@ -13,6 +13,9 @@ cp libgenericconvolutionmatrix.so ../tactview-core/src/main/resources/linux-x86-
 gcc -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
 cp libffmpegmediadecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
+gcc -w -shared -fPIC -Wl,-soname,libffmpegconinousimagequeryservice.so -o libffmpegconinousimagequeryservice.so ffmpegconinousimagequeryservice.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
+cp libffmpegconinousimagequeryservice.so ../tactview-core/src/main/resources/linux-x86-64/.
+
 gcc -w -shared -fPIC -Wl,-soname,libavcodecaudiodecoder.so -o libavcodecaudiodecoder.so avcodecaudiodecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
 cp libavcodecaudiodecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
