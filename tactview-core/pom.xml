@@ -10,7 +10,7 @@
   <artifactId>tactview-core</artifactId>
 
   <properties>
-    <jackson.version>2.9.8</jackson.version>
+    <jackson.version>2.10.1</jackson.version>
     <imageio.version>3.4.1</imageio.version>
   </properties>
 
