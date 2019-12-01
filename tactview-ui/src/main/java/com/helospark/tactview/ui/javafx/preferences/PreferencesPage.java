@@ -27,7 +27,7 @@ import javafx.scene.Scene;
 
 @Component
 public class PreferencesPage implements ScenePostProcessor {
-    TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+    TypeReference<HashMap<String, String>> typeRef = new TypeReference<HashMap<String, String>>() {
     };
 
     private PreferenceValueBeanPostProcessor preferenceValueBeanPostProcessor;
