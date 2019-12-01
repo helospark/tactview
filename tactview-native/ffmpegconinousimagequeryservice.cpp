@@ -30,11 +30,11 @@ extern "C" {
     };
 
     int globalJobId = 0;
-    std::map<int, DecodeStructure*> decodeStructureMap;
+    std::map<int, DecodeStructure*> jobDecodeStructureMap;
 
     void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
     {
-        //std::cout << "Copying data " << width << " " << height << std::endl;
+        std::cout << "Copying data " << width << " " << height << std::endl;
         for(int y=0; y<height; y++)
         {
             for (int i = 0; i < width; ++i)
@@ -84,11 +84,11 @@ extern "C" {
     EXPORTED int readFrames(QueryFramesRequest* request)
     {
         std::cout << "Called readFrames" << std::endl;
-        std::map<int,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(request->jobId);
+        std::map<int,DecodeStructure*>::iterator elementIterator = jobDecodeStructureMap.find(request->jobId);
 
         DecodeStructure* decodeStructure;
 
-        if (elementIterator == decodeStructureMap.end())
+        if (elementIterator == jobDecodeStructureMap.end())
         {
             std::cout << "Job not initialized" << std::endl;
             return -1;
@@ -114,6 +114,7 @@ extern "C" {
             {
                 std::cout << "Read " << packet.pts << " " << packet.dts << std::endl;
                 int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+                std::cout << "Decoded frame " << frameFinished << std::endl;
 
                 if(frameFinished)
                 {
@@ -234,17 +235,21 @@ extern "C" {
 
         int id = globalJobId++;
 
-        decodeStructureMap[id] = element;
+        std::cout << "Job with id " << id << " created" << std::endl;
+
+        jobDecodeStructureMap[id] = element;
+
+        std::cout << "returning" << std::endl;
 
         return id;
     }
 
     EXPORTED void freeJob(int jobId) {
-        std::map<int,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(jobId);
+        std::map<int,DecodeStructure*>::iterator elementIterator = jobDecodeStructureMap.find(jobId);
 
         DecodeStructure* decodeStructure;
 
-        if (elementIterator == decodeStructureMap.end())
+        if (elementIterator == jobDecodeStructureMap.end())
         {
             std::cout << "Job not initialized" << std::endl;
             return;
@@ -252,10 +257,11 @@ extern "C" {
         else
         {
             decodeStructure = elementIterator->second;
+            jobDecodeStructureMap.erase(elementIterator);
         }
 
         //avcodec_free_context(&decodeStructure->pCodecCtx);
-        avformat_free_context(decodeStructure->pFormatCtx);
+        //avformat_close_input(&decodeStructure->pFormatCtx);
         av_frame_free(&decodeStructure->pFrame);
         sws_freeContext(decodeStructure->sws_ctx);
     }
@@ -296,8 +302,8 @@ void saveFrame(int width, int height, FFmpegFrameWithFrameNumber* frame) {
 int main() {
     InitializeReadJobRequest initRequest;
     initRequest.path = "/home/black/Documents/Time Lapse Video Of Night Sky.mp4";
-    initRequest.width = 1280;
-    initRequest.height = 720;
+    initRequest.width = 320;
+    initRequest.height = 180;
 
     int job = openFile(&initRequest);
 

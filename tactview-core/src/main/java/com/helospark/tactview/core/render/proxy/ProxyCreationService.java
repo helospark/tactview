@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.render.proxy;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -10,14 +9,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import javax.imageio.ImageIO;
-
 import org.apache.commons.io.FileUtils;
 
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.decoder.imagesequence.ImageSequenceDecoderDecorator;
+import com.helospark.tactview.core.render.proxy.compression.CompressedImageWriter;
 import com.helospark.tactview.core.render.proxy.ffmpeg.ContinuousImageQueryFFmpegService;
 import com.helospark.tactview.core.render.proxy.ffmpeg.FFmpegFrameWithFrameNumber;
 import com.helospark.tactview.core.render.proxy.ffmpeg.InitializeReadJobRequest;
@@ -30,33 +28,34 @@ import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMes
 import com.helospark.tactview.core.timeline.message.progress.ProgressDoneMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressInitializeMessage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressType;
-import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Service
 public class ProxyCreationService {
     private static final int WRITE_FRAME_BUFFER_SIZE = 10;
     private static final int NUMBER_OF_FRAMES_TO_READ_FROM_FILE_PER_CALL = 5;
-    private static final int NUMBER_OF_PRODUCER_THREADS = Runtime.getRuntime().availableProcessors() - 1;
+    private static final int NUMBER_OF_PRODUCER_THREADS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 1);
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private ContinuousImageQueryFFmpegService imageGetterService;
-    private ByteBufferToImageConverter byteBufferToImageConverter;
-    private ImageSequenceClipFactory imageSequenceClipFactory;
-    private ImageSequenceDecoderDecorator imageSequenceDecoderDecorator;
+    private CompressedImageWriter compressedImageWriter;
     private MessagingService messagingService;
+    private ProxyMetadataHandler proxyMetadataHandler;
 
     private volatile boolean finished = false;
     private LinkedBlockingQueue<FFmpegFrameWithFrameNumber> queue = new LinkedBlockingQueue<>(WRITE_FRAME_BUFFER_SIZE);
 
-    public ProxyCreationService(ContinuousImageQueryFFmpegService imageGetterService, ByteBufferToImageConverter byteBufferToImageConverter,
-            ImageSequenceClipFactory imageSequenceClipFactory, ImageSequenceDecoderDecorator imageSequenceDecoderDecorator, MessagingService messagingService) {
+    public ProxyCreationService(ContinuousImageQueryFFmpegService imageGetterService,
+            ImageSequenceClipFactory imageSequenceClipFactory,
+            MessagingService messagingService,
+            ProxyMetadataHandler proxyMetadataHandler,
+            @Qualifier("jpgCompressedImageWriter") CompressedImageWriter lz4CompressedImageWriter) {
         this.imageGetterService = imageGetterService;
-        this.byteBufferToImageConverter = byteBufferToImageConverter;
-        this.imageSequenceClipFactory = imageSequenceClipFactory;
-        this.imageSequenceDecoderDecorator = imageSequenceDecoderDecorator;
+        this.compressedImageWriter = lz4CompressedImageWriter;
         this.messagingService = messagingService;
+        this.proxyMetadataHandler = proxyMetadataHandler;
+
     }
 
     public void createProxy(VideoClip clip, int width, int height) {
@@ -89,6 +88,8 @@ public class ProxyCreationService {
 
         if (!proxyImageFolder.exists() || Math.abs(proxyImageFolder.list((d, name) -> name.startsWith("image_")).length - approximageNumberOfJobs) > 10) {
             FileUtils.cleanDirectory(proxyImageFolder);
+            proxyMetadataHandler.writeMetadata(proxyImageFolder, width, height);
+
             int jobId = imageGetterService.openFile(initRequest);
 
             if (jobId < 0) {
@@ -109,9 +110,16 @@ public class ProxyCreationService {
             imageGetterService.freeJob(jobId);
         }
 
-        String imageSequencePath = proxyImageFolder.getPath() + FileNamePatternToFileResolverService.PATH_FILENAME_SEPARATOR + "image_(\\d+).png";
-        VideoMetadata metadata = (VideoMetadata) imageSequenceClipFactory.readMetadataFromFileAndFps(fps, imageSequencePath);
-        VisualMediaSource videoSource = new VisualMediaSource(imageSequencePath, imageSequenceDecoderDecorator);
+        String imageSequencePath = proxyImageFolder.getPath() + FileNamePatternToFileResolverService.PATH_FILENAME_SEPARATOR + compressedImageWriter.getImageNamePattern();
+
+        VideoMetadata metadata = VideoMetadata.builder()
+                .withWidth(width)
+                .withHeight(height)
+                .withFps(fps.doubleValue())
+                .withLength(clip.getMediaMetadata().getLength())
+                .build();
+
+        VisualMediaSource videoSource = new VisualMediaSource(imageSequencePath, compressedImageWriter.getImageSequenceDecoderDecorator());
 
         VideoClip.LowResolutionProxyData proxyData = new VideoClip.LowResolutionProxyData(videoSource, metadata);
         clip.setLowResolutionProxy(proxyData);
@@ -174,15 +182,7 @@ public class ProxyCreationService {
                     continue;
                 }
 
-                BufferedImage image = byteBufferToImageConverter.byteBufferToBufferedImage(frame.data, initRequest.width, initRequest.height);
-
-                File file = new File(proxyFolder, "image_" + frame.frame + ".png");
-
-                try {
-                    ImageIO.write(image, "png", file);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                compressedImageWriter.writeCompressedFrame(frame, proxyFolder, initRequest.width, initRequest.height);
             }
         }
     }

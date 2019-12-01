@@ -20,10 +20,10 @@ import com.helospark.tactview.core.util.cacheable.Cacheable;
 @Component
 public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     public TimelineLength imageLength = TimelineLength.ofMillis(10000);
-    private ImageMediaLoader implementation;
+    private JavaBasedImageMediaLoader implementation;
     private MediaCache mediaCache;
 
-    public OpenCvImageDecorderDecorator(ImageMediaLoader implementation, MediaCache mediaCache) {
+    public OpenCvImageDecorderDecorator(JavaBasedImageMediaLoader implementation, MediaCache mediaCache) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
     }

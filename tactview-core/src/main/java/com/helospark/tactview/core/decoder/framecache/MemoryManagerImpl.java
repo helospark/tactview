@@ -248,9 +248,12 @@ public class MemoryManagerImpl implements MemoryManager {
         //        } catch (Throwable e) {
         //        logger.warn("Unable to clear bytebuffer the efficient way", e);
         //        buffer.position(0);
+        buffer.position(0);
+        buffer.limit(buffer.capacity());
         for (int i = 0; i < buffer.capacity(); ++i) {
             buffer.put(i, (byte) 0);
         }
+        buffer.position(0);
         //        }
     }
 

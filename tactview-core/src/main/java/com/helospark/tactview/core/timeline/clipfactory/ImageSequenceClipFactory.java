@@ -8,12 +8,13 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.MediaMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.imagesequence.ImageSequenceDecoderDecorator;
-import com.helospark.tactview.core.decoder.opencv.ImageMediaLoader;
 import com.helospark.tactview.core.decoder.opencv.ImageMetadataRequest;
 import com.helospark.tactview.core.decoder.opencv.ImageMetadataResponse;
+import com.helospark.tactview.core.decoder.opencv.JavaBasedImageMediaLoader;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
@@ -28,10 +29,11 @@ import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePattern
 @Component
 public class ImageSequenceClipFactory implements ClipFactory {
     private FileNamePatternToFileResolverService fileNamePatternToFileResolverService;
-    private ImageMediaLoader implementation;
+    private JavaBasedImageMediaLoader implementation;
     private ImageSequenceDecoderDecorator imageSequenceDecoder;
 
-    public ImageSequenceClipFactory(FileNamePatternToFileResolverService fileNamePatternToFileResolverService, ImageMediaLoader implementation, ImageSequenceDecoderDecorator imageSequenceDecoder) {
+    public ImageSequenceClipFactory(FileNamePatternToFileResolverService fileNamePatternToFileResolverService, JavaBasedImageMediaLoader implementation,
+            @Qualifier("regularImageSequenceDecoderDecorator") ImageSequenceDecoderDecorator imageSequenceDecoder) {
         this.fileNamePatternToFileResolverService = fileNamePatternToFileResolverService;
         this.implementation = implementation;
         this.imageSequenceDecoder = imageSequenceDecoder;

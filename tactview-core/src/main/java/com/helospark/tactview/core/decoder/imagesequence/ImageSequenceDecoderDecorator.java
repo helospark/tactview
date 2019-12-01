@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
 
-import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VideoMetadata;
@@ -19,15 +18,14 @@ import com.helospark.tactview.core.decoder.opencv.ImageRequest;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileHolder;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
 
-@Component
 public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
-    private ImageMediaLoader implementation;
+    private ImageMediaLoader imageMediaLoader;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
     private FileNamePatternToFileResolverService fileNamePatternService;
 
-    public ImageSequenceDecoderDecorator(ImageMediaLoader implementation, MediaCache mediaCache, MemoryManager memoryManager, FileNamePatternToFileResolverService fileNamePatternService) {
-        this.implementation = implementation;
+    public ImageSequenceDecoderDecorator(ImageMediaLoader imageMediaLoader, MediaCache mediaCache, MemoryManager memoryManager, FileNamePatternToFileResolverService fileNamePatternService) {
+        this.imageMediaLoader = imageMediaLoader;
         this.mediaCache = mediaCache;
         this.memoryManager = memoryManager;
         this.fileNamePatternService = fileNamePatternService;
@@ -77,7 +75,7 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
     }
 
     private void readImage(ImageRequest imageRequest) {
-        implementation.readImage(imageRequest);
+        imageMediaLoader.readImage(imageRequest);
     }
 
     private Optional<FileHolder> findFrame(List<FileHolder> files, int frameToSearchFor) {

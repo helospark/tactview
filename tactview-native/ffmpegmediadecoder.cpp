@@ -143,12 +143,6 @@ extern "C" {
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
             return mediaMetadata;
 
-        pFrame=av_frame_alloc();
-
-        AVFrame* pFrameRGB=av_frame_alloc();
-        if(pFrameRGB==NULL)
-            return mediaMetadata;
-
         AVStream* st = pFormatCtx->streams[videoStream];
 
         mediaMetadata.width = pCodecCtx->width;
@@ -171,12 +165,8 @@ extern "C" {
 
         std::cout << "Length 1=" << mediaMetadata.lengthInMicroseconds << "2=" << (st->duration / (AV_TIME_BASE / 1000000)) << std::endl;
 
-        av_frame_free(&pFrameRGB);
-
-        av_frame_free(&pFrame);
-
         avcodec_close(pCodecCtx);
-        avcodec_close(pCodecCtxOrig);
+        //avcodec_close(pCodecCtxOrig);
 
         avformat_close_input(&pFormatCtx);
 
@@ -292,7 +282,7 @@ extern "C" {
 
     EXPORTED void readFrames(FFmpegImageRequest* request)
     {
-
+        std::cout << "Decoding images " << request->width << " " << request->height << " " << &decodeStructureMap << std::endl;
         std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
         std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(key);
 
@@ -372,7 +362,7 @@ extern "C" {
 
                         copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
                         ++i;
-                        av_frame_free(&pFrameRGB);
+                        freeFrame(pFrameRGB);
                     }
                     decodeStructure->lastPts = packet.pts;
                     //std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
