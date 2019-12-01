@@ -74,22 +74,29 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         // TODO: eliminate copypaste copy paste from below
 
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
-        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).intValue();
+        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).setScale(0, RoundingMode.HALF_DOWN).intValue();
         int additionalFramesToReadInBeginning = startFrame % CHUNK_SIZE;
         int newStartFrame = startFrame - additionalFramesToReadInBeginning;
         if (newStartFrame < 0) {
             newStartFrame = 0;
         }
 
-        // end
+        Optional<ByteBuffer> framesFromCache = findInCache(request, startFrame, request.getFilePath());
+        ByteBuffer result;
+        if (framesFromCache.isPresent()) {
+            result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4);
+            copyToResult(result, framesFromCache.get());
+            return new MediaDataResponse(result);
+        }
 
+        // end
         String readId = request.getFile().getAbsolutePath();
         readId += request.getWidth() + "x" + request.getHeight();
 
         Lock lock = duplicateReadLocks.get(readId);
 
         try {
-            lock.tryLock(10000, TimeUnit.MILLISECONDS);
+            lock.tryLock(10000000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace(); // previous thread stuck?
         }
@@ -103,7 +110,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private MediaDataResponse readFramesInternal(VideoMediaDataRequest request) {
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
         int numberOfFrames = 1;
-        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).intValue();
+        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).setScale(0, RoundingMode.HALF_DOWN).intValue();
         String filePath = request.getFile().getAbsolutePath();
 
         Optional<ByteBuffer> framesFromCache = findInCache(request, startFrame, filePath);
@@ -130,7 +137,6 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
             int newNumberOfFrame = newEndFrame - newStartFrame;
 
             List<ByteBuffer> readFrames = Arrays.asList(readFromFile(request, newStartFrame, newNumberOfFrame, filePath));
-
             result = readResultBetweenAtIndex(readFrames, additionalFramesToReadInBeginning);
 
             storeInCache(request, newStartFrame, filePath, readFrames);

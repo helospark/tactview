@@ -33,6 +33,11 @@ public class ProgressAdvancer {
         MessageListener<ProgressAdvancedMessage> advancedListener = message -> {
             if (id.equals(message.getId())) {
                 currentProgress.getAndAdd(message.getNumberOfJobsDone());
+
+                if (currentProgress.get() >= numberOfJobs) {
+                    currentProgress.set(numberOfJobs);
+                }
+
                 double percent = (double) currentProgress.get() / numberOfJobs;
 
                 long allTimeTaken = (System.currentTimeMillis() - startTime);

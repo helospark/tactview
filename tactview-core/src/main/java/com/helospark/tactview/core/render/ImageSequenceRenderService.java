@@ -54,6 +54,11 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
+        File file = new File(renderRequest.getFileName());
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
         BigDecimal startSeconds = renderRequest.getStartPosition().getSeconds();
         BigDecimal endSeconds = renderRequest.getEndPosition().getSeconds();
 
@@ -90,7 +95,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
 
                 RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
                         .withRenderRequest(renderRequest)
-                        .withCurrentPosition(new TimelinePosition(position))
+                        .withCurrentPosition(new TimelinePosition(position).add(BigDecimal.valueOf(i).multiply(projectRepository.getFrameTime())))
                         .withNeedsSound(false)
                         .withNeedsVideo(true)
                         .withExpectedWidth(renderRequest.getWidth())
