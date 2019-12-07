@@ -29,6 +29,7 @@ public class EffectMovedListener {
             int position = timelineState.secondsToPixels(message.getNewPosition());
             timelineState.findEffectById(message.getEffectId())
                     .ifPresent(effect -> {
+                        System.out.println("Moved to " + position);
                         effect.setLayoutX(position);
                         effect.setLayoutY(EFFECTS_OFFSET + EFFECT_HEIGHT * message.getNewChannelIndex());
                         if (message.getSpecialPositionUsed().isPresent() && message.isMoreMoveExpected()) {

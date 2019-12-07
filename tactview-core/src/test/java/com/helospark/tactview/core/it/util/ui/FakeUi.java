@@ -44,6 +44,8 @@ public class FakeUi {
     @Autowired
     private SaveAndLoadHandler saveAndLoadHandler;
 
+    private TimelinePosition cursorPosition = TimelinePosition.ofZero();
+
     @PostConstruct
     public void init() {
         for (int i = 0; i < 4; ++i) {
@@ -53,6 +55,14 @@ public class FakeUi {
 
     public TimelineClip dragProceduralClipToFirstChannel(String proceduralClipId, TimelinePosition position) {
         return dragProceduralClipToChannel(proceduralClipId, position, 0);
+    }
+
+    public void setCursorTo(TimelinePosition position) {
+        this.cursorPosition = position;
+    }
+
+    public DragClipProcess dragClip(TimelineClip clip) {
+        return new DragClipProcess(timelineManagerAccessor, clip.getId(), cursorPosition);
     }
 
     public TimelineClip dragProceduralClipToChannel(String proceduralClipId, TimelinePosition position, int channelIndex) {

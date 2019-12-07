@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Generated;
@@ -8,6 +10,7 @@ public class MoveEffectRequest {
     private String effectId;
     private TimelinePosition globalNewPosition;
     private Optional<TimelineLength> maximumJumpToSpecialPositions;
+    private List<TimelinePosition> additionalSpecialPositions;
     private boolean moreMoveExpected;
 
     @Generated("SparkTools")
@@ -15,6 +18,7 @@ public class MoveEffectRequest {
         this.effectId = builder.effectId;
         this.globalNewPosition = builder.globalNewPosition;
         this.maximumJumpToSpecialPositions = builder.maximumJumpToSpecialPositions;
+        this.additionalSpecialPositions = builder.additionalSpecialPositions;
         this.moreMoveExpected = builder.moreMoveExpected;
     }
 
@@ -34,6 +38,10 @@ public class MoveEffectRequest {
         return moreMoveExpected;
     }
 
+    public List<TimelinePosition> getAdditionalSpecialPositions() {
+        return additionalSpecialPositions;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -44,6 +52,7 @@ public class MoveEffectRequest {
         private String effectId;
         private TimelinePosition globalNewPosition;
         private Optional<TimelineLength> maximumJumpToSpecialPositions = Optional.empty();
+        private List<TimelinePosition> additionalSpecialPositions = Collections.emptyList();
         private boolean moreMoveExpected;
 
         private Builder() {
@@ -61,6 +70,11 @@ public class MoveEffectRequest {
 
         public Builder withMaximumJumpToSpecialPositions(Optional<TimelineLength> maximumJumpToSpecialPositions) {
             this.maximumJumpToSpecialPositions = maximumJumpToSpecialPositions;
+            return this;
+        }
+
+        public Builder withAdditionalSpecialPositions(List<TimelinePosition> additionalSpecialPositions) {
+            this.additionalSpecialPositions = additionalSpecialPositions;
             return this;
         }
 

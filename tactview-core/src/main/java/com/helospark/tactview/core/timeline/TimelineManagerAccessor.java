@@ -241,7 +241,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .forEach(effectId -> ignoredIds.add(effectId));
 
             synchronized (timelineChannelsState.fullLock) { // allLinkedClipsCanBeMoved requires state modification
-                specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds)
+                specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds, moveClipRequest.additionalSpecialPositions)
                         .stream()
                         .filter(a -> {
                             TimelinePosition relativeMove = originalInterval.getStartPosition().subtract(a.getClipPosition());
@@ -388,10 +388,11 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
 
         Optional<ClosesIntervalChannel> specialPosition = Optional.empty();
         if (request.getMaximumJumpToSpecialPositions().isPresent()) {
-            specialPosition = calculateSpecialPositionAround(globalNewPosition, request.getMaximumJumpToSpecialPositions().get(), effect.getGlobalInterval(), List.of(request.getEffectId()))
-                    .stream()
-                    .findFirst();
-            globalNewPosition = specialPosition.map(a -> a.getSpecialPosition()).orElse(globalNewPosition);
+            specialPosition = calculateSpecialPositionAround(globalNewPosition, request.getMaximumJumpToSpecialPositions().get(), effect.getGlobalInterval(), List.of(request.getEffectId()),
+                    request.getAdditionalSpecialPositions())
+                            .stream()
+                            .findFirst();
+            globalNewPosition = specialPosition.map(a -> a.getClipPosition()).orElse(globalNewPosition);
         }
 
         int newChannel = currentClip.moveEffect(effect, globalNewPosition);
@@ -593,7 +594,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     }
 
     // TODO: some cleanup on below
-    public Set<ClosesIntervalChannel> calculateSpecialPositionAround(TimelinePosition position, TimelineLength inRadius, TimelineInterval intervalToAdd, List<String> ignoredIds) {
+    public Set<ClosesIntervalChannel> calculateSpecialPositionAround(TimelinePosition position, TimelineLength inRadius, TimelineInterval intervalToAdd, List<String> ignoredIds,
+            List<TimelinePosition> additionalPositions) {
         Set<ClosesIntervalChannel> set = new TreeSet<>();
         TimelineLength clipLength = intervalToAdd.getLength();
         TimelinePosition endPosition = position.add(clipLength);
@@ -606,6 +608,32 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     return a;
                 })
                 .collect(Collectors.toList()));
+
+        for (TimelinePosition additionalPosition : additionalPositions) {
+            BigDecimal startDistance = additionalPosition.distanceFrom(position);
+            BigDecimal endDistance = additionalPosition.distanceFrom(endPosition);
+
+            System.out.println("Distance   ----    " + startDistance + " " + endDistance);
+
+            if (startDistance.compareTo(endDistance) < 0) {
+                System.out.println("Startdistance is less");
+                if (startDistance.compareTo(inRadius.getSeconds()) < 0) {
+                    for (TimelineChannel channel : getChannels()) {
+                        set.add(new ClosesIntervalChannel(new TimelineLength(startDistance), channel.getId(), additionalPosition, additionalPosition));
+                    }
+                }
+            } else {
+                System.out.println("Endistance is less");
+                if (endDistance.compareTo(inRadius.getSeconds()) < 0) {
+                    System.out.println("Endistance is less - 2   " + clipLength);
+                    for (TimelineChannel channel : getChannels()) {
+                        set.add(new ClosesIntervalChannel(new TimelineLength(endDistance), channel.getId(), additionalPosition.subtract(clipLength), additionalPosition));
+                    }
+                }
+            }
+        }
+
+        System.out.println(set);
 
         return set;
     }

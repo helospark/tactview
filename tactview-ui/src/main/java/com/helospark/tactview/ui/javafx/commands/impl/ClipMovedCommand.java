@@ -32,6 +32,8 @@ public class ClipMovedCommand implements UiCommand {
 
     private boolean wasOperationSuccessful = false;
 
+    private List<TimelinePosition> additionalPositions;
+
     @Generated("SparkTools")
     private ClipMovedCommand(Builder builder) {
         this.isRevertable = builder.isRevertable;
@@ -45,6 +47,8 @@ public class ClipMovedCommand implements UiCommand {
         this.enableJumpingToSpecialPosition = builder.enableJumpingToSpecialPosition;
         this.maximumJumpLength = builder.maximumJumpLength;
         this.moreMoveExpected = builder.moreMoveExpected;
+        this.wasOperationSuccessful = builder.wasOperationSuccessful;
+        this.additionalPositions = builder.additionalPositions;
     }
 
     @Override
@@ -57,6 +61,7 @@ public class ClipMovedCommand implements UiCommand {
                 .withMaximumJump(maximumJumpLength)
                 .withMoreMoveExpected(moreMoveExpected)
                 .withEnableJumpingToSpecialPosition(enableJumpingToSpecialPosition)
+                .withAdditionalSpecialPositions(additionalPositions)
                 .build();
 
         wasOperationSuccessful = timelineManager.moveClip(request);
@@ -108,8 +113,10 @@ public class ClipMovedCommand implements UiCommand {
         private TimelinePosition previousPosition;
         private TimelineManagerAccessor timelineManager;
         private boolean enableJumpingToSpecialPosition;
-        private boolean moreMoveExpected;
         private TimelineLength maximumJumpLength;
+        private boolean moreMoveExpected;
+        private boolean wasOperationSuccessful;
+        private List<TimelinePosition> additionalPositions = Collections.emptyList();
 
         private Builder() {
         }
@@ -159,13 +166,23 @@ public class ClipMovedCommand implements UiCommand {
             return this;
         }
 
+        public Builder withMaximumJumpLength(TimelineLength maximumJumpLength) {
+            this.maximumJumpLength = maximumJumpLength;
+            return this;
+        }
+
         public Builder withMoreMoveExpected(boolean moreMoveExpected) {
             this.moreMoveExpected = moreMoveExpected;
             return this;
         }
 
-        public Builder withMaximumJumpLength(TimelineLength maximumJumpLength) {
-            this.maximumJumpLength = maximumJumpLength;
+        public Builder withWasOperationSuccessful(boolean wasOperationSuccessful) {
+            this.wasOperationSuccessful = wasOperationSuccessful;
+            return this;
+        }
+
+        public Builder withAdditionalPositions(List<TimelinePosition> additionalPositions) {
+            this.additionalPositions = additionalPositions;
             return this;
         }
 

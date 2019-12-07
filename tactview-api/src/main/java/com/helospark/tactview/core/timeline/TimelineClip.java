@@ -233,6 +233,8 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         if (newInterval.getStartPosition().isLessThan(localClipInterval.getStartPosition())) {
             newInterval = newInterval.butMoveStartPostionTo(TimelinePosition.ofZero());
         }
+
+        System.out.println("gi " + globalNewPosition + " " + newInterval);
         if (newInterval.getEndPosition().isGreaterThan(localClipInterval.getEndPosition())) {
             TimelinePosition difference = newInterval.getEndPosition().subtract(localClipInterval.getEndPosition());
             newInterval = newInterval.butMoveStartPostionTo(newInterval.getStartPosition().subtract(difference));

@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Generated;
@@ -26,6 +27,8 @@ public class EffectMovedCommand implements UiCommand {
 
     private TimelineManagerAccessor timelineManager;
 
+    private List<TimelinePosition> additionalSpecialPositions;
+
     @Generated("SparkTools")
     private EffectMovedCommand(Builder builder) {
         this.effectId = builder.effectId;
@@ -37,6 +40,7 @@ public class EffectMovedCommand implements UiCommand {
         this.revertable = builder.revertable;
         this.moreMoveExpected = builder.moreMoveExpected;
         this.timelineManager = builder.timelineManager;
+        this.additionalSpecialPositions = builder.additionalSpecialPositions;
     }
 
     @Override
@@ -50,6 +54,7 @@ public class EffectMovedCommand implements UiCommand {
                 .withGlobalNewPosition(globalNewPosition)
                 .withMaximumJumpToSpecialPositions(jump)
                 .withMoreMoveExpected(moreMoveExpected)
+                .withAdditionalSpecialPositions(additionalSpecialPositions)
                 .build();
 
         timelineManager.moveEffect(request);
@@ -94,6 +99,7 @@ public class EffectMovedCommand implements UiCommand {
         private boolean revertable;
         private boolean moreMoveExpected;
         private TimelineManagerAccessor timelineManager;
+        private List<TimelinePosition> additionalSpecialPositions;
 
         private Builder() {
         }
@@ -140,6 +146,11 @@ public class EffectMovedCommand implements UiCommand {
 
         public Builder withTimelineManager(TimelineManagerAccessor timelineManager) {
             this.timelineManager = timelineManager;
+            return this;
+        }
+
+        public Builder withAdditionalSpecialPositions(List<TimelinePosition> additionalSpecialPositions) {
+            this.additionalSpecialPositions = additionalSpecialPositions;
             return this;
         }
 

@@ -1,23 +1,29 @@
-package com.helospark.tactview.core.timeline;
+package com.helospark.tactview.core.it.util.ui;
 
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Generated;
 
-public class MoveClipRequest {
+import com.helospark.tactview.core.timeline.MoveClipRequest;
+import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.TimelinePosition;
+
+public class DragClipProcess {
+    private TimelineManagerAccessor timelineManagerAccessor;
     public String clipId;
-    public List<String> additionalClipIds;
+    public List<String> additionalClipIds = List.of();
     public TimelinePosition newPosition;
-    public String newChannelId;
-    public boolean enableJumpingToSpecialPosition;
-    public boolean moreMoveExpected;
-    public TimelineLength maximumJump;
-    public List<TimelinePosition> additionalSpecialPositions;
+    public String newChannelId = null;
+    public boolean enableJumpingToSpecialPosition = true;
+    public boolean moreMoveExpected = true;
+    public TimelineLength maximumJump = TimelineLength.ofOne();
+    public List<TimelinePosition> additionalSpecialPositions = List.of();
+    public TimelinePosition cursorPosition;
 
     @Generated("SparkTools")
-    private MoveClipRequest(Builder builder) {
-        this.clipId = builder.clipId;
+    private DragClipProcess(Builder builder) {
         this.additionalClipIds = builder.additionalClipIds;
         this.newPosition = builder.newPosition;
         this.newChannelId = builder.newChannelId;
@@ -27,6 +33,26 @@ public class MoveClipRequest {
         this.additionalSpecialPositions = builder.additionalSpecialPositions;
     }
 
+    public DragClipProcess(TimelineManagerAccessor timelineManagerAccessor, String clipId, TimelinePosition cursorPosition) {
+        this.timelineManagerAccessor = timelineManagerAccessor;
+        this.clipId = clipId;
+        this.cursorPosition = cursorPosition;
+    }
+
+    public void dragTo(TimelinePosition position) {
+        MoveClipRequest moveClipRequest = MoveClipRequest.builder()
+                .withAdditionalClipIds(List.of())
+                .withAdditionalSpecialPositions(List.of(cursorPosition))
+                .withClipId(clipId)
+                .withEnableJumpingToSpecialPosition(true)
+                .withMaximumJump(TimelineLength.ofOne())
+                .withMoreMoveExpected(false)
+                .withNewPosition(position)
+                .withNewChannelId(timelineManagerAccessor.findChannelForClipId(clipId).get().getId())
+                .build();
+        timelineManagerAccessor.moveClip(moveClipRequest);
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -34,7 +60,6 @@ public class MoveClipRequest {
 
     @Generated("SparkTools")
     public static final class Builder {
-        private String clipId;
         private List<String> additionalClipIds = Collections.emptyList();
         private TimelinePosition newPosition;
         private String newChannelId;
@@ -44,11 +69,6 @@ public class MoveClipRequest {
         private List<TimelinePosition> additionalSpecialPositions = Collections.emptyList();
 
         private Builder() {
-        }
-
-        public Builder withClipId(String clipId) {
-            this.clipId = clipId;
-            return this;
         }
 
         public Builder withAdditionalClipIds(List<String> additionalClipIds) {
@@ -86,8 +106,9 @@ public class MoveClipRequest {
             return this;
         }
 
-        public MoveClipRequest build() {
-            return new MoveClipRequest(this);
+        public DragClipProcess build() {
+            return new DragClipProcess(this);
         }
     }
+
 }
