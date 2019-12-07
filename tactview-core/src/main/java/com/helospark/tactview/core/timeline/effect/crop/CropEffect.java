@@ -82,7 +82,7 @@ public class CropEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         strengthProvider = new IntegerProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(20.0));
 
         topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.3), doubleProviderWithDefaultValue(0.3));
@@ -90,7 +90,7 @@ public class CropEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         LineProvider lineProvider = new LineProvider(topLeftPointProvider, bottomRightPointProvider);
 
         ValueProviderDescriptor sizeDescriptor = ValueProviderDescriptor.builder()

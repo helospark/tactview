@@ -82,14 +82,14 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         displacementMapProvider = new DependentClipProvider(new StepStringInterpolator());
         verticalDisplacementMultiplierProvider = new DoubleProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(30.0));
         horizontalDisplacementMultiplierProvider = new DoubleProvider(0, 100, new MultiKeyframeBasedDoubleInterpolator(30.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         List<ValueProviderDescriptor> result = new ArrayList<>();
 
         ValueProviderDescriptor displacementMapProviderDescriptor = ValueProviderDescriptor.builder()

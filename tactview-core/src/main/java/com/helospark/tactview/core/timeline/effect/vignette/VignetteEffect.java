@@ -56,14 +56,13 @@ public class VignetteEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         vignetteStrengthProvider = new DoubleProvider(0.1, 2.0, new MultiKeyframeBasedDoubleInterpolator(0.7));
         vignettePowerFactorProvider = new IntegerProvider(1, 10, new MultiKeyframeBasedDoubleInterpolator(4.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor vignetteStrengthProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(vignetteStrengthProvider)
                 .withName("strenght")

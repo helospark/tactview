@@ -87,15 +87,15 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
     }
 
     @Override
-    public void initializeValueProvider() {
-        super.initializeValueProvider();
+    protected void initializeValueProviderInternal() {
+        super.initializeValueProviderInternal();
 
         directionProvider = new ValueListProvider<>(createList(), new StepStringInterpolator(DISSOLVE_DARK_FIRST));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> result = super.getValueProviders();
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        List<ValueProviderDescriptor> result = super.getValueProvidersInternal();
 
         ValueProviderDescriptor directionProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(directionProvider)

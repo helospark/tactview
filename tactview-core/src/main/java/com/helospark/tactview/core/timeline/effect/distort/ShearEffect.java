@@ -70,14 +70,14 @@ public class ShearEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         shearXProvider = new DoubleProvider(-0.01, 0.01, new MultiKeyframeBasedDoubleInterpolator(0.001));
         shearYProvider = new DoubleProvider(-0.01, 0.01, new MultiKeyframeBasedDoubleInterpolator(0.0));
         offsetProvider = PointProvider.ofNormalizedImagePosition(0.0, 0.0);
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor shearXProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(shearXProvider)
                 .withName("Shear X")

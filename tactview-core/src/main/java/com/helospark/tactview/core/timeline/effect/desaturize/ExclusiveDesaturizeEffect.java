@@ -78,7 +78,7 @@ public class ExclusiveDesaturizeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         excludedColorProvider = new ColorProvider(createDoubleProvider(0.0), createDoubleProvider(1.0), createDoubleProvider(0.0));
         excludedHueRangeProvider = new DoubleProvider(0.0, 2.0, new MultiKeyframeBasedDoubleInterpolator(0.1));
         falloffFactorProvider = new DoubleProvider(0.0, 10.0, new MultiKeyframeBasedDoubleInterpolator(2.0));
@@ -89,7 +89,7 @@ public class ExclusiveDesaturizeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor valueProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(excludedColorProvider)
                 .withName("Excluded color")

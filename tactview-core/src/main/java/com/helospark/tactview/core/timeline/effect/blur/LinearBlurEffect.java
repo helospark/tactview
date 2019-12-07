@@ -52,12 +52,12 @@ public class LinearBlurEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         directionProvider = LineProvider.ofNormalizedScreenCoordinates(0.5, 0.5, 0.55, 0.55);
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor directionDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(directionProvider)
                 .withName("direction")

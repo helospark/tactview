@@ -170,7 +170,7 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         shadowsShiftProvider = createColorProvider(0, 0, 0);
         midtonesShiftProvider = createColorProvider(0, 0, 0);
         highlightsShiftProvider = createColorProvider(0, 0, 0);
@@ -182,7 +182,7 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     };
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor shadowsShiftProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(shadowsShiftProvider)

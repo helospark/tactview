@@ -57,11 +57,11 @@ public class NormalizeAudioEffect extends StatelessAudioEffect implements LongPr
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         return List.of();
     }
 

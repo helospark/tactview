@@ -78,7 +78,7 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         waveSpeedProvider = new DoubleProvider(-10.0, 10.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
         frequencyProviderX = new DoubleProvider(0.1, 20.0, new MultiKeyframeBasedDoubleInterpolator(3.0));
         frequencyProviderY = new DoubleProvider(0.1, 20.0, new MultiKeyframeBasedDoubleInterpolator(3.0));
@@ -87,7 +87,7 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor progressProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(waveSpeedProvider)

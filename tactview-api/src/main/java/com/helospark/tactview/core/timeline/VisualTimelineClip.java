@@ -118,24 +118,26 @@ public abstract class VisualTimelineClip extends TimelineClip {
                     break;
                 }
 
-                StatelessEffectRequest request = StatelessEffectRequest.builder()
-                        .withClipPosition(relativePosition)
-                        .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
-                        .withCurrentFrame(frameResult)
-                        .withScale(frameRequest.getScale())
-                        .withCanvasWidth(frameRequest.getExpectedWidth())
-                        .withCanvasHeight(frameRequest.getExpectedHeight())
-                        .withRequestedClips(frameRequest.getRequestedClips())
-                        .withRequestedChannelClips(frameRequest.getRequestedChannelClips())
-                        .withCurrentTimelineClip(this)
-                        .withEffectChannel(effectChannelIndex)
-                        .build();
+                if (effect.isEnabledAt(frameRequest.getRelativePosition())) {
+                    StatelessEffectRequest request = StatelessEffectRequest.builder()
+                            .withClipPosition(relativePosition)
+                            .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
+                            .withCurrentFrame(frameResult)
+                            .withScale(frameRequest.getScale())
+                            .withCanvasWidth(frameRequest.getExpectedWidth())
+                            .withCanvasHeight(frameRequest.getExpectedHeight())
+                            .withRequestedClips(frameRequest.getRequestedClips())
+                            .withRequestedChannelClips(frameRequest.getRequestedChannelClips())
+                            .withCurrentTimelineClip(this)
+                            .withEffectChannel(effectChannelIndex)
+                            .build();
 
-                ReadOnlyClipImage appliedEffectsResult = effect.createFrame(request);
+                    ReadOnlyClipImage appliedEffectsResult = effect.createFrame(request);
 
-                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
+                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 
-                frameResult = appliedEffectsResult;
+                    frameResult = appliedEffectsResult;
+                }
                 ++effectChannelIndex;
             }
         }

@@ -74,12 +74,12 @@ public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         pixelColumnWidthProvider = new IntegerProvider(1, 20, new MultiKeyframeBasedDoubleInterpolator(5.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor widthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(pixelColumnWidthProvider)

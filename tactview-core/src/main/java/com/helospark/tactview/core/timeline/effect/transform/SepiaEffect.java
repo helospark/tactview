@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline.effect.transform;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,18 +51,17 @@ public class SepiaEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
-
-    }
-
-    @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
         return new SepiaEffect(this, cloneRequestMetadata);
+    }
+
+    @Override
+    protected void initializeValueProviderInternal() {
+    }
+
+    @Override
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        return List.of();
     }
 
 }

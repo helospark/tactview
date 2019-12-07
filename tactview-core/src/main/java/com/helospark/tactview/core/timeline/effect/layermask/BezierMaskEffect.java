@@ -95,7 +95,7 @@ public class BezierMaskEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         invertProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
         layerMaskEnabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0));
         polygonProvider = new BezierPolygonProvider(List.of());
@@ -103,7 +103,7 @@ public class BezierMaskEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor polygonProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(polygonProvider)
                 .withName("polygon")

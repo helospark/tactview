@@ -64,7 +64,7 @@ public class CurvesEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         List<PointProvider> points = new ArrayList<>();
         points.add(PointProvider.of(0.0, 0.0));
         points.add(PointProvider.of(0.3, 0.2));
@@ -137,7 +137,7 @@ public class CurvesEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor targetDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(targetProvider)
                 .withName("target")

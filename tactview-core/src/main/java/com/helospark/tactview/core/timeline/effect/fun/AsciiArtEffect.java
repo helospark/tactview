@@ -76,7 +76,7 @@ public class AsciiArtEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         characterHeightProvider = new IntegerProvider(2, 100, new MultiKeyframeBasedDoubleInterpolator(20.0));
 
         characterFitStrategy = new ValueListProvider<>(List.of(
@@ -86,7 +86,7 @@ public class AsciiArtEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor characterHeightProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(characterHeightProvider)
                 .withName("Character height")

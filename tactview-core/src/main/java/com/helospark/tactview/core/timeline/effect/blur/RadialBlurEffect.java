@@ -59,13 +59,13 @@ public class RadialBlurEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         angleProvider = new DoubleProvider(0, 360, new MultiKeyframeBasedDoubleInterpolator(10.0));
         centerProvider = PointProvider.ofNormalizedImagePosition(0.5, 0.5);
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor widthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(angleProvider)
                 .withName("angle")

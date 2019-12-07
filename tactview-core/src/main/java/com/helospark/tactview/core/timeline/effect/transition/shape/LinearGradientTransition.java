@@ -119,16 +119,16 @@ public class LinearGradientTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
-        super.initializeValueProvider();
+    protected void initializeValueProviderInternal() {
+        super.initializeValueProviderInternal();
 
         fuzzinessProvider = new DoubleProvider(0.0, 0.2, new MultiKeyframeBasedDoubleInterpolator(0.05));
         directionProvider = LineProvider.ofNormalizedScreenCoordinates(0.3, 0.3, 0.8, 0.8);
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> result = super.getValueProviders();
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        List<ValueProviderDescriptor> result = super.getValueProvidersInternal();
 
         ValueProviderDescriptor fuzzyDescriptor = ValueProviderDescriptor.builder()
                 .withName("Fuzzy border")

@@ -60,14 +60,14 @@ public class DenoiseEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         templateWindowSizeProvider = new IntegerProvider(0, 30, new MultiKeyframeBasedDoubleInterpolator(3.0));
         searchWindowSizeProvider = new IntegerProvider(0, 50, new MultiKeyframeBasedDoubleInterpolator(10.0));
         strengthProvider = new DoubleProvider(0, 50, new MultiKeyframeBasedDoubleInterpolator(10.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor templateWindowSizeProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(templateWindowSizeProvider)

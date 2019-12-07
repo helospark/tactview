@@ -93,7 +93,7 @@ public class PerturbationDistortEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         zPositionProvider = new DoubleProvider(-300, 300, new MultiKeyframeBasedDoubleInterpolator(0.0));
         colorScaleProvider = new DoubleProvider(1, 255, new MultiKeyframeBasedDoubleInterpolator(50.0));
         frequencyProvider = new DoubleProvider(0, 2, new MultiKeyframeBasedDoubleInterpolator(0.13));
@@ -108,7 +108,7 @@ public class PerturbationDistortEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor frequencyDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(frequencyProvider)
                 .withName("frequency")

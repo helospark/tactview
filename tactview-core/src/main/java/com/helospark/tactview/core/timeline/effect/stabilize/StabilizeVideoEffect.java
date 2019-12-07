@@ -87,12 +87,12 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         smoothingRadiusProvider = new IntegerProvider(1, 500, new ConstantInterpolator(200.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor radiusDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(smoothingRadiusProvider)
                 .withName("Smoothing radius")

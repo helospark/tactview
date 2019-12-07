@@ -179,7 +179,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         shadowBlurXProvider = new DoubleProvider(1, 100, new MultiKeyframeBasedDoubleInterpolator(40.0));
         shadowBlurYProvider = new DoubleProvider(1, 100, new MultiKeyframeBasedDoubleInterpolator(40.0));
         shadowMultiplierProvider = new DoubleProvider(0.1, 3, new MultiKeyframeBasedDoubleInterpolator(1.5));
@@ -192,7 +192,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor shadowBlurXProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(shadowBlurXProvider)

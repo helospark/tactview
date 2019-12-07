@@ -58,14 +58,14 @@ public class AutoWhiteBalanceEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         colorProvider = ColorProvider.fromDefaultValue(1.0, 1.0, 1.0);
         tintMultiplierProvider = new DoubleProvider(0, 2, new MultiKeyframeBasedDoubleInterpolator(0.5));
         temperatureMultiplierProvider = new DoubleProvider(0, 2, new MultiKeyframeBasedDoubleInterpolator(0.5));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor colorProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(colorProvider)
                 .withName("Select a color that should be white")

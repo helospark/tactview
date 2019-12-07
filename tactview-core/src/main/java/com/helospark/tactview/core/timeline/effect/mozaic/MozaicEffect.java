@@ -65,13 +65,13 @@ public class MozaicEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         xProvider = new DoubleProvider(1.0, 30.0, new MultiKeyframeBasedDoubleInterpolator(2.0));
         yProvider = new DoubleProvider(1.0, 30.0, new MultiKeyframeBasedDoubleInterpolator(2.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor xProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(xProvider)
                 .withName("x")

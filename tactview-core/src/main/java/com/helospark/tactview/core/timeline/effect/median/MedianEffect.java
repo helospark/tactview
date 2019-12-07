@@ -107,13 +107,13 @@ public class MedianEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         kernelSizeProvider = new IntegerProvider(1, 50, new MultiKeyframeBasedDoubleInterpolator(2.0));
         kernelSizeProvider.setScaleDependent();
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor kernelDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(kernelSizeProvider)
                 .withName("kernelSize")

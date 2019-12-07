@@ -57,7 +57,7 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor addedConstantDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(addedConstantProvider)
@@ -76,7 +76,7 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         addedConstantProvider = new IntegerProvider(-50, 50, new MultiKeyframeBasedDoubleInterpolator(0.0));
         blockSizeProvider = new IntegerProvider(1, 10, new MultiKeyframeBasedDoubleInterpolator(2.0));
     }

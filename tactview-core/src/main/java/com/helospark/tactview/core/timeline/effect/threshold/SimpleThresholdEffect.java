@@ -57,7 +57,7 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor thresholdDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(thresholdLimitProvider)
@@ -73,7 +73,7 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         thresholdLimitProvider = new IntegerProvider(0, 255, new MultiKeyframeBasedDoubleInterpolator(127.0));
     }
 

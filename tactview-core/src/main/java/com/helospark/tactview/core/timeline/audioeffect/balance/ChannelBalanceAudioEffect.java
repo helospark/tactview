@@ -54,7 +54,7 @@ public class ChannelBalanceAudioEffect extends StatelessAudioEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         channelVolumeProviders = new ArrayList<>();
         for (int i = 0; i < projectRepository.getNumberOfChannels(); ++i) {
             channelVolumeProviders.add(new DoubleProvider(0.0, 2.0, new MultiKeyframeBasedDoubleInterpolator(1.0)));
@@ -62,7 +62,7 @@ public class ChannelBalanceAudioEffect extends StatelessAudioEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         List<ValueProviderDescriptor> result = new ArrayList<>();
         for (int i = 0; i < channelVolumeProviders.size(); ++i) {
             result.add(ValueProviderDescriptor.builder()

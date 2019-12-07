@@ -90,15 +90,15 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
-        super.initializeValueProvider();
+    protected void initializeValueProviderInternal() {
+        super.initializeValueProviderInternal();
 
         keepAtWhitePercentage = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(0.1));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> result = super.getValueProviders();
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        List<ValueProviderDescriptor> result = super.getValueProvidersInternal();
 
         ValueProviderDescriptor keepAtWhitePercentProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(keepAtWhitePercentage)

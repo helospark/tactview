@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
@@ -18,6 +20,8 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
     protected String factoryId;
     protected TimelineInterval interval;
     protected IntervalAware parentIntervalAware;
+
+    protected BooleanProvider enabledProvider;
 
     public StatelessEffect(TimelineInterval interval) {
         id = UUID.randomUUID().toString();
@@ -32,6 +36,7 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
         }
         this.interval = effect.interval;
         this.factoryId = effect.factoryId;
+        ReflectionUtil.copyOrCloneFieldFromTo(effect, this, StatelessEffect.class);
     }
 
     public StatelessEffect(JsonNode node, LoadMetadata loadMetadata) {
@@ -73,9 +78,27 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
         return id;
     }
 
-    public abstract void initializeValueProvider();
+    public void initializeValueProvider() {
+        initializeValueProviderInternal();
+        enabledProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0));
+    }
 
-    public abstract List<ValueProviderDescriptor> getValueProviders();
+    protected abstract void initializeValueProviderInternal();
+
+    public List<ValueProviderDescriptor> getValueProviders() {
+        ValueProviderDescriptor enabledProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(enabledProvider)
+                .withName("Enabled")
+                .build();
+
+        List<ValueProviderDescriptor> result = new ArrayList<>();
+        result.add(enabledProviderDescriptor);
+        result.addAll(getValueProvidersInternal());
+
+        return result;
+    }
+
+    protected abstract List<ValueProviderDescriptor> getValueProvidersInternal();
 
     @Override
     public void setInterval(TimelineInterval timelineInterval) {
@@ -113,6 +136,10 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
 
     protected List<String> getChannelDependency(TimelinePosition position) {
         return List.of();
+    }
+
+    public boolean isEnabledAt(TimelinePosition position) {
+        return enabledProvider.getValueAt(position);
     }
 
 }

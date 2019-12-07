@@ -64,7 +64,7 @@ public class PolarCoordinateEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         circleDepthProvider = new DoubleProvider(0.0, 100.0, new MultiKeyframeBasedDoubleInterpolator(100.0));
         offsetAngleProvider = new DoubleProvider(0.0, 2.0 * Math.PI, new MultiKeyframeBasedDoubleInterpolator(0.0));
         mapBackwardProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
@@ -73,7 +73,7 @@ public class PolarCoordinateEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor circleDepthProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(circleDepthProvider)
                 .withName("Circle deapth")

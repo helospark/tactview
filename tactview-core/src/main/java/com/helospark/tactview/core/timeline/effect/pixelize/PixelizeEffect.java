@@ -107,13 +107,13 @@ public class PixelizeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         pixelWidthProvider = new DoubleProvider(1.0 / 4000, 0.2, new MultiKeyframeBasedDoubleInterpolator(0.1));
         pixelHeightProvider = new DoubleProvider(1.0 / 4000, 0.2, new MultiKeyframeBasedDoubleInterpolator(0.1));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor pixelWidthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(pixelWidthProvider)

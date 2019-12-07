@@ -112,14 +112,14 @@ public class ZoomEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         toAreaProvider = LineProvider.ofNormalizedScreenCoordinates(0.0, 0.0, 1.0, 1.0);
         fromAreaProvider = LineProvider.ofNormalizedScreenCoordinates(0.3, 0.3, 0.8, 0.8);
         keepRatioProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor toAreaProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(toAreaProvider)
                 .withName("To area")

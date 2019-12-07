@@ -62,13 +62,13 @@ public class SharpenEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         blurRadiusProvider = new IntegerProvider(1, 10, new MultiKeyframeBasedDoubleInterpolator(3.0));
         strengthProvider = new DoubleProvider(0.0, 2.0, new MultiKeyframeBasedDoubleInterpolator(0.5));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor blurRadiusProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(blurRadiusProvider)
                 .withName("Blur radius")

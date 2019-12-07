@@ -114,7 +114,7 @@ public class BlendEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         dependentClipProvider = new DependentClipProvider(new StepStringInterpolator());
         blendModeProvider = new ValueListProvider<>(createBlendModes(), new StepStringInterpolator("normal"));
         scaleOnDifferentSizePrivder = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
@@ -128,7 +128,7 @@ public class BlendEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor dependentClipProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(dependentClipProvider)
                 .withName("Clip")

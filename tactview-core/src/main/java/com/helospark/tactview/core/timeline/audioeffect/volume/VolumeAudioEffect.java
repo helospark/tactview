@@ -49,12 +49,12 @@ public class VolumeAudioEffect extends StatelessAudioEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         volumeProvider = new DoubleProvider(0, 10, new MultiKeyframeBasedDoubleInterpolator(0.6));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor heightDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(volumeProvider)

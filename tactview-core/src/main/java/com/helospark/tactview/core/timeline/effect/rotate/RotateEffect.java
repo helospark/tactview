@@ -52,12 +52,12 @@ public class RotateEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         angleProvider = new DoubleProvider(0, 360, new MultiKeyframeBasedDoubleInterpolator(0.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor angleDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(angleProvider)

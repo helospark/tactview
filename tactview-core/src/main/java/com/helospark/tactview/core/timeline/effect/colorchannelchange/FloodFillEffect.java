@@ -111,14 +111,14 @@ public class FloodFillEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         startPointProvider = PointProvider.ofNormalizedImagePosition(0.5, 0.5);
         newColorProvider = ColorProvider.fromDefaultValue(0.0, 1.0, 0.0);
         maximumColorDifferenceProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(0.1));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor centerDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(startPointProvider)

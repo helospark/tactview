@@ -66,19 +66,22 @@ public abstract class AudibleTimelineClip extends TimelineClip {
             List<StatelessAudioEffect> actualEffects = getEffectsAt(relativePosition, StatelessAudioEffect.class);
 
             for (StatelessAudioEffect effect : actualEffects) {
-                AudioEffectRequest request = AudioEffectRequest.builder()
-                        .withClipPosition(relativePosition)
-                        .withEffectPosition(relativePosition.from(effect.getInterval().getStartPosition()))
-                        .withInput(frameResult)
-                        .build();
 
-                AudioFrameResult appliedEffectsResult = effect.applyEffect(request);
+                if (effect.isEnabledAt(relativePosition)) {
+                    AudioEffectRequest request = AudioEffectRequest.builder()
+                            .withClipPosition(relativePosition)
+                            .withEffectPosition(relativePosition.from(effect.getInterval().getStartPosition()))
+                            .withInput(frameResult)
+                            .build();
 
-                frameResult.getChannels()
-                        .stream()
-                        .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
+                    AudioFrameResult appliedEffectsResult = effect.applyEffect(request);
 
-                frameResult = appliedEffectsResult;
+                    frameResult.getChannels()
+                            .stream()
+                            .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
+
+                    frameResult = appliedEffectsResult;
+                }
             }
         }
         return frameResult;

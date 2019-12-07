@@ -80,7 +80,7 @@ public class LensDistortEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         focalLengthProvider = new DoubleProvider(-20, 20, new MultiKeyframeBasedDoubleInterpolator(7.0));
         k1Provider = new DoubleProvider(-100, 100, new MultiKeyframeBasedDoubleInterpolator(-11.0));
         k2Provider = new DoubleProvider(-1000, 1000, new MultiKeyframeBasedDoubleInterpolator(0.1));
@@ -92,7 +92,7 @@ public class LensDistortEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor focalLengthDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(focalLengthProvider)
                 .withName("focal length")

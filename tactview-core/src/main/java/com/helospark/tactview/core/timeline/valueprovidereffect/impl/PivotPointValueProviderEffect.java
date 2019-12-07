@@ -63,4 +63,14 @@ public class PivotPointValueProviderEffect extends StatelessValueProviderEffect 
                 new DoubleProvider(SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE, new MultiKeyframeBasedDoubleInterpolator(0.0)));
     }
 
+    @Override
+    protected void initializeValueProviderInternal() {
+
+    }
+
+    @Override
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        return List.of();
+    }
+
 }

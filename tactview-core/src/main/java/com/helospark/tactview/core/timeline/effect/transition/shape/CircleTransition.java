@@ -92,15 +92,15 @@ public class CircleTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
-        super.initializeValueProvider();
+    protected void initializeValueProviderInternal() {
+        super.initializeValueProviderInternal();
 
         fuzzinessProvider = new DoubleProvider(0.0, 0.5, new MultiKeyframeBasedDoubleInterpolator(0.1));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> result = super.getValueProviders();
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        List<ValueProviderDescriptor> result = super.getValueProvidersInternal();
 
         ValueProviderDescriptor fuzzyDescriptor = ValueProviderDescriptor.builder()
                 .withName("Fuzzy border")

@@ -90,7 +90,7 @@ public class MirrorLineEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         lineProvider = new LineProvider(createPointProvider(0.5, 0.0), createPointProvider(0.5, 1.0));
     }
 
@@ -103,7 +103,7 @@ public class MirrorLineEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor heightDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lineProvider)
                 .withName("Mirror line")

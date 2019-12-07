@@ -53,8 +53,8 @@ public class AlphaTransitionEffect extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        return super.getValueProviders();
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        return super.getValueProvidersInternal();
     }
 
     @Override
@@ -63,8 +63,8 @@ public class AlphaTransitionEffect extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
-        super.initializeValueProvider();
+    protected void initializeValueProviderInternal() {
+        super.initializeValueProviderInternal();
     }
 
 }

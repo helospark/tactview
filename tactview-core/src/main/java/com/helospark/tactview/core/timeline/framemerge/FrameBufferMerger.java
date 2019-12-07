@@ -28,7 +28,7 @@ public class FrameBufferMerger {
             ClipImage output = new ClipImage(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4), width, height);
 
             for (int i = frames.size() - 1; i >= 0; --i) {
-                if (frames.get(i).videoTransition.isPresent()) {
+                if (frames.get(i).videoTransition.isPresent() && frames.get(i).videoTransition.get().isEnabledAt(request.getPosition())) { // TODO: global position?
                     ExternalStatelessVideoTransitionEffectRequest transitionRequest = ExternalStatelessVideoTransitionEffectRequest.builder()
                             .withGlobalPosition(request.getPosition())
                             .withFirstFrame(frames.get(i).clipFrameResult)

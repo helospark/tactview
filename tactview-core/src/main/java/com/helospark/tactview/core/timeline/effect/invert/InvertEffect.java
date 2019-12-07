@@ -45,7 +45,7 @@ public class InvertEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         return Collections.emptyList();
     }
 
@@ -55,7 +55,7 @@ public class InvertEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
 
     }
 

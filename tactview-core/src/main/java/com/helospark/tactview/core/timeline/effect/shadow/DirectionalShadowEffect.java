@@ -82,7 +82,7 @@ public class DirectionalShadowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         shadowAlphaProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(0.7));
         shadowColorProvider = ColorProvider.fromDefaultValue(0, 0, 0);
         directionProvider = LineProvider.ofNormalizedScreenCoordinates(0.4, 0.4, 0.6, 0.6);
@@ -90,7 +90,7 @@ public class DirectionalShadowEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor directionProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(directionProvider)
                 .withName("Direction")

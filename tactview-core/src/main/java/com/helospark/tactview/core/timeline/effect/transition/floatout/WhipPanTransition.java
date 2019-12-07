@@ -80,15 +80,15 @@ public class WhipPanTransition extends AbstractVideoTransitionEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
-        super.initializeValueProvider();
+    protected void initializeValueProviderInternal() {
+        super.initializeValueProviderInternal();
 
         blurProvider = new IntegerProvider(1, 1000, new MultiKeyframeBasedDoubleInterpolator(200.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> result = super.getValueProviders();
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        List<ValueProviderDescriptor> result = super.getValueProvidersInternal();
 
         ValueProviderDescriptor blurProviderDescriptor = ValueProviderDescriptor.builder()
                 .withName("Blur")

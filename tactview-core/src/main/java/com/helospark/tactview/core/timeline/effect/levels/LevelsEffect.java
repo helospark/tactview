@@ -86,7 +86,7 @@ public class LevelsEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         fromValueRangeProvider = DoubleRangeProvider.createDefaultDoubleRangeProvider(0.0, 1.0, 0.0, 1.0);
         fromRedRangeProvider = DoubleRangeProvider.createDefaultDoubleRangeProvider(0.0, 1.0, 0.0, 1.0);
         fromGreenRangeProvider = DoubleRangeProvider.createDefaultDoubleRangeProvider(0.0, 1.0, 0.0, 1.0);
@@ -99,7 +99,7 @@ public class LevelsEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         // TODO: grouping
         ValueProviderDescriptor fromValueDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(fromValueRangeProvider)

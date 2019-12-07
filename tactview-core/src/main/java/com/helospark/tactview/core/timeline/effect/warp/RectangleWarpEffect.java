@@ -89,12 +89,12 @@ public class RectangleWarpEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         rectangleProvider = RectangleProvider.createDefaultFullImageWithNormalizedPosition();
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor rectangleDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(rectangleProvider)
                 .withName("Rectangle")

@@ -129,7 +129,7 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         translateScaleProvider = new LineProvider(new PointProvider(createDoubleProvider(0.0), createDoubleProvider(0.0)), new PointProvider(createDoubleProvider(0.5), createDoubleProvider(0.5)));
         rotationCenterProvider = new PointProvider(createDoubleProvider(0.5), createDoubleProvider(0.5));
         scaleCenterProvider = new PointProvider(createDoubleProvider(0.5), createDoubleProvider(0.5));
@@ -145,7 +145,7 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor useSeparateTranslateAndScale = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(fitToRectangleScaleAndTranslate)
                 .withName("Fit to rectangle")

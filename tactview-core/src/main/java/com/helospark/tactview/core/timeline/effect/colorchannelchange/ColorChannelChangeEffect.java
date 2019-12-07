@@ -58,7 +58,7 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         redProvider = new ValueListProvider<>(createColorOperations(), new StepStringInterpolator(ColorElementOperation.RED.id));
         greenProvider = new ValueListProvider<>(createColorOperations(), new StepStringInterpolator(ColorElementOperation.GREEN.id));
         blueProvider = new ValueListProvider<>(createColorOperations(), new StepStringInterpolator(ColorElementOperation.BLUE.id));
@@ -66,7 +66,7 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor channel1ProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(redProvider)

@@ -79,7 +79,7 @@ public class GlassTilesEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         sizeXProvider = new DoubleProvider(0.0, 0.02, new MultiKeyframeBasedDoubleInterpolator(0.004));
         sizeYProvider = new DoubleProvider(0.0, 0.02, new MultiKeyframeBasedDoubleInterpolator(0.006));
 
@@ -90,7 +90,7 @@ public class GlassTilesEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor sizeXProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(sizeXProvider)
                 .withName("Size X")

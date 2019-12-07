@@ -82,7 +82,7 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
     protected abstract ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest);
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         TreeMap<TimelinePosition, Double> values = new TreeMap<>();
         values.put(new TimelinePosition(0), 0.0);
         values.put(new TimelinePosition(1), 1.0);
@@ -95,7 +95,7 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor progressDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(progressProvider)
                 .withName("progress")

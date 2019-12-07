@@ -88,13 +88,13 @@ public class PolygonMaskEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         polygonProvider = new PolygonProvider(List.of());
         fuzzyProvider = new DoubleProvider(0.0, 0.3, new MultiKeyframeBasedDoubleInterpolator(0.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor polygonProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(polygonProvider)
                 .withName("polygon")

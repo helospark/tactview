@@ -61,14 +61,14 @@ public class EdgeDetectEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         lowThresholdProvider = new DoubleProvider(1.0, 100.0, new MultiKeyframeBasedDoubleInterpolator(30.0));
         highThresholdMultiplier = new DoubleProvider(1.0, 5.0, new MultiKeyframeBasedDoubleInterpolator(3.0));
         apertureSizeProvider = new IntegerProvider(1, 3, new MultiKeyframeBasedDoubleInterpolator(3.0));
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
 
         ValueProviderDescriptor lowThresholdProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lowThresholdProvider)

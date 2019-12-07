@@ -105,7 +105,7 @@ public class MagnifierEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public void initializeValueProvider() {
+    protected void initializeValueProviderInternal() {
         centerProvider = PointProvider.ofNormalizedImagePosition(0.5, 0.5);
         refractionProvider = new DoubleProvider(1.0, 20.0, new MultiKeyframeBasedDoubleInterpolator(2.0));
         widthProvider = new DoubleProvider(0.0, 5.0, new MultiKeyframeBasedDoubleInterpolator(0.5));
@@ -113,7 +113,7 @@ public class MagnifierEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<ValueProviderDescriptor> getValueProviders() {
+    protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor centerProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(centerProvider)
                 .withName("Center")
