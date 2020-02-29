@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
@@ -43,6 +44,8 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class TimelineManagerAccessor implements SaveLoadContributor, TimelineManagerAccessorInterface {
 
+    private static final BigDecimal TWO = BigDecimal.valueOf(2L);
+
     @Slf4j
     private Logger logger;
 
@@ -53,15 +56,17 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     private LinkClipRepository linkClipRepository;
     private TimelineChannelsState timelineChannelsState;
     private LongProcessRequestor longProcessRequestor;
+    private ProjectRepository projectRepository;
 
     public TimelineManagerAccessor(MessagingService messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
-            TimelineChannelsState timelineChannelsState, LongProcessRequestor longProcessRequestor) {
+            TimelineChannelsState timelineChannelsState, LongProcessRequestor longProcessRequestor, ProjectRepository projectRepository) {
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
         this.effectFactoryChain = effectFactoryChain;
         this.linkClipRepository = linkClipRepository;
         this.timelineChannelsState = timelineChannelsState;
         this.longProcessRequestor = longProcessRequestor;
+        this.projectRepository = projectRepository;
     }
 
     @PostConstruct
@@ -215,6 +220,10 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         TimelinePosition newPosition = moveClipRequest.newPosition;
         String newChannelId = moveClipRequest.newChannelId;
 
+        if (moveClipRequest.enableJumpingToSpecialPosition) { // maybe another flag could be used for frame based jumping
+            newPosition = getNewPositionBasedOnFPS(newPosition);
+        }
+
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip " + clipId));
 
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
@@ -346,6 +355,16 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             }
         }
         return true;
+    }
+
+    private TimelinePosition getNewPositionBasedOnFPS(TimelinePosition newPosition) {
+        BigDecimal differenceBetweenFramePosition = newPosition.getSeconds().remainder(projectRepository.getFrameTime());
+        if (differenceBetweenFramePosition.compareTo(projectRepository.getFrameTime().divide(TWO)) < 0) {
+            newPosition = new TimelinePosition(newPosition.getSeconds().subtract(differenceBetweenFramePosition));
+        } else {
+            newPosition = new TimelinePosition(newPosition.getSeconds().add(projectRepository.getFrameTime().subtract(differenceBetweenFramePosition)));
+        }
+        return newPosition;
     }
 
     private Set<String> fillWithAllTransitiveLinkedClips(MoveClipRequest moveClipRequest) {
