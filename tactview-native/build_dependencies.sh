@@ -49,7 +49,8 @@ apt-get -y install \
   libwebp-dev \
   libxvidcore-dev \
   libbz2-dev \
-  libbz2-1.0
+  libbz2-1.0 \
+  liblzma-dev
 
 cd /tmp
 
@@ -69,7 +70,7 @@ echo "Configuring FFmpeg"
 
 echo "Building FFmpeg"
 
-make -j 4
+make -j$(nproc)
 
 echo "Installing FFmpeg (Requires root)"
 
@@ -94,7 +95,7 @@ mkdir build
 cd build
 cmake  -D OPENCV_GENERATE_PKGCONFIG=YES -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
 
-make -j 4
+make -j$(nproc)
 
 make install
 
