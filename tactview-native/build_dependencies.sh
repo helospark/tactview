@@ -87,8 +87,13 @@ cd /tmp
 
 echo "Cloning OpenCV"
 
-git clone https://github.com/opencv/opencv.git
-git clone https://github.com/opencv/opencv_contrib.git
+wget -O opencv.tar.gz https://github.com/opencv/opencv/archive/4.1.0.tar.gz
+tar -xvzf opencv.tar.gz
+mv  opencv-4.1.0 opencv
+
+wget -O opencv_contrib.tar.gz https://github.com/opencv/opencv_contrib/archive/4.1.1.tar.gz
+tar -xvzf opencv_contrib.tar.gz
+mv  opencv_contrib-4.1.1 opencv_contrib
 
 cd ./opencv
 mkdir build
@@ -101,6 +106,7 @@ make install
 
 cd ..
 cd ..
+rm opencv.tar.gz opencv_contrib.tar.gz
 rm -r opencv
 rm -r opencv_contrib
 
