@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.message.InterpolatorChangedMessage;
 import com.helospark.tactview.core.timeline.EffectAware;
 import com.helospark.tactview.core.timeline.EffectAware.EffectChangedRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -221,6 +222,8 @@ public class EffectParametersRepository {
     public void changeInterpolatorToInstance(String descriptorId, Object interpolator) {
         EffectStore effectStore = primitiveEffectIdToEffectMap.get(descriptorId);
         effectStore.effect.setInterpolator(interpolator);
+
+        messagingService.sendAsyncMessage(new InterpolatorChangedMessage(descriptorId));
     }
 
     public Boolean isUsingKeyframes(String keyframeableEffectId) {
@@ -254,16 +257,22 @@ public class EffectParametersRepository {
     public Optional<TimelinePosition> findGlobalPositionForValueProvider(String id) {
         EffectStore effectStore = allEffectIdToEffectMap.get(id);
 
-        Optional<TimelineClip> optionalClip = timelineManagerAccessor.findClipById(effectStore.containingElementId);
-        if (optionalClip.isPresent()) {
-            TimelineClip clip = optionalClip.get();
-            return Optional.of(clip.getInterval().getStartPosition());
+        if (effectStore == null) {
+            effectStore = primitiveEffectIdToEffectMap.get(id);
         }
 
-        Optional<StatelessEffect> optionalEffect = timelineManagerAccessor.findEffectById(effectStore.containingElementId);
-        if (optionalEffect.isPresent()) {
-            StatelessEffect effect = optionalEffect.get();
-            return Optional.of(effect.getGlobalInterval().getStartPosition());
+        if (effectStore != null) {
+            Optional<TimelineClip> optionalClip = timelineManagerAccessor.findClipById(effectStore.containingElementId);
+            if (optionalClip.isPresent()) {
+                TimelineClip clip = optionalClip.get();
+                return Optional.of(clip.getInterval().getStartPosition());
+            }
+
+            Optional<StatelessEffect> optionalEffect = timelineManagerAccessor.findEffectById(effectStore.containingElementId);
+            if (optionalEffect.isPresent()) {
+                StatelessEffect effect = optionalEffect.get();
+                return Optional.of(effect.getGlobalInterval().getStartPosition());
+            }
         }
 
         return Optional.empty();

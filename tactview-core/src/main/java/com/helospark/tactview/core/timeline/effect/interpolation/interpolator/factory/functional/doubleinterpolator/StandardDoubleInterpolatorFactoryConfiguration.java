@@ -31,7 +31,17 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
     @Bean
     public StandardDoubleInterpolatorFactory<?> randomDoubleInterpolator() {
         return new StandardDoubleInterpolatorFactory<>("randomDoubleInterpolator", RandomDoubleInterpolator.class,
-                previous -> new RandomDoubleInterpolator(previous.getMin(), previous.getMax(), BigDecimal.valueOf(1)));
+                previous -> {
+                    double min = previous.getMin();
+                    double max = previous.getMax();
+
+                    if (!previous.hasRangeSet()) {
+                        min = 0.0;
+                        max = 1.0;
+                    }
+
+                    return new RandomDoubleInterpolator(min, max, BigDecimal.valueOf(1));
+                });
     }
 
     @Bean

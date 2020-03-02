@@ -46,6 +46,10 @@ public class RepeatableRandom implements SavedContentAddable<RepeatableRandom> {
         }
     }
 
+    public int getSeed() {
+        return seed;
+    }
+
     private Random createRandom(BigDecimal position, int x) {
         // I'm not convinced, that this is correct, but seems random
         int seedAtCurrentPosition = position.multiply(BigDecimal.valueOf(1000)).hashCode() * seed + 1;

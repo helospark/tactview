@@ -5,20 +5,28 @@ import java.math.BigDecimal;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.RandomDoubleInterpolator;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
 @Component
-public class RandomDoubleCurveEditor extends AbstractNoOpCurveEditor {
+public class RandomDoubleCurveEditor extends EditableFieldSupportingCurveEditor {
+
+    public RandomDoubleCurveEditor(UiCommandInterpreterService commandInterpreterService) {
+        super(commandInterpreterService);
+    }
 
     @Override
     public void initializeControl(ControlInitializationRequest request) {
         GridPane controlPane = request.gridToInitialize;
-        controlPane.add(new Label("Frequency"), 0, 0);
-
         RandomDoubleInterpolator randomDoubleInterpolator = (RandomDoubleInterpolator) request.effectInterpolator;
+
+        createFieldFieldFor(request, "Frequency", 0, () -> randomDoubleInterpolator.getChangeScale().doubleValue(), value -> randomDoubleInterpolator.setChangeScale(BigDecimal.valueOf(value))); // TODO: add native support for other types
+        createFieldFieldFor(request, "Min", 1, () -> randomDoubleInterpolator.getMin(), value -> randomDoubleInterpolator.setMin(value));
+        createFieldFieldFor(request, "Max", 2, () -> randomDoubleInterpolator.getMax(), value -> randomDoubleInterpolator.setMax(value));
+        createFieldFieldFor(request, "Seed", 3, () -> (double) randomDoubleInterpolator.getSeed(), value -> randomDoubleInterpolator.setSeed(value.intValue())); // TODO: add native support for other types
+
         TextField textField = new TextField(randomDoubleInterpolator.getChangeScale().toString());
         textField.textProperty()
                 .addListener(a -> {

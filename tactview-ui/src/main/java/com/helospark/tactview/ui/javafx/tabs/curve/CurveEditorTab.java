@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.message.InterpolatorChangedMessage;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
@@ -92,6 +93,14 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
         });
         messagingService.register(EffectMovedMessage.class, e -> {
             updateIfNeeded();
+        });
+        messagingService.register(InterpolatorChangedMessage.class, e -> {
+            if (this.currentKeyframeableEffect != null && (this.currentKeyframeableEffect.getId().equals(e.getDescriptorId()))) { // TODO: or child contains it
+                Platform.runLater(() -> {
+                    revealInEditor(this.currentKeyframeableEffect);
+                    updateIfNeeded();
+                });
+            }
         });
 
         timelineManager.registerUiPlaybackConsumer(position -> {

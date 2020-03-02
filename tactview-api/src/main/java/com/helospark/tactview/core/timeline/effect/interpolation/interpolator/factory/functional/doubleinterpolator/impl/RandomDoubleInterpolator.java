@@ -41,6 +41,38 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
         return repeatableRandom.nextDouble(seconds) * (max - min) + min;
     }
 
+    public double getMin() {
+        return min;
+    }
+
+    public void setMin(double min) {
+        this.min = min;
+    }
+
+    public double getMax() {
+        return max;
+    }
+
+    public void setMax(double max) {
+        this.max = max;
+    }
+
+    public int getSeed() {
+        return this.repeatableRandom.getSeed();
+    }
+
+    public void setSeed(int seed) {
+        this.repeatableRandom = new RepeatableRandom(seed);
+    }
+
+    public void setChangeScale(BigDecimal changeScale) {
+        this.changeScale = changeScale;
+    }
+
+    public BigDecimal getChangeScale() {
+        return changeScale;
+    }
+
     @Override
     public RandomDoubleInterpolator deepClone() {
         RandomDoubleInterpolator result = new RandomDoubleInterpolator(min, max, changeScale);
@@ -55,10 +87,6 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
 
     public void changeScale(BigDecimal changeScale) {
         this.changeScale = changeScale;
-    }
-
-    public BigDecimal getChangeScale() {
-        return changeScale;
     }
 
 }

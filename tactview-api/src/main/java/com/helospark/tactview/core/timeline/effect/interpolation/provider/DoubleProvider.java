@@ -103,6 +103,10 @@ public class DoubleProvider extends KeyframeableEffect {
         return max;
     }
 
+    public boolean hasRangeSet() {
+        return !(min == 0.0 && max == 0.0);
+    }
+
     @Override
     public EffectInterpolator getInterpolatorClone() {
         return interpolator.deepClone();
