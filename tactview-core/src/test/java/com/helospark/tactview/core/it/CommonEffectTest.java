@@ -113,7 +113,7 @@ public class CommonEffectTest {
                 .withScale(1.0)
                 .build();
 
-        ReadOnlyClipImage result = effect.createFrame(request);
+        ReadOnlyClipImage result = effect.createFrameExternal(request);
 
         freeFrame(clipImage);
 

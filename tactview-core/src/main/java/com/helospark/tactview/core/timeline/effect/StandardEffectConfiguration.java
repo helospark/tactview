@@ -63,10 +63,10 @@ import com.helospark.tactview.core.timeline.effect.histogramequization.Histogram
 import com.helospark.tactview.core.timeline.effect.histogramequization.opencv.OpenCVHistogramEquizerImplementation;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.BezierMaskEffect;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskAlphaCalculator;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskApplier;
 import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.PolygonMaskEffect;
-import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlphaCalculator;
-import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskAlphaToAlpha;
 import com.helospark.tactview.core.timeline.effect.levels.LevelsEffect;
 import com.helospark.tactview.core.timeline.effect.lut.LutEffect;

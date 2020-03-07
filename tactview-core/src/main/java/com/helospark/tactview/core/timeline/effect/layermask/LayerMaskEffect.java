@@ -19,9 +19,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.St
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
-import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskAlphaCalculator;
-import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
-import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplyRequest;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskTypeListElement;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskGrayscaleToAlpha;
 import com.helospark.tactview.core.timeline.image.ClipImage;

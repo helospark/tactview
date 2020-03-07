@@ -1,4 +1,4 @@
-package com.helospark.tactview.core.timeline.effect.layermask.impl;
+package com.helospark.tactview.core.timeline.effect.layermask;
 
 import javax.annotation.Generated;
 

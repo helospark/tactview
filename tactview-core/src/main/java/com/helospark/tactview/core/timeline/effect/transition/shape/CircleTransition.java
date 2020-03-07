@@ -13,8 +13,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
-import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskApplier;
-import com.helospark.tactview.core.timeline.effect.layermask.impl.LayerMaskBetweenTwoImageApplyRequest;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskApplier;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskBetweenTwoImageApplyRequest;
 import com.helospark.tactview.core.timeline.effect.layermask.impl.calculator.LayerMaskGrayscaleToAlpha;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.effect.transition.InternalStatelessVideoTransitionEffectRequest;

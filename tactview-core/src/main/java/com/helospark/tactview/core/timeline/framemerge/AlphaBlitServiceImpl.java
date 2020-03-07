@@ -6,8 +6,9 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 @Component
-public class AlphaBlitService {
+public class AlphaBlitServiceImpl implements AlphaBlitService {
 
+    @Override
     public void alphaBlitFrame(ClipImage result, ReadOnlyClipImage clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
         int[] forground = new int[4];
         int[] blendedForground = new int[4];
@@ -40,6 +41,7 @@ public class AlphaBlitService {
     }
 
     // TODO: avoid duplication
+    @Override
     public void alphaBlitImageIntoResult(ClipImage result, ReadOnlyClipImage toBlit, int blitToX, int blitToY, BlendModeStrategy blendMode, double globalAlpha) {
         int[] forground = new int[4];
         int[] blendedForground = new int[4];
@@ -72,6 +74,7 @@ public class AlphaBlitService {
     }
 
     // TODO: avoid duplication
+    @Override
     public void alphaBlitImageIntoResultWithoutPremultiply(ClipImage result, ReadOnlyClipImage toBlit, int blitToX, int blitToY, BlendModeStrategy blendMode, double globalAlpha) {
         int[] forground = new int[4];
         int[] blendedForground = new int[4];

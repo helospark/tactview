@@ -8,12 +8,14 @@ import java.util.function.Function;
 import javax.annotation.Generated;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.lightdi.LightDiContext;
+import com.helospark.lightdi.aware.ContextAware;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
-public class StandardEffectFactory implements EffectFactory {
+public class StandardEffectFactory implements EffectFactory, ContextAware {
     protected List<TimelineClipType> supportedClipTypes;
     protected TimelineEffectType effectType;
     protected boolean isFullWidth;
@@ -22,6 +24,8 @@ public class StandardEffectFactory implements EffectFactory {
     private String name;
     private Function<CreateEffectRequest, StatelessEffect> factory;
     private BiFunction<JsonNode, LoadMetadata, StatelessEffect> restoreFactory;
+
+    private LightDiContext context;
 
     @Generated("SparkTools")
     private StandardEffectFactory(Builder builder) {
@@ -47,13 +51,22 @@ public class StandardEffectFactory implements EffectFactory {
     @Override
     public StatelessEffect createEffect(CreateEffectRequest request) {
         StatelessEffect result = factory.apply(request);
+
+        // hack to avoid having to pass everything via constructor for common code in parent
+        context.getAutowireSupportUtil().autowireFieldsTo(result);
+
         result.initializeValueProvider();
+
         return result;
     }
 
     @Override
     public StatelessEffect restoreEffect(JsonNode node, LoadMetadata loadMetadata) {
         StatelessEffect result = restoreFactory.apply(node, loadMetadata);
+
+        // hack to avoid having to pass everything via constructor for common code in parent
+        context.getAutowireSupportUtil().autowireFieldsTo(result);
+
         result.initializeValueProvider();
         ReflectionUtil.realoadSavedFields(node.get("savedFields"), result, loadMetadata);
         return result;
@@ -135,6 +148,11 @@ public class StandardEffectFactory implements EffectFactory {
         public StandardEffectFactory build() {
             return new StandardEffectFactory(this);
         }
+    }
+
+    @Override
+    public void setContext(LightDiContext context) {
+        this.context = context;
     }
 
 }

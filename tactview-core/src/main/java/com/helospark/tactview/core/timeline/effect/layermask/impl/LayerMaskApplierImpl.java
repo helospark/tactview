@@ -2,6 +2,10 @@ package com.helospark.tactview.core.timeline.effect.layermask.impl;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskAlphaCalculator;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskApplier;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskApplyRequest;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskBetweenTwoImageApplyRequest;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplementation;
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -9,15 +13,16 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Component
-public class LayerMaskApplier {
+public class LayerMaskApplierImpl implements LayerMaskApplier {
     private IndependentPixelOperation independentPixelOperation;
     private OpenCVScaleEffectImplementation scaleImplementation;
 
-    public LayerMaskApplier(IndependentPixelOperation independentPixelOperation, OpenCVScaleEffectImplementation scaleImplementation) {
+    public LayerMaskApplierImpl(IndependentPixelOperation independentPixelOperation, OpenCVScaleEffectImplementation scaleImplementation) {
         this.independentPixelOperation = independentPixelOperation;
         this.scaleImplementation = scaleImplementation;
     }
 
+    @Override
     public ClipImage createNewImageWithLayerMask(LayerMaskApplyRequest layerMaskRequest) {
         ReadOnlyClipImage mask = layerMaskRequest.getMask();
         ReadOnlyClipImage input = layerMaskRequest.getCurrentFrame();
@@ -60,6 +65,7 @@ public class LayerMaskApplier {
         return result;
     }
 
+    @Override
     public ClipImage mergeTwoImageWithLayerMask(LayerMaskBetweenTwoImageApplyRequest request) {
         if (!request.getTopFrame().isSameSizeAs(request.getBottomFrame()) || !request.getTopFrame().isSameSizeAs(request.getMask())) {
             throw new IllegalArgumentException("Different sizes not supported");

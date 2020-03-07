@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.layermask.impl;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskAlphaCalculator;
 
 public class LayerMaskTypeListElement extends ValueListElement {
 

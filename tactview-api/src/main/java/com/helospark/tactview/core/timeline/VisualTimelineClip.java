@@ -132,7 +132,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                             .withEffectChannel(effectChannelIndex)
                             .build();
 
-                    ReadOnlyClipImage appliedEffectsResult = effect.createFrame(request);
+                    ReadOnlyClipImage appliedEffectsResult = effect.createFrameExternal(request);
 
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
 
