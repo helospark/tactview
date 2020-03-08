@@ -72,7 +72,6 @@
                 <include>**/*IT.java</include>
             </includes>
             <trimStackTrace>false</trimStackTrace>
-            <forkCount>0</forkCount>
         </configuration>
       </plugin>
     </plugins>

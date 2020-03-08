@@ -54,7 +54,7 @@ extern "C" {
     };
 
 
-    std::map<std::string, DecodeStructure*> decodeStructureMap;
+    std::map<std::string, DecodeStructure*> idTodecodeStructureMap;
 
     void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
     {
@@ -170,6 +170,7 @@ extern "C" {
         mediaMetadata.fps = framerate.num / (double)framerate.den;
 
         std::cout << "Length 1=" << mediaMetadata.lengthInMicroseconds << "2=" << (st->duration / (AV_TIME_BASE / 1000000)) << std::endl;
+
 
         av_frame_free(&pFrameRGB);
 
@@ -294,12 +295,12 @@ extern "C" {
     {
 
         std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
-        std::map<std::string,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(key);
+        std::map<std::string,DecodeStructure*>::iterator elementIterator = idTodecodeStructureMap.find(key);
 
         DecodeStructure* decodeStructure;
 
 
-        if (elementIterator == decodeStructureMap.end())
+        if (elementIterator == idTodecodeStructureMap.end())
         {
             decodeStructure = openFile(request);
         }
@@ -372,7 +373,7 @@ extern "C" {
 
                         copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
                         ++i;
-                        av_frame_free(&pFrameRGB);
+                        freeFrame(pFrameRGB);
                     }
                     decodeStructure->lastPts = packet.pts;
                     //std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
@@ -502,7 +503,7 @@ extern "C" {
 
         std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
 
-        decodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(key, element));
+        idTodecodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(std::string(key), element));
 
         return element;
     }

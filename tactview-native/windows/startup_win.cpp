@@ -56,7 +56,7 @@ std::string getCommandLine() {
 
 //  std::cout << classpathString << " " << nativesString << std::endl;
 
-  std::string commandLine = "\"java-runtime/bin/java\" -classpath " + classpathString + " -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir;
+  std::string commandLine = "\"java-runtime/bin/java\" -classpath " + classpathString + " -Dprism.order=sw -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir;
   std::cout << commandLine << std::endl;
 
   if (nativesString.size() > 0) {
