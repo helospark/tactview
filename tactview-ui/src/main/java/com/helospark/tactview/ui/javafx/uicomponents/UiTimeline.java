@@ -25,6 +25,7 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
+import com.helospark.tactview.ui.javafx.uicomponents.component.WideTexturedRectangle;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
@@ -67,7 +68,7 @@ public class UiTimeline {
     private ZoomableScrollPane timeLineScrollPane;
     private VBox timelineTitlesPane;
     private BorderPane borderPane;
-    private Rectangle timelineLabelCanvas;
+    private WideTexturedRectangle timelineLabelCanvas;
 
     private Rectangle rectangle;
 
@@ -187,7 +188,7 @@ public class UiTimeline {
         timelineTimeLabelsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
         Group timelineCanvasGroup = new Group();
-        timelineLabelCanvas = new Rectangle(200, 35);
+        timelineLabelCanvas = new WideTexturedRectangle(200, 35);
         timelineLabelCanvas.widthProperty().bind(timelineBoxes.widthProperty());
         timelineLabelCanvas.scaleXProperty().bind(timeLineScrollPane.zoomProperty());
 
