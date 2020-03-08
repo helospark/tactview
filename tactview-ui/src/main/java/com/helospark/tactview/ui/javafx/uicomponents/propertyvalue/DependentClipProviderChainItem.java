@@ -97,9 +97,10 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                 .withCurrentValueProvider(() -> nameToIdRepository.getIdForName(textArea.getText()))
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
-                    String currentValue = nameToIdRepository.getNameForId(stringProvider.getValueAt(position));
+                    String currentId = stringProvider.getValueAt(position);
+                    String currentValue = nameToIdRepository.getNameForId(currentId);
                     textArea.setText(currentValue);
-                    renderFrameTo(imageView, currentValue, position);
+                    renderFrameTo(imageView, currentId, position);
                 })
                 .withVisibleNode(hbox)
                 .withCommandInterpreter(commandInterpreter)

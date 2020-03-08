@@ -110,7 +110,7 @@ public class TimelineDragAndDropHandler {
         });
 
         timeline.setOnDragOver(event -> {
-            double x = event.getX();
+            double x = event.getX() * timelineState.getZoom();
             double y = event.getY() + timeline.getLayoutY();
 
             if (dragRepository.currentlyDraggedClip() != null) {
@@ -136,6 +136,8 @@ public class TimelineDragAndDropHandler {
             ZoomableScrollPane pane = timelineState.getTimeLineScrollPane();
 
             Bounds paneBounds = pane.getViewportBounds();
+
+            System.out.println("$$$$$$$$ " + x + " " + pane.getViewportBounds() + " " + pane.getLayoutX() + " " + x + " " + event.getSceneX() + " " + event.getScreenX() + " " + event.getX());
 
             scrollRightWhenNeeded(x, paneBounds);
             scrollLeftWhenNeeded(x, paneBounds);
@@ -199,7 +201,7 @@ public class TimelineDragAndDropHandler {
         double distance = (rightX - x);
 
         if (distance < 50) {
-            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01;
+            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01 * (1.0 / timelineState.getZoom());
             timelineState.horizontalScroll(scrollStrength);
         }
     }
@@ -210,7 +212,7 @@ public class TimelineDragAndDropHandler {
         double distance = (x - leftX);
 
         if (distance < 50) {
-            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01;
+            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01 * (1.0 / timelineState.getZoom());
             timelineState.horizontalScroll(-scrollStrength);
         }
     }

@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,7 +12,9 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.framemerge.FrameMergerWithMask;
 import com.helospark.tactview.core.timeline.framemerge.FrameMergerWithMaskRequest;
@@ -21,6 +24,7 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class StatelessVideoEffect extends StatelessEffect {
     private DependentClipProvider maskProvider;
+    private BooleanProvider invertProvider;
     private FrameMergerWithMask frameMergerWithMask;
 
     public StatelessVideoEffect(TimelineInterval interval) {
@@ -52,7 +56,7 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
                     .withTop(result)
                     .withBottom(request.getCurrentFrame())
                     .withMask(mask.get())
-                    .withInvert(false)
+                    .withInvert(invertProvider.getValueAt(request.getEffectPosition()))
                     .withScale(false)
                     .build();
 
@@ -75,19 +79,27 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
     public void initializeValueProvider() {
         super.initializeValueProvider();
         this.maskProvider = new DependentClipProvider(new StepStringInterpolator());
+        this.invertProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
     }
 
     @Override
     public List<ValueProviderDescriptor> getValueProviders() {
-        List<ValueProviderDescriptor> valueProviders = super.getValueProviders();
+        List<ValueProviderDescriptor> valueProviders = new ArrayList<>();
 
         ValueProviderDescriptor maskProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(maskProvider)
                 .withName("Mask clip")
-                .withGroup("Mask")
+                .withGroup("Effect mask")
+                .build();
+        ValueProviderDescriptor invertProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(invertProvider)
+                .withName("Invert")
+                .withGroup("Effect mask")
                 .build();
 
         valueProviders.add(maskProviderDescriptor);
+        valueProviders.add(invertProviderDescriptor);
+        valueProviders.addAll(super.getValueProviders());
 
         return valueProviders;
     }
