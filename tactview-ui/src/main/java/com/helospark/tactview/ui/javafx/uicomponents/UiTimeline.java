@@ -194,7 +194,10 @@ public class UiTimeline {
         timelineBoxes.widthProperty()
                 .addListener((e, oldValue, newValue) -> updateTimelineLabels());
         timeLineScrollPane.zoomProperty()
-                .addListener((e, oldValue, newValue) -> updateTimelineLabels());
+                .addListener((e, oldValue, newValue) -> {
+                    rescaleTimelineToFillView();
+                    updateTimelineLabels();
+                });
 
         //        timelineLabelCanvas.widthProperty()
         //                .bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
@@ -261,37 +264,41 @@ public class UiTimeline {
         return borderPane;
     }
 
+    private void rescaleTimelineToFillView() {
+        double currentWidth = timelineState.getTimelineWidthProperty().get();
+        double zoom = timeLineScrollPane.zoomProperty().get();
+        double expectedWidthToFillPane = timeLineScrollPane.getWidth() / zoom;
+
+        if (expectedWidthToFillPane > currentWidth) {
+            timelineState.getTimelineWidthProperty().set(expectedWidthToFillPane);
+        }
+    }
+
     private void updateTimelineLabels() {
         System.out.println("Canvas width: " + timelineLabelCanvas.getWidth());
 
         int width = (int) (timelineLabelCanvas.getWidth() * timelineState.getZoom());
         int height = (int) timelineLabelCanvas.getHeight();
 
-        if (width >= 16000) {
-            // this should be patched
-            timelineLabelCanvas.setFill(Color.BLACK);
-        } else {
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics2D g = (Graphics2D) result.getGraphics();
 
-            BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-            Graphics2D g = (Graphics2D) result.getGraphics();
+        g.setComposite(AlphaComposite.Clear);
+        g.fillRect(0, 0, width, height);
+        g.setComposite(AlphaComposite.SrcOver);
 
-            g.setComposite(AlphaComposite.Clear);
-            g.fillRect(0, 0, width, height);
-            g.setComposite(AlphaComposite.SrcOver);
+        drawLines(0.1, 29, 1.0, timelineState.getZoom() < 30.0 && timelineState.getZoom() >= 10.0, g, width);
+        drawLines(0.5, 28, 0.5, timelineState.getZoom() < 10.0 && timelineState.getZoom() >= 5.0, g, width);
+        drawLines(1.0, 25, 0.8, timelineState.getZoom() < 5.0 && timelineState.getZoom() >= 3.0, g, width);
+        drawLines(10.0, 23, 1.5, timelineState.getZoom() < 3.0 && timelineState.getZoom() >= 1.0, g, width);
+        drawLines(60.0, 21, 3.0, timelineState.getZoom() < 1.0 && timelineState.getZoom() >= 0.1, g, width);
+        drawLines(600.0, 19, 3.0, timelineState.getZoom() < 0.1 && timelineState.getZoom() >= 0.01, g, width);
+        drawLines(3600.0, 17, 5.0, timelineState.getZoom() < 0.01, g, width);
+        Image texture = byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
 
-            drawLines(0.1, 29, 1.0, timelineState.getZoom() < 30.0 && timelineState.getZoom() >= 10.0, g, width);
-            drawLines(0.5, 28, 0.5, timelineState.getZoom() < 10.0 && timelineState.getZoom() >= 5.0, g, width);
-            drawLines(1.0, 25, 0.8, timelineState.getZoom() < 5.0 && timelineState.getZoom() >= 3.0, g, width);
-            drawLines(10.0, 23, 1.5, timelineState.getZoom() < 3.0 && timelineState.getZoom() >= 1.0, g, width);
-            drawLines(60.0, 21, 3.0, timelineState.getZoom() < 1.0 && timelineState.getZoom() >= 0.1, g, width);
-            drawLines(600.0, 19, 3.0, timelineState.getZoom() < 0.1 && timelineState.getZoom() >= 0.01, g, width);
-            drawLines(3600.0, 17, 5.0, timelineState.getZoom() < 0.01, g, width);
-            Image texture = byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
-
-            Platform.runLater(() -> {
-                timelineLabelCanvas.setFill(new ImagePattern(texture));
-            });
-        }
+        Platform.runLater(() -> {
+            timelineLabelCanvas.setFill(new ImagePattern(texture));
+        });
     }
 
     private void drawLines(double time, int lineStart, double lineWidth, boolean addLabel, Graphics2D g, int width) {
