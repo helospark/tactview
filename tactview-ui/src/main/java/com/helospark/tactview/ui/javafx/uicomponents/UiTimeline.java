@@ -53,8 +53,6 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class UiTimeline {
-
-    private static final int MAX_CANVAS_WIDTH = 16000;
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManager;
