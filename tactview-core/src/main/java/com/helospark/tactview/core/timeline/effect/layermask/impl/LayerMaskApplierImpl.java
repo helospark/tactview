@@ -78,15 +78,15 @@ public class LayerMaskApplierImpl implements LayerMaskApplier {
         independentPixelOperation.executePixelTransformation(request.getTopFrame().getWidth(), request.getTopFrame().getHeight(), (x, y) -> {
             int intensity = calculator.calculateAlpha(maskToUse, x, y);
 
-            double normalizedAlpha = intensity / 255.0;
+            double topAlpha = request.getBottomFrame().getAlpha(x, y) / 255.0;
+            double normalizedAlpha = Math.max(Math.min(topAlpha - (intensity / 255.0), 1.0), 0.0);
 
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 4; ++i) {
                 int foreground = request.getTopFrame().getColorComponentWithOffset(x, y, i);
                 int background = request.getBottomFrame().getColorComponentWithOffset(x, y, i);
-                int color = (int) ((foreground * normalizedAlpha) + (background * (1.0 - normalizedAlpha)));
+                int color = (int) ((background * normalizedAlpha) + (foreground * (1.0 - normalizedAlpha)));
                 result.setColorComponentByOffset(color, x, y, i);
             }
-            result.setAlpha(intensity, x, y);
         });
 
         return result;

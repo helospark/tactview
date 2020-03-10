@@ -10,6 +10,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.DesSerFactory;
 
 /**
  * An interpolator that 
@@ -17,7 +18,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
  *
  */
 public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyframeBasedDoubleInterpolator {
-    private TimelineLength length;
+    protected TimelineLength length;
 
     public PercentAwareMultiKeyframeBasedDoubleInterpolator(Double singleDefaultValue, TimelineLength width) {
         super(singleDefaultValue);
@@ -87,6 +88,11 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
 
     public void setLength(TimelineLength length) {
         this.length = length;
+    }
+
+    @Override
+    public Class<? extends DesSerFactory<? extends EffectInterpolator>> generateSerializableContent() {
+        return PercentAwareMultiKeyframeBasedDoubleInterpolatorFactory.class;
     }
 
 }
