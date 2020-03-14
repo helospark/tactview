@@ -57,6 +57,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
             slider.setMax(integerProvider.getMax());
             slider.setShowTickLabels(true);
             slider.setMinorTickCount(3);
+            slider.setMajorTickUnit((integerProvider.getMax() - integerProvider.getMin()) / 3);
             slider.valueProperty().addListener((obs, oldval, newVal) -> {
                 if (slider.isValueChanging()) {
                     userChangedValueObservable.setValue(String.valueOf(slider.getValue()));

@@ -34,6 +34,7 @@ import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
@@ -62,6 +63,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
@@ -119,7 +121,10 @@ public class JavaFXUiMain extends Application {
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);
 
-        root.getStylesheets().add("stylesheet.css");
+        StylesheetAdderService styleSheetAdder = lightDi.getBean(StylesheetAdderService.class);
+
+        //root.getStylesheets().add("stylesheet.css");
+        styleSheetAdder.addStyleSheets(root, "stylesheet.css");
 
         MenuBar menuBar = lightDi.getBean(MenuProcessor.class).createMenuBar();
 
@@ -159,6 +164,7 @@ public class JavaFXUiMain extends Application {
         upper.setMaxHeight(400);
 
         TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
         lightDi.getListOfBeans(TabFactory.class).stream().forEach(tabFactory -> {
             Tab tab = tabFactory.createTabContent();
             tabPane.getTabs().add(tab);

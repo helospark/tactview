@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.orthogonal;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
@@ -12,6 +13,8 @@ import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.MovementType;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
@@ -161,6 +164,7 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
                 .withName("Translate")
                 .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueAt(p))
                 .withGroup("translate")
+                .withRenderHints(Map.of(RenderTypeHint.TYPE, MovementType.RELATIVE))
                 .build();
         ValueProviderDescriptor scaleXProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(scaleXProvider)

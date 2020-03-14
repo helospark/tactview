@@ -4,9 +4,7 @@ import static javafx.scene.input.KeyCode.DELETE;
 import static javafx.scene.input.KeyCode.ESCAPE;
 import static javafx.scene.input.KeyCode.K;
 import static javafx.scene.input.KeyCode.LEFT;
-import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
-import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -75,15 +73,10 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
 
     private void setupDefaultKeyCombinations() {
         // TODO: this should be only done if the user has not changed them
-        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.S),
-                useHandler("Save", event -> {
-                    uiSaveHandler.save();
-                }));
-
-        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, Z),
-                useHandler("Undo", event -> commandInterpreter.revertLast()));
-        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, SHIFT_DOWN, Z),
-                useHandler("Redo", event -> commandInterpreter.redoLast()));
+        //        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, Z),
+        //                useHandler("Undo", event -> commandInterpreter.revertLast()));
+        //        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, SHIFT_DOWN, Z),
+        //                useHandler("Redo", event -> commandInterpreter.redoLast()));
         keyCombinationRepository.registerKeyCombination(on(DELETE),
                 useHandler("Delete selected", event -> {
                     removeClipService.removeClips(selectedNodeRepository.getSelectedClipIds());

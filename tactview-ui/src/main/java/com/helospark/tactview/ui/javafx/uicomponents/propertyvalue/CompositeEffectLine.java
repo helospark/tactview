@@ -57,6 +57,7 @@ public class CompositeEffectLine extends EffectLine {
         if (additionalUpdateUi != null) {
             additionalUpdateUi.accept(position);
         }
+        disableUiIfNeeded(position);
     }
 
     public Object getCurrentValue() {

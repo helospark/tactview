@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.help;
 
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
+
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,7 +18,7 @@ import javafx.stage.Stage;
 public class AboutDialog {
     private Stage stage;
 
-    public AboutDialog(VBox aboutDialogText) {
+    public AboutDialog(VBox aboutDialogText, StylesheetAdderService stylesheetAdderService) {
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
 
@@ -24,7 +26,7 @@ public class AboutDialog {
         stage = new Stage();
         stage.setWidth(500);
         stage.setHeight(400);
-        dialog.getStylesheets().add("stylesheet.css");
+        stylesheetAdderService.addStyleSheets(borderPane, "stylesheet.css");
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);

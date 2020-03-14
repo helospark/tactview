@@ -65,6 +65,9 @@ public class MenuProcessor {
         } else {
             MenuItem leafMenuItem = new MenuItem(element.name);
             leafMenuItem.setOnAction(e -> element.menuContribution.onAction(e));
+
+            element.menuContribution.getAccelerator().ifPresent(key -> leafMenuItem.setAccelerator(key));
+
             return leafMenuItem;
         }
     }

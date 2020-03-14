@@ -15,11 +15,12 @@ import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.Regenerate
 @Configuration
 public class DefaultHelpMenuItemConfiguration {
     public static final String HELP_ROOT = "_Help";
+    public static final String DEVELOPER_ROOT = "_Developer";
 
     @Bean
     @Order(4990)
     public MenuContribution dropCachesContributionMenuItem(MessagingService messagingService) {
-        return new DefaultMenuContribution(List.of(HELP_ROOT, "Drop caches"), e -> {
+        return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Drop caches"), e -> {
             messagingService.sendAsyncMessage(new DropCachesMessage());
         });
     }
@@ -27,8 +28,16 @@ public class DefaultHelpMenuItemConfiguration {
     @Bean
     @Order(4991)
     public MenuContribution regenerateImagePatternsContributionMenuItem(MessagingService messagingService) {
-        return new DefaultMenuContribution(List.of(HELP_ROOT, "Regenerate clip patterns"), e -> {
+        return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Regenerate clip patterns"), e -> {
             messagingService.sendAsyncMessage(new RegenerateAllImagePatternsMessage());
+        });
+    }
+
+    @Bean
+    @Order(4991)
+    public MenuContribution reloadStyleSheat(MessagingService messagingService) {
+        return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Reload stylesheet"), e -> {
+            messagingService.sendAsyncMessage(new ReloadStylesheetMessage());
         });
     }
 

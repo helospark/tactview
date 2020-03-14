@@ -42,4 +42,4 @@ You will find the created zip in `release` folder.
  - You need to build all native dependencies by running `build.bat (Windows)`, `build.sh (Linux)`, `buildmac.sh (Mac)` script in `tactview_native/build` as root. 
  - You can import `tactview-parent` into your IDE as a Maven project.
  - Run `HackyMain` class as Java application
- - During development set these JVM arguments: `-Djdk.gtk.version=2 -Dshow.dialog.dirty-save=false -Xmx2g -Dprism.order=sw`
+ - During development set these JVM arguments: `-Djdk.gtk.version=2 -Dshow.dialog.dirty-save=false -Xmx2g -Dprism.order=sw -Dtactview.profile=development`

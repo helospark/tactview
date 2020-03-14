@@ -86,16 +86,7 @@ public class PrimitiveEffectLine extends EffectLine {
     @Override
     public void updateUi(TimelinePosition position) {
         updateFunction.accept(position);
-        if (descriptor != null && descriptor.getEnabledIf().isPresent()) {
-            Boolean disabled = !descriptor.getEnabledIf().get().apply(position);
-
-            if (disabledUpdater == null) {
-                visibleNode.setDisable(disabled);
-            } else {
-                disabledUpdater.accept(disabled);
-            }
-
-        }
+        disableUiIfNeeded(position);
     }
 
     @Generated("SparkTools")

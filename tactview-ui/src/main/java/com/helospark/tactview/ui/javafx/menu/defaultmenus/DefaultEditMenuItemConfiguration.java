@@ -11,6 +11,9 @@ import com.helospark.tactview.ui.javafx.menu.MenuContribution;
 import com.helospark.tactview.ui.javafx.preferences.PreferencesPage;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+
 @Configuration
 public class DefaultEditMenuItemConfiguration {
     public static final String EDIT_ROOT = "_Edit";
@@ -18,13 +21,14 @@ public class DefaultEditMenuItemConfiguration {
     @Bean
     @Order(1000)
     public MenuContribution undoContributionMenuItem(UiCommandInterpreterService commandInterpreter) {
-        return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Undo"), event -> commandInterpreter.revertLast());
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Undo"), event -> commandInterpreter.revertLast(), new KeyCodeCombination(KeyCode.Z, KeyCodeCombination.CONTROL_DOWN));
     }
 
     @Bean
     @Order(1010)
     public MenuContribution redoContributionMenuItem(UiCommandInterpreterService commandInterpreter) {
-        return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Redo"), event -> commandInterpreter.redoLast());
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Redo"), event -> commandInterpreter.redoLast(),
+                new KeyCodeCombination(KeyCode.Z, KeyCodeCombination.CONTROL_DOWN, KeyCodeCombination.SHIFT_DOWN));
     }
 
     @Bean

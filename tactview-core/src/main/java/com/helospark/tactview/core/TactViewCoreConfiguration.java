@@ -12,6 +12,7 @@ import com.helospark.lightdi.annotation.PropertySource;
 @Configuration
 @ComponentScan
 @PropertySource("classpath:application.properties")
+@PropertySource(value = "classpath:application-${tactview.profile:}.properties", order = -1, ignoreResourceNotFound = true)
 public class TactViewCoreConfiguration {
 
     @Bean

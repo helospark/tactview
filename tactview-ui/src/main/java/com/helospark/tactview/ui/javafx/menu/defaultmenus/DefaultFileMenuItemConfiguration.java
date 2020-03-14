@@ -14,6 +14,8 @@ import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 
 import javafx.application.Platform;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 
 @Configuration
 public class DefaultFileMenuItemConfiguration {
@@ -23,7 +25,7 @@ public class DefaultFileMenuItemConfiguration {
     @Bean
     @Order(0)
     public MenuContribution loadContributionMenuItem(UiLoadHandler loadHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Load"), event -> loadHandler.load());
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Load"), event -> loadHandler.load(), new KeyCodeCombination(KeyCode.O, KeyCodeCombination.CONTROL_DOWN));
     }
 
     @Bean
@@ -35,13 +37,14 @@ public class DefaultFileMenuItemConfiguration {
     @Bean
     @Order(20)
     public MenuContribution saveContributionMenuItem(UiSaveHandler saveHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Save"), event -> saveHandler.save());
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Save"), event -> saveHandler.save(), new KeyCodeCombination(KeyCode.S, KeyCodeCombination.CONTROL_DOWN));
     }
 
     @Bean
     @Order(30)
     public MenuContribution saveAsContributionMenuItem(UiSaveHandler saveHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "Save _As"), event -> saveHandler.saveAs());
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "Save _As"), event -> saveHandler.saveAs(),
+                new KeyCodeCombination(KeyCode.S, KeyCodeCombination.CONTROL_DOWN, KeyCodeCombination.SHIFT_DOWN));
     }
 
     @Bean
@@ -76,7 +79,7 @@ public class DefaultFileMenuItemConfiguration {
                 Platform.exit();
                 System.exit(0);
             });
-        });
+        }, new KeyCodeCombination(KeyCode.Q, KeyCodeCombination.CONTROL_DOWN));
     }
 
 }

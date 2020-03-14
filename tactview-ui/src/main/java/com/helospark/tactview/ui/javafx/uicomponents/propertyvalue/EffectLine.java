@@ -39,4 +39,16 @@ public abstract class EffectLine {
 
     public abstract void removeAllAndSetKeyframe(TimelinePosition currentPosition);
 
+    protected void disableUiIfNeeded(TimelinePosition position) {
+        if (descriptor != null && descriptor.getEnabledIf().isPresent()) {
+            Boolean disabled = !descriptor.getEnabledIf().get().apply(position);
+
+            if (disabledUpdater == null) {
+                visibleNode.setDisable(disabled);
+            } else {
+                disabledUpdater.accept(disabled);
+            }
+
+        }
+    }
 }
