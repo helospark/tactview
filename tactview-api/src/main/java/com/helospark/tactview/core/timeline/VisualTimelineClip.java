@@ -19,6 +19,8 @@ import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategyAccessor;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeValueListElement;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.MovementType;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
@@ -207,6 +209,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
         ValueProviderDescriptor translateDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translatePointProvider)
+                .withRenderHints(Map.of(RenderTypeHint.TYPE, MovementType.RELATIVE))
                 .withName("translate")
                 .withGroup("common")
                 .build();

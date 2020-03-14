@@ -8,6 +8,8 @@ import org.controlsfx.glyphfont.Glyph;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.MovementType;
+import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -68,11 +70,20 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                inputModeRepository.requestPoint(point -> {
-                    xProvider.getUpdateFromValue().accept(point.x);
-                    yProvider.getUpdateFromValue().accept(point.y);
-                    result.sendKeyframe(uiTimelineManager.getCurrentPosition());
-                }, pointProvider.getSizeFunction());
+                Object renderHint = descriptor.getRenderHints().get(RenderTypeHint.TYPE);
+                if (renderHint != null && renderHint.equals(MovementType.RELATIVE)) {
+                    inputModeRepository.requestRelativePoint(point -> {
+                        xProvider.getUpdateFromValue().accept(point.x);
+                        yProvider.getUpdateFromValue().accept(point.y);
+                        result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                    }, pointProvider.getSizeFunction(), (Point) result.getCurrentValue());
+                } else {
+                    inputModeRepository.requestPoint(point -> {
+                        xProvider.getUpdateFromValue().accept(point.x);
+                        yProvider.getUpdateFromValue().accept(point.y);
+                        result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                    }, pointProvider.getSizeFunction());
+                }
             }
         });
 

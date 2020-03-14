@@ -363,6 +363,7 @@ public class JavaFXUiMain extends Application {
     private void exitApplication(ExitWithSaveService exitWithSaveService) {
         exitWithSaveService.optionallySaveAndThenRun(() -> {
             Platform.exit();
+            lightDi.close();
             System.exit(0);
         });
     }

@@ -26,6 +26,7 @@ import com.helospark.tactview.ui.javafx.inputmode.strategy.LineInputTypeStrategy
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PointInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.PolygonInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.RectangleInputTypeStrategy;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.RelativePointInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyKeyInput;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyMouseInput;
@@ -79,6 +80,13 @@ public class InputModeRepository implements CleanableMode {
 
     public void requestPoint(Consumer<Point> consumer, SizeFunction sizeFunction) {
         InputTypeStrategy<Point> currentStrategy = new PointInputTypeStrategy();
+        this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy, sizeFunction);
+        inputModeChanged(true);
+        Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
+    }
+
+    public void requestRelativePoint(Consumer<Point> consumer, SizeFunction sizeFunction, Point currentPoint) {
+        InputTypeStrategy<Point> currentStrategy = new RelativePointInputTypeStrategy(currentPoint);
         this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
         Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));

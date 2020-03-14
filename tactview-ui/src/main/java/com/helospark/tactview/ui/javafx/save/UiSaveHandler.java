@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.persistentstate.PersistentState;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.save.SaveRequest;
@@ -24,6 +25,8 @@ public class UiSaveHandler {
     private DirtyRepository dirtyRepository;
     @Slf4j
     private Logger logger;
+    @PersistentState
+    String lastOpenedDirectoryName;
 
     public UiSaveHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, DirtyRepository dirtyRepository) {
         this.saveAndLoadHandler = saveAndLoadHandler;
@@ -54,6 +57,7 @@ public class UiSaveHandler {
         } else {
             Optional<String> fileName = queryUserAboutFileName();
             if (fileName.isPresent()) {
+                lastOpenedDirectoryName = new File(fileName.get()).getParentFile().getAbsolutePath();
                 dirtyRepository.setDirty(false);
                 saveAndLoadHandler.save(new SaveRequest(fileName.get()));
                 currentProjectSavedFileRepository.setCurrentSavedFile(fileName.get());
@@ -66,6 +70,7 @@ public class UiSaveHandler {
     public void saveAs() {
         Optional<String> fileName = queryUserAboutFileName();
         if (fileName.isPresent()) {
+            lastOpenedDirectoryName = new File(fileName.get()).getParentFile().getAbsolutePath();
             saveAndLoadHandler.save(new SaveRequest(fileName.get()));
         }
     }
@@ -74,14 +79,20 @@ public class UiSaveHandler {
         while (true) {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save Project");
+            if (lastOpenedDirectoryName != null) {
+                fileChooser.setInitialDirectory(new File(lastOpenedDirectoryName));
+            }
             File file = fileChooser.showSaveDialog(JavaFXUiMain.STAGE);
 
             if (file == null) {
                 return Optional.empty();
             }
 
-            if (file.exists()) {
-                Alert alert = new Alert(AlertType.CONFIRMATION, "File " + file.getAbsolutePath() + " already exists. Override?", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+            String extension = file.getName().endsWith(".tvs") ? "" : ".tvs";
+            File fileWithSavedExtension = new File(file.getAbsolutePath() + extension); // TODO: why is this needed in core and ui?
+
+            if (!extension.isEmpty() && fileWithSavedExtension.exists()) { // If user set extension JavaFX already asked this question
+                Alert alert = new Alert(AlertType.CONFIRMATION, "File " + fileWithSavedExtension.getAbsolutePath() + " already exists. Override?", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
                 alert.showAndWait();
 
                 if (alert.getResult() == ButtonType.YES) {
@@ -94,6 +105,14 @@ public class UiSaveHandler {
             }
         }
 
+    }
+
+    public String getLastOpenedDirectoryName() {
+        return lastOpenedDirectoryName;
+    }
+
+    public void setLastOpenedDirectoryName(String lastOpenedDirectoryName) {
+        this.lastOpenedDirectoryName = lastOpenedDirectoryName;
     }
 
 }

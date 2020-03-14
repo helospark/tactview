@@ -20,14 +20,18 @@ public class UiLoadHandler {
     private CurrentProjectSavedFileRepository currentProjectSavedFileRepository;
     private File autosaveRootDirectory;
 
-    public UiLoadHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, @Value("${autosave.directory}") File autosaveRootDirectory) {
+    private UiSaveHandler uiSaveHandler;
+
+    public UiLoadHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, @Value("${autosave.directory}") File autosaveRootDirectory,
+            UiSaveHandler uiSaveHandler) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.autosaveRootDirectory = autosaveRootDirectory;
+        this.uiSaveHandler = uiSaveHandler;
     }
 
     public void load() {
-        openFileChooser(Optional.empty());
+        openFileChooser(Optional.ofNullable(uiSaveHandler.lastOpenedDirectoryName).map(File::new));
 
     }
 
@@ -44,6 +48,7 @@ public class UiLoadHandler {
 
         if (file != null) {
             try {
+                uiSaveHandler.lastOpenedDirectoryName = file.getParentFile().getAbsolutePath();
                 saveAndLoadHandler.load(new LoadRequest(file.getAbsolutePath()));
                 currentProjectSavedFileRepository.setCurrentSavedFile(file.getAbsolutePath());
             } catch (Exception e) {
