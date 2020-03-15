@@ -4,9 +4,7 @@ import static javafx.scene.input.KeyCode.DELETE;
 import static javafx.scene.input.KeyCode.ESCAPE;
 import static javafx.scene.input.KeyCode.K;
 import static javafx.scene.input.KeyCode.LEFT;
-import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.LightDiContext;
@@ -99,28 +97,6 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         keyCombinationRepository.registerKeyCombination(on(KeyCode.RIGHT),
                 useHandler("Back one frame", event -> {
                     uiTimelineManager.moveForwardOneFrame();
-                }));
-        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.C),
-                useHandler("Copy", event -> {
-                    List<String> selectedClipIds = selectedNodeRepository.getSelectedClipIds();
-                    if (selectedClipIds.size() > 0) { // copy ony the first for now
-                        String selectedClipId = selectedClipIds.get(0);
-                        copyPasteRepository.copyClip(selectedClipId);
-                    } else {
-                        List<String> selectedEffects = selectedNodeRepository.getSelectedEffectIds();
-                        if (selectedEffects.size() > 0) {
-                            copyPasteRepository.copyEffect(selectedEffects);
-                        }
-                    }
-                }));
-        keyCombinationRepository.registerKeyCombination(on(CONTROL_DOWN, KeyCode.V),
-                useHandler("Copy", event -> {
-                    List<String> selectedClipIds = selectedNodeRepository.getSelectedClipIds();
-                    if (selectedClipIds.isEmpty()) {
-                        copyPasteRepository.pasteWithoutAdditionalInfo();
-                    } else {
-                        copyPasteRepository.pasteOnExistingClips(selectedClipIds);
-                    }
                 }));
     }
 

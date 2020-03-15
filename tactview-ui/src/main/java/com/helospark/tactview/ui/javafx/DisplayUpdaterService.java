@@ -140,24 +140,28 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             logger.debug("Rendered at {}", currentPositionLastRendered);
         }
         Platform.runLater(() -> {
-            int width = uiProjectRepostiory.getPreviewWidth();
-            int height = uiProjectRepostiory.getPreviewHeight();
-            GraphicsContext gc = canvas.getGraphicsContext2D();
-            Image image = actualAudioVideoFragment.getImage();
-            gc.drawImage(image, 0, 0, width, height);
+            try {
+                int width = uiProjectRepostiory.getPreviewWidth();
+                int height = uiProjectRepostiory.getPreviewHeight();
+                GraphicsContext gc = canvas.getGraphicsContext2D();
+                Image image = actualAudioVideoFragment.getImage();
+                gc.drawImage(image, 0, 0, width, height);
 
-            DisplayUpdatedRequest displayUpdateRequest = DisplayUpdatedRequest.builder()
-                    .withImage(image)
-                    .withPosition(currentPosition)
-                    .withGraphics(gc)
-                    .withCanvas(canvas)
-                    .build();
-            cacheCurrentImage = image;
-            cachePosition = currentPosition;
-            cacheLastModifiedTime = currentPostionLastModified;
+                DisplayUpdatedRequest displayUpdateRequest = DisplayUpdatedRequest.builder()
+                        .withImage(image)
+                        .withPosition(currentPosition)
+                        .withGraphics(gc)
+                        .withCanvas(canvas)
+                        .build();
+                cacheCurrentImage = image;
+                cachePosition = currentPosition;
+                cacheLastModifiedTime = currentPostionLastModified;
 
-            displayUpdateListeners.stream()
-                    .forEach(a -> a.displayUpdated(displayUpdateRequest));
+                displayUpdateListeners.stream()
+                        .forEach(a -> a.displayUpdated(displayUpdateRequest));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
 
         startCacheJobs(currentPosition);

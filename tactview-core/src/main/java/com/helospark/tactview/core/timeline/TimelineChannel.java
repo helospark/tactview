@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -29,6 +30,21 @@ public class TimelineChannel {
         this.id = savedChannel.get("id").asText();
         this.disabled = savedChannel.get("disabled").asBoolean(false);
         this.mute = savedChannel.get("mute").asBoolean(false);
+    }
+
+    public TimelineChannel(TimelineChannel originalChannel, CloneRequestMetadata cloneRequestMetadata) {
+        if (cloneRequestMetadata.isDeepCloneId()) {
+            this.id = originalChannel.id;
+        } else {
+            this.id = UUID.randomUUID().toString();
+        }
+        this.disabled = originalChannel.disabled;
+        this.mute = originalChannel.mute;
+
+        this.clips = new NonIntersectingIntervalList<>();
+        for (TimelineClip clip : originalChannel.clips) {
+            this.clips.addInterval(clip.cloneClip(cloneRequestMetadata));
+        }
     }
 
     public TimelineChannel() {
@@ -292,6 +308,10 @@ public class TimelineChannel {
         } else {
             return Optional.of(clips.get(i + 1));
         }
+    }
+
+    public TimelineChannel cloneChannel(CloneRequestMetadata metadata) {
+        return new TimelineChannel(this, metadata);
     }
 
 }

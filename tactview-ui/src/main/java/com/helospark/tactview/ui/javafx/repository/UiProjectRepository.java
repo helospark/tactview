@@ -22,8 +22,8 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
     private static final int PREVIEW_HEIGHT = 200;
 
     private double scaleFactor = 1.0;
-    private SimpleIntegerProperty previewWidth;
-    private SimpleIntegerProperty previewHeight;
+    private SimpleIntegerProperty previewWidth = new SimpleIntegerProperty(PREVIEW_WIDTH);
+    private SimpleIntegerProperty previewHeight = new SimpleIntegerProperty(PREVIEW_HEIGHT);
     private double aspectRatio;
 
     @JsonIgnore
@@ -37,8 +37,8 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
     @Override
     public void resetDefaults() {
         scaleFactor = 1.0;
-        previewWidth = new SimpleIntegerProperty(PREVIEW_WIDTH);
-        previewHeight = new SimpleIntegerProperty(PREVIEW_HEIGHT);
+        previewWidth.set(PREVIEW_WIDTH);
+        previewHeight.set(PREVIEW_HEIGHT);
     }
 
     public double getScaleFactor() {

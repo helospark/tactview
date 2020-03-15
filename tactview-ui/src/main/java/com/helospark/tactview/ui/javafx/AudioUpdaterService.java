@@ -25,6 +25,7 @@ public class AudioUpdaterService {
     private AudioStreamService audioStreamService;
     private MessagingService messagingService;
     private AudioVisualizationComponent audioVisualizationComponent;
+    private UiPlaybackPreferenceRepository playbackPreferenceRepository;
 
     private LinkedHashMap<BigDecimal, AudioData> buffer = new LinkedHashMap<>();
 
@@ -34,12 +35,13 @@ public class AudioUpdaterService {
     private volatile boolean playbackRunning = false;
 
     public AudioUpdaterService(UiTimelineManager uiTimelineManager, PlaybackController playbackController, AudioStreamService audioStreamService, MessagingService messagingService,
-            AudioVisualizationComponent audioVisualizationComponent) {
+            AudioVisualizationComponent audioVisualizationComponent, UiPlaybackPreferenceRepository playbackPreferenceRepository) {
         this.uiTimelineManager = uiTimelineManager;
         this.playbackController = playbackController;
         this.audioStreamService = audioStreamService;
         this.messagingService = messagingService;
         this.audioVisualizationComponent = audioVisualizationComponent;
+        this.playbackPreferenceRepository = playbackPreferenceRepository;
     }
 
     @PostConstruct
@@ -55,7 +57,7 @@ public class AudioUpdaterService {
 
     public void updateAtPosition(TimelinePosition position) {
         audioVisualizationComponent.updateAudioComponent(position);
-        if (uiTimelineManager.isPlaybackInProgress()) {
+        if (uiTimelineManager.isPlaybackInProgress() && !playbackPreferenceRepository.isMute()) {
             playbackRunning = true;
             lastPlayedTimelinePosition = position;
             BigDecimal normalizedStartPosition = normalizePosition(position);

@@ -9,15 +9,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
+import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
-import javafx.application.Platform;
-
 @Component
-@Order(value = 1)
-public class NameToIdRepository implements SaveLoadContributor {
+@Order(value = -1) // make sure this bean loads before channels and clips are created
+public class NameToIdRepository implements SaveLoadContributor, ResettableBean {
     private Map<String, String> nameToId = new HashMap<>();
     private Map<String, String> idToName = new HashMap<>();
 
@@ -97,12 +96,16 @@ public class NameToIdRepository implements SaveLoadContributor {
             for (var entry : newNameToId.entrySet()) {
                 newIdToName.put(entry.getValue(), entry.getKey());
             }
-            Platform.runLater(() -> {
-                this.nameToId = newNameToId;
-                this.idToName = newIdToName;
-            });
+            this.nameToId = newNameToId;
+            this.idToName = newIdToName;
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void resetDefaults() {
+        nameToId.clear();
+        idToName.clear();
     }
 }

@@ -45,10 +45,14 @@ public class DefaultEditMenuItemConfiguration {
     public SelectableMenuContribution copyContributionMenuItem(SelectedNodeRepository selectedNodeRepository, CopyPasteRepository copyPasteRepository) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Copy"), event -> {
             List<String> selectedClipIds = selectedNodeRepository.getSelectedClipIds();
-            if (selectedClipIds.isEmpty()) {
-                copyPasteRepository.pasteWithoutAdditionalInfo();
+            if (selectedClipIds.size() > 0) { // copy ony the first for now
+                String selectedClipId = selectedClipIds.get(0);
+                copyPasteRepository.copyClip(selectedClipId);
             } else {
-                copyPasteRepository.pasteOnExistingClips(selectedClipIds);
+                List<String> selectedEffects = selectedNodeRepository.getSelectedEffectIds();
+                if (selectedEffects.size() > 0) {
+                    copyPasteRepository.copyEffect(selectedEffects);
+                }
             }
         }, new KeyCodeCombination(KeyCode.C, KeyCodeCombination.CONTROL_DOWN));
     }

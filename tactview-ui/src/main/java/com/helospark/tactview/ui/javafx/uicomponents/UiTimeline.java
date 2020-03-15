@@ -108,6 +108,7 @@ public class UiTimeline {
         });
 
         HBox titleBarTop = new HBox();
+        titleBarTop.getStyleClass().add("timeline-title-bar");
         titleBarTop.getChildren().addAll(addChannelButton, cutAllClipsButton);
 
         VBox timelineTopRow = new VBox();
@@ -162,8 +163,9 @@ public class UiTimeline {
         timelineTitlesPane.getStyleClass().add("timeline-titles-pane");
         ScrollPane timelineTitlesScrollPane = new ScrollPane();
         timelineTitlesScrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
-        timelineTitlesScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        timelineTitlesScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
         timelineTitlesScrollPane.vvalueProperty().bindBidirectional(timeLineScrollPane.vvalueProperty());
+
         VBox timelineTitles = new VBox();
         Bindings.bindContentBidirectional(timelineState.getChannelTitlesAsNodes(), timelineTitles.getChildren());
         timelineTitlesScrollPane.setContent(timelineTitles);

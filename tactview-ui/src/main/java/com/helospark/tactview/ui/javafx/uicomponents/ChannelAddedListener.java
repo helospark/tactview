@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import java.util.Optional;
+
 import javax.annotation.PostConstruct;
 
 import org.controlsfx.glyphfont.FontAwesome;
@@ -11,9 +13,12 @@ import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.commands.impl.DisableChannelCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.MoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.MuteChannelCommand;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.channelcontextmenu.ChannelContextMenuAppender;
 
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -30,15 +35,17 @@ public class ChannelAddedListener {
     private NameToIdRepository nameToIdRepository;
     private UiCommandInterpreterService commandInterpreterService;
     private TimelineManagerAccessor timelineManager;
+    private ChannelContextMenuAppender channelContextMenuAppender;
 
     public ChannelAddedListener(UiMessagingService messagingService, TimelineState timelineState, TimelineDragAndDropHandler timelineDragAndDropHandler, NameToIdRepository nameToIdRepository,
-            UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager) {
+            UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager, ChannelContextMenuAppender channelContextMenuAppender) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.timelineDragAndDropHandler = timelineDragAndDropHandler;
         this.nameToIdRepository = nameToIdRepository;
         this.commandInterpreterService = commandInterpreterService;
         this.timelineManager = timelineManager;
+        this.channelContextMenuAppender = channelContextMenuAppender;
     }
 
     @PostConstruct
@@ -83,6 +90,7 @@ public class ChannelAddedListener {
 
         ToggleButton disableButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.EYE_SLASH));
         disableButton.getStyleClass().add("channel-title-button");
+        disableButton.setTooltip(new Tooltip("Disable channel"));
         disableButton.setSelected(message.isDisabled());
         disableButton.setOnAction(e -> {
             boolean isDisable = disableButton.isSelected();
@@ -92,13 +100,37 @@ public class ChannelAddedListener {
 
         ToggleButton muteButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.VOLUME_OFF));
         muteButton.getStyleClass().add("channel-title-button");
+        muteButton.setTooltip(new Tooltip("Mute channel audio"));
         muteButton.setSelected(message.isMute());
         muteButton.setOnAction(e -> {
             boolean isMute = muteButton.isSelected();
             commandInterpreterService.sendWithResult(new MuteChannelCommand(timelineManager, message.getChannelId(), isMute));
         });
-
         buttonBar.getChildren().add(muteButton);
+
+        Button moveChannelUpButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.ARROW_UP));
+        moveChannelUpButton.getStyleClass().add("channel-title-button");
+        moveChannelUpButton.setTooltip(new Tooltip("Move channel up"));
+        moveChannelUpButton.setOnAction(e -> {
+            Optional<Integer> currentChannelIndex = timelineManager.findChannelIndexByChannelId(message.getChannelId());
+            if (currentChannelIndex.isPresent() && currentChannelIndex.get() != 0) {
+                int index = currentChannelIndex.get();
+                commandInterpreterService.sendWithResult(new MoveChannelCommand(timelineManager, index, index - 1));
+            }
+        });
+        buttonBar.getChildren().add(moveChannelUpButton);
+
+        Button moveChannelDownButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.ARROW_DOWN));
+        moveChannelDownButton.getStyleClass().add("channel-title-button");
+        moveChannelDownButton.setTooltip(new Tooltip("Move channel down"));
+        moveChannelDownButton.setOnAction(e -> {
+            Optional<Integer> currentChannelIndex = timelineManager.findChannelIndexByChannelId(message.getChannelId());
+            if (currentChannelIndex.isPresent() && currentChannelIndex.get() < timelineManager.getAllChannelIds().size() - 1) {
+                int index = currentChannelIndex.get();
+                commandInterpreterService.sendWithResult(new MoveChannelCommand(timelineManager, index, index + 1));
+            }
+        });
+        buttonBar.getChildren().add(moveChannelDownButton);
 
         timelineTitle.getChildren().add(buttonBar);
 
@@ -113,6 +145,9 @@ public class ChannelAddedListener {
         timeline.getChildren().add(timelineRow);
 
         timelineTitle.prefHeightProperty().bind(timelineRow.heightProperty().add(12));
+
+        channelContextMenuAppender.addContextMenu(timelineTitle, message.getChannelId());
+        channelContextMenuAppender.addContextMenu(timeline, message.getChannelId());
 
         timelineDragAndDropHandler.addDragAndDrop(timeline, timelineRow, message.getChannelId());
 

@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.SecondsAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -343,6 +344,16 @@ public class TimelineState {
         return clipsToEffects.entrySet()
                 .stream()
                 .flatMap(a -> a.getValue().stream());
+    }
+
+    public void moveChannel(int originalIndex, int newIndex) {
+        Platform.runLater(() -> {
+            HBox originalChannel = channels.remove(originalIndex);
+            channels.add(newIndex, originalChannel);
+
+            Pane originalHeader = channelHeaders.remove(originalIndex);
+            channelHeaders.add(newIndex, originalHeader);
+        });
     }
 
 }

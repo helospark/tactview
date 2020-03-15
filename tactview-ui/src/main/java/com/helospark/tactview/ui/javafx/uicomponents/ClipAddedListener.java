@@ -157,6 +157,9 @@ public class ClipAddedListener {
         });
 
         rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
+            if (selectedNodeRepository.getPrimarySelectedClip().isEmpty()) {
+                selectedNodeRepository.setOnlySelectedClip(parentPane);
+            }
             Optional<ContextMenu> contextMenu = clipContextMenuFactory.createContextMenuForSelectedClips();
             if (contextMenu.isPresent()) {
                 contextMenu.get().show(rectangle.getScene().getWindow(), event.getScreenX(), event.getScreenY());

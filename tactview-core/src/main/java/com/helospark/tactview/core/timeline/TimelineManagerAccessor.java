@@ -24,6 +24,7 @@ import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
+import com.helospark.tactview.core.timeline.message.ChannelMovedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelSettingUpdatedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -102,6 +103,11 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 throw new IllegalArgumentException("Cannot add clip");
             }
         }
+        sendClipAndEffectMessages(channelToAddResourceTo, clip);
+
+    }
+
+    private void sendClipAndEffectMessages(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
         List<ValueProviderDescriptor> descriptors = clip.getDescriptors(); // must call before sending clip added message to initialize descriptors
         messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
         messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), descriptors, clip));
@@ -112,7 +118,6 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             int channelIndex = clip.getEffectWithIndex(effect);
             messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clip.getId(), effect.interval.getStartPosition(), effect, channelIndex, effect.getGlobalInterval()));
         }
-
     }
 
     public Optional<TimelineChannel> findChannelWithId(String channelId) {
@@ -179,7 +184,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return channelToInsert;
     }
 
-    private void createChannel(int index, TimelineChannel channelToInsert) {
+    public void createChannel(int index, TimelineChannel channelToInsert) {
         synchronized (timelineChannelsState.fullLock) {
             if (index >= 0 && index < timelineChannelsState.channels.size()) {
                 timelineChannelsState.channels.add(index, channelToInsert);
@@ -188,9 +193,14 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             }
         }
         messagingService.sendMessage(new ChannelAddedMessage(channelToInsert.getId(), timelineChannelsState.channels.indexOf(channelToInsert), channelToInsert.isDisabled(), channelToInsert.isMute()));
+
+        channelToInsert.getAllClipId()
+                .stream()
+                .flatMap(clipId -> channelToInsert.findClipById(clipId).stream())
+                .forEach(clip -> sendClipAndEffectMessages(channelToInsert, clip));
     }
 
-    public void removeChannel(String channelId) {
+    public TimelineChannel removeChannel(String channelId) {
         synchronized (timelineChannelsState.fullLock) {
             TimelineChannel channel = findChannelWithId(channelId).orElseThrow();
 
@@ -203,6 +213,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                         timelineChannelsState.channels.remove(index.intValue());
                         messagingService.sendMessage(new ChannelRemovedMessage(channelId));
                     });
+            return channel;
         }
     }
 
@@ -864,6 +875,38 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     public Optional<TimelineClip> findFirstClipToRight(String clipId) {
         TimelineChannel channel = findChannelForClipId(clipId).get();
         return channel.findFirstClipToRight(clipId);
+    }
+
+    public void moveChannel(MoveChannelRequest moveChannelRequest) {
+        synchronized (timelineChannelsState.fullLock) {
+            int originalIndex = moveChannelRequest.getOriginalIndex();
+            int newIndex = moveChannelRequest.getNewIndex();
+
+            if (newIndex >= 0 && newIndex < getChannels().size()) {
+                TimelineChannel originalChannel = timelineChannelsState.channels.remove(originalIndex);
+
+                timelineChannelsState.channels.add(newIndex, originalChannel);
+
+                List<TimelineInterval> affectedIntervals = originalChannel.getAllClipId().stream()
+                        .flatMap(clipId -> findClipById(clipId).stream())
+                        .map(clip -> clip.getInterval())
+                        .collect(Collectors.toList());
+
+                messagingService.sendAsyncMessage(new ChannelMovedMessage(newIndex, originalIndex, affectedIntervals));
+            } else {
+                logger.info("Trying to move channel " + originalIndex + " -> " + newIndex + " but it is outside of range");
+            }
+        }
+    }
+
+    public Optional<Integer> findChannelIndexByChannelId(String channelId) {
+        List<String> channels = this.getAllChannelIds();
+        for (int i = 0; i < channels.size(); ++i) {
+            if (channels.get(i).equals(channelId)) {
+                return Optional.of(i);
+            }
+        }
+        return Optional.empty();
     }
 
 }
