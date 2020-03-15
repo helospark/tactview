@@ -8,13 +8,14 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Value;
+import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 @Component
-public class UiCommandInterpreterService {
+public class UiCommandInterpreterService implements ResettableBean {
     private DirtyRepository dirtyRepository;
 
     @Slf4j
@@ -92,5 +93,11 @@ public class UiCommandInterpreterService {
     @PreferenceValue(name = "Revert history size", defaultValue = "20", group = "Clip")
     public void setPreferenceValue(int historySize) {
         this.historySize = historySize;
+    }
+
+    @Override
+    public void resetDefaults() {
+        commandHistory.clear();
+        redoHistory.clear();
     }
 }

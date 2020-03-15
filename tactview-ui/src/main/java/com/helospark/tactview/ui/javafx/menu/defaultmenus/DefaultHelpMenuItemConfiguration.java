@@ -9,8 +9,10 @@ import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.help.AboutDialogOpener;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
-import com.helospark.tactview.ui.javafx.menu.MenuContribution;
+import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
+import com.helospark.tactview.ui.javafx.menu.SeparatorMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllImagePatternsMessage;
+import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 
 @Configuration
 public class DefaultHelpMenuItemConfiguration {
@@ -19,7 +21,7 @@ public class DefaultHelpMenuItemConfiguration {
 
     @Bean
     @Order(4990)
-    public MenuContribution dropCachesContributionMenuItem(MessagingService messagingService) {
+    public SelectableMenuContribution dropCachesContributionMenuItem(MessagingService messagingService) {
         return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Drop caches"), e -> {
             messagingService.sendAsyncMessage(new DropCachesMessage());
         });
@@ -27,7 +29,7 @@ public class DefaultHelpMenuItemConfiguration {
 
     @Bean
     @Order(4991)
-    public MenuContribution regenerateImagePatternsContributionMenuItem(MessagingService messagingService) {
+    public SelectableMenuContribution regenerateImagePatternsContributionMenuItem(MessagingService messagingService) {
         return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Regenerate clip patterns"), e -> {
             messagingService.sendAsyncMessage(new RegenerateAllImagePatternsMessage());
         });
@@ -35,15 +37,21 @@ public class DefaultHelpMenuItemConfiguration {
 
     @Bean
     @Order(4991)
-    public MenuContribution reloadStyleSheat(MessagingService messagingService) {
+    public SelectableMenuContribution reloadStyleSheat(MessagingService messagingService) {
         return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Reload stylesheet"), e -> {
             messagingService.sendAsyncMessage(new ReloadStylesheetMessage());
         });
     }
 
     @Bean
+    @Order(4990)
+    public SeparatorMenuContribution beforeAboutSeparatorMenuItem(UiLoadHandler loadHandler) {
+        return new SeparatorMenuContribution(List.of(HELP_ROOT));
+    }
+
+    @Bean
     @Order(5000)
-    public MenuContribution aboutContributionMenuItem(AboutDialogOpener aboutDialogOpener) {
+    public SelectableMenuContribution aboutContributionMenuItem(AboutDialogOpener aboutDialogOpener) {
         return new DefaultMenuContribution(List.of(HELP_ROOT, "About..."), e -> {
             aboutDialogOpener.openDialog();
         });

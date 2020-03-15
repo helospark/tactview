@@ -40,13 +40,14 @@ public class ExitWithSaveService {
     }
 
     private void openSaveOrCancelDialogAndRun(Runnable exitRunnable) {
-        ButtonType saveAndExitButton = new ButtonType("save and exit");
-        ButtonType exitWithoutSaveButton = new ButtonType("exit without save");
+        ButtonType saveAndExitButton = new ButtonType("save and close");
+        ButtonType exitWithoutSaveButton = new ButtonType("close without save");
         ButtonType cancelButton = new ButtonType("cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
         Alert alert = new Alert(AlertType.WARNING);
+        alert.getDialogPane().getStylesheets().add("stylesheet.css");
         alert.setHeaderText(null);
-        alert.setContentText("Editor is dirty. Should we save?");
+        alert.setContentText("You have unsaved changes. Should we save?");
         alert.getButtonTypes().clear();
         alert.getButtonTypes().setAll(saveAndExitButton, exitWithoutSaveButton, cancelButton);
         alert.setTitle("Save and exit");

@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import javafx.event.ActionEvent;
 import javafx.scene.input.KeyCodeCombination;
 
-public class DefaultMenuContribution implements MenuContribution {
+public class DefaultMenuContribution implements SelectableMenuContribution {
     private List<String> path;
     private Consumer<ActionEvent> actionConsumer;
     private Optional<KeyCodeCombination> keyCombination = Optional.empty();

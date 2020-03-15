@@ -5,7 +5,7 @@ import java.util.List;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.plugin.PluginManager;
-import com.helospark.tactview.ui.javafx.menu.MenuContribution;
+import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.plugin.dialog.InstalledPluginsDialog;
 import com.helospark.tactview.ui.javafx.plugin.service.PluginInstallationService;
 
@@ -13,7 +13,7 @@ import javafx.event.ActionEvent;
 
 @Component
 @Order(4901)
-public class InstalledPluginListMenuItemContributor implements MenuContribution {
+public class InstalledPluginListMenuItemContributor implements SelectableMenuContribution {
     private PluginManager pluginManager;
     private PluginInstallationService pluginInstallationService;
     private RestartDialogOpener restartDialogOpener;

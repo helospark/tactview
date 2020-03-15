@@ -11,7 +11,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoubleInterpolator {
-    protected TreeMap<TimelinePosition, Double> values;
+    protected volatile TreeMap<TimelinePosition, Double> values;
     protected UnivariateInterpolator interpolatorImplementation = new LinearInterpolator();
     protected double defaultValue;
     protected boolean useKeyframes;

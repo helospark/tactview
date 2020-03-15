@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.menu;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.helospark.lightdi.annotation.Component;
 
@@ -34,7 +35,11 @@ public class MenuProcessor {
                 menuElement = addOrGetIntermediateElementFor(children, currentPathName);
             }
             String leafMenuItem = path.get(path.size() - 1);
-            menuElement.children.add(new LeafMenuItem(leafMenuItem, contribution));
+            if (contribution instanceof SelectableMenuContribution) {
+                menuElement.children.add(new LeafMenuItem(leafMenuItem, (SelectableMenuContribution) contribution));
+            } else {
+                menuElement.children.add(new SeparatorMenuElement());
+            }
         }
         return menuElements;
     }
@@ -62,6 +67,8 @@ public class MenuProcessor {
                 }
             }
             return menu;
+        } else if (element instanceof SeparatorMenuElement) {
+            return new javafx.scene.control.SeparatorMenuItem();
         } else {
             MenuItem leafMenuItem = new MenuItem(element.name);
             leafMenuItem.setOnAction(e -> element.menuContribution.onAction(e));
@@ -74,7 +81,7 @@ public class MenuProcessor {
 
     private MenuElement addOrGetIntermediateElementFor(List<MenuElement> menuElements, String currentPathName) {
         for (MenuElement element : menuElements) {
-            if (element.name.equals(currentPathName)) {
+            if (Objects.equals(element.name, currentPathName)) {
                 return element;
             }
         }
@@ -87,7 +94,7 @@ public class MenuProcessor {
 
     static abstract class MenuElement {
         String name;
-        MenuContribution menuContribution = null;
+        SelectableMenuContribution menuContribution = null;
         List<MenuElement> children = new ArrayList<>();
     }
 
@@ -101,10 +108,14 @@ public class MenuProcessor {
 
     static class LeafMenuItem extends MenuElement {
 
-        public LeafMenuItem(String name, MenuContribution menuContribution) {
+        public LeafMenuItem(String name, SelectableMenuContribution menuContribution) {
             this.name = name;
             this.menuContribution = menuContribution;
         }
+
+    }
+
+    static class SeparatorMenuElement extends MenuElement {
 
     }
 

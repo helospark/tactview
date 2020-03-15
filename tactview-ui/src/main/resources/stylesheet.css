@@ -23,6 +23,11 @@
     -fx-border-width: 1px;
 }
 
+.context-menu .separator {
+    -fx-padding: 0.0em 0.333333em 0.0em 0.333333em;
+    -fx-opacity: 0.3;
+}
+
 .menu-item .arrow {
     -fx-background-color: white;
 }
@@ -258,9 +263,9 @@
 .button {
     -fx-background-color: 
         #555555,
-        linear-gradient(#111111 50%, white 100%),
-        radial-gradient(center 50% -40%, radius 200%, #444444 45%, rgba(230,230,230,0) 50%);
-    -fx-background-radius: 30;
+        linear-gradient(#111111 50%, #777 100%),
+        radial-gradient(center 50% -40%, radius 200%, #3a3a3a 45%, rgba(130,130,130,0) 50%);
+    -fx-background-radius: 5;
     -fx-background-insets: 0,1,1;
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 3, 0.0 , 0 , 1 );
 }
@@ -268,7 +273,7 @@
 .button:hover {
     -fx-background-color: 
         #333333,
-        linear-gradient(#000000 50%, white 100%),
+        linear-gradient(#0f0f0f 50%, #999999 100%),
         radial-gradient(center 50% -40%, radius 200%, #222222 45%, rgba(230,230,230,0) 50%);
 }
 

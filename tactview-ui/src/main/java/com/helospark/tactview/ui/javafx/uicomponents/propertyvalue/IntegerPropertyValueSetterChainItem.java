@@ -82,6 +82,11 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                     if (!textField.isFocused()) {
                         textField.setText(integerProviderValueToString(integerProvider, position));
                     }
+                    if (effectParametersRepository.isKeyframeAt(integerProvider.getId(), position)) {
+                        textField.getStyleClass().add("on-keyframe");
+                    } else {
+                        textField.getStyleClass().remove("on-keyframe");
+                    }
                 })
                 .withDescriptor(descriptor)
                 .withVisibleNode(hbox)

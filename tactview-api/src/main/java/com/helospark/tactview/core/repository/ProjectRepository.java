@@ -10,26 +10,41 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
+import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 
 @Component
-public class ProjectRepository implements SaveLoadContributor {
+public class ProjectRepository implements SaveLoadContributor, ResettableBean {
     @JsonIgnore
     private ObjectMapper objectMapper;
 
-    private boolean isVideoInitialized = false;
-    private boolean isAudioInitialized = false;
-    private int width = 1920;
-    private int height = 1080;
-    private int sampleRate = 44100;
-    private int bytesPerSample = 4;
-    private int numberOfChannels = 2;
-    private BigDecimal fps = BigDecimal.valueOf(24);
-    private BigDecimal frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
+    private boolean isVideoInitialized;
+    private boolean isAudioInitialized;
+    private int width;
+    private int height;
+    private int sampleRate;
+    private int bytesPerSample;
+    private int numberOfChannels;
+    private BigDecimal fps;
+    private BigDecimal frameTime;
 
     public ProjectRepository(@Qualifier("getterIgnoringObjectMapper") ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+        resetDefaults();
+    }
+
+    @Override
+    public void resetDefaults() {
+        isVideoInitialized = false;
+        isAudioInitialized = false;
+        width = 1920;
+        height = 1080;
+        sampleRate = 44100;
+        bytesPerSample = 4;
+        numberOfChannels = 2;
+        fps = BigDecimal.valueOf(24);
+        frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
     }
 
     public void initializeVideo(int width, int height, BigDecimal fps) {

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.lightdi.annotation.Qualifier;
+import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 
@@ -16,13 +17,13 @@ import javafx.beans.property.SimpleIntegerProperty;
 
 @Component
 @Order(value = -1)
-public class UiProjectRepository implements SaveLoadContributor {
+public class UiProjectRepository implements SaveLoadContributor, ResettableBean {
     private static final int PREVIEW_WIDTH = 320;
     private static final int PREVIEW_HEIGHT = 200;
 
     private double scaleFactor = 1.0;
-    private SimpleIntegerProperty previewWidth = new SimpleIntegerProperty(PREVIEW_WIDTH);
-    private SimpleIntegerProperty previewHeight = new SimpleIntegerProperty(PREVIEW_HEIGHT);
+    private SimpleIntegerProperty previewWidth;
+    private SimpleIntegerProperty previewHeight;
     private double aspectRatio;
 
     @JsonIgnore
@@ -30,6 +31,14 @@ public class UiProjectRepository implements SaveLoadContributor {
 
     public UiProjectRepository(@Qualifier("getterIgnoringObjectMapper") ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+        resetDefaults();
+    }
+
+    @Override
+    public void resetDefaults() {
+        scaleFactor = 1.0;
+        previewWidth = new SimpleIntegerProperty(PREVIEW_WIDTH);
+        previewHeight = new SimpleIntegerProperty(PREVIEW_HEIGHT);
     }
 
     public double getScaleFactor() {

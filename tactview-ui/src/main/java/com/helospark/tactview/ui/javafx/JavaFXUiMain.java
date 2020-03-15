@@ -319,7 +319,7 @@ public class JavaFXUiMain extends Application {
                 .stream()
                 .forEach(processor -> processor.postProcess(scene));
 
-        lightDi.getBean(UiInitializer.class).initialize();
+        lightDi.getBean(ProjectInitializer.class).clearAndInitialize();
 
         if (splashStage.isShowing()) {
             stage.show();
@@ -414,9 +414,11 @@ public class JavaFXUiMain extends Application {
         uiTimeline = lightDi.getBean(UiTimeline.class);
         uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
         effectPropertyView = lightDi.getBean(PropertyView.class);
+
         uiTimelineManager.registerUiPlaybackConsumer(position -> uiTimeline.updateLine(position));
         uiTimelineManager.registerUiPlaybackConsumer(position -> effectPropertyView.updateValues(position));
         uiTimelineManager.registerUiPlaybackConsumer(position -> updateTime(position));
+
         displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
         uiTimelineManager.registerPlaybackConsumer(position -> displayUpdateService.updateDisplayWithCacheInvalidation(position));
         AudioUpdaterService audioUpdaterService = lightDi.getBean(AudioUpdaterService.class);

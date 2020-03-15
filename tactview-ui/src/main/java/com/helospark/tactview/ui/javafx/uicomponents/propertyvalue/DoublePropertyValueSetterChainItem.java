@@ -70,7 +70,6 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withUpdateFunction(position -> {
                     if (!textField.isFocused()) { // otherwise user may want to type
                         String current = doubleProviderValueToString(doubleProvider.getId(), position);
-                        System.out.println("Updating " + doubleProvider.getId() + " to " + current);
                         textField.setText(current);
                         if (effectParametersRepository.isKeyframeAt(doubleProvider.getId(), position)) {
                             textField.getStyleClass().add("on-keyframe");

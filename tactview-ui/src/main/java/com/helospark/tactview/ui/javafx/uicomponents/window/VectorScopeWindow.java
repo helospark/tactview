@@ -7,7 +7,7 @@ import java.util.List;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
-import com.helospark.tactview.ui.javafx.menu.MenuContribution;
+import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
 
@@ -20,7 +20,7 @@ import javafx.scene.layout.BorderPane;
 
 @Component
 @Order(4002)
-public class VectorScopeWindow extends SingletonOpenableWindow implements DisplayUpdatedListener, MenuContribution {
+public class VectorScopeWindow extends SingletonOpenableWindow implements DisplayUpdatedListener, SelectableMenuContribution {
     private static final int BORDER = 10;
     private static final int INNER_CIRCLE_BORDER = 128;
     private static final int DEFAULT_WIDTH = 255 * 2;

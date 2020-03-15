@@ -9,7 +9,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.util.MathUtil;
-import com.helospark.tactview.ui.javafx.menu.MenuContribution;
+import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
 
@@ -22,7 +22,7 @@ import javafx.scene.layout.BorderPane;
 
 @Component
 @Order(4001)
-public class RgbWaveformWindow extends SingletonOpenableWindow implements DisplayUpdatedListener, MenuContribution {
+public class RgbWaveformWindow extends SingletonOpenableWindow implements DisplayUpdatedListener, SelectableMenuContribution {
     private static final int DEFAULT_WIDTH = 800;
     private static final int DEFAULT_HEIGHT = 255;
     private Canvas canvas;
