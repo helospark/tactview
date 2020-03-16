@@ -2,7 +2,7 @@
 * {
 	-fx-text-fill: white;
 }
-
+  
 .timelinerow,#content-area,.dialog-root,.alert {
 	-fx-background-color: #333333;
 	-fx-background: #333333;

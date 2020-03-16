@@ -25,11 +25,10 @@ Extract the zip, and run `tactview` executable.
  - Java 11
 
 
-You can install all dependencies running `build.bat (Windows)`, `build.sh (Linux)`, `buildmac.sh (Mac)`. script in `tactview_native/build` as root.
+(On Linux you can install all dependencies with `tactview-native/build_dependencies.sh`)
 
 ### Release build
 
-(On Linux you can install all dependencies with `tactview-native/build_dependencies.sh`)
 
 Create a release
 
