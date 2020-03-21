@@ -2,7 +2,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.util;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.ClosesIntervalChannel;
-import com.helospark.tactview.ui.javafx.uicomponents.MoveSpecialPointLineProperties;
+import com.helospark.tactview.ui.javafx.uicomponents.TimelineLineProperties;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.scene.layout.HBox;
@@ -25,7 +25,7 @@ public class SpecialPointLineDrawer {
         int lineStartY = (int) specialPositionChannel.getLayoutY();
         int lineEndY = (int) (currentChannel.getLayoutY() + currentChannel.getHeight());
 
-        MoveSpecialPointLineProperties properties = timelineState.getMoveSpecialPointLineProperties();
+        TimelineLineProperties properties = timelineState.getMoveSpecialPointLineProperties();
         properties.setStartX(lineStartX);
         properties.setStartY(lineStartY);
         properties.setEndX(lineEndX);
@@ -43,7 +43,7 @@ public class SpecialPointLineDrawer {
         int lineStartY = (int) specialPositionChannel.getLayoutY();
         int lineEndY = (int) (currentChannel.getLayoutY() + currentChannel.getHeight());
 
-        MoveSpecialPointLineProperties properties = timelineState.getMoveSpecialPointLineProperties();
+        TimelineLineProperties properties = timelineState.getMoveSpecialPointLineProperties();
         properties.setStartX(lineStartX);
         properties.setStartY(lineStartY);
         properties.setEndX(lineEndX);

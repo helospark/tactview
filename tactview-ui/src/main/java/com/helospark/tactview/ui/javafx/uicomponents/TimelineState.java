@@ -45,7 +45,10 @@ public class TimelineState {
     private SimpleDoubleProperty translate = new SimpleDoubleProperty(0);
 
     private SimpleDoubleProperty linePosition = new SimpleDoubleProperty(0.0);
-    private MoveSpecialPointLineProperties moveSpecialPointLineProperties = new MoveSpecialPointLineProperties();
+    private TimelineLineProperties moveSpecialPointLineProperties = new TimelineLineProperties();
+
+    private TimelineLineProperties loopAProperties = new TimelineLineProperties();
+    private TimelineLineProperties loopBProperties = new TimelineLineProperties();
 
     private ZoomableScrollPane timeLineScrollPane;
 
@@ -107,6 +110,10 @@ public class TimelineState {
 
     public ObservableDoubleValue getTranslate() {
         return translate;
+    }
+
+    public SimpleDoubleProperty getReadOnlyLinePosition() {
+        return linePosition;
     }
 
     public DoubleBinding getLinePosition() {
@@ -256,7 +263,7 @@ public class TimelineState {
         // System.out.println("Channel change: " + channel.getUserData() + " " + newChannelId);
     }
 
-    public MoveSpecialPointLineProperties getMoveSpecialPointLineProperties() {
+    public TimelineLineProperties getMoveSpecialPointLineProperties() {
         return moveSpecialPointLineProperties;
     }
 
@@ -354,6 +361,26 @@ public class TimelineState {
             Pane originalHeader = channelHeaders.remove(originalIndex);
             channelHeaders.add(newIndex, originalHeader);
         });
+    }
+
+    public TimelineLineProperties getLoopALineProperties() {
+        return loopAProperties;
+    }
+
+    public TimelineLineProperties getLoopBLineProperties() {
+        return loopBProperties;
+    }
+
+    public boolean loopingEnabled() {
+        return loopAProperties.getEnabledProperty().get() && loopBProperties.getEnabledProperty().get();
+    }
+
+    public TimelinePosition getLoopStartTime() {
+        return pixelsToSeconds(loopAProperties.getStartX().get());
+    }
+
+    public TimelinePosition getLoopEndTime() {
+        return pixelsToSeconds(loopBProperties.getStartX().get());
     }
 
 }

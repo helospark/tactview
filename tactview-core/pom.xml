@@ -231,10 +231,13 @@
       <version>3.1.3</version>
       <scope>test</scope>
     </dependency>
-    <!-- <dependency> -->
-    <!-- <groupId>com.helospark.tactview</groupId> -->
-    <!-- <artifactId>tactview-frei0r-plugin</artifactId> -->
-    <!-- <version>0.0.1-SNAPSHOT</version> -->
-    <!-- </dependency> -->
+
+
+    <!-- TMP under development plugins -->
+<!--     <dependency> -->
+<!--       <groupId>com.helospark.tactview</groupId> -->
+<!--       <artifactId>tactview-glsl-plugin</artifactId> -->
+<!--       <version>0.0.1-SNAPSHOT</version> -->
+<!--     </dependency> -->
   </dependencies>
 </project>

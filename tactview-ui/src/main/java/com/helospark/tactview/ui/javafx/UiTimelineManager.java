@@ -11,6 +11,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
 
@@ -28,9 +29,11 @@ public class UiTimelineManager {
     private Object timelineLock = new Object();
 
     private ProjectRepository projectRepository;
+    private TimelineState timelineState;
 
-    public UiTimelineManager(ProjectRepository projectRepository) {
+    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState) {
         this.projectRepository = projectRepository;
+        this.timelineState = timelineState;
     }
 
     public void registerUiPlaybackConsumer(Consumer<TimelinePosition> consumer) {
@@ -56,8 +59,15 @@ public class UiTimelineManager {
                     .forEach(consumer -> consumer.accept(PlaybackStatus.STARTED));
             runThread = new Thread(() -> {
                 while (isPlaying) {
+                    if (timelineState.loopingEnabled() && currentPosition.isLessThan(timelineState.getLoopStartTime())) {
+                        currentPosition = timelineState.getLoopStartTime();
+                    }
                     synchronized (timelineLock) {
                         currentPosition = currentPosition.add(increment);
+
+                        if (timelineState.loopingEnabled() && currentPosition.isGreaterThan(timelineState.getLoopEndTime())) {
+                            currentPosition = timelineState.getLoopStartTime();
+                        }
                     }
                     notifyConsumers();
                     sleep(sleepTime);
@@ -130,8 +140,18 @@ public class UiTimelineManager {
         if (isPlaying) {
             List<TimelinePosition> result = new ArrayList<>();
             TimelinePosition position = currentPosition;
+
+            if (timelineState.loopingEnabled() && position.isLessThan(timelineState.getLoopStartTime())) {
+                position = timelineState.getLoopStartTime();
+            }
+
             for (int i = 0; i < number; ++i) {
                 position = position.add(increment);
+
+                if (timelineState.loopingEnabled() && position.isGreaterThan(timelineState.getLoopEndTime())) {
+                    position = timelineState.getLoopStartTime();
+                }
+
                 result.add(position);
             }
             return result;

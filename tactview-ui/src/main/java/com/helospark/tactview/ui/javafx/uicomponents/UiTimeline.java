@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
 import static com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand.LAST_INDEX;
+import static javafx.geometry.Orientation.VERTICAL;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -36,6 +37,7 @@ import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.Separator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
@@ -53,6 +55,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class UiTimeline {
+    private static final String LOOP_BUTTON_ENABLED_CLASS = "loop-button-enabled";
     private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManager;
@@ -67,7 +70,9 @@ public class UiTimeline {
     private BorderPane borderPane;
     private Rectangle timelineLabelCanvas;
 
-    private Rectangle rectangle;
+    private Rectangle selectionBox;
+
+    private VBox timelineBoxes;
 
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
@@ -84,32 +89,7 @@ public class UiTimeline {
     public BorderPane createTimeline(VBox lower, BorderPane root) {
         borderPane = new BorderPane();
 
-        Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
-        addChannelButton.setTooltip(new Tooltip("Add new channel"));
-        addChannelButton.setOnMouseClicked(event -> {
-            commandInterpreter.sendWithResult(new CreateChannelCommand(timelineManager, LAST_INDEX));
-        });
-        Button cutAllClipsButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.CUT));
-        cutAllClipsButton.setTooltip(new Tooltip("Cut all clips at cursor position"));
-
-        cutAllClipsButton.setOnMouseClicked(event -> {
-            TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
-            List<String> intersectingClips = timelineManager.findIntersectingClips(currentPosition);
-
-            if (intersectingClips.size() > 0) {
-                CutClipCommand command = CutClipCommand.builder()
-                        .withClipIds(intersectingClips)
-                        .withGlobalTimelinePosition(currentPosition)
-                        .withLinkedClipRepository(linkClipRepository)
-                        .withTimelineManager(timelineManager)
-                        .build();
-                commandInterpreter.sendWithResult(command);
-            }
-        });
-
-        HBox titleBarTop = new HBox();
-        titleBarTop.getStyleClass().add("timeline-title-bar");
-        titleBarTop.getChildren().addAll(addChannelButton, cutAllClipsButton);
+        HBox titleBarTop = createTimelineButtonPanel();
 
         VBox timelineTopRow = new VBox();
         timelineTopRow.getChildren().add(titleBarTop);
@@ -118,44 +98,23 @@ public class UiTimeline {
 
         GridPane gridPane = new GridPane();
 
-        //        Group timelineGroup = new Group();
         Group zoomGroup = new Group();
         timeLineScrollPane = new ZoomableScrollPane(zoomGroup, timelineState, uiTimelineManager);
         timelineState.setTimeLineScrollPane(timeLineScrollPane);
-        VBox timelineBoxes = new VBox();
+        timelineBoxes = new VBox();
         timelineBoxes.prefWidthProperty().bind(timelineState.getTimelineWidthProperty());
         timelineBoxes.setPadding(new Insets(0, 0, 0, -6));
         zoomGroup.getChildren().add(timelineBoxes);
 
-        positionIndicatorLine = new Line();
-        //        positionIndicatorLine.setTranslateX(6.0); // TODO: Layout need to be fixed
-        positionIndicatorLine.setStartY(0);
-        positionIndicatorLine.endYProperty().bind(timelineBoxes.heightProperty());
-        positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
-        positionIndicatorLine.endXProperty().bind(timelineState.getLinePosition());
-        positionIndicatorLine.setId("timeline-position-line");
-        positionIndicatorLine.setStrokeWidth(1.0);
-        positionIndicatorLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
+        positionIndicatorLine = createCurrentPositionLine(timelineBoxes);
         zoomGroup.getChildren().add(positionIndicatorLine);
 
-        rectangle = new Rectangle();
-        rectangle.setVisible(false);
-        rectangle.setFill(new Color(0.0, 0.0, 1.0, 0.2));
-        rectangle.xProperty().set(200);
-        rectangle.yProperty().set(20);
-        rectangle.widthProperty().set(300);
-        rectangle.heightProperty().set(100);
-        zoomGroup.getChildren().add(rectangle);
+        selectionBox = createSelectionBox();
+        zoomGroup.getChildren().add(selectionBox);
 
-        Line specialPositionLine = new Line();
-        //        specialPositionLine.setTranslateX(6.0); // TODO: Layout need to be fixed
-        specialPositionLine.layoutXProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartX());
-        specialPositionLine.startYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getStartY());
-        specialPositionLine.visibleProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEnabledProperty());
-        specialPositionLine.endYProperty().bind(timelineState.getMoveSpecialPointLineProperties().getEndY());
-        specialPositionLine.setId("special-position-line");
-        specialPositionLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
-        zoomGroup.getChildren().add(specialPositionLine);
+        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getMoveSpecialPointLineProperties(), "special-position-line"));
+        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getLoopALineProperties(), "loop-a-line"));
+        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getLoopBLineProperties(), "loop-b-line"));
 
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
@@ -198,16 +157,8 @@ public class UiTimeline {
                     rescaleTimelineToFillView();
                     updateTimelineLabels();
                 });
-
-        //        timelineLabelCanvas.widthProperty()
-        //                .bind(timelineBoxes.widthProperty().multiply(timeLineScrollPane.zoomProperty()));
         timeLineScrollPane.hvalueProperty().bindBidirectional(timelineState.getHscroll());
         timeLineScrollPane.vvalueProperty().bindBidirectional(timelineState.getVscroll());
-
-        //        timelineLabelCanvas.widthProperty().addListener(newValue ->
-        //
-        //        updateTimelineLabels());
-        //        timelineLabelCanvas.scaleXProperty().addListener(newValue -> updateTimelineLabels());
 
         timelineCanvasGroup.getChildren().add(timelineLabelCanvas);
 
@@ -229,12 +180,6 @@ public class UiTimeline {
 
         timelineTopRow.getChildren().add(timelineLabelsTopHbox);
 
-        //        timelineState.onShownLocationChange(() -> updateTimelineLabels());
-
-        //        zoomGroup.addEventFilter(ScrollEvent.SCROLL, e -> {
-        //            timeLineZoomCallback.onScroll(e, timeLineScrollPane);
-        //            e.consume();
-        //        });
         timeLineScrollPane.hvalueProperty().addListener((o, oldValue, newValue) -> {
             Bounds viewportBounds = timeLineScrollPane.getViewportBounds();
             Bounds contentBounds = timeLineScrollPane.getContent().getBoundsInLocal();
@@ -262,6 +207,136 @@ public class UiTimeline {
         borderPane.setCenter(gridPane);
 
         return borderPane;
+    }
+
+    protected Rectangle createSelectionBox() {
+        Rectangle selectionBox = new Rectangle();
+        selectionBox.setVisible(false);
+        selectionBox.setFill(new Color(0.0, 0.0, 1.0, 0.2));
+        selectionBox.xProperty().set(200);
+        selectionBox.yProperty().set(20);
+        selectionBox.widthProperty().set(300);
+        selectionBox.heightProperty().set(100);
+
+        return selectionBox;
+    }
+
+    protected HBox createTimelineButtonPanel() {
+        Button addChannelButton = new Button("Channel", new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
+        addChannelButton.setTooltip(new Tooltip("Add new channel"));
+        addChannelButton.setOnMouseClicked(event -> {
+            commandInterpreter.sendWithResult(new CreateChannelCommand(timelineManager, LAST_INDEX));
+        });
+        Button cutAllClipsButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.CUT));
+        cutAllClipsButton.setTooltip(new Tooltip("Cut all clips at cursor position"));
+
+        cutAllClipsButton.setOnMouseClicked(event -> {
+            TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
+            List<String> intersectingClips = timelineManager.findIntersectingClips(currentPosition);
+
+            if (intersectingClips.size() > 0) {
+                CutClipCommand command = CutClipCommand.builder()
+                        .withClipIds(intersectingClips)
+                        .withGlobalTimelinePosition(currentPosition)
+                        .withLinkedClipRepository(linkClipRepository)
+                        .withTimelineManager(timelineManager)
+                        .build();
+                commandInterpreter.sendWithResult(command);
+            }
+        });
+
+        Button addAMarkerButton = new Button("A", new Glyph("FontAwesome", FontAwesome.Glyph.RETWEET));
+        addAMarkerButton.setTooltip(new Tooltip("Loop start time"));
+        addAMarkerButton.setOnAction(event -> {
+            if (timelineState.getLoopBLineProperties().getEnabledProperty().get() && timelineState.getLoopEndTime().isLessOrEqualToThan(uiTimelineManager.getCurrentPosition())) {
+                timelineState.getLoopBLineProperties().setEnabledProperty(false);
+            }
+            setLinePosition(timelineState.getLoopALineProperties());
+        });
+
+        Button addBMarkerButton = new Button("B", new Glyph("FontAwesome", FontAwesome.Glyph.RETWEET));
+        addBMarkerButton.setTooltip(new Tooltip("Loop end time"));
+        addBMarkerButton.setOnMouseClicked(event -> {
+            if (timelineState.getLoopALineProperties().getEnabledProperty().get() && timelineState.getLoopStartTime().isGreaterOrEqualToThan(uiTimelineManager.getCurrentPosition())) {
+                timelineState.getLoopALineProperties().setEnabledProperty(false);
+            }
+            setLinePosition(timelineState.getLoopBLineProperties());
+        });
+
+        Button eraserMarkerButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.ERASER));
+        eraserMarkerButton.setTooltip(new Tooltip("Erase loop markers"));
+        eraserMarkerButton.disableProperty().set(true);
+        eraserMarkerButton.setOnMouseClicked(event -> {
+            timelineState.getLoopBLineProperties().setEnabledProperty(false);
+            timelineState.getLoopALineProperties().setEnabledProperty(false);
+        });
+        timelineState.getLoopALineProperties().getEnabledProperty().addListener((a, oldV, newV) -> {
+            if (newV) {
+                addAMarkerButton.getStyleClass().add(LOOP_BUTTON_ENABLED_CLASS);
+            } else {
+                addAMarkerButton.getStyleClass().remove(LOOP_BUTTON_ENABLED_CLASS);
+            }
+            eraserMarkerButton.disableProperty().set(!enableClearLoopButton());
+        });
+        timelineState.getLoopBLineProperties().getEnabledProperty().addListener((a, oldV, newV) -> {
+            if (newV) {
+                addBMarkerButton.getStyleClass().add(LOOP_BUTTON_ENABLED_CLASS);
+            } else {
+                addBMarkerButton.getStyleClass().remove(LOOP_BUTTON_ENABLED_CLASS);
+            }
+            eraserMarkerButton.disableProperty().set(!enableClearLoopButton());
+        });
+
+        HBox titleBarTop = new HBox();
+        titleBarTop.getStyleClass().add("timeline-title-bar");
+        titleBarTop.getChildren().addAll(addChannelButton, new Separator(VERTICAL), cutAllClipsButton, new Separator(VERTICAL), addAMarkerButton, addBMarkerButton, eraserMarkerButton,
+                new Separator(VERTICAL));
+        return titleBarTop;
+    }
+
+    protected boolean enableClearLoopButton() {
+        return timelineState.getLoopALineProperties().getEnabledProperty().get() || timelineState.getLoopALineProperties().getEnabledProperty().get();
+    }
+
+    protected void setLinePosition(TimelineLineProperties aProperties) {
+        aProperties.getStartX().set(timelineState.secondsToPixels(uiTimelineManager.getCurrentPosition()));
+        aProperties.getEndX().set(timelineState.secondsToPixels(uiTimelineManager.getCurrentPosition()));
+        aProperties.getStartY().set(0);
+        aProperties.getEndY().bind(timelineBoxes.heightProperty());
+        aProperties.setEnabledProperty(true);
+    }
+
+    protected void copyLinePosition(TimelineLineProperties fromProperties, TimelineLineProperties toProperties) {
+        toProperties.getStartX().set(fromProperties.getStartX().get());
+        toProperties.getEndX().set(fromProperties.getEndX().get());
+        toProperties.getStartY().set(fromProperties.getStartX().get());
+        toProperties.getEndY().set(fromProperties.getEndY().get());
+        toProperties.setEnabledProperty(fromProperties.getEnabledProperty().get());
+    }
+
+    protected Line createSpecialPositionLine(TimelineLineProperties properties, String classId) {
+        Line specialPositionLine = new Line();
+        specialPositionLine.layoutXProperty().bind(properties.getStartX());
+        specialPositionLine.startYProperty().bind(properties.getStartY());
+        specialPositionLine.visibleProperty().bind(properties.getEnabledProperty());
+        specialPositionLine.endYProperty().bind(properties.getEndY());
+        specialPositionLine.setId(classId);
+        specialPositionLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
+        return specialPositionLine;
+    }
+
+    protected Line createCurrentPositionLine(VBox timelineBoxes) {
+        Line positionIndicatorLine = new Line();
+        //        positionIndicatorLine.setTranslateX(6.0); // TODO: Layout need to be fixed
+        positionIndicatorLine.setStartY(0);
+        positionIndicatorLine.endYProperty().bind(timelineBoxes.heightProperty());
+        positionIndicatorLine.startXProperty().bind(timelineState.getLinePosition());
+        positionIndicatorLine.endXProperty().bind(timelineState.getLinePosition());
+        positionIndicatorLine.setId("timeline-position-line");
+        positionIndicatorLine.setStrokeWidth(1.0);
+        positionIndicatorLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
+
+        return positionIndicatorLine;
     }
 
     private void rescaleTimelineToFillView() {
@@ -343,7 +418,7 @@ public class UiTimeline {
     }
 
     public void updateSelectionBox(Point startPoint, Point endPoint) {
-        rectangle.setVisible(true);
+        selectionBox.setVisible(true);
 
         double startX = Math.min(startPoint.x, endPoint.x);
         double endX = Math.max(startPoint.x, endPoint.x);
@@ -351,18 +426,18 @@ public class UiTimeline {
         double startY = Math.min(startPoint.y, endPoint.y);
         double endY = Math.max(startPoint.y, endPoint.y);
 
-        rectangle.xProperty().set(startX);
-        rectangle.yProperty().set(startY);
-        rectangle.widthProperty().set(endX - startX);
-        rectangle.heightProperty().set(endY - startY);
+        selectionBox.xProperty().set(startX);
+        selectionBox.yProperty().set(startY);
+        selectionBox.widthProperty().set(endX - startX);
+        selectionBox.heightProperty().set(endY - startY);
     }
 
     public void selectionBoxEnded() {
-        rectangle.setVisible(false);
+        selectionBox.setVisible(false);
     }
 
     public Rectangle getSelectionRectangle() {
-        return rectangle;
+        return selectionBox;
     }
 
 }

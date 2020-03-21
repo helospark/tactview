@@ -4,7 +4,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-public class MoveSpecialPointLineProperties {
+public class TimelineLineProperties {
     private SimpleIntegerProperty startX = new SimpleIntegerProperty(0);
     private SimpleIntegerProperty startY = new SimpleIntegerProperty(0);
 
