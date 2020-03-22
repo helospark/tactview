@@ -243,7 +243,7 @@
 
 .render-dialog-grid-pane {
     -fx-padding: 10px;
-    -fx-pref-width: 800px;
+    -fx-pref-width: 650px;
 }
 
 .render-dialog-button-bar {
@@ -467,4 +467,25 @@
 .plugin-list-author {
     -fx-font-size: 8pt;
     -fx-font-style: italic;
+}
+
+.resolution-link-button {
+    -fx-background-radius: 0;
+    -fx-background-color: rgba(0,0,0,0.0);
+    -fx-opacity: 0.7;
+    -fx-padding: 5px;
+}
+
+.resolution-link-button:hover {
+    -fx-background-radius: 0;
+    -fx-background-color: rgba(0,0,0,0.0);
+    -fx-opacity: 1.0;
+}
+
+.render-dialog-time-selector {
+    -fx-max-width: 200px;
+}
+
+.resolution-component>.text-field {
+    -fx-pref-width: 50px
 }

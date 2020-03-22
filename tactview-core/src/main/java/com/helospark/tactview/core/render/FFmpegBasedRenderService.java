@@ -268,14 +268,6 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             }
         }
 
-        // int sum = 0;
-        // System.out.println("#############################x");
-        // for (int i = 0; i < result.capacity(); ++i) {
-        // System.out.print(result.get(i) + " ");
-        // sum += result.get(i);
-        // }
-        // System.out.println("\n/////////////////////////////\n" + sum);
-
         return result;
     }
 
@@ -301,6 +293,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         OptionProvider<Integer> bitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Video bitrate")
                 .withDefaultValue(maximumVideoBitRate > 0 ? maximumVideoBitRate : 3200000)
+                .withIsEnabled(f -> !isAudioContainerForExtension(FilenameUtils.getExtension(f.getFileName())))
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {
@@ -348,6 +341,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         OptionProvider<String> videoCodecProvider = OptionProvider.stringOptionBuilder()
                 .withTitle("Video codec")
+                .withIsEnabled(f -> !isAudioContainerForExtension(FilenameUtils.getExtension(f.getFileName())))
                 .withDefaultValue(DEFAULT_VALUE)
                 .withValidValues(codecs.videoCodecs)
                 .withShouldTriggerUpdate(true)
@@ -362,8 +356,27 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         OptionProvider<String> videoPixelFormatProvider = OptionProvider.stringOptionBuilder()
                 .withTitle("Video pixel format")
+                .withIsEnabled(f -> !isAudioContainerForExtension(FilenameUtils.getExtension(f.getFileName())))
                 .withDefaultValue(DEFAULT_VALUE)
                 .withValidValues(extra.pixelFormats)
+                .build();
+
+        List<ValueListElement> presets = new ArrayList<>();
+        presets.add(new ValueListElement("ultrafast", "ultrafast"));
+        presets.add(new ValueListElement("superfast", "superfast"));
+        presets.add(new ValueListElement("veryfast", "veryfast"));
+        presets.add(new ValueListElement("faster", "faster"));
+        presets.add(new ValueListElement("fast", "fast"));
+        presets.add(new ValueListElement("medium", "medium"));
+        presets.add(new ValueListElement("slow", "slow"));
+        presets.add(new ValueListElement("slower", "slower"));
+        presets.add(new ValueListElement("veryslow", "veryslow"));
+
+        OptionProvider<String> presetProviders = OptionProvider.stringOptionBuilder()
+                .withTitle("Preset")
+                .withDefaultValue("medium")
+                .withValidValues(presets)
+                .withShouldShow(a -> a.getFileName().endsWith(".mp4"))
                 .build();
 
         LinkedHashMap<String, OptionProvider<?>> result = new LinkedHashMap<>();
@@ -376,6 +389,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         result.put("videocodec", videoCodecProvider);
         result.put("audiocodec", audioCodecProvider);
         result.put("videoPixelFormat", videoPixelFormatProvider);
+        result.put("preset", presetProviders);
 
         return result;
     }
@@ -393,7 +407,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         }
         String extension = FilenameUtils.getExtension(request.fileName);
         OptionProvider<String> videoCodecProvider = (OptionProvider<String>) request.options.get("videocodec");
-        if (!videoCodecProvider.getValue().equals(NONE_VALUE) && (isAudioContainer(extension))) {
+        if (!videoCodecProvider.getValue().equals(NONE_VALUE) && (isAudioContainerForExtension(extension))) {
             videoCodecProvider.setValue(NONE_VALUE);
             optionsToUpdate.put("videocodec", videoCodecProvider);
         }
@@ -401,35 +415,11 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             videoCodecProvider.setValue(DEFAULT_VALUE);
             optionsToUpdate.put("videocodec", videoCodecProvider);
         }
-        if (request.fileName.endsWith(".mp4") && !optionsToUpdate.containsKey("preset")) {
-            List<ValueListElement> presets = new ArrayList<>();
-            presets.add(new ValueListElement("ultrafast", "ultrafast"));
-            presets.add(new ValueListElement("superfast", "superfast"));
-            presets.add(new ValueListElement("veryfast", "veryfast"));
-            presets.add(new ValueListElement("faster", "faster"));
-            presets.add(new ValueListElement("fast", "fast"));
-            presets.add(new ValueListElement("medium", "medium"));
-            presets.add(new ValueListElement("slow", "slow"));
-            presets.add(new ValueListElement("slower", "slower"));
-            presets.add(new ValueListElement("veryslow", "veryslow"));
-
-            OptionProvider<String> presetProviders = OptionProvider.stringOptionBuilder()
-                    .withTitle("Preset")
-                    .withDefaultValue("medium")
-                    .withValidValues(presets)
-                    .withShouldTriggerUpdate(false)
-                    .build();
-
-            optionsToUpdate.put("preset", presetProviders);
-        }
-        if (!request.fileName.endsWith(".mp4")) {
-            optionsToUpdate.remove("preset");
-        }
 
         return optionsToUpdate;
     }
 
-    private boolean isAudioContainer(String extension) {
+    private boolean isAudioContainerForExtension(String extension) {
         if (extension == null) {
             return false;
         }

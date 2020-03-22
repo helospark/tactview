@@ -3,6 +3,8 @@ package com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize;
 import java.math.BigDecimal;
 
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -21,7 +23,7 @@ import javafx.stage.Stage;
 public class ChangeProjectSizeDialog {
     private Stage stage;
 
-    public ChangeProjectSizeDialog(ProjectSizeInitializer projectSizeInitializer, ProjectRepository projectRepository) {
+    public ChangeProjectSizeDialog(ProjectSizeInitializer projectSizeInitializer, ProjectRepository projectRepository, StylesheetAdderService stylesheetAdderService) {
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
 
@@ -29,20 +31,19 @@ public class ChangeProjectSizeDialog {
         stage = new Stage();
         stage.setWidth(300);
         stage.setHeight(250);
-        dialog.getStylesheets().add("stylesheet.css");
+        stylesheetAdderService.addStyleSheets(borderPane, "stylesheet.css");
 
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));
         gridPane.getStyleClass().add("change-project-size-dialog-grid-pane");
         gridPane.prefWidthProperty().bind(stage.widthProperty());
 
-        TextField canvasWidthText = new TextField(getOrDefaultVideo(projectRepository, projectRepository.getWidth(), 1920));
-        gridPane.add(new Label("Width"), 0, 0);
-        gridPane.add(canvasWidthText, 1, 0);
+        int initialWidth = projectRepository.isVideoInitialized() ? projectRepository.getWidth() : 1920;
+        int initialHeight = projectRepository.isVideoInitialized() ? projectRepository.getHeight() : 1080;
+        ResolutionComponent resolutionComponent = new ResolutionComponent(initialWidth, initialHeight);
 
-        TextField canvasHeightText = new TextField(getOrDefaultVideo(projectRepository, projectRepository.getHeight(), 1080));
-        gridPane.add(new Label("Height"), 0, 1);
-        gridPane.add(canvasHeightText, 1, 1);
+        gridPane.add(new Label("Resolution"), 0, 0);
+        gridPane.add(resolutionComponent, 1, 0);
 
         TextField fpsText = new TextField(getOrDefaultVideo(projectRepository, projectRepository.getFps(), BigDecimal.valueOf(30)));
         gridPane.add(new Label("FPS"), 0, 2);
@@ -82,8 +83,8 @@ public class ChangeProjectSizeDialog {
         stage.setScene(dialog);
 
         okButton.setOnMouseClicked(e -> {
-            int width = Integer.valueOf(canvasWidthText.getText());
-            int height = Integer.valueOf(canvasHeightText.getText());
+            int width = resolutionComponent.getResolutionWidth();
+            int height = resolutionComponent.getResolutionHeight();
             BigDecimal fps = new BigDecimal(fpsText.getText());
             int numberOfChannels = Integer.parseInt(numberOfChannelsText.getText());
 

@@ -11,6 +11,7 @@ import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ChangeProjectSizeDialog;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 @Configuration
 public class DefaultProjectMenuItemConfiguration {
@@ -24,9 +25,10 @@ public class DefaultProjectMenuItemConfiguration {
 
     @Bean
     @Order(2001)
-    public SelectableMenuContribution changeRenderSizeContributionMenuItem(ProjectSizeInitializer projectSizeInitializer, ProjectRepository projectRepository) {
+    public SelectableMenuContribution changeRenderSizeContributionMenuItem(ProjectSizeInitializer projectSizeInitializer, ProjectRepository projectRepository,
+            StylesheetAdderService stylesheetAdderService) {
         return new DefaultMenuContribution(List.of(PROJECT_ROOT, "_Change project size"), event -> {
-            new ChangeProjectSizeDialog(projectSizeInitializer, projectRepository).show();
+            new ChangeProjectSizeDialog(projectSizeInitializer, projectRepository, stylesheetAdderService).show();
         });
     }
 

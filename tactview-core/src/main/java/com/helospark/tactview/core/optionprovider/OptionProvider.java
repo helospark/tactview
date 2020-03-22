@@ -3,10 +3,10 @@ package com.helospark.tactview.core.optionprovider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 
 public class OptionProvider<T> {
@@ -14,8 +14,8 @@ public class OptionProvider<T> {
     private Class<T> type;
     private Function<String, T> valueConverter;
     private Function<T, List<String>> validationErrorProvider;
-    private Supplier<Boolean> shouldShow;
-    private Supplier<Boolean> isEnabled;
+    private Function<RenderRequest, Boolean> shouldShow;
+    private Function<RenderRequest, Boolean> isEnabled;
     private List<ValueListElement> validValues;
     private boolean shouldTriggerUpdate;
     private T value;
@@ -25,8 +25,8 @@ public class OptionProvider<T> {
         this.title = builder.title;
         this.valueConverter = builder.valueConverter != null ? builder.valueConverter : stringValue -> null;
         this.validationErrorProvider = builder.validationErrorProvider != null ? builder.validationErrorProvider : value -> List.of();
-        this.shouldShow = builder.shouldShow != null ? builder.shouldShow : () -> true;
-        this.isEnabled = builder.isEnabled != null ? builder.isEnabled : () -> true;
+        this.shouldShow = builder.shouldShow != null ? builder.shouldShow : a -> true;
+        this.isEnabled = builder.isEnabled != null ? builder.isEnabled : a -> true;
         this.validValues = builder.validValues != null ? builder.validValues : List.of();
         this.value = builder.defaultValue;
     }
@@ -55,11 +55,11 @@ public class OptionProvider<T> {
         return validationErrorProvider;
     }
 
-    public Supplier<Boolean> getShouldShow() {
+    public Function<RenderRequest, Boolean> getShouldShow() {
         return shouldShow;
     }
 
-    public Supplier<Boolean> getIsEnabled() {
+    public Function<RenderRequest, Boolean> getIsEnabled() {
         return isEnabled;
     }
 
@@ -187,8 +187,8 @@ public class OptionProvider<T> {
         private Class<T> type;
         private Function<String, T> valueConverter;
         private Function<T, List<String>> validationErrorProvider;
-        private Supplier<Boolean> shouldShow;
-        private Supplier<Boolean> isEnabled;
+        private Function<RenderRequest, Boolean> shouldShow;
+        private Function<RenderRequest, Boolean> isEnabled;
         private List<ValueListElement> validValues;
         private boolean shouldTriggerUpdate;
         private T defaultValue;
@@ -212,12 +212,12 @@ public class OptionProvider<T> {
             return this;
         }
 
-        public Builder<T> withShouldShow(Supplier<Boolean> shouldShow) {
+        public Builder<T> withShouldShow(Function<RenderRequest, Boolean> shouldShow) {
             this.shouldShow = shouldShow;
             return this;
         }
 
-        public Builder<T> withIsEnabled(Supplier<Boolean> isEnabled) {
+        public Builder<T> withIsEnabled(Function<RenderRequest, Boolean> isEnabled) {
             this.isEnabled = isEnabled;
             return this;
         }
@@ -240,6 +240,7 @@ public class OptionProvider<T> {
         public OptionProvider<T> build() {
             return new OptionProvider<>(this);
         }
+
     }
 
 }

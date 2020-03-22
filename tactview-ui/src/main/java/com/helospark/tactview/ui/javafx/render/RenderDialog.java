@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.apache.commons.io.FilenameUtils;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormat;
 
@@ -24,6 +25,8 @@ import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
 import com.helospark.tactview.ui.javafx.util.DialogHelper;
 import com.helospark.tactview.ui.javafx.util.DurationFormatter;
@@ -55,6 +58,8 @@ import javafx.stage.Stage;
 public class RenderDialog {
     private static final int COLUMNS = 2;
 
+    private ProjectRepository projectRepository;
+
     private Stage stage;
     private boolean isRenderCancelled = false;
     private RenderService previousRenderService = null;
@@ -62,13 +67,25 @@ public class RenderDialog {
 
     TextField fileNameTextField;
     GridPane rendererOptions;
+    ResolutionComponent resolutionField;
 
-    public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager) {
+    TextField startPositionTextField;
+    TextField endPositionTextField;
+    ComboBox<ComboBoxElement> upscaleField;
+    VBox metadataVBox;
+    ComboBox<ComboBoxElement> extensionComboBox;
+
+    boolean shouldUpdateVisibility = false;
+
+    public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
+            StylesheetAdderService stylesheetAdderService) {
+        this.projectRepository = projectRepository;
+
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
 
         Scene dialog = new Scene(borderPane);
-        dialog.getStylesheets().add("stylesheet.css");
+        stylesheetAdderService.addStyleSheets(borderPane, "stylesheet.css");
         stage = new Stage();
 
         int linePosition = 0;
@@ -78,19 +95,18 @@ public class RenderDialog {
         gridPane.setHgap(15.0);
         gridPane.getStyleClass().add("render-dialog-grid-pane");
 
-        TextField startPositionTextField = new TextField(DurationFormatter.fromSeconds(BigDecimal.ZERO));
+        startPositionTextField = new TextField(DurationFormatter.fromSeconds(BigDecimal.ZERO));
+        startPositionTextField.getStyleClass().add("render-dialog-time-selector");
         addGridElement("start position", linePosition++, gridPane, startPositionTextField);
 
-        TextField endPositionTextField = new TextField(DurationFormatter.fromSeconds(timelineManager.findEndPosition().getSeconds()));
+        endPositionTextField = new TextField(DurationFormatter.fromSeconds(timelineManager.findEndPosition().getSeconds()));
+        endPositionTextField.getStyleClass().add("render-dialog-time-selector");
         addGridElement("end position", linePosition++, gridPane, endPositionTextField);
 
-        TextField widthTextField = new TextField(Integer.toString(projectRepository.getWidth()));
-        addGridElement("width", linePosition++, gridPane, widthTextField);
+        resolutionField = new ResolutionComponent(projectRepository.getWidth(), projectRepository.getHeight());
+        addGridElement("resolution", linePosition++, gridPane, resolutionField);
 
-        TextField heightTextField = new TextField(Integer.toString(projectRepository.getHeight()));
-        addGridElement("height", linePosition++, gridPane, heightTextField);
-
-        ComboBox<ComboBoxElement> upscaleField = createComboBox(List.of("1", "2", "4"), 0);
+        upscaleField = createComboBox(List.of("1", "2", "4"), 0);
         addGridElement("upscale", linePosition++, gridPane, upscaleField);
 
         FileChooser fileChooser = new FileChooser();
@@ -109,8 +125,8 @@ public class RenderDialog {
                 fileNameTextField.setText(result.getAbsolutePath());
             }
         });
-        ComboBox<ComboBoxElement> extensionComboBox = createComboBoxFromValueList(renderService.getCommonHandledExtensions(), "mp4");
-        extensionComboBox.setPrefWidth(80.0);
+        extensionComboBox = createComboBoxFromValueList(renderService.getCommonHandledExtensions(), "mp4");
+        extensionComboBox.setPrefWidth(140.0);
         extensionComboBox.valueProperty().addListener((e, oldValue, newValue) -> {
             String currentValue = fileNameTextField.getText();
             int lastDot = currentValue.lastIndexOf('.');
@@ -134,7 +150,7 @@ public class RenderDialog {
 
         addGridElementForFullLine("File name", linePosition += 2, gridPane, fileNameGrid);
 
-        VBox metadataVBox = new VBox();
+        metadataVBox = new VBox();
         TitledPane metadataPane = new TitledPane();
         metadataPane.setExpanded(false);
         metadataPane.setText("metadata table");
@@ -200,19 +216,7 @@ public class RenderDialog {
                 cancelButton.setText("Cancel render");
                 okButton.setDisable(true);
 
-                RenderRequest request = RenderRequest.builder()
-                        .withWidth(Integer.parseInt(widthTextField.getText()))
-                        .withHeight(Integer.parseInt(heightTextField.getText()))
-                        .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
-                        .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
-                        .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
-                        .withEndPosition(new TimelinePosition(DurationFormatter.toSeconds(endPositionTextField.getText())))
-                        .withFileName(filePath)
-                        .withOptions(optionProviders)
-                        .withIsCancelledSupplier(() -> isRenderCancelled)
-                        .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
-                        .withMetadata(collectMetadata(metadataVBox))
-                        .build();
+                RenderRequest request = getRenderRequest();
 
                 String id = request.getRenderId();
 
@@ -245,9 +249,23 @@ public class RenderDialog {
         });
 
         fileNameTextField.textProperty().addListener((obj, oldValue, newValue) -> {
+            List<ValueListElement> commonExtensions = renderService.getCommonHandledExtensions();
+
+            int selectedComboIndex = -1;
+            for (int i = 0; i < commonExtensions.size(); ++i) {
+                if (commonExtensions.get(i).getId().equals(FilenameUtils.getExtension(newValue))) {
+                    selectedComboIndex = i;
+                    break;
+                }
+            }
+
+            if (selectedComboIndex != -1) {
+                extensionComboBox.getSelectionModel().select(selectedComboIndex);
+            }
+
             RenderRequest request = RenderRequest.builder()
-                    .withWidth(Integer.parseInt(widthTextField.getText()))
-                    .withHeight(Integer.parseInt(heightTextField.getText()))
+                    .withWidth(resolutionField.getResolutionWidth())
+                    .withHeight(resolutionField.getResolutionHeight())
                     .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
                     .withFps((int) Math.round(projectRepository.getFps().doubleValue()))
                     .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
@@ -275,6 +293,31 @@ public class RenderDialog {
 
         stage.setTitle("Render");
         stage.setScene(dialog);
+    }
+
+    protected RenderRequest getRenderRequest() {
+        String fileName = fileNameTextField.getText();
+        String extension = FilenameUtils.getExtension(fileName);
+        if (extension.isEmpty()) {
+            if (!fileName.endsWith(".")) {
+                fileName += ".";
+            }
+            fileName += extensionComboBox.getSelectionModel().getSelectedItem().getId();
+        }
+
+        return RenderRequest.builder()
+                .withWidth(resolutionField.getResolutionWidth())
+                .withHeight(resolutionField.getResolutionHeight())
+                .withStep(BigDecimal.ONE.divide(this.projectRepository.getFps(), 100, RoundingMode.HALF_UP))
+                .withFps((int) Math.round(this.projectRepository.getFps().doubleValue()))
+                .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
+                .withEndPosition(new TimelinePosition(DurationFormatter.toSeconds(endPositionTextField.getText())))
+                .withFileName(fileName)
+                .withOptions(optionProviders)
+                .withIsCancelledSupplier(() -> isRenderCancelled)
+                .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
+                .withMetadata(collectMetadata(metadataVBox))
+                .build();
     }
 
     private Map<String, String> collectMetadata(VBox metadataVBox) {
@@ -318,6 +361,8 @@ public class RenderDialog {
 
         Collection<OptionProvider<?>> values = optionProviders.values();
 
+        RenderRequest renderRequest = getRenderRequest();
+
         // TODO: all the below out of here
         int i = 0;
         for (var value : values) {
@@ -325,6 +370,11 @@ public class RenderDialog {
             int column = i % COLUMNS;
 
             OptionProvider<Object> optionProvider = (OptionProvider<Object>) value;
+
+            if (!isOptionProviderVisible(optionProvider, renderRequest)) {
+                continue;
+            }
+
             Label label = new Label(optionProvider.getTitle());
             rendererOptions.add(label, column * COLUMNS, row);
 
@@ -332,19 +382,19 @@ public class RenderDialog {
                 TextField textField = new TextField();
                 textField.getStyleClass().add("render-dialog-option");
                 textField.setText(String.valueOf(optionProvider.getValue()));
+                textField.disableProperty().set(isOptionProviderDisabled(optionProvider, renderRequest));
                 textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
                     Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
                     // TODO: isValid, etc.
                     optionProvider.setValue(parsedValue);
-                    if (optionProvider.shouldTriggerUpdate()) {
-                        updateProvidersAfterUpdate();
-                    }
+                    updateProvidersAfterUpdate();
                 });
 
                 rendererOptions.add(textField, column * COLUMNS + 1, row);
             } else {
                 ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
                 comboBox.getStyleClass().add("render-dialog-option");
+                comboBox.disableProperty().set(isOptionProviderDisabled(optionProvider, renderRequest));
                 Map<String, ComboBoxElement> comboBoxElements = new LinkedHashMap<>();
 
                 optionProvider.getValidValues()
@@ -358,9 +408,7 @@ public class RenderDialog {
 
                 comboBox.setOnAction(e -> {
                     optionProvider.setValue(comboBox.getValue().getId());
-                    if (optionProvider.shouldTriggerUpdate()) {
-                        updateProvidersAfterUpdate();
-                    }
+                    updateProvidersAfterUpdate();
                 });
 
                 rendererOptions.add(comboBox, column * COLUMNS + 1, row);
@@ -368,6 +416,14 @@ public class RenderDialog {
 
             ++i;
         }
+    }
+
+    private boolean isOptionProviderVisible(OptionProvider<Object> optionProvider, RenderRequest renderRequest) {
+        return optionProvider.getShouldShow().apply(renderRequest);
+    }
+
+    protected boolean isOptionProviderDisabled(OptionProvider<Object> optionProvider, RenderRequest renderRequest) {
+        return !optionProvider.getIsEnabled().apply(renderRequest);
     }
 
     private void updateProvidersAfterUpdate() {

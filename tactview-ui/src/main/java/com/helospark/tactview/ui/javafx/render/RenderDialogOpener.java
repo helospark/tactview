@@ -5,6 +5,7 @@ import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 @Component
 public class RenderDialogOpener {
@@ -12,16 +13,19 @@ public class RenderDialogOpener {
     private ProjectRepository projectRepository;
     private UiMessagingService messagingService;
     private TimelineManagerAccessor timelineManager;
+    private StylesheetAdderService stylesheetAdderService;
 
-    public RenderDialogOpener(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager) {
+    public RenderDialogOpener(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
+            StylesheetAdderService stylesheetAdderService) {
         this.renderService = renderService;
         this.projectRepository = projectRepository;
         this.messagingService = messagingService;
         this.timelineManager = timelineManager;
+        this.stylesheetAdderService = stylesheetAdderService;
     }
 
     public void render() {
-        RenderDialog renderDialog = new RenderDialog(renderService, projectRepository, messagingService, timelineManager);
+        RenderDialog renderDialog = new RenderDialog(renderService, projectRepository, messagingService, timelineManager, stylesheetAdderService);
         renderDialog.show();
     }
 
