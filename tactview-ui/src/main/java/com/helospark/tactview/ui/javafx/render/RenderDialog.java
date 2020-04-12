@@ -31,6 +31,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxEleme
 import com.helospark.tactview.ui.javafx.util.DialogHelper;
 import com.helospark.tactview.ui.javafx.util.DurationFormatter;
 
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -62,6 +63,7 @@ public class RenderDialog {
 
     private Stage stage;
     private boolean isRenderCancelled = false;
+    private boolean isRendering = false;
     private RenderService previousRenderService = null;
     private Map<String, OptionProvider<?>> optionProviders = Map.of();
 
@@ -198,8 +200,11 @@ public class RenderDialog {
 
         Button cancelButton = new Button("Close");
         cancelButton.setOnMouseClicked(e -> {
-            isRenderCancelled = true;
-            stage.close();
+            if (isRendering) {
+                isRenderCancelled = true;
+            } else {
+                this.stage.close();
+            }
         });
         buttonBar.getChildren().add(cancelButton);
 
@@ -213,6 +218,8 @@ public class RenderDialog {
             boolean continueRender = showConfirmationDialogIfNeeded(filePath);
 
             if (continueRender) {
+                isRendering = true;
+                isRenderCancelled = false;
                 cancelButton.setText("Cancel render");
                 okButton.setDisable(true);
 
@@ -229,19 +236,31 @@ public class RenderDialog {
 
                     progressText.setText(String.format("%d%% (remaining: %s, fps: %.3f)", (int) (info.percent * 100.0), formattedRemaining, info.jobsPerSecond));
                 }, () -> {
-                    stage.close();
+                    if (isRenderCancelled) {
+                        progressText.setText("Render canceled");
+                    } else {
+                        progressText.setText("Render finished");
+                    }
                 });
 
                 renderService.render(request)
                         .thenAccept(a -> {
-                            cancelButton.setDisable(false);
-                            okButton.setDisable(false);
+                            Platform.runLater(() -> {
+                                cancelButton.setDisable(false);
+                                okButton.setDisable(false);
+                                cancelButton.setText("Close");
+                                isRendering = false;
+                            });
                         })
                         .exceptionally(ex -> {
                             ex.printStackTrace();
-                            DialogHelper.showExceptionDialog("Error rendering", "Unable to render to file, see stacktrace below, more details in logs", ex);
-                            cancelButton.setDisable(false);
-                            okButton.setDisable(false);
+                            Platform.runLater(() -> {
+                                DialogHelper.showExceptionDialog("Error rendering", "Unable to render to file, see stacktrace below, more details in logs", ex);
+                                cancelButton.setDisable(false);
+                                cancelButton.setText("Close");
+                                okButton.setDisable(false);
+                            });
+                            isRendering = false;
                             return null;
                         });
             }

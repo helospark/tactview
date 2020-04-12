@@ -14,6 +14,7 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.it.util.IntegrationTestUtil;
 import com.helospark.tactview.core.it.util.ui.FakeUi;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
+import com.helospark.tactview.core.timeline.ITimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;

@@ -7,7 +7,7 @@ import javax.annotation.Generated;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.VisualClipAwareTimelineClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
@@ -17,7 +17,7 @@ public class FrameExtender {
     public ClipImage expandFrame(FrameExtendRequest request) {
         ReadOnlyClipImage frameResult = request.getFrameResult();
         TimelinePosition timelinePosition = request.getTimelinePosition();
-        VisualTimelineClip clip = request.getClip();
+        VisualClipAwareTimelineClip clip = request.getClip();
 
         int previewHeight = request.getPreviewHeight();
         int previewWidth = request.getPreviewWidth();
@@ -64,7 +64,7 @@ public class FrameExtender {
 
     public static class FrameExtendRequest {
         ReadOnlyClipImage frameResult;
-        VisualTimelineClip clip;
+        VisualClipAwareTimelineClip clip;
         int previewHeight;
         int previewWidth;
         double scale;
@@ -84,7 +84,7 @@ public class FrameExtender {
             return frameResult;
         }
 
-        public VisualTimelineClip getClip() {
+        public VisualClipAwareTimelineClip getClip() {
             return clip;
         }
 
@@ -112,7 +112,7 @@ public class FrameExtender {
         @Generated("SparkTools")
         public static final class Builder {
             private ReadOnlyClipImage frameResult;
-            private VisualTimelineClip clip;
+            private VisualClipAwareTimelineClip clip;
             private int previewHeight;
             private int previewWidth;
             private double scale;
@@ -126,7 +126,7 @@ public class FrameExtender {
                 return this;
             }
 
-            public Builder withClip(VisualTimelineClip clip) {
+            public Builder withClip(VisualClipAwareTimelineClip clip) {
                 this.clip = clip;
                 return this;
             }

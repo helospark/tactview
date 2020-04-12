@@ -18,7 +18,7 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
-public abstract class TimelineClip implements EffectAware, IntervalAware, IntervalSettable {
+public abstract class TimelineClip implements EffectAware, IntervalAware, IntervalSettable, ITimelineClip {
     private Object fullClipLock = new Object();
 
     protected String id;
@@ -117,6 +117,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return type;
     }
 
+    @Override
     public String getId() {
         return id;
     }
@@ -341,7 +342,8 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     protected abstract void generateSavedContentInternal(Map<String, Object> savedContent);
 
-    protected List<String> getClipDependency(TimelinePosition position) {
+    @Override
+    public List<String> getClipDependency(TimelinePosition position) {
         ArrayList<String> result = new ArrayList<>();
 
         List<String> clipsRequiredForEffect = getEffectsAtGlobalPosition(position, StatelessEffect.class)
@@ -355,7 +357,8 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return result;
     }
 
-    protected List<String> getChannelDependency(TimelinePosition position) {
+    @Override
+    public List<String> getChannelDependency(TimelinePosition position) {
         ArrayList<String> result = new ArrayList<>();
 
         List<String> clipsRequiredForEffect = getEffectsAtGlobalPosition(position, StatelessEffect.class)

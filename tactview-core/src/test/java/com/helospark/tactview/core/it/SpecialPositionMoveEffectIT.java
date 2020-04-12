@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.tactview.core.it.util.IntegrationTestUtil;
 import com.helospark.tactview.core.it.util.ui.FakeUi;
+import com.helospark.tactview.core.timeline.ITimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 

@@ -35,7 +35,7 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
-public abstract class VisualTimelineClip extends TimelineClip {
+public abstract class VisualTimelineClip extends TimelineClip implements VisualClipAwareTimelineClip {
     protected VisualMediaMetadata mediaMetadata;
 
     protected PointProvider translatePointProvider;
@@ -68,6 +68,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         this.mediaMetadata = metadata;
     }
 
+    @Override
     public ReadOnlyClipImage getFrame(GetFrameRequest request) {
         return getFrameInternal(request);
     }
@@ -153,20 +154,22 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return effectChannels;
     }
 
-    public abstract VisualMediaMetadata getMediaMetadata();
-
+    @Override
     public int getXPosition(TimelinePosition timelinePosition, double scale) {
         return (int) (translatePointProvider.getValueAt(timelinePosition).x * scale);
     }
 
+    @Override
     public int getYPosition(TimelinePosition timelinePosition, double scale) {
         return (int) (translatePointProvider.getValueAt(timelinePosition).y * scale);
     }
 
+    @Override
     public BiFunction<Integer, Integer, Integer> getVerticalAlignment(TimelinePosition timelinePosition) {
         return verticallyCenteredProvider.getValueAt(timelinePosition).getFunction();
     }
 
+    @Override
     public BiFunction<Integer, Integer, Integer> getHorizontalAlignment(TimelinePosition timelinePosition) {
         return horizontallyCenteredProvider.getValueAt(timelinePosition).getFunction();
     }
@@ -202,6 +205,8 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 new AlignmentValueListElement("center", (frameWidth, resultWidth) -> (resultWidth - frameWidth) / 2),
                 new AlignmentValueListElement("right", (frameWidth, resultWidth) -> resultWidth - frameWidth));
     }
+
+    public abstract VisualMediaMetadata getMediaMetadata();
 
     @Override
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
@@ -281,10 +286,12 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return enabledProvider.getValueAt(position);
     }
 
+    @Override
     public double getAlpha(TimelinePosition position) {
         return globalClipAlphaProvider.getValueAt(position);
     }
 
+    @Override
     public BlendModeStrategy getBlendModeAt(TimelinePosition position) {
         TimelinePosition relativePosition = position.from(this.interval.getStartPosition());
         relativePosition = relativePosition.add(renderOffset);

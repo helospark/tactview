@@ -77,8 +77,8 @@ public class TimelineManagerRenderService {
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             for (var clip : layers.get(i)) {
-                if (clip instanceof VisualTimelineClip && request.isNeedVideo()) { // TODO: rest later
-                    VisualTimelineClip visualClip = (VisualTimelineClip) clip;
+                if (clip instanceof VisualClipAwareTimelineClip && request.isNeedVideo()) { // TODO: rest later
+                    VisualClipAwareTimelineClip visualClip = (VisualClipAwareTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
                         Map<String, ReadOnlyClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
@@ -122,8 +122,9 @@ public class TimelineManagerRenderService {
                         logger.error("Unable to render", e);
                         return null;
                     }));
-                } else if (clip instanceof AudibleTimelineClip && request.isNeedSound()) {
-                    AudibleTimelineClip audibleClip = (AudibleTimelineClip) clip;
+                }
+                if (clip instanceof AudioAwareTimelineClip && request.isNeedSound()) {
+                    AudioAwareTimelineClip audibleClip = (AudioAwareTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(() -> {
                         int sampleRateToUse = request.getAudioSampleRate().orElse(projectRepository.getSampleRate());
@@ -196,7 +197,7 @@ public class TimelineManagerRenderService {
 
     }
 
-    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult) {
+    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualClipAwareTimelineClip visualClip, ReadOnlyClipImage frameResult) {
         FrameExtender.FrameExtendRequest frameExtendRequest = FrameExtender.FrameExtendRequest.builder()
                 .withClip(visualClip)
                 .withFrameResult(frameResult)

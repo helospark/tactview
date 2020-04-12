@@ -12,6 +12,7 @@ import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
+import com.helospark.tactview.core.timeline.ITimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;

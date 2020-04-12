@@ -16,6 +16,8 @@ public class ResolutionComponent extends HBox {
 
     private double originalAspectRatio = 0.0;
 
+    private boolean isCurrentlyUpdating = false;
+
     public ResolutionComponent(int width, int height) {
         originalAspectRatio = (double) width / height;
 
@@ -48,16 +50,20 @@ public class ResolutionComponent extends HBox {
             int actualWidth = widthField.getValue();
             int expectedHeight = (int) (actualWidth / originalAspectRatio);
 
-            if (isChainedProperty.get() && heightField.getValue() != expectedHeight) {
+            if (!isCurrentlyUpdating && isChainedProperty.get() && heightField.getValue() != expectedHeight) {
+                isCurrentlyUpdating = true;
                 heightField.setValue(expectedHeight);
+                isCurrentlyUpdating = false;
             }
         });
         heightField.textProperty().addListener(a -> {
             int actualHeight = heightField.getValue();
             int expectedWidth = (int) (actualHeight * originalAspectRatio);
 
-            if (isChainedProperty.get() && widthField.getValue() != expectedWidth) {
+            if (!isCurrentlyUpdating && isChainedProperty.get() && widthField.getValue() != expectedWidth) {
+                isCurrentlyUpdating = true;
                 widthField.setValue(expectedWidth);
+                isCurrentlyUpdating = false;
             }
         });
 

@@ -255,7 +255,7 @@ public class TimelineChannel {
 
     public int findMaximumVideoBitRate() {
         int maxBitRate = 0;
-        for (var clip : clips) {
+        for (TimelineClip clip : clips) {
             if (clip instanceof VideoClip) {
                 VisualMediaMetadata metadata = ((VideoClip) clip).getMediaMetadata();
                 if (metadata instanceof VideoMetadata) {
@@ -272,7 +272,7 @@ public class TimelineChannel {
 
     public int findMaximumAudioBitRate() {
         int maxBitRate = 0;
-        for (var clip : clips) {
+        for (TimelineClip clip : clips) {
             if (clip instanceof AudibleTimelineClip) {
                 AudioMediaMetadata metadata = ((AudibleTimelineClip) clip).getMediaMetadata();
                 int bitRate = (int) metadata.getBitRate();
@@ -312,6 +312,10 @@ public class TimelineChannel {
 
     public TimelineChannel cloneChannel(CloneRequestMetadata metadata) {
         return new TimelineChannel(this, metadata);
+    }
+
+    public NonIntersectingIntervalList<TimelineClip> getReadonlyClips() {
+        return clips;
     }
 
 }

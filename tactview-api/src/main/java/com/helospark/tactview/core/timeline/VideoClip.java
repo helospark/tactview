@@ -73,7 +73,6 @@ public class VideoClip extends VisualTimelineClip {
                 .getFrame();
     }
 
-    @Override
     public VisualMediaMetadata getMediaMetadata() {
         return mediaMetadata;
     }

@@ -32,7 +32,11 @@ public class NumericalTextField extends TextField {
     }
 
     public int getValue() {
-        return Integer.parseInt(this.getText());
+        try {
+            return Integer.parseInt(this.getText());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public void setValue(int expectedHeight) {

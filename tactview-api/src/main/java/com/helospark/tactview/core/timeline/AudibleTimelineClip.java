@@ -13,7 +13,7 @@ import com.helospark.tactview.core.timeline.audioeffect.AudioEffectRequest;
 import com.helospark.tactview.core.timeline.audioeffect.StatelessAudioEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
-public abstract class AudibleTimelineClip extends TimelineClip {
+public abstract class AudibleTimelineClip extends TimelineClip implements AudioAwareTimelineClip {
     protected AudioMediaMetadata mediaMetadata;
 
     public AudibleTimelineClip(TimelineInterval interval, AudioMediaMetadata mediaMetadata) {
@@ -49,6 +49,7 @@ public abstract class AudibleTimelineClip extends TimelineClip {
         return mediaMetadata;
     }
 
+    @Override
     public AudioFrameResult requestAudioFrame(AudioRequest audioRequest) {
         TimelinePosition relativePosition = audioRequest.getPosition().from(this.interval.getStartPosition());
 
