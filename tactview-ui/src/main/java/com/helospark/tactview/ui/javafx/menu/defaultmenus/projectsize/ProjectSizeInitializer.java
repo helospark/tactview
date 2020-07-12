@@ -22,8 +22,8 @@ public class ProjectSizeInitializer {
 
     public void initializeProjectSize(int width, int height, BigDecimal fps) {
         projectRepository.initializeVideo(width, height, fps);
-        double horizontalScaleFactor = 320.0 / projectRepository.getWidth();
-        double verticalScaleFactor = 260.0 / projectRepository.getHeight();
+        double horizontalScaleFactor = ((double) uiProjectRepository.getPreviewAvailableWidth().get()) / projectRepository.getWidth();
+        double verticalScaleFactor = ((double) uiProjectRepository.getPreviewAvailableHeight().get()) / projectRepository.getHeight();
         double scale = Math.min(horizontalScaleFactor, verticalScaleFactor);
         double aspectRatio = ((double) width) / ((double) height);
         int previewWidth = (int) (scale * width);

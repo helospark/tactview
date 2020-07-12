@@ -94,7 +94,7 @@ public class PropertyView {
     public void init() {
         propertyWindow = new VBox();
         propertyWindow.setId("property-view");
-        propertyWindow.setPrefWidth(200);
+        propertyWindow.setMinWidth(200);
 
         messagingService.register(ClipAddedMessage.class, message -> {
             String clipId = message.getClipId();
@@ -229,7 +229,7 @@ public class PropertyView {
                 notificationService.showWarning("Unable to update", "Name already used");
             }
         });
-        HBox hbox = new HBox();
+        GridPane hbox = new GridPane();
         hbox.getChildren().addAll(nameField, button);
 
         result.getBox().add(new Label("name"), 0, 0);

@@ -10,6 +10,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.ui.javafx.PlaybackController;
 import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
+import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
 
 import javafx.scene.canvas.Canvas;
@@ -22,9 +23,8 @@ public class AudioVisualizationComponent {
     private static final int BAR_RADIUS = 6;
     Color startColor = Color.GREEN;
     Color endColor = Color.RED;
-    static final int NUMBER_OF_BARS = 45;
-    static final int CHANNEL_HEIGHT = 20;
-    static final int CHANNEL_HEIGHT_GAP = 3;
+    static final int CHANNEL_HEIGHT = 10;
+    static final int CHANNEL_HEIGHT_GAP = 1;
     static final int BAR_WIDTH = 5;
     static final int BAR_SPACE_WIDTH = 2;
     private boolean enabled = true;
@@ -32,15 +32,26 @@ public class AudioVisualizationComponent {
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
     private Canvas canvas;
 
+    private int numberOfBars = 45;
+
     private PlaybackController playbackController;
     private SoundRmsRepository soundRmsRepository;
     private AudioRmsCalculator audioRmsCalculator;
 
-    public AudioVisualizationComponent(PlaybackController playbackController, SoundRmsRepository soundRmsRepository, AudioRmsCalculator audioRmsCalculator) {
-        canvas = new Canvas(NUMBER_OF_BARS * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
+    public AudioVisualizationComponent(PlaybackController playbackController, SoundRmsRepository soundRmsRepository, AudioRmsCalculator audioRmsCalculator, UiProjectRepository uiProjectRepository) {
+        canvas = new Canvas(numberOfBars * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
         this.playbackController = playbackController;
         this.soundRmsRepository = soundRmsRepository;
         this.audioRmsCalculator = audioRmsCalculator;
+
+        uiProjectRepository.getPreviewWidthProperty().addListener((e, oldV, newV) -> {
+            int newNumberOfBars = (int) (newV.doubleValue() / (BAR_WIDTH + BAR_SPACE_WIDTH));
+            canvas.widthProperty().set(newV.doubleValue());
+
+            numberOfBars = newNumberOfBars;
+
+            clearCanvas();
+        });
     }
 
     public Canvas getCanvas() {
@@ -78,11 +89,12 @@ public class AudioVisualizationComponent {
     }
 
     private void updateUiForChannel(int channel, double value) {
+        int numberOfBarsLocal = numberOfBars;
         double maxRms = soundRmsRepository.getMaxRms();
         GraphicsContext graphics = canvas.getGraphicsContext2D();
         double normalizedValue = MathUtil.clamp(value / maxRms, 0.0, 1.0);
-        double increment = 1.0 / NUMBER_OF_BARS;
-        for (int i = 0; i < NUMBER_OF_BARS; ++i) {
+        double increment = 1.0 / numberOfBarsLocal;
+        for (int i = 0; i < numberOfBarsLocal; ++i) {
             if (i * increment < normalizedValue) {
                 graphics.setFill(startColor.interpolate(endColor, i * increment));
             } else {

@@ -15,8 +15,6 @@ import java.util.function.Consumer;
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
@@ -29,6 +27,7 @@ import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
@@ -46,10 +45,13 @@ import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisuali
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -61,6 +63,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -77,15 +80,13 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JavaFXUiMain.class);
     public static Stage STAGE = null;
-    public static final int W = 320; // canvas dimensions.
-    public static final int H = 260;
 
     static LightDiContext lightDi;
 
@@ -110,6 +111,7 @@ public class JavaFXUiMain extends Application {
     static PropertyView effectPropertyView;
     static RenderDialogOpener renderService;
     static DisplayUpdaterService displayUpdateService;
+    static ProjectSizeInitializer projectSizeInitializer;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -147,21 +149,18 @@ public class JavaFXUiMain extends Application {
         });
         stage.setMaximized(true);
 
-        BorderPane vbox = new BorderPane(); // spacing between child nodes only.
-        vbox.setId("content-area");
-        vbox.setMinHeight(300);
-        vbox.setPrefWidth(scene.getWidth());
-        vbox.setPadding(new Insets(1)); // space between vbox border and child nodes column
+        SplitPane mainContentPane = new SplitPane(); // spacing between child nodes only.
+        mainContentPane.setId("content-area");
+        mainContentPane.setPrefWidth(scene.getWidth());
+        mainContentPane.setPadding(new Insets(1)); // space between vbox border and child nodes column
+        mainContentPane.setDividerPositions(0.6);
 
-        GridPane upper = new GridPane();
-        upper.setHgap(5);
-        upper.setVgap(5);
-        upper.setId("upper-content-area");
-        ColumnConstraints column1 = new ColumnConstraints(300, 300, 1000);
-        column1.setHgrow(Priority.ALWAYS);
-        ColumnConstraints column2 = new ColumnConstraints(300, 600, 500);
-        upper.getColumnConstraints().addAll(column1, column2);
-        upper.setMaxHeight(400);
+        System.out.println("$$$$$$$$$$$ Width=" + stage.getWidth() + " " + stage.getHeight());
+
+        SplitPane upperPane = new SplitPane();
+        upperPane.setId("upper-content-area");
+        upperPane.setMinHeight(300);
+        upperPane.setDividerPositions(0.2, 0.6, 0.2);
 
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
@@ -183,16 +182,15 @@ public class JavaFXUiMain extends Application {
                     }
                 });
 
-        VBox rightVBox = new VBox(5);
+        VBox rightVBox = new VBox(3);
         rightVBox.setAlignment(Pos.TOP_CENTER);
-        rightVBox.setPrefWidth(360);
         rightVBox.setId("clip-view");
 
         canvas = new Canvas();
         canvas.widthProperty().bind(uiProjectRepository.getPreviewWidthProperty());
         canvas.heightProperty().bind(uiProjectRepository.getPreviewHeightProperty());
         canvas.getGraphicsContext2D().setFill(new Color(0.0, 0.0, 0.0, 1.0));
-        canvas.getGraphicsContext2D().fillRect(0, 0, W, H);
+        canvas.getGraphicsContext2D().fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         InputModeRepository inputModeRepository = lightDi.getBean(InputModeRepository.class);
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
@@ -282,19 +280,49 @@ public class JavaFXUiMain extends Application {
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 
+        rightVBox.widthProperty().addListener((e, oldV, newV) -> {
+            int availableWidth = (int) (rightVBox.getWidth() - 20); // TODO: calculate magic value
+            uiProjectRepository.setPreviewAvailableWidth(availableWidth);
+        });
+        rightVBox.heightProperty().addListener((e, oldV, newV) -> {
+            int availableHeight = (int) (rightVBox.getHeight() - 100); // TODO: calculate magic value
+            uiProjectRepository.setPreviewAvailableHeight(availableHeight);
+        });
+
         BorderPane rightBorderPane = new BorderPane();
-        Label underVideoLabel = new Label();
-        underVideoLabel.setWrapText(true);
-        underVideoLabel.textProperty().bind(lightDi.getBean(VideoStatusBarUpdater.class).getTextProperty());
-        rightBorderPane.setBottom(underVideoLabel);
+        //        Label underVideoLabel = new Label();
+        //        underVideoLabel.setWrapText(true);
+        Tooltip tooltip = new Tooltip();
+
+        StringProperty statusTextProperty = lightDi.getBean(VideoStatusBarUpdater.class).getTextProperty();
+        tooltip.textProperty().bind(statusTextProperty);
+        tooltip.setHideOnEscape(false);
+        tooltip.setAutoHide(false);
+        tooltip.setAnchorLocation(AnchorLocation.CONTENT_TOP_LEFT);
+
+        statusTextProperty.addListener((e, oldV, newV) -> {
+            if (newV.length() > 0) {
+                Bounds canvasBottom = canvas.localToScene(canvas.getBoundsInLocal());
+                double x = canvasBottom.getMinX();
+                double y = canvasBottom.getMaxY() + 60;
+                tooltip.show(canvas, x, y);
+            } else {
+                tooltip.hide();
+            }
+        });
+        tooltip.setWrapText(true);
+
+        //        rightBorderPane.setBottom(underVideoLabel);
+
         rightBorderPane.setCenter(rightVBox);
 
         VBox propertyBox = effectPropertyView.getPropertyWindow();
         ScrollPane propertyBoxScrollPane = new ScrollPane(propertyBox);
         propertyBoxScrollPane.setFitToWidth(true);
-        upper.add(propertyBoxScrollPane, 0, 0);
-        upper.add(tabPane, 1, 0);
-        upper.add(rightBorderPane, 2, 0);
+        propertyBoxScrollPane.setPrefWidth(500);
+        upperPane.getItems().add(propertyBoxScrollPane);
+        upperPane.getItems().add(tabPane);
+        upperPane.getItems().add(rightBorderPane);
 
         VBox lower = new VBox(5);
         lower.setPrefWidth(scene.getWidth());
@@ -305,10 +333,11 @@ public class JavaFXUiMain extends Application {
         lower.getChildren().add(timeline);
         VBox.setVgrow(timeline, Priority.ALWAYS);
 
-        vbox.setTop(upper);
-        vbox.setCenter(lower);
+        mainContentPane.getItems().add(upperPane);
+        mainContentPane.getItems().add(lower);
+        mainContentPane.setOrientation(Orientation.VERTICAL);
 
-        root.setCenter(vbox);
+        root.setCenter(mainContentPane);
         notificationPane.setContent(root);
 
         inputModeRepository.registerInputModeChangeConsumerr(onClassChange(lower));
@@ -420,6 +449,7 @@ public class JavaFXUiMain extends Application {
         uiTimelineManager.registerUiPlaybackConsumer(position -> updateTime(position));
 
         displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
+        projectSizeInitializer = lightDi.getBean(ProjectSizeInitializer.class);
         uiTimelineManager.registerPlaybackConsumer(position -> displayUpdateService.updateDisplayWithCacheInvalidation(position));
         AudioUpdaterService audioUpdaterService = lightDi.getBean(AudioUpdaterService.class);
         uiTimelineManager.registerPlaybackConsumer(position -> audioUpdaterService.updateAtPosition(position));
@@ -446,6 +476,7 @@ public class JavaFXUiMain extends Application {
         return new PropertySourceHolder(Environment.ENVIRONMENT_PROPERTY_ORDER + 1, propertyMap);
     }
 
+    // Do NOT run this one. Run the one in {@link application.HackyMain}!
     public static void main(String[] args) {
         launch(args);
     }

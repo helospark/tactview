@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
@@ -13,7 +14,7 @@ public class ScaleComboBoxFactory {
     private ProjectRepository projectRepository;
     private UiProjectRepository uiProjectRepository;
 
-    public ScaleComboBoxFactory(UiTimelineManager uiTimelineManager, ProjectRepository projectRepository, UiProjectRepository uiProjectRepository) {
+    public ScaleComboBoxFactory(UiTimelineManager uiTimelineManager, ProjectRepository projectRepository, UiProjectRepository uiProjectRepository, UiMessagingService messagingService) {
         this.uiTimelineManager = uiTimelineManager;
         this.projectRepository = projectRepository;
         this.uiProjectRepository = uiProjectRepository;
@@ -30,34 +31,46 @@ public class ScaleComboBoxFactory {
         sizeDropDown.getItems().add("fit");
         sizeDropDown.getSelectionModel().select("fit");
         sizeDropDown.valueProperty()
-                .addListener((o, oldValue, newValue) -> {
-                    int width = projectRepository.getWidth();
-                    int height = projectRepository.getHeight();
-
-                    int previewWidth;
-                    int previewHeight;
-                    double scale;
-
-                    if (newValue.equals("fit")) {
-                        double horizontalScaleFactor = 320.0 / projectRepository.getWidth();
-                        double verticalScaleFactor = 260.0 / projectRepository.getHeight();
-                        scale = Math.min(horizontalScaleFactor, verticalScaleFactor);
-                        previewWidth = (int) (scale * width);
-                        previewHeight = (int) (scale * height);
-                    } else {
-                        int percent = Integer.parseInt(newValue.replace("%", ""));
-
-                        scale = percent / 100.0;
-                        previewWidth = (int) (width * scale);
-                        previewHeight = (int) (height * scale);
-                    }
-                    uiProjectRepository.setPreviewWidth(previewWidth);
-                    uiProjectRepository.setPreviewHeight(previewHeight);
-                    uiProjectRepository.setScaleFactor(scale);
-
-                    uiTimelineManager.refresh();
+                .addListener((o, oldValue, newValue2) -> {
+                    refreshDisplay(sizeDropDown);
                 });
+        uiProjectRepository.getPreviewAvailableWidth().addListener((e, oldV, newV) -> {
+            refreshDisplay(sizeDropDown);
+        });
+        uiProjectRepository.getPreviewAvailableHeight().addListener((e, oldV, newV) -> {
+            refreshDisplay(sizeDropDown);
+        });
         return sizeDropDown;
+    }
+
+    protected void refreshDisplay(ComboBox<String> sizeDropDown) {
+        String newValue = sizeDropDown.getValue();
+        int width = projectRepository.getWidth();
+        int height = projectRepository.getHeight();
+
+        int previewWidth;
+        int previewHeight;
+        double scale;
+
+        if (newValue.equals("fit")) {
+
+            double horizontalScaleFactor = ((double) uiProjectRepository.getPreviewAvailableWidth().get()) / projectRepository.getWidth();
+            double verticalScaleFactor = ((double) uiProjectRepository.getPreviewAvailableHeight().get()) / projectRepository.getHeight();
+            scale = Math.min(horizontalScaleFactor, verticalScaleFactor);
+            previewWidth = (int) (scale * width);
+            previewHeight = (int) (scale * height);
+        } else {
+            int percent = Integer.parseInt(newValue.replace("%", ""));
+
+            scale = percent / 100.0;
+            previewWidth = (int) (width * scale);
+            previewHeight = (int) (height * scale);
+        }
+        uiProjectRepository.setPreviewWidth(previewWidth);
+        uiProjectRepository.setPreviewHeight(previewHeight);
+        uiProjectRepository.setScaleFactor(scale);
+
+        uiTimelineManager.refresh();
     }
 
 }

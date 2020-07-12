@@ -12,6 +12,13 @@
     -fx-control-inner-background: #666666;
 }
 
+.split-pane:horizontal > .split-pane-divider {
+   -fx-background-color: transparent;
+}
+.split-pane:vertical > .split-pane-divider {
+   -fx-background-color: transparent;
+}
+
 .menu-item,.context-menu,.menu-bar {
     -fx-background-color: #444444;
     
@@ -237,10 +244,6 @@
     -fx-max-width: 400px;
 }
 
-.description-vbox {
-    -fx-pref-width: 400px;
-}
-
 .render-dialog-grid-pane {
     -fx-padding: 10px;
     -fx-pref-width: 650px;
@@ -345,12 +348,28 @@
     -fx-opacity: 0;
 }
 
-.tab-pane
-{
+.tab-pane {
     -fx-tab-min-width:90px;
 }
 
-.tab{
+.tab-down-button .arrow {
+    -fx-background-color: white;
+}
+
+.tab-down-button .arrow {
+    -fx-background-color: rgb(230,230,230);
+}
+
+.tab-down-button:hover .arrow {
+    -fx-background-color: rgb(255,255,255);
+}
+
+.tab-down-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 5 0 5;
+}
+
+.tab {
     -fx-background-insets: 0 1 0 1,0,0;
 }
 .tab-pane .tab
