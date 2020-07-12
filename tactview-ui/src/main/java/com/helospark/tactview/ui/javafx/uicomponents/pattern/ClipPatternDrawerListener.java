@@ -27,6 +27,7 @@ import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllImagePatternsMessage;
+import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
@@ -47,18 +48,23 @@ public class ClipPatternDrawerListener {
     private AudioImagePatternService audioImagePatternService;
     private TimelineState timelineState;
     private TimelineManagerAccessor timelineManager;
+    private SoundRmsRepository soundRmsRepository;
     @Slf4j
     private Logger logger;
 
     private boolean patternDrawingEnabled = true;
+    private double lastAudioRmsUpdate;
 
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
-            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager) {
+            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager, SoundRmsRepository soundRmsRepository) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
         this.timelineState = timelineState;
         this.audioImagePatternService = audioImagePatternService;
         this.timelineManager = timelineManager;
+        this.soundRmsRepository = soundRmsRepository;
+
+        lastAudioRmsUpdate = soundRmsRepository.getMaxRms();
     }
 
     @PreferenceValue(name = "Render pattern on clips", defaultValue = "true", group = "Performance")
@@ -123,6 +129,18 @@ public class ClipPatternDrawerListener {
                             logger.info("No clip to update with id {}", request.clipId);
                         }
                     }
+
+                    double currentMaxRms = soundRmsRepository.getMaxRms();
+                    if (Math.abs(lastAudioRmsUpdate - currentMaxRms) > 10.0) {
+                        // update all clips if audio renormalized
+                        for (var entry : clipsToUpdate.entrySet()) {
+                            if (entry.getValue().videoClip instanceof AudibleTimelineClip) {
+                                updateRequests.add(new ClipPatternUpdateRequest(entry.getKey()));
+                            }
+                        }
+                        lastAudioRmsUpdate = currentMaxRms;
+                    }
+
                     double currentZoomLevel = timelineState.getZoom();
                     for (var entry : clipsToUpdate.entrySet()) {
                         if (Math.abs(entry.getValue().createdImageAtZoomLevel - currentZoomLevel) > 0.2) {

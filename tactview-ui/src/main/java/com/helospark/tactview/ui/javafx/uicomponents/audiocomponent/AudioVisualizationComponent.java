@@ -9,6 +9,8 @@ import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.ui.javafx.PlaybackController;
+import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -30,13 +32,15 @@ public class AudioVisualizationComponent {
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
     private Canvas canvas;
 
-    private double expectedHighestValue = 100.0;
-
     private PlaybackController playbackController;
+    private SoundRmsRepository soundRmsRepository;
+    private AudioRmsCalculator audioRmsCalculator;
 
-    public AudioVisualizationComponent(PlaybackController playbackController) {
+    public AudioVisualizationComponent(PlaybackController playbackController, SoundRmsRepository soundRmsRepository, AudioRmsCalculator audioRmsCalculator) {
         canvas = new Canvas(NUMBER_OF_BARS * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
         this.playbackController = playbackController;
+        this.soundRmsRepository = soundRmsRepository;
+        this.audioRmsCalculator = audioRmsCalculator;
     }
 
     public Canvas getCanvas() {
@@ -58,10 +62,7 @@ public class AudioVisualizationComponent {
             clearCanvas();
 
             for (int i = 0; i < 2; ++i) {
-                double value = i < audioFrame.getChannels().size() ? calculateRmsForChannel(i, audioFrame) : 0.0;
-                if (value > expectedHighestValue) {
-                    expectedHighestValue = value;
-                }
+                double value = i < audioFrame.getChannels().size() ? audioRmsCalculator.calculateRms(audioFrame, i) : 0.0;
                 updateUiForChannel(i, value);
             }
 
@@ -77,8 +78,9 @@ public class AudioVisualizationComponent {
     }
 
     private void updateUiForChannel(int channel, double value) {
+        double maxRms = soundRmsRepository.getMaxRms();
         GraphicsContext graphics = canvas.getGraphicsContext2D();
-        double normalizedValue = MathUtil.clamp(value / expectedHighestValue, 0.0, 1.0);
+        double normalizedValue = MathUtil.clamp(value / maxRms, 0.0, 1.0);
         double increment = 1.0 / NUMBER_OF_BARS;
         for (int i = 0; i < NUMBER_OF_BARS; ++i) {
             if (i * increment < normalizedValue) {
@@ -88,17 +90,6 @@ public class AudioVisualizationComponent {
             }
             graphics.fillRoundRect(i * (BAR_WIDTH + BAR_SPACE_WIDTH) + 1, channel * (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) + CHANNEL_HEIGHT_GAP, BAR_WIDTH, CHANNEL_HEIGHT, BAR_RADIUS, BAR_RADIUS);
         }
-    }
-
-    private double calculateRmsForChannel(int channel, AudioFrameResult audioFrame) {
-        double sum = 0;
-        for (int i = 0; i < audioFrame.getNumberSamples(); ++i) {
-            double currentSample = audioFrame.getSampleAt(channel, i);
-            sum += currentSample * currentSample;
-        }
-
-        return Math.sqrt(sum / audioFrame.getNumberSamples());
-
     }
 
 }

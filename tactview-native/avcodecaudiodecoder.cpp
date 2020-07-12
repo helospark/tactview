@@ -41,7 +41,9 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         if (nb_samples) {
             ret = av_frame_get_buffer(frame, 0);
             if (ret < 0) {
-                fprintf(stderr, "Error allocating an audio buffer\n");
+                std::cerr <<  "Error allocating an audio buffer for format format=" << sample_fmt << " " << ", layout=" 
+                    << channel_layout << " " << " sample_rate=" << sample_rate << " " << " nb_samples=" << nb_samples
+                    << " error_code=" << ret << std::endl;
                 exit(1);
             }
         }
@@ -50,8 +52,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
     }
 
     bool doesNeedResampling(AVSampleFormat sampleFormat) {
-      return sampleFormat != AV_SAMPLE_FMT_U8 && sampleFormat != AV_SAMPLE_FMT_S16 && sampleFormat != AV_SAMPLE_FMT_S32
-                  && sampleFormat != AV_SAMPLE_FMT_U8P && sampleFormat != AV_SAMPLE_FMT_S16P && sampleFormat != AV_SAMPLE_FMT_S32P;
+      return sampleFormat != AV_SAMPLE_FMT_U8P && sampleFormat != AV_SAMPLE_FMT_S16P && sampleFormat != AV_SAMPLE_FMT_S32P;
     }
 
     EXPORTED AVCodecAudioMetadataResponse readMetadata(const char* path) {
@@ -172,6 +173,9 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
         int codecBytes = av_get_bytes_per_sample(sampleFormat);
 
+
+        int64_t outputChannelLayout = av_get_default_channel_layout((int)request->numberOfChannels);
+
         if (doesNeedResampling(sampleFormat) || codec->sample_rate != request->sampleRate || codecBytes != request->bytesPerSample) {
           needsResampling = true;
           swrContext = swr_alloc();
@@ -203,7 +207,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
           av_opt_set_int       (swrContext, "out_channel_count",  (int)request->numberOfChannels,       0);
           av_opt_set_int       (swrContext, "out_sample_rate",    request->sampleRate,    0);
           av_opt_set_sample_fmt(swrContext, "out_sample_fmt",     outputSampleFormat,     0);
-          av_opt_set_channel_layout(swrContext, "out_channel_layout", av_get_default_channel_layout((int)request->numberOfChannels),  0); // TODO: channel layout could also be extracted
+          av_opt_set_channel_layout(swrContext, "out_channel_layout", outputChannelLayout,  0);
 
           //std::cout << "Initializing SWR" << std::endl;
           if ((swr_init(swrContext)) < 0) {
@@ -268,7 +272,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
                 //  std::cout << "Allocating " << resampledCount << std::endl;
 
-                  tmp_frame = alloc_audio_frame(sampleFormat, codec->channel_layout,
+                  tmp_frame = alloc_audio_frame(sampleFormat, outputChannelLayout,
                                        request->sampleRate, resampledCount);
 
                   swr_convert(swrContext,
@@ -299,6 +303,8 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                     }
                     totalNumberOfSamplesRead += actuallyWrittenSamples * sampleSize;
                 } else {
+                    // TODO: currently this branch is unused, when fixed add non-planar format back into resampling needed method
+                    // like: sampleFormat != AV_SAMPLE_FMT_U8 && sampleFormat != AV_SAMPLE_FMT_S16 && sampleFormat != AV_SAMPLE_FMT_S32
                     std::cout << "Not planar" << std::endl;
                     for (int i = 0, j = 0; i < frameToUse->nb_samples; ++i, ++j) {
                         for (int channel = 0; channel < request->numberOfChannels; ++channel) {

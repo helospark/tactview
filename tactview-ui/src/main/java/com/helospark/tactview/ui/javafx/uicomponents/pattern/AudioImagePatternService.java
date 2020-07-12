@@ -18,6 +18,8 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.scene.image.Image;
@@ -25,15 +27,19 @@ import javafx.scene.image.Image;
 @Service
 public class AudioImagePatternService {
     private static final int NUMBER_OF_PIXELS_FOR_SAMPLE = 1;
-    private static final int SAMPLE_MAX_VALUE = 140; // TODO: this cake is a lie, needs some dynamic range or something
     private static final int RECTANGLE_HEIGHT = 50;
 
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private ProjectRepository projectRepository;
+    private SoundRmsRepository soundRmsRepository;
+    private AudioRmsCalculator audioRmsCalculator;
 
-    public AudioImagePatternService(ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, ProjectRepository projectRepository) {
+    public AudioImagePatternService(ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, ProjectRepository projectRepository, SoundRmsRepository soundRmsRepository,
+            AudioRmsCalculator audioRmsCalculator) {
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
         this.projectRepository = projectRepository;
+        this.soundRmsRepository = soundRmsRepository;
+        this.audioRmsCalculator = audioRmsCalculator;
     }
 
     public Image createAudioImagePattern(AudibleTimelineClip audibleTimelineClip, int width) {
@@ -41,6 +47,7 @@ public class AudioImagePatternService {
         int scaledFrameHeight = RECTANGLE_HEIGHT;
         int numberOfChannels = projectRepository.getNumberOfChannels();
         int channelHeight = scaledFrameHeight / numberOfChannels;
+        double maxRmsToDisplayUiWith = soundRmsRepository.getMaxRms();
 
         List<MutableInteger> lastPointPerChannel = new ArrayList<>();
         for (int i = 0; i < numberOfChannels; ++i) {
@@ -69,6 +76,7 @@ public class AudioImagePatternService {
             graphics.drawLine(0, y, width, y);
         }
         graphics.setColor(new Color(0, 255, 0, 200));
+        double currentMaxRms = 0.0;
 
         for (int i = 0; i < numberOfSamplesToCollect; ++i) {
             AudioRequest frameRequest = AudioRequest.builder()
@@ -82,7 +90,11 @@ public class AudioImagePatternService {
             AudioFrameResult frame = audibleTimelineClip.requestAudioFrame(frameRequest);
 
             for (int j = 0; j < numberOfChannels; ++j) {
-                int point = valumeOnSample(frame, j, channelHeight);
+                double rms = audioRmsCalculator.calculateRms(frame, j);
+                if (rms > currentMaxRms) {
+                    currentMaxRms = rms;
+                }
+                int point = soundHeight(rms, channelHeight, maxRmsToDisplayUiWith);
 
                 MutableInteger lastPoint = lastPointPerChannel.get(j);
                 int newPointY = ((j + 1) * channelHeight) - point - 1;
@@ -93,23 +105,15 @@ public class AudioImagePatternService {
                     .stream()
                     .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
         }
+        // tight coupling would be good to avoid here, but calculating rms for full clip is expensive to do twice
+        // maybe some cache magic could work?!
+        soundRmsRepository.setRmsForClip(audibleTimelineClip.getId(), currentMaxRms);
 
         return byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
     }
 
-    private int valumeOnSample(AudioFrameResult frame, int channelNumber, int channelHeight) {
-        if (frame.getNumberSamples() == 0) {
-            return 0;
-        }
-        int result = 0;
-        for (int i = 0; i < frame.getNumberSamples(); ++i) {
-            double sample = frame.getRescaledSample(channelNumber, 1, frame.getSamplePerSecond(), i);
-            result += (sample * sample);
-        }
-        double rms = Math.sqrt((double) result / (frame.getNumberSamples()));
-        //System.out.println(rms);
-        return Math.min((int) ((rms / SAMPLE_MAX_VALUE) * channelHeight), channelHeight);
-
+    private int soundHeight(double rms, int channelHeight, double maxRms) {
+        return Math.min((int) ((rms / maxRms) * channelHeight), channelHeight);
     }
 
     private static class MutableInteger {
