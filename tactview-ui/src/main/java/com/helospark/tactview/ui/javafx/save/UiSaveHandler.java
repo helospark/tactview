@@ -12,6 +12,8 @@ import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.save.SaveRequest;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -23,26 +25,28 @@ public class UiSaveHandler {
     private SaveAndLoadHandler saveAndLoadHandler;
     private CurrentProjectSavedFileRepository currentProjectSavedFileRepository;
     private DirtyRepository dirtyRepository;
+    private StylesheetAdderService stylesheetAdderService;
+    private AlertDialogFactory alertDialogFactory;
     @Slf4j
     private Logger logger;
     @PersistentState
     String lastOpenedDirectoryName;
 
-    public UiSaveHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, DirtyRepository dirtyRepository) {
+    public UiSaveHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, DirtyRepository dirtyRepository,
+            StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.dirtyRepository = dirtyRepository;
+        this.stylesheetAdderService = stylesheetAdderService;
+        this.alertDialogFactory = alertDialogFactory;
     }
 
     public boolean save() {
         try {
             return executeSave();
         } catch (Exception e) {
+            Alert alert = alertDialogFactory.createErrorAlertWithStackTrace("Unable to save project", e);
             logger.error("Unable to save", e);
-            Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Unable to save project");
-            alert.setHeaderText(e.getMessage());
-            alert.setContentText(e.getMessage() + ", see logs for details");
             alert.show();
             return false;
         }
@@ -92,7 +96,11 @@ public class UiSaveHandler {
             File fileWithSavedExtension = new File(file.getAbsolutePath() + extension); // TODO: why is this needed in core and ui?
 
             if (!extension.isEmpty() && fileWithSavedExtension.exists()) { // If user set extension JavaFX already asked this question
-                Alert alert = new Alert(AlertType.CONFIRMATION, "File " + fileWithSavedExtension.getAbsolutePath() + " already exists. Override?", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+                Alert alert = new Alert(AlertType.CONFIRMATION);
+                alert.setContentText("File " + fileWithSavedExtension.getAbsolutePath() + " already exists. Override?");
+                alert.setHeaderText(null);
+                alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.CANCEL, ButtonType.YES);
+                stylesheetAdderService.addStyleSheets(alert.getDialogPane(), "stylesheet.css");
                 alert.showAndWait();
 
                 if (alert.getResult() == ButtonType.YES) {

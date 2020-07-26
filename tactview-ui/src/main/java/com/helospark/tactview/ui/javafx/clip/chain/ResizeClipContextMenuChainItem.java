@@ -13,9 +13,9 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 
@@ -24,12 +24,14 @@ import javafx.scene.control.TextInputDialog;
 public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManager;
+    private AlertDialogFactory alertFactory;
     @Slf4j
     private Logger logger;
 
-    public ResizeClipContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager) {
+    public ResizeClipContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager, AlertDialogFactory alertFactory) {
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
+        this.alertFactory = alertFactory;
     }
 
     @Override
@@ -73,10 +75,7 @@ public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem 
                     commandInterpreter.sendWithResult(command);
                 });
             } catch (Exception ex) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Cannot change length");
-                alert.setContentText(ex.getMessage());
-                alert.setHeaderText(null);
+                Alert alert = alertFactory.createErrorAlertWithStackTrace("Cannot change length", ex);
                 alert.showAndWait();
 
                 logger.warn("Unable to change clip length", ex);

@@ -9,19 +9,21 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 
 @Component
 public class ImportClipFileChooser {
     private TimelineManagerAccessor timelineManager;
     private UiCommandInterpreterService commandInterpreterService;
+    private AlertDialogFactory alertDialogFactory;
 
-    public ImportClipFileChooser(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService) {
+    public ImportClipFileChooser(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, AlertDialogFactory alertDialogFactory) {
         this.timelineManager = timelineManager;
         this.commandInterpreterService = commandInterpreterService;
+        this.alertDialogFactory = alertDialogFactory;
     }
 
     public void importClip() {
@@ -40,11 +42,7 @@ public class ImportClipFileChooser {
 
             commandInterpreterService.sendWithResult(new AddClipsCommand(clipRequest, timelineManager))
                     .exceptionally(e -> {
-                        Alert alert = new Alert(AlertType.ERROR);
-                        alert.setTitle("Unable to add image sequence");
-                        alert.setHeaderText(null);
-                        alert.setContentText(e.getMessage());
-
+                        Alert alert = alertDialogFactory.createErrorAlertWithStackTrace("Unable to add image sequence", e);
                         alert.showAndWait();
 
                         return null;

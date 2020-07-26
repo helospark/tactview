@@ -147,7 +147,7 @@ public class MemoryManagerImpl implements MemoryManager {
     public void destroy() {
         if (debug) {
             for (var entry : debugTrace.entrySet()) {
-                logger.error("Buffer {} never removed, allocated by {}", entry.getKey().capacity(), entry.getValue());
+                logger.warn("Buffer {} never removed, allocated at {}", entry.getKey().capacity(), entry.getValue());
             }
         }
         running = false;

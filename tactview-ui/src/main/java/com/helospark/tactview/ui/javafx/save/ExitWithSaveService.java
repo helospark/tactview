@@ -6,6 +6,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -16,14 +17,17 @@ import javafx.scene.control.ButtonType;
 public class ExitWithSaveService {
     private DirtyRepository dirtyRepository;
     private UiSaveHandler uiSaveHandler;
+    private AlertDialogFactory alertDialogFactory;
     private boolean showSaveDialog;
     @Slf4j
     private Logger logger;
 
-    public ExitWithSaveService(DirtyRepository dirtyRepository, UiSaveHandler uiSaveHandler, @Value("${show.dialog.dirty-save}") boolean showSaveDialog) {
+    public ExitWithSaveService(DirtyRepository dirtyRepository, UiSaveHandler uiSaveHandler, @Value("${show.dialog.dirty-save}") boolean showSaveDialog,
+            AlertDialogFactory alertDialogFactory) {
         this.dirtyRepository = dirtyRepository;
         this.uiSaveHandler = uiSaveHandler;
         this.showSaveDialog = showSaveDialog;
+        this.alertDialogFactory = alertDialogFactory;
     }
 
     public void optionallySaveAndThenRun(Runnable exitRunnable) {
@@ -44,13 +48,8 @@ public class ExitWithSaveService {
         ButtonType exitWithoutSaveButton = new ButtonType("close without save");
         ButtonType cancelButton = new ButtonType("cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        Alert alert = new Alert(AlertType.WARNING);
-        alert.getDialogPane().getStylesheets().add("stylesheet.css");
-        alert.setHeaderText(null);
-        alert.setContentText("You have unsaved changes. Should we save?");
-        alert.getButtonTypes().clear();
+        Alert alert = alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.WARNING, "Save and exit", "You have unsaved changes. Should we save?");
         alert.getButtonTypes().setAll(saveAndExitButton, exitWithoutSaveButton, cancelButton);
-        alert.setTitle("Save and exit");
 
         ButtonType result = alert.showAndWait().orElse(cancelButton);
 

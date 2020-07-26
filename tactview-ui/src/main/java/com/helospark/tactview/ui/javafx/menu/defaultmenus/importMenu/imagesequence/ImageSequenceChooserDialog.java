@@ -15,11 +15,11 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -34,7 +34,8 @@ import javafx.stage.Stage;
 public class ImageSequenceChooserDialog {
     private Stage stage;
 
-    public ImageSequenceChooserDialog(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, ProjectRepository projectRepository) {
+    public ImageSequenceChooserDialog(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, ProjectRepository projectRepository,
+            AlertDialogFactory alertDialogFactory) {
         BorderPane borderPane = new BorderPane();
 
         Scene dialog = new Scene(borderPane);
@@ -100,11 +101,7 @@ public class ImageSequenceChooserDialog {
 
             commandInterpreterService.sendWithResult(new AddClipsCommand(clipRequest, timelineManager))
                     .exceptionally(e -> {
-                        Alert alert = new Alert(AlertType.ERROR);
-                        alert.setTitle("Unable to add image sequence");
-                        alert.setHeaderText(null);
-                        alert.setContentText(e.getMessage());
-
+                        Alert alert = alertDialogFactory.createErrorAlertWithStackTrace("Unable to add image sequence", e);
                         alert.showAndWait();
 
                         return null;

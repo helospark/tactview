@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.geometry.Insets;
@@ -23,7 +24,8 @@ import javafx.stage.Stage;
 public class ChangeProjectSizeDialog {
     private Stage stage;
 
-    public ChangeProjectSizeDialog(ProjectSizeInitializer projectSizeInitializer, ProjectRepository projectRepository, StylesheetAdderService stylesheetAdderService) {
+    public ChangeProjectSizeDialog(ProjectSizeInitializer projectSizeInitializer, ProjectRepository projectRepository, StylesheetAdderService stylesheetAdderService,
+            AlertDialogFactory alertDialogFactory) {
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
 
@@ -89,10 +91,8 @@ public class ChangeProjectSizeDialog {
             int numberOfChannels = Integer.parseInt(numberOfChannelsText.getText());
 
             if (numberOfChannels < 1 || numberOfChannels > 7) {
-                Alert alert = new Alert(AlertType.WARNING);
-                alert.setTitle("Invalid number of channels");
-                alert.setHeaderText("Channel number must be between 1 and 7, but was " + numberOfChannels);
-
+                Alert alert = alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.WARNING, "Invalid number of channels",
+                        "Channel number must be between 1 and 7, but was " + numberOfChannels);
                 alert.showAndWait();
                 return;
             }

@@ -79,14 +79,14 @@ echo "Downloading FFmpeg"
 # fire.webm test fails with that and crashes when no scaling applied
 FFMPEG_VERSION=4.2.2
 
-wget http://ffmpeg.org/releases/ffmpeg-4.3.1.tar.gz
+wget "http://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz"
 tar -xvf "ffmpeg-$FFMPEG_VERSION.tar.gz"
 
 cd "ffmpeg-$FFMPEG_VERSION"
 
 echo "Configuring FFmpeg"
 
-./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom
+./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom --enable-debug --disable-stripping
 # Enabled debugging: --enable-debug --disable-stripping
 # --enable-libmfx - Intel HW accelerated encoding/decoding, could be useful
 # --enable-libopenjpeg - decode jpeg

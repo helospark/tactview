@@ -26,9 +26,9 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
-import com.helospark.tactview.ui.javafx.util.DialogHelper;
 import com.helospark.tactview.ui.javafx.util.DurationFormatter;
 
 import javafx.scene.Node;
@@ -59,6 +59,7 @@ public class RenderDialog {
     private static final int COLUMNS = 2;
 
     private ProjectRepository projectRepository;
+    private AlertDialogFactory alertDialogFactory;
 
     private Stage stage;
     private boolean isRenderCancelled = false;
@@ -78,8 +79,9 @@ public class RenderDialog {
     boolean shouldUpdateVisibility = false;
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
-            StylesheetAdderService stylesheetAdderService) {
+            StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory) {
         this.projectRepository = projectRepository;
+        this.alertDialogFactory = alertDialogFactory;
 
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
@@ -239,7 +241,7 @@ public class RenderDialog {
                         })
                         .exceptionally(ex -> {
                             ex.printStackTrace();
-                            DialogHelper.showExceptionDialog("Error rendering", "Unable to render to file, see stacktrace below, more details in logs", ex);
+                            alertDialogFactory.showExceptionDialog("Error rendering", ex);
                             cancelButton.setDisable(false);
                             okButton.setDisable(false);
                             return null;
@@ -346,9 +348,7 @@ public class RenderDialog {
     private boolean showConfirmationDialogIfNeeded(String filePath) {
         boolean continueRender = true;
         if (new File(filePath).exists()) {
-            Alert alert = new Alert(AlertType.CONFIRMATION);
-            alert.setTitle("File exists, override?");
-            alert.setHeaderText("File exists \"" + filePath + "\".\nOverride?");
+            Alert alert = alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.CONFIRMATION, "File exists, override?", "File \"" + filePath + "\" already exists.\nOverride?");
 
             Optional<ButtonType> result = alert.showAndWait();
             continueRender = result.map(buttonType -> buttonType.equals(ButtonType.OK)).orElse(true);

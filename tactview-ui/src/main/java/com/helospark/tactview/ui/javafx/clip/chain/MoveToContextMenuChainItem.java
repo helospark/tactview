@@ -12,6 +12,7 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipToLeftCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipToRightCommand;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -24,10 +25,12 @@ import javafx.scene.control.TextInputDialog;
 public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManagerAccessor;
+    private AlertDialogFactory alertDialogFactory;
 
-    public MoveToContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManagerAccessor) {
+    public MoveToContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManagerAccessor, AlertDialogFactory alertDialogFactory) {
         this.commandInterpreter = commandInterpreter;
         this.timelineManagerAccessor = timelineManagerAccessor;
+        this.alertDialogFactory = alertDialogFactory;
     }
 
     @Override
@@ -79,10 +82,7 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
                 ClipMovedCommand commandResult = commandInterpreter.sendWithResult(clipMovedCommand).join();
 
                 if (!commandResult.wasOperationSuccessful()) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Cannot move clip at that position");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Cannot move clip at that position");
+                    Alert alert = alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.ERROR, "Cannot move clip at that position", "Cannot move clip at that position");
                     alert.showAndWait();
                 }
             }
@@ -104,10 +104,7 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
             ClipToLeftCommand commandResult = commandInterpreter.sendWithResult(clipMovedCommand).join();
 
             if (!commandResult.wasOperationSuccessful()) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Cannot move clip to left");
-                alert.setContentText("Cannot move clip to left");
-                alert.setHeaderText(null);
+                Alert alert = alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.ERROR, "Cannot move clip to left", "Cannot move clip to left");
                 alert.showAndWait();
             }
         });
@@ -128,10 +125,7 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
             ClipToRightCommand commandResult = commandInterpreter.sendWithResult(clipMovedCommand).join();
 
             if (!commandResult.wasOperationSuccessful()) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Cannot move clip to right");
-                alert.setContentText("Cannot move clip to right");
-                alert.setHeaderText(null);
+                Alert alert = alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.ERROR, "Cannot move clip to right", "Cannot move clip to right");
                 alert.showAndWait();
             }
         });
@@ -170,10 +164,7 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
                 ClipMovedCommand commandResult = commandInterpreter.sendWithResult(clipMovedCommand).join();
 
                 if (!commandResult.wasOperationSuccessful()) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Cannot move clip at that position");
-                    alert.setContentText("Cannot move clip at that position");
-                    alert.setHeaderText(null);
+                    Alert alert = alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.ERROR, "Cannot move clip at that position", "Cannot move clip at that position");
                     alert.showAndWait();
                 }
             }

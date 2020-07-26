@@ -8,9 +8,9 @@ import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.save.LoadRequest;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -19,15 +19,17 @@ public class UiLoadHandler {
     private SaveAndLoadHandler saveAndLoadHandler;
     private CurrentProjectSavedFileRepository currentProjectSavedFileRepository;
     private File autosaveRootDirectory;
+    private AlertDialogFactory alertDialogFactory;
 
     private UiSaveHandler uiSaveHandler;
 
     public UiLoadHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, @Value("${autosave.directory}") File autosaveRootDirectory,
-            UiSaveHandler uiSaveHandler) {
+            UiSaveHandler uiSaveHandler, AlertDialogFactory alertDialogFactory) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.autosaveRootDirectory = autosaveRootDirectory;
         this.uiSaveHandler = uiSaveHandler;
+        this.alertDialogFactory = alertDialogFactory;
     }
 
     public void load() {
@@ -53,10 +55,7 @@ public class UiLoadHandler {
                 currentProjectSavedFileRepository.setCurrentSavedFile(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Unable to load project");
-                alert.setHeaderText(e.getMessage());
-                alert.setContentText(e.getMessage() + ", see logs for details");
+                Alert alert = alertDialogFactory.createErrorAlertWithStackTrace("Unable to load project", e);
                 alert.show();
             }
         }
