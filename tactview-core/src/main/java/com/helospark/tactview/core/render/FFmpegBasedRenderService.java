@@ -91,6 +91,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         String videoPresetOrNull = (String) Optional.ofNullable(renderRequest.getOptions().get("preset")).map(a -> a.getValue()).orElse(null);
         System.out.println("video preset: " + videoPresetOrNull);
 
+        int threads = Integer.parseInt(renderRequest.getOptions().get("threads").getValue().toString());
+        System.out.println("threads: " + threads);
+
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
         initNativeRequest.fps = renderRequest.getFps();
@@ -134,7 +137,6 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         // Producer consumer pattern below
 
-        int threads = Runtime.getRuntime().availableProcessors() - 1;
         if (threads < 1) {
             threads = 1;
         }
@@ -181,7 +183,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             producerThread.start();
 
             // Encoding must be done in single thread
-            while (!producerThread.isFinished) {
+            while (!producerThread.isFinished || queue.peek() != null) {
                 CompletableFuture<AudioVideoFragment> future = pollQueue(queue);
                 if (future != null) {
                     AudioVideoFragment frame = future.join();
@@ -191,9 +193,11 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     if (needsVideo) {
                         array[0].imageData = frame.getVideoResult().getBuffer();
                     }
+                    boolean audioConverted = false;
                     if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
                         array[0].audioData = convertAudio(frame.getAudioResult());
                         array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
+                        audioConverted = true;
                     }
                     nativeRequest.encoderIndex = encoderIndex;
                     nativeRequest.startFrameIndex = frameIndex;
@@ -206,6 +210,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
                     for (var buffer : frame.getAudioResult().getChannels()) {
                         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
+                    }
+                    if (audioConverted) {
+                        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(array[0].audioData);
                     }
 
                     messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));
@@ -379,6 +386,25 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 .withShouldShow(a -> a.getFileName().endsWith(".mp4"))
                 .build();
 
+        int threads = Runtime.getRuntime().availableProcessors() - 1;
+        if (threads < 1) {
+            threads = 1;
+        }
+
+        OptionProvider<Integer> numberOfThreadsProvider = OptionProvider.integerOptionBuilder()
+                .withTitle("Thread number")
+                .withDefaultValue(threads)
+                .withValidationErrorProvider(t -> {
+                    List<String> errors = new ArrayList<>();
+
+                    if (t < 1) {
+                        errors.add("At least 1 thread is needed");
+                    }
+
+                    return errors;
+                })
+                .build();
+
         LinkedHashMap<String, OptionProvider<?>> result = new LinkedHashMap<>();
 
         result.put("videobitrate", bitRateProvider);
@@ -390,6 +416,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         result.put("audiocodec", audioCodecProvider);
         result.put("videoPixelFormat", videoPixelFormatProvider);
         result.put("preset", presetProviders);
+        result.put("threads", numberOfThreadsProvider);
 
         return result;
     }

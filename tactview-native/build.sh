@@ -1,3 +1,11 @@
+EXTRA_ARGS=""
+
+if [[ "$1" == "-d" ]]
+then
+  EXTRA_ARGS="$EXTRA_ARGS -g -O3"
+  echo "Debug build"
+fi
+
 mkdir -p ../tactview-core/src/main/resources/linux-x86-64
 rm -r ../tactview-core/src/main/resources/linux-x86-64/*
 
@@ -10,7 +18,7 @@ cp libopencvlensdistort.so ../tactview-core/src/main/resources/linux-x86-64/.
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libgenericconvolutionmatrix.so -o libgenericconvolutionmatrix.so genericconvolutionmatrix.cpp `pkg-config --libs opencv4`
 cp libgenericconvolutionmatrix.so ../tactview-core/src/main/resources/linux-x86-64/.
 
-gcc -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
+gcc $EXTRA_ARGS -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
 cp libffmpegmediadecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 gcc -w -shared -fPIC -Wl,-soname,libffmpegconinousimagequeryservice.so -o libffmpegconinousimagequeryservice.so ffmpegconinousimagequeryservice.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`

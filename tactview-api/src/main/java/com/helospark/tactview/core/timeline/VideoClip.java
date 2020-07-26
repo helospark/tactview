@@ -115,4 +115,10 @@ public class VideoClip extends VisualTimelineClip {
 
     }
 
+    @Override
+    public String toString() {
+        return "VideoClip [mediaMetadata=" + mediaMetadata + ", startPosition=" + startPosition + ", lowResolutionProxySource=" + lowResolutionProxySource + ", getBackingSource()="
+                + getBackingSource() + "]";
+    }
+
 }

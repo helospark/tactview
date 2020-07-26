@@ -28,7 +28,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class MediaCache {
     private ConcurrentHashMap<String, NavigableMap<Integer, MediaHashValue>> backCache = new ConcurrentHashMap<>();
-    private Set<CacheRemoveDomain> toRemove = new ConcurrentSkipListSet<>();
+    private Set<CacheRemoveDomain> accessTimeOrderedList = new ConcurrentSkipListSet<>();
     private MemoryManager memoryManager;
     private MessagingService messagingService;
 
@@ -70,7 +70,7 @@ public class MediaCache {
     }
 
     private void doImmediateCleanup(int size) {
-        TreeSet<CacheRemoveDomain> elements = new TreeSet<>(toRemove);
+        TreeSet<CacheRemoveDomain> elements = new TreeSet<>(accessTimeOrderedList);
         while (approximateSize >= size) {
             if (elements.isEmpty()) {
                 logger.debug("ToRemove elements is empty");
@@ -89,6 +89,7 @@ public class MediaCache {
                         logger.debug("Removed buffer {} {}, current buffer size: {}", firstElement.key, removedElement, approximateSize);
                     }
                 }
+                accessTimeOrderedList.remove(firstElement);
             }
         }
     }
@@ -129,7 +130,7 @@ public class MediaCache {
                     .forEach(f -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(f));
         }
 
-        toRemove.add(new CacheRemoveDomain(key, clonedValue));
+        accessTimeOrderedList.add(new CacheRemoveDomain(key, clonedValue));
 
         if (logger.isDebugEnabled()) {
             logger.debug("Following frames are cached {}", value.frames.stream()
@@ -161,11 +162,13 @@ public class MediaCache {
     private void returnBuffer(ByteBuffer buffer) {
         memoryManager.returnBuffer(buffer);
         approximateSize -= buffer.capacity();
+        logger.debug("Returned " + System.identityHashCode(buffer) + " new size: " + approximateSize);
     }
 
     public Optional<MediaHashValue> findInCache(String key, int frame) {
         NavigableMap<Integer, MediaHashValue> media = backCache.get(key);
         if (media == null) {
+            logger.debug("NOT found " + key + " at frame " + frame);
             return Optional.empty();
         } else {
             Optional<MediaHashValue> result = media // todo: avoid linear search
@@ -174,6 +177,8 @@ public class MediaCache {
                     .filter(value -> frame >= value.frameStart && frame < value.endIndex)
                     .findFirst();
             result.ifPresent(value -> value.lastAccessed = System.currentTimeMillis());
+
+            logger.debug("Found " + key + " at frame " + frame + " = " + result.isPresent());
 
             return result;
         }
@@ -229,11 +234,39 @@ public class MediaCache {
             return Long.compare(value.lastAccessed, other.value.lastAccessed);
         }
 
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            CacheRemoveDomain other = (CacheRemoveDomain) obj;
+            if (key == null) {
+                if (other.key != null)
+                    return false;
+            } else if (!key.equals(other.key))
+                return false;
+            return true;
+        }
+
     }
 
     public void dropCaches() {
+        logger.debug("Drop all media caches");
+
         Map<String, NavigableMap<Integer, MediaHashValue>> copiedElements = new HashMap<>(backCache);
-        backCache.clear(); // we may loose some elements here
+        backCache.clear();
+        accessTimeOrderedList.clear();
         for (var cachedEntry : copiedElements.entrySet()) {
             for (var cachedFrameSequence : cachedEntry.getValue().entrySet()) {
                 for (var frame : cachedFrameSequence.getValue().frames) {

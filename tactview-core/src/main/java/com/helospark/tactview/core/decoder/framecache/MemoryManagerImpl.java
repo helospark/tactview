@@ -240,6 +240,19 @@ public class MemoryManagerImpl implements MemoryManager {
         }
     }
 
+    @Override
+    public void dropAllBuffers() {
+        freeBuffersMap.values()
+                .stream()
+                .forEach(e -> {
+                    ByteBuffer buffer;
+
+                    while ((buffer = e.buffers.poll()) != null) {
+                        removeBuffer(buffer);
+                    }
+                });
+    }
+
     private void clearBuffer(ByteBuffer buffer) {
         //        try {
         //            // is it actually faster? TODO measure

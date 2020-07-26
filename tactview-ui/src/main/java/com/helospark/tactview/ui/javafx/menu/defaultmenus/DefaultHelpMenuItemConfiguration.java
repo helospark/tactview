@@ -5,6 +5,7 @@ import java.util.List;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
+import com.helospark.tactview.core.decoder.framecache.MemoryManager;
 import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.help.AboutDialogOpener;
@@ -36,7 +37,15 @@ public class DefaultHelpMenuItemConfiguration {
     }
 
     @Bean
-    @Order(4991)
+    @Order(4992)
+    public SelectableMenuContribution clearMemoryManagerContributionMenuItem(MessagingService messagingService, MemoryManager memoryManager) {
+        return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Clear memory manager"), e -> {
+            memoryManager.dropAllBuffers();
+        });
+    }
+
+    @Bean
+    @Order(4993)
     public SelectableMenuContribution reloadStyleSheat(MessagingService messagingService) {
         return new DefaultMenuContribution(List.of(HELP_ROOT, DEVELOPER_ROOT, "Reload stylesheet"), e -> {
             messagingService.sendAsyncMessage(new ReloadStylesheetMessage());

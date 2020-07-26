@@ -282,8 +282,8 @@ extern "C" {
                     //copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
                     //++i;
                 }
-                //element->lastPts = packet.pts;
-                //std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
+                element->lastPts = packet.pts;
+               // std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
             }
             // Free the packet that was allocated by av_read_frame
             av_free_packet(&packet);
@@ -404,6 +404,7 @@ extern "C" {
                 freeFrame(element.pFrame);
             }
         }
+        std::cout << "Queue size: " << decodeStructure->decodedPackages.size() << std::endl;
 
     }
 
@@ -474,7 +475,7 @@ extern "C" {
 
         pFrame=av_frame_alloc();
 
-        std::cout << "Opening file with size " << request->width << " " << request->width << std::endl;
+        std::cout << "Opening file with size " << request->width << " " << request->height << std::endl;
 
         sws_ctx = sws_getContext(pCodecCtx->width,
                                  pCodecCtx->height,
@@ -507,5 +508,49 @@ extern "C" {
 
         return element;
     }
-}
 
+#ifdef DEBUG
+
+int main() {
+    char* path = "/testvideo.mkv";
+
+    MediaMetadata result = readMediaMetadata(path);
+
+    std::cout << result.width << " " << result.height << " " << result.fps << " " << result.lengthInMicroseconds << " " << result.bitRate << std::endl;
+
+    const int framesPerRequest = 30;
+
+    const int outWidth = result.width;
+    const int outHeight = result.height;
+
+    for (int i = 0; i < 100; ++i) {
+
+        int frameToRequest = i * framesPerRequest;
+
+        FFmpegImageRequest* request = new FFmpegImageRequest();
+        request->width = outWidth;
+        request->height = outHeight;
+        request->numberOfFrames = framesPerRequest;
+        request->path = path;
+        request->startMicroseconds = (1.0 / result.fps * framesPerRequest) * 1000000;
+        request->useApproximatePosition = false;
+        request->frames = new FFMpegFrame[framesPerRequest];
+
+        for (int j = 0; j < framesPerRequest; ++j) {
+            request->frames[j].data = new char[outWidth * outHeight * 4];
+        }
+
+        readFrames(request);
+
+        for (int j = 0; j < framesPerRequest; ++j) {
+            delete[] request->frames[j].data;
+        }
+
+        delete request;
+        std::cout <<  "read frames " << i * framesPerRequest << " " << (i + 1) *  framesPerRequest << std::endl; 
+    }
+
+}
+#endif
+
+}

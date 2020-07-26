@@ -32,7 +32,6 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedMediaDecoderDecorator.class);
-    private static final int CHUNK_SIZE = 40;
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
@@ -72,10 +71,10 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
         // TODO: eliminate copypaste copy paste from below
-
+        int chunkSize = calculateChunkSize(request);
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
         int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).setScale(0, RoundingMode.HALF_DOWN).intValue();
-        int additionalFramesToReadInBeginning = startFrame % CHUNK_SIZE;
+        int additionalFramesToReadInBeginning = startFrame % chunkSize;
         int newStartFrame = startFrame - additionalFramesToReadInBeginning;
         if (newStartFrame < 0) {
             newStartFrame = 0;
@@ -101,13 +100,30 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
             e.printStackTrace(); // previous thread stuck?
         }
         try {
-            return readFramesInternal(request);
+            return readFramesInternal(request, chunkSize);
         } finally {
             lock.unlock();
         }
     }
 
-    private MediaDataResponse readFramesInternal(VideoMediaDataRequest request) {
+    // simple logic for now to determine how many frames to cache
+    // ideally this should also use the available memory in the system (more memory->more cache) & user settings as well
+    // This should not return different number based on the time index!
+    private int calculateChunkSize(VideoMediaDataRequest request) {
+        int numberOfBytes = request.getWidth() * request.getHeight() * 4;
+
+        if (numberOfBytes < 1_000_000) {
+            return 30; // <30Mb
+        } else if (numberOfBytes < 5_000_000) {
+            return 10; // <50Mb
+        } else if (numberOfBytes < 20_000_000) {
+            return 4; // <100Mb
+        } else {
+            return 1; // very large frames (ex. 8K, read one by one)
+        }
+    }
+
+    private MediaDataResponse readFramesInternal(VideoMediaDataRequest request, int chunkSize) {
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
         int numberOfFrames = 1;
         int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).setScale(0, RoundingMode.HALF_DOWN).intValue();
@@ -123,7 +139,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         } else if (!request.useApproximatePosition()) {
             System.out.println("Reading " + startFrame + " " + numberOfFrames);
             // Always read in chunks to minimize overhead
-            int additionalFramesToReadInBeginning = startFrame % CHUNK_SIZE;
+            int additionalFramesToReadInBeginning = startFrame % chunkSize;
             int newStartFrame = startFrame - additionalFramesToReadInBeginning;
             if (newStartFrame < 0) {
                 newStartFrame = 0;
@@ -131,26 +147,26 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
             int newEndFrame = newStartFrame;
             while (startFrame + numberOfFrames > newEndFrame) {
-                newEndFrame += CHUNK_SIZE;
+                newEndFrame += chunkSize;
             }
 
             int newNumberOfFrame = newEndFrame - newStartFrame;
 
             List<ByteBuffer> readFrames = Arrays.asList(readFromFile(request, newStartFrame, newNumberOfFrame, filePath));
-            result = readResultBetweenAtIndex(readFrames, additionalFramesToReadInBeginning);
+            result = copyResultAtIndex(readFrames, additionalFramesToReadInBeginning);
 
             storeInCache(request, newStartFrame, filePath, readFrames);
         } else {
             System.out.println("Reading without cache " + request);
             List<ByteBuffer> readFrames = Arrays.asList(readFromFile(request, startFrame, 1, filePath));
-            result = readResultBetweenAtIndex(readFrames, 0);
+            result = copyResultAtIndex(readFrames, 0);
             readFrames.stream()
                     .forEach(a -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(a));
         }
         return new MediaDataResponse(result);
     }
 
-    private ByteBuffer readResultBetweenAtIndex(List<ByteBuffer> readFrames, int additionalFramesToReadInBeginning) {
+    private ByteBuffer copyResultAtIndex(List<ByteBuffer> readFrames, int additionalFramesToReadInBeginning) {
         ByteBuffer from = readFrames.get(additionalFramesToReadInBeginning);
         ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(from.capacity());
         copyToResult(result, from);
@@ -207,7 +223,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
             buffers[i] = array[i].data;
         }
 
-        implementation.readFrames(ffmpegRequest);
+                implementation.readFrames(ffmpegRequest);
         return buffers;
     }
 

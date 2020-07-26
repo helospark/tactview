@@ -13,4 +13,6 @@ public interface MemoryManager {
 
     void returnBuffers(List<ByteBuffer> buffers);
 
+    public void dropAllBuffers();
+
 }

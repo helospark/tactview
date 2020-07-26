@@ -54,16 +54,40 @@ apt-get -y install \
 
 cd /tmp
 
+echo "Installing libaom for AV1 decoding"
+mkdir -p libaom && \
+  cd libaom && \
+  git clone https://aomedia.googlesource.com/aom && \
+  cmake ./aom -DBUILD_SHARED_LIBS=1 && \
+  make && \
+  sudo make install
+
+cd ..
+
+echo "Installing Nvidia headers"
+git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+cd nv-codec-headers
+make
+sudo make install
+
+cd ..
+
 echo "Downloading FFmpeg"
 
-wget http://ffmpeg.org/releases/ffmpeg-3.4.5.tar.gz
-tar -xvf ffmpeg-3.4.5.tar.gz
+# 4.3 onward has an issue with SSSE3, therefore cannot be used until that is fixed:
+# https://trac.ffmpeg.org/ticket/8747
+# fire.webm test fails with that and crashes when no scaling applied
+FFMPEG_VERSION=4.2.2
 
-cd ffmpeg-3.4.5
+wget http://ffmpeg.org/releases/ffmpeg-4.3.1.tar.gz
+tar -xvf "ffmpeg-$FFMPEG_VERSION.tar.gz"
+
+cd "ffmpeg-$FFMPEG_VERSION"
 
 echo "Configuring FFmpeg"
 
-./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libmysofa --enable-libspeex --enable-libxvid --enable-cuda --enable-cuvid --enable-nvenc --enable-avisynth
+./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom
+# Enabled debugging: --enable-debug --disable-stripping
 # --enable-libmfx - Intel HW accelerated encoding/decoding, could be useful
 # --enable-libopenjpeg - decode jpeg
 
