@@ -22,12 +22,12 @@ public class PlaybackController {
     public static final int CHANNELS = 2;
     public static final int FREQUENCY = 44100;
     public static final int BYTES = 2;
-    private TimelineManagerRenderService timelineManager;
-    private UiProjectRepository uiProjectRepository;
-    private ProjectRepository projectRepository;
-    private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
-    private JavaByteArrayConverter javaByteArrayConverter;
-    private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
+    private final TimelineManagerRenderService timelineManager;
+    private final UiProjectRepository uiProjectRepository;
+    private final ProjectRepository projectRepository;
+    private final ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
+    private final JavaByteArrayConverter javaByteArrayConverter;
+    private final UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
 
     public PlaybackController(TimelineManagerRenderService timelineManager, UiProjectRepository uiProjectRepository, ProjectRepository projectRepository,
             ByteBufferToJavaFxImageConverter byteBufferToImageConverter, JavaByteArrayConverter javaByteArrayConverter,

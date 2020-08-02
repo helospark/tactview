@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 
 public class AudioFrameResult {
-    private List<ByteBuffer> channels;
-    private int samples;
-    private int bytesPerSample;
+    private final List<ByteBuffer> channels;
+    private final int samples;
+    private final int bytesPerSample;
 
     public AudioFrameResult(List<ByteBuffer> channels, int samplesPerSecond, int bytesPerSample) {
         this.channels = channels;
@@ -58,6 +58,21 @@ public class AudioFrameResult {
             return channelBuffer.get(byteOffset);
         } else {
             return channelBuffer.getInt(byteOffset);
+        }
+    }
+
+    public float getNormalizedSampleAt(int channelIndex, int sampleIndex) {
+        int byteOffset = sampleIndex * bytesPerSample;
+        ByteBuffer channelBuffer = channels.get(channelIndex);
+        if (byteOffset + bytesPerSample > channelBuffer.capacity()) {
+            return 0;
+        }
+        if (bytesPerSample == 2) {
+            return channelBuffer.getShort(byteOffset) / ((float) Short.MAX_VALUE);
+        } else if (bytesPerSample == 1) {
+            return channelBuffer.get(byteOffset) / ((float) Byte.MAX_VALUE);
+        } else {
+            return channelBuffer.getInt(byteOffset) / ((float) Integer.MAX_VALUE);
         }
     }
 

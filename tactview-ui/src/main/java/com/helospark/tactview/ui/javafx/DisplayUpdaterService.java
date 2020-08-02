@@ -13,6 +13,8 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Value;
+import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -30,17 +32,19 @@ import javafx.scene.image.Image;
 
 @Component
 public class DisplayUpdaterService implements ScenePostProcessor {
-    private ExecutorService executorService = Executors.newFixedThreadPool(4);
-    private Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
     private volatile long currentPositionLastRendered = -1;
     private volatile boolean running = true;
 
-    private PlaybackController playbackController;
-    private UiProjectRepository uiProjectRepostiory;
-    private UiTimelineManager uiTimelineManager;
-    private GlobalDirtyClipManager globalDirtyClipManager;
-    private List<DisplayUpdatedListener> displayUpdateListeners;
-    private MessagingService messagingService;
+    private final PlaybackController playbackController;
+    private final UiProjectRepository uiProjectRepostiory;
+    private final UiTimelineManager uiTimelineManager;
+    private final GlobalDirtyClipManager globalDirtyClipManager;
+    private final List<DisplayUpdatedListener> displayUpdateListeners;
+    private final MessagingService messagingService;
+
+    private final boolean debugAudioUpdateEnabled;
 
     // cache current frame
     private Image cacheCurrentImage;
@@ -54,13 +58,15 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private Canvas canvas;
 
     public DisplayUpdaterService(PlaybackController playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
-            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService) {
+            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
+            @Value("${debug.display-audio-updater.enabled}") boolean debugAudioUpdateEnabled) {
         this.playbackController = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
         this.globalDirtyClipManager = globalDirtyClipManager;
         this.displayUpdateListeners = displayUpdateListeners;
         this.messagingService = messagingService;
+        this.debugAudioUpdateEnabled = debugAudioUpdateEnabled;
     }
 
     @PostConstruct
@@ -129,6 +135,11 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
             if (cachedKey == null) {
                 actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
+
+                if (debugAudioUpdateEnabled) { // just so it is easier to debug. Will need to think of other solution later
+                    AudioVideoFragment result = playbackController.getSingleAudioFrameAtPosition(currentPosition);
+                    result.free();
+                }
             } else {
                 try {
                     actualAudioVideoFragment = cachedKey.get();

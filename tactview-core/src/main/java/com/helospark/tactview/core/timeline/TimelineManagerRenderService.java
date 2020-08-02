@@ -30,12 +30,12 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 @Component
 public class TimelineManagerRenderService {
     ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    private FrameBufferMerger frameBufferMerger;
-    private AudioBufferMerger audioBufferMerger;
-    private ProjectRepository projectRepository;
-    private FrameExtender frameExtender;
-    private TimelineChannelsState timelineManager;
-    private TimelineManagerAccessor timelineManagerAccessor;
+    private final FrameBufferMerger frameBufferMerger;
+    private final AudioBufferMerger audioBufferMerger;
+    private final ProjectRepository projectRepository;
+    private final FrameExtender frameExtender;
+    private final TimelineChannelsState timelineManager;
+    private final TimelineManagerAccessor timelineManagerAccessor;
 
     @Slf4j
     private Logger logger;
@@ -144,7 +144,11 @@ public class TimelineManagerRenderService {
                         logger.error("Unable to get audio", e);
                         return null;
                     }).thenAccept(a -> {
-                        audioToFrames.put(audibleClip.getId(), a);
+                        if (a == null) {
+                            logger.error("Unable to get audio");
+                        } else {
+                            audioToFrames.put(audibleClip.getId(), a);
+                        }
                     }));
 
                 }
@@ -174,8 +178,8 @@ public class TimelineManagerRenderService {
     }
 
     static class TreeNode {
-        private TimelineClip clip;
-        private List<TreeNode> children = new ArrayList<>();
+        private final TimelineClip clip;
+        private final List<TreeNode> children = new ArrayList<>();
 
         public TreeNode(TimelineClip clip) {
             this.clip = clip;

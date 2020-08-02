@@ -4,27 +4,29 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
-import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
+import com.helospark.tactview.core.timeline.proceduralclip.audio.ProceduralAudioClipFactoryChainItem;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepositoryChain;
 
 @Component
-@Order(1)
-public class ProceduralClipTabFactory extends AbstractProceduralClipTabFactory<ProceduralClipFactoryChainItem> {
+@Order(4)
+public class ProceduralAudioClipTabFactory extends AbstractProceduralClipTabFactory<ProceduralAudioClipFactoryChainItem> {
 
-    public ProceduralClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepositoryChain localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
+    public ProceduralAudioClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepositoryChain localizedDetailRepository,
+            UiCommandInterpreterService commandInterpreter,
             TimelineManagerAccessor timelineManager) {
-        super("video clips", "clip-view",
+        super("audio clips",
+                "audio-clip-view",
                 lightDi,
                 iconFactory,
                 localizedDetailRepository,
                 commandInterpreter,
                 timelineManager,
-                ProceduralClipFactoryChainItem.class);
+                ProceduralAudioClipFactoryChainItem.class);
     }
 
     @Override
-    protected ProceduralFactoryInfo getInfoFor(ProceduralClipFactoryChainItem factory) {
+    protected ProceduralFactoryInfo getInfoFor(ProceduralAudioClipFactoryChainItem factory) {
         return new ProceduralFactoryInfo(factory.getProceduralClipId(), factory.getProceduralClipName());
     }
 }

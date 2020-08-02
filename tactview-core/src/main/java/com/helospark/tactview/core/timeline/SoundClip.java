@@ -12,10 +12,11 @@ import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.ffmpeg.audio.AVCodecAudioMediaDecoderDecorator;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 public class SoundClip extends AudibleTimelineClip {
-    private AudioMediaDecoder mediaDecoder;
-    private AudioMediaSource backingSource;
+    private final AudioMediaDecoder mediaDecoder;
+    private final AudioMediaSource backingSource;
 
     public SoundClip(AudioMediaMetadata mediaMetadata, AudioMediaDecoder mediaDecoder,
             AudioMediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
@@ -55,11 +56,6 @@ public class SoundClip extends AudibleTimelineClip {
         return result;
     }
 
-    @Override
-    public AudioMediaDecoder getMediaDecoder() {
-        return mediaDecoder;
-    }
-
     public AudioMediaSource getBackingSource() {
         return backingSource;
     }
@@ -72,6 +68,16 @@ public class SoundClip extends AudibleTimelineClip {
     @Override
     protected void generateSavedContentInternal(Map<String, Object> savedContent) {
         savedContent.put("backingFile", backingSource.getBackingFile());
+    }
+
+    @Override
+    protected void initializeValueProvider() {
+
+    }
+
+    @Override
+    protected List<ValueProviderDescriptor> getDescriptorsInternal() {
+        return List.of();
     }
 
 }

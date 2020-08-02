@@ -1,17 +1,14 @@
 package com.helospark.tactview.core.timeline;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
-import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.audioeffect.AudioEffectRequest;
 import com.helospark.tactview.core.timeline.audioeffect.StatelessAudioEffect;
-import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 public abstract class AudibleTimelineClip extends TimelineClip {
     protected AudioMediaMetadata mediaMetadata;
@@ -36,15 +33,6 @@ public abstract class AudibleTimelineClip extends TimelineClip {
         return false;
     }
 
-    @Override
-    protected void initializeValueProvider() {
-    }
-
-    @Override
-    protected List<ValueProviderDescriptor> getDescriptorsInternal() {
-        return new ArrayList<>();
-    }
-
     public AudioMediaMetadata getMediaMetadata() {
         return mediaMetadata;
     }
@@ -58,8 +46,6 @@ public abstract class AudibleTimelineClip extends TimelineClip {
     }
 
     protected abstract AudioFrameResult requestAudioFrameInternal(AudioRequest audioRequest);
-
-    public abstract AudioMediaDecoder getMediaDecoder();
 
     protected AudioFrameResult applyEffects(TimelinePosition relativePosition, AudioFrameResult frameResult, boolean applyEffects) {
         if (applyEffects) {
