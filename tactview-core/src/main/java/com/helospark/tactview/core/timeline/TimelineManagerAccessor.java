@@ -51,13 +51,13 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     private Logger logger;
 
     // stateless
-    private MessagingService messagingService;
-    private ClipFactoryChain clipFactoryChain;
-    private EffectFactoryChain effectFactoryChain;
-    private LinkClipRepository linkClipRepository;
-    private TimelineChannelsState timelineChannelsState;
-    private LongProcessRequestor longProcessRequestor;
-    private ProjectRepository projectRepository;
+    private final MessagingService messagingService;
+    private final ClipFactoryChain clipFactoryChain;
+    private final EffectFactoryChain effectFactoryChain;
+    private final LinkClipRepository linkClipRepository;
+    private final TimelineChannelsState timelineChannelsState;
+    private final LongProcessRequestor longProcessRequestor;
+    private final ProjectRepository projectRepository;
 
     public TimelineManagerAccessor(MessagingService messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
             TimelineChannelsState timelineChannelsState, LongProcessRequestor longProcessRequestor, ProjectRepository projectRepository) {
@@ -839,11 +839,17 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     }
 
     public List<String> findIntersectingClips(TimelinePosition currentPosition) {
+        return findIntersectingClipsData(currentPosition)
+                .stream()
+                .map(clip -> clip.getId())
+                .collect(Collectors.toList());
+    }
+
+    public List<TimelineClip> findIntersectingClipsData(TimelinePosition currentPosition) {
         return timelineChannelsState.channels
                 .stream()
                 .map(channel -> channel.getDataAt(currentPosition))
                 .flatMap(Optional::stream)
-                .map(clip -> clip.getId())
                 .collect(Collectors.toList());
     }
 

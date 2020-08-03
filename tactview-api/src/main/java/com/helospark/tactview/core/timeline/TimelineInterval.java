@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TimelineInterval {
-    private TimelinePosition startPosition;
-    private TimelineLength length;
+    private final TimelinePosition startPosition;
+    private final TimelineLength length;
     @JsonIgnore
-    private TimelinePosition endPosition;
+    private final TimelinePosition endPosition;
 
     public TimelineInterval(@JsonProperty("startPosition") TimelinePosition startPosition, @JsonProperty("length") TimelineLength length) {
         this.startPosition = startPosition;
@@ -43,6 +43,12 @@ public class TimelineInterval {
         return isLargerThanStart && isSmallerThanEnd;
     }
 
+    public boolean intersects(TimelineInterval intervalOfInterest) {
+        boolean notIntersecting = intervalOfInterest.getEndPosition().isLessThan(this.getStartPosition()) ||
+                intervalOfInterest.getStartPosition().isGreaterThan(this.getEndPosition());
+        return !notIntersecting;
+    }
+
     public TimelineInterval butWithStartPosition(TimelinePosition newStartPosition) {
         return new TimelineInterval(newStartPosition, this.endPosition);
     }
@@ -66,6 +72,37 @@ public class TimelineInterval {
 
     public TimelineInterval butMoveEndPostionTo(TimelinePosition position) {
         return new TimelineInterval(position.subtract(length), position);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((endPosition == null) ? 0 : endPosition.hashCode());
+        result = prime * result + ((startPosition == null) ? 0 : startPosition.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        TimelineInterval other = (TimelineInterval) obj;
+        if (endPosition == null) {
+            if (other.endPosition != null)
+                return false;
+        } else if (!endPosition.equals(other.endPosition))
+            return false;
+        if (startPosition == null) {
+            if (other.startPosition != null)
+                return false;
+        } else if (!startPosition.equals(other.startPosition))
+            return false;
+        return true;
     }
 
 }

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TimelinePosition implements SecondsAware, Comparable<TimelinePosition> {
     private static final TimelinePosition ZERO_POSITION = new TimelinePosition(BigDecimal.ZERO);
-    private BigDecimal seconds;
+    private final BigDecimal seconds;
 
     public TimelinePosition(@JsonProperty("seconds") BigDecimal seconds) {
         this.seconds = seconds;
@@ -31,6 +31,10 @@ public class TimelinePosition implements SecondsAware, Comparable<TimelinePositi
 
     public boolean isLessThan(TimelinePosition other) {
         return this.getSeconds().compareTo(other.getSeconds()) < 0;
+    }
+
+    public boolean isLessThanOrEqualTo(TimelinePosition other) {
+        return this.getSeconds().compareTo(other.getSeconds()) <= 0;
     }
 
     public TimelinePosition from(TimelinePosition startPosition) {

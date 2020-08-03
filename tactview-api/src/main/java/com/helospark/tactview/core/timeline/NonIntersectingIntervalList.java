@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class NonIntersectingIntervalList<T extends IntervalAware> implements Iterable<T> {
-    private List<T> intervalAwares = new ArrayList<>();
+    private final List<T> intervalAwares = new ArrayList<>();
 
     public boolean canAddInterval(TimelineInterval interval) {
         return computeIntersectingIntervals(interval).isEmpty();
@@ -109,6 +109,11 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
 
     public T get(int index) {
         return intervalAwares.get(index);
+    }
+
+    @Override
+    public String toString() {
+        return "NonIntersectingIntervalList [intervalAwares=" + intervalAwares + "]";
     }
 
 }

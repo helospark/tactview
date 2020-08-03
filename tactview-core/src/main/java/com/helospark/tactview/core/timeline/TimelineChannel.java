@@ -24,7 +24,7 @@ public class TimelineChannel {
     private boolean disabled = false;
     private boolean mute = false;
 
-    private Object fullChannelLock = new Object();
+    private final Object fullChannelLock = new Object();
 
     public TimelineChannel(JsonNode savedChannel) {
         this.id = savedChannel.get("id").asText();
@@ -210,6 +210,10 @@ public class TimelineChannel {
         return clips.stream()
                 .map(clip -> clip.getId())
                 .collect(Collectors.toList());
+    }
+
+    public NonIntersectingIntervalList<TimelineClip> getAllClips() {
+        return clips;
     }
 
     public TimelinePosition findPositionWhereIntervalWithLengthCanBeInserted(TimelineLength length) {

@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -32,9 +34,13 @@ import com.helospark.tactview.core.render.ffmpeg.NativeMap;
 import com.helospark.tactview.core.render.ffmpeg.NativePair;
 import com.helospark.tactview.core.render.ffmpeg.QueryCodecRequest;
 import com.helospark.tactview.core.render.ffmpeg.RenderFFMpegFrame;
+import com.helospark.tactview.core.render.helper.IntervalThreadingPartitioner;
+import com.helospark.tactview.core.render.helper.ThreadingAccessorResult;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
+import com.helospark.tactview.core.timeline.MergeOnIntersectingIntervalList;
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -45,19 +51,22 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedRenderService extends AbstractRenderService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedRenderService.class);
     private static final Set<String> COMMON_AUDIO_CONTAINERS = Set.of("mp3", "wav", "oga");
     private static final Set<String> COMMON_VIDEO_CONTAINERS = Set.of("mp4", "ogg", "flv", "webm", "avi", "gif", "wmv");
     private static final String DEFAULT_VALUE = "default";
     private static final String NONE_VALUE = "none";
     private static final int MAX_NUMBER_OF_CODECS = 400;
-    private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
-    private TimelineManagerAccessor timelineManagerAccessor;
+    private final FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
+    private final TimelineManagerAccessor timelineManagerAccessor;
+    private final IntervalThreadingPartitioner intervalThreadingPartitioner;
 
     public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService,
-            ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository) {
+            ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository, IntervalThreadingPartitioner intervalThreadingPartitioner) {
         super(timelineManager, messagingService, scaleService, projectRepository);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
         this.timelineManagerAccessor = timelineManagerAccessor;
+        this.intervalThreadingPartitioner = intervalThreadingPartitioner;
     }
 
     @Override
@@ -150,33 +159,84 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
                 @Override
                 public void run() {
+                    ThreadingAccessorResult partitionResult = intervalThreadingPartitioner
+                            .partitionBasedOnRenderThreadability(new TimelineInterval(renderRequest.getStartPosition(), renderRequest.getEndPosition()));
+                    MergeOnIntersectingIntervalList partitionList = partitionResult.getSingleThreadedIntervals();
+
+                    LOGGER.debug("Partitioned single threaded intervals " + partitionList);
+
+                    partitionResult.getSingleTheadRenderables()
+                            .stream()
+                            .forEach(a -> a.onStartRender());
+
                     TimelinePosition currentPosition = renderRequest.getStartPosition();
                     try {
+                        int partitionIndex = 0;
                         while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
-                            TimelinePosition position = currentPosition; // thanks Java...
+                            TimelineInterval nextIntersection = partitionList.size() > partitionIndex ? partitionList.get(partitionIndex) : TimelineInterval.ofPoint(renderRequest.getEndPosition());
 
-                            CompletableFuture<AudioVideoFragment> job = CompletableFuture
-                                    .supplyAsync(() -> {
-                                        RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
-                                                .withBytesPerSample(Optional.of(bytesPerSample))
-                                                .withCurrentPosition(position)
-                                                .withNeedsSound(needsAudio)
-                                                .withNeedsVideo(needsVideo)
-                                                .withNumberOfChannels(Optional.of(numberOfChannels))
-                                                .withRenderRequest(renderRequest)
-                                                .withSampleRate(Optional.of(audioSampleRate))
-                                                .withExpectedHeight(initNativeRequest.renderHeight)
-                                                .withExpectedWidth(initNativeRequest.renderWidth)
-                                                .build();
-                                        return queryFrameAt(superRequest);
-                                    }, executorService);
-                            queue.put(job);
-                            currentPosition = currentPosition.add(renderRequest.getStep());
+                            // TODO: parallel and single threaded part is almost entirely a copy-pase of each other, fix it
+                            // parallel render
+                            while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())
+                                    && currentPosition.isLessThan(nextIntersection.getStartPosition())
+                                    && !renderRequest.getIsCancelledSupplier().get()) {
+
+                                TimelinePosition position = currentPosition; // thanks Java...
+                                CompletableFuture<AudioVideoFragment> job = CompletableFuture
+                                        .supplyAsync(() -> {
+                                            RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
+                                                    .withBytesPerSample(Optional.of(bytesPerSample))
+                                                    .withCurrentPosition(position)
+                                                    .withNeedsSound(needsAudio)
+                                                    .withNeedsVideo(needsVideo)
+                                                    .withNumberOfChannels(Optional.of(numberOfChannels))
+                                                    .withRenderRequest(renderRequest)
+                                                    .withSampleRate(Optional.of(audioSampleRate))
+                                                    .withExpectedHeight(initNativeRequest.renderHeight)
+                                                    .withExpectedWidth(initNativeRequest.renderWidth)
+                                                    .build();
+                                            return queryFrameAt(superRequest);
+                                        }, executorService);
+                                queue.put(job);
+                                currentPosition = currentPosition.add(renderRequest.getStep());
+                            }
+
+                            // single threaded render interval
+                            while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())
+                                    && currentPosition.isLessThan(nextIntersection.getEndPosition())
+                                    && !renderRequest.getIsCancelledSupplier().get()) {
+
+                                RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
+                                        .withBytesPerSample(Optional.of(bytesPerSample))
+                                        .withCurrentPosition(currentPosition)
+                                        .withNeedsSound(needsAudio)
+                                        .withNeedsVideo(needsVideo)
+                                        .withNumberOfChannels(Optional.of(numberOfChannels))
+                                        .withRenderRequest(renderRequest)
+                                        .withSampleRate(Optional.of(audioSampleRate))
+                                        .withExpectedHeight(initNativeRequest.renderHeight)
+                                        .withExpectedWidth(initNativeRequest.renderWidth)
+                                        .build();
+                                AudioVideoFragment frame = queryFrameAt(superRequest);
+                                queue.put(CompletableFuture.completedFuture(frame));
+                                currentPosition = currentPosition.add(renderRequest.getStep());
+                            }
+
+                            ++partitionIndex;
                         }
                     } catch (Exception e) {
                         isFinished = true;
                         throw new RuntimeException(e);
                     }
+
+                    try {
+                        partitionResult.getSingleTheadRenderables()
+                                .stream()
+                                .forEach(a -> a.onEndRender());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                     isFinished = true;
                 }
             };
