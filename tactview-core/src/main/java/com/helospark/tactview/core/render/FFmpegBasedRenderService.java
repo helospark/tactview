@@ -262,9 +262,6 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     nativeRequest.encoderIndex = encoderIndex;
                     nativeRequest.startFrameIndex = frameIndex;
 
-                    System.out.println("Rendering frame at " + frameIndex);
-                    //DebugImageRenderer.render(frame.getVideoResult(), "frame_at_" + frameIndex);
-
                     int encodeResult = ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
                     if (encodeResult < 0) {
                         throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
@@ -494,16 +491,6 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         EncoderExtraData extra = queryCodecExtraData(request.fileName, codec);
         if (!pixelFormat.getValidValues().equals(extra.pixelFormats)) {
             optionsToUpdate.put("videoPixelFormat", pixelFormat.butWithUpdatedValidValues(extra.pixelFormats));
-        }
-        String extension = FilenameUtils.getExtension(request.fileName);
-        OptionProvider<String> videoCodecProvider = (OptionProvider<String>) request.options.get("videocodec");
-        if (!videoCodecProvider.getValue().equals(NONE_VALUE) && (isAudioContainerForExtension(extension))) {
-            videoCodecProvider.setValue(NONE_VALUE);
-            optionsToUpdate.put("videocodec", videoCodecProvider);
-        }
-        if (videoCodecProvider.getValue().equals(NONE_VALUE) && isVideoContainer(extension)) {
-            videoCodecProvider.setValue(DEFAULT_VALUE);
-            optionsToUpdate.put("videocodec", videoCodecProvider);
         }
 
         return optionsToUpdate;

@@ -165,7 +165,7 @@ public class RenderDialog {
         addMetadataLine.setOnAction(e -> {
             metadataVBox.getChildren().add(createMetadataBox("", "", a -> metadataVBox.getChildren().remove(a)));
         });
-        metadataVBox.getChildren().add(createMetadataBox("Description", "Edited with TactView", a -> metadataVBox.getChildren().remove(a)));
+        metadataVBox.getChildren().add(createMetadataBox("Description", "Edited with Tactview", a -> metadataVBox.getChildren().remove(a)));
 
         addGridElementForFullLine("Metadata", linePosition += 2, gridPane, metadataPane);
 
@@ -429,7 +429,7 @@ public class RenderDialog {
     private void updateProvidersAfterUpdate() {
         UpdateValueProvidersRequest request = UpdateValueProvidersRequest.builder()
                 .withFileName(fileNameTextField.getText())
-                .withOptions(optionProviders)
+                .withOptions(cloneProviders(optionProviders))
                 .build();
         Map<String, OptionProvider<?>> updatedValues = previousRenderService.updateValueProviders(request);
 
@@ -437,6 +437,14 @@ public class RenderDialog {
             this.optionProviders = updatedValues;
             updateRenderOptions(rendererOptions);
         }
+    }
+
+    private Map<String, OptionProvider<?>> cloneProviders(Map<String, OptionProvider<?>> optionProviders2) {
+        Map<String, OptionProvider<?>> result = new LinkedHashMap<>();
+        for (var entry : optionProviders2.entrySet()) {
+            result.put(entry.getKey(), entry.getValue().deepClone());
+        }
+        return result;
     }
 
     public ComboBox<ComboBoxElement> createComboBox(List<String> values, int selectedIndex) {

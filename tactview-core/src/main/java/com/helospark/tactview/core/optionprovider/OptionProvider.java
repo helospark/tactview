@@ -2,6 +2,7 @@ package com.helospark.tactview.core.optionprovider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import javax.annotation.Generated;
@@ -10,15 +11,16 @@ import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 
 public class OptionProvider<T> {
-    private String title;
+    private final String title;
     private Class<T> type;
-    private Function<String, T> valueConverter;
-    private Function<T, List<String>> validationErrorProvider;
-    private Function<RenderRequest, Boolean> shouldShow;
-    private Function<RenderRequest, Boolean> isEnabled;
+    private final Function<String, T> valueConverter;
+    private final Function<T, List<String>> validationErrorProvider;
+    private final Function<RenderRequest, Boolean> shouldShow;
+    private final Function<RenderRequest, Boolean> isEnabled;
     private List<ValueListElement> validValues;
     private boolean shouldTriggerUpdate;
     private T value;
+    private final T defaultValue;
 
     @Generated("SparkTools")
     private OptionProvider(Builder<T> builder) {
@@ -29,6 +31,7 @@ public class OptionProvider<T> {
         this.isEnabled = builder.isEnabled != null ? builder.isEnabled : a -> true;
         this.validValues = builder.validValues != null ? builder.validValues : List.of();
         this.value = builder.defaultValue;
+        this.defaultValue = builder.defaultValue;
     }
 
     public List<ValueListElement> getValidValues() {
@@ -69,16 +72,21 @@ public class OptionProvider<T> {
 
     @Generated("SparkTools")
     public static <T> Builder<T> builder(Class<T> type) {
-        return new Builder<T>(type);
+        return new Builder<>(type);
+    }
+
+    @Generated("SparkTools")
+    public static <T> Builder<T> builder(OptionProvider<?> builder) {
+        return new Builder<>(builder);
     }
 
     public static Builder<Integer> integerOptionBuilder() {
-        return new Builder<Integer>(Integer.class)
+        return new Builder<>(Integer.class)
                 .withValueConverter(Integer::valueOf);
     }
 
     public static Builder<String> stringOptionBuilder() {
-        return new Builder<String>(String.class)
+        return new Builder<>(String.class)
                 .withValueConverter(String::valueOf);
     }
 
@@ -112,79 +120,29 @@ public class OptionProvider<T> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((isEnabled == null) ? 0 : isEnabled.hashCode());
-        result = prime * result + ((shouldShow == null) ? 0 : shouldShow.hashCode());
-        result = prime * result + (shouldTriggerUpdate ? 1231 : 1237);
-        result = prime * result + ((title == null) ? 0 : title.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((validValues == null) ? 0 : validValues.hashCode());
-        result = prime * result + ((validationErrorProvider == null) ? 0 : validationErrorProvider.hashCode());
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
-        result = prime * result + ((valueConverter == null) ? 0 : valueConverter.hashCode());
-        return result;
+    public String toString() {
+        return "OptionProvider [title=" + title + ", type=" + type + ", shouldShow=" + shouldShow + ", isEnabled=" + isEnabled + ", validValues=" + validValues + ", value=" + value + "]";
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
+    public boolean equals(final Object other) {
+        if (!(other instanceof OptionProvider)) {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        OptionProvider other = (OptionProvider) obj;
-        if (isEnabled == null) {
-            if (other.isEnabled != null)
-                return false;
-        } else if (!isEnabled.equals(other.isEnabled))
-            return false;
-        if (shouldShow == null) {
-            if (other.shouldShow != null)
-                return false;
-        } else if (!shouldShow.equals(other.shouldShow))
-            return false;
-        if (shouldTriggerUpdate != other.shouldTriggerUpdate)
-            return false;
-        if (title == null) {
-            if (other.title != null)
-                return false;
-        } else if (!title.equals(other.title))
-            return false;
-        if (type == null) {
-            if (other.type != null)
-                return false;
-        } else if (!type.equals(other.type))
-            return false;
-        if (validValues == null) {
-            if (other.validValues != null)
-                return false;
-        } else if (!validValues.equals(other.validValues))
-            return false;
-        if (validationErrorProvider == null) {
-            if (other.validationErrorProvider != null)
-                return false;
-        } else if (!validationErrorProvider.equals(other.validationErrorProvider))
-            return false;
-        if (value == null) {
-            if (other.value != null)
-                return false;
-        } else if (!value.equals(other.value))
-            return false;
-        if (valueConverter == null) {
-            if (other.valueConverter != null)
-                return false;
-        } else if (!valueConverter.equals(other.valueConverter))
-            return false;
-        return true;
+        }
+        OptionProvider castOther = (OptionProvider) other;
+        return Objects.equals(title, castOther.title) && Objects.equals(type, castOther.type) && Objects.equals(shouldShow, castOther.shouldShow) && Objects.equals(isEnabled, castOther.isEnabled)
+                && Objects.equals(validValues, castOther.validValues) && Objects.equals(shouldTriggerUpdate, castOther.shouldTriggerUpdate) && Objects.equals(value, castOther.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, type, shouldShow, isEnabled, validValues, shouldTriggerUpdate, value);
     }
 
     @Generated("SparkTools")
     public static final class Builder<T> {
         private String title;
-        private Class<T> type;
+        private final Class<T> type;
         private Function<String, T> valueConverter;
         private Function<T, List<String>> validationErrorProvider;
         private Function<RenderRequest, Boolean> shouldShow;
@@ -192,9 +150,23 @@ public class OptionProvider<T> {
         private List<ValueListElement> validValues;
         private boolean shouldTriggerUpdate;
         private T defaultValue;
+        private T previousValue = null;
 
         private Builder(Class<T> type) {
             this.type = type;
+        }
+
+        private Builder(OptionProvider optionProvider) {
+            this.title = optionProvider.title;
+            this.type = optionProvider.type;
+            this.valueConverter = optionProvider.valueConverter;
+            this.validationErrorProvider = optionProvider.validationErrorProvider;
+            this.shouldShow = optionProvider.shouldShow;
+            this.isEnabled = optionProvider.isEnabled;
+            this.validValues = optionProvider.validValues;
+            this.shouldTriggerUpdate = optionProvider.shouldTriggerUpdate;
+            this.defaultValue = (T) optionProvider.defaultValue;
+            this.previousValue = (T) optionProvider.value;
         }
 
         public Builder<T> withTitle(String title) {
@@ -238,9 +210,17 @@ public class OptionProvider<T> {
         }
 
         public OptionProvider<T> build() {
-            return new OptionProvider<>(this);
+            OptionProvider<T> result = new OptionProvider<>(this);
+            if (previousValue != null) {
+                result.value = previousValue;
+            }
+            return result;
         }
 
+    }
+
+    public OptionProvider<?> deepClone() {
+        return OptionProvider.builder(this).build();
     }
 
 }
