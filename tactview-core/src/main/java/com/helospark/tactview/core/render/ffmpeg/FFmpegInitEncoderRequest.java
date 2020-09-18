@@ -11,7 +11,7 @@ public class FFmpegInitEncoderRequest extends Structure implements Structure.ByR
     public int actualHeight;
     public int renderWidth;
     public int renderHeight;
-    public int fps;
+    public double fps;
 
     public int audioChannels;
     public int bytesPerSample;

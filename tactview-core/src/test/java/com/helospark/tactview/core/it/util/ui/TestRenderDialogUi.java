@@ -125,7 +125,7 @@ public class TestRenderDialogUi {
                 .withWidth(width)
                 .withHeight(height)
                 .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
-                .withFps(fps.intValue())
+                .withFps(fps)
                 .withStartPosition(startPosition)
                 .withEndPosition(endPosition)
                 .withFileName(fileName)

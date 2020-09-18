@@ -60,7 +60,7 @@ public class NovaProceduralClip extends ProceduralVisualClip {
         double radius = radiusProvider.getValueAt(relativePosition) * request.getExpectedWidth();
         Color color = colorProvider.getValueAt(relativePosition).rgbToHsl();
         double centerX = centerXProvider.getValueAt(relativePosition);
-        double centerY = centerXProvider.getValueAt(relativePosition);
+        double centerY = centerYProvider.getValueAt(relativePosition);
 
         Random random = new Random(seed);
         double[] spoke = new double[nspoke];

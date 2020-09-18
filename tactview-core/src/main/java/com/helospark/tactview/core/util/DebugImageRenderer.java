@@ -31,8 +31,26 @@ public class DebugImageRenderer {
         }
     }
 
+    @Deprecated
+    public static void render(ByteBuffer buffer, int width, int height, String filename) {
+        try {
+            ByteBufferToImageConverter converter = new ByteBufferToImageConverterImpl(new IndependentPixelOperationImpl());
+            BufferedImage image = converter.byteBufferToBufferedImageWithAlpha(buffer, width, height);
+            ImageIO.write(image, "png", new File("/tmp/" + filename));
+            System.out.println(filename);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Deprecated
     public static void render(ReadOnlyClipImage image) {
         render(image.getBuffer(), image.getWidth(), image.getHeight());
+    }
+
+    @Deprecated
+    public static void render(ReadOnlyClipImage image, String filename) {
+        render(image.getBuffer(), image.getWidth(), image.getHeight(), filename);
     }
 
     public static void render(BufferedImage image) {

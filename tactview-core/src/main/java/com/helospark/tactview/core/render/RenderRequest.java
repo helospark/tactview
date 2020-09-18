@@ -13,17 +13,17 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class RenderRequest {
     private final String renderId = UUID.randomUUID().toString();
-    private TimelinePosition startPosition;
-    private TimelinePosition endPosition;
-    private BigDecimal step;
-    private int fps;
-    private int width;
-    private int height;
-    private BigDecimal upscale;
-    private String fileName;
-    private Map<String, OptionProvider<?>> options;
-    private Supplier<Boolean> isCancelledSupplier;
-    private Map<String, String> metadata;
+    private final TimelinePosition startPosition;
+    private final TimelinePosition endPosition;
+    private final BigDecimal step;
+    private final BigDecimal fps;
+    private final int width;
+    private final int height;
+    private final BigDecimal upscale;
+    private final String fileName;
+    private final Map<String, OptionProvider<?>> options;
+    private final Supplier<Boolean> isCancelledSupplier;
+    private final Map<String, String> metadata;
 
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
@@ -68,7 +68,7 @@ public class RenderRequest {
         return fileName;
     }
 
-    public int getFps() {
+    public BigDecimal getFps() {
         return fps;
     }
 
@@ -98,7 +98,7 @@ public class RenderRequest {
         private TimelinePosition startPosition;
         private TimelinePosition endPosition;
         private BigDecimal step;
-        private int fps;
+        private BigDecimal fps;
         private int width;
         private int height;
         private BigDecimal upscale;
@@ -125,7 +125,7 @@ public class RenderRequest {
             return this;
         }
 
-        public Builder withFps(int fps) {
+        public Builder withFps(BigDecimal fps) {
             this.fps = fps;
             return this;
         }

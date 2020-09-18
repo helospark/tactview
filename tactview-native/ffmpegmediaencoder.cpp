@@ -42,7 +42,7 @@ extern "C" {
         int actualHeight;
         int renderWidth;
         int renderHeight;
-        int fps;
+        double fps;
 
         int audioChannels;
         int bytesPerSample;
@@ -128,6 +128,7 @@ extern "C" {
     {
         /* rescale output packet timestamp values from codec to stream timebase */
         av_packet_rescale_ts(pkt, *time_base, st->time_base);
+
         pkt->stream_index = st->index;
 
         return av_interleaved_write_frame(fmt_ctx, pkt);
@@ -174,15 +175,16 @@ extern "C" {
          * of which frame timestamps are represented. For fixed-fps content,
          * timebase should be 1/framerate and timestamp increments should be
          * identical to 1. */
-        ost->st->time_base.num = 1;
-			  ost->st->time_base.den = request->fps;
+        ost->st->time_base = av_d2q(1.0 / request->fps, 10000000);
+
+        std::cout << "Encoder FPS: " << ost->st->time_base.num << " / " << ost->st->time_base.den << std::endl;
+
         c->time_base       = ost->st->time_base;
 
         c->pix_fmt       = videoPixelFormat;
-        if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
-           /* just for testing, we also add B frames */
-           c->max_b_frames = 2;
-        }
+        
+        c->max_b_frames = 0; // TODO: make configurable
+        
         if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
            /* Needed to avoid using macroblocks in which some coeffs overflow.
             * This does not happen with normal video, it just happens here as
@@ -503,7 +505,6 @@ extern "C" {
           std::cout << "Set preset " << request->videoPreset << std::endl;
         }
 
-        /* open the codec */
         ret = avcodec_open2(c, codec, &opt);
         av_dict_free(&opt);
         if (ret < 0) {
@@ -565,9 +566,10 @@ extern "C" {
         AVPacket pkt = { 0 };
 
         c = ost->enc;
-        std::cout << "Writing video frame " << ((double)ost->next_pts * c->time_base.num / c->time_base.den) << std::endl;
 
-
+        if (frame != NULL) {
+            std::cout << "[DEBUG] Writing video frame " << ((double)frame->pts * c->time_base.num / c->time_base.den) << std::endl;
+        }
         av_init_packet(&pkt);
 
         /* encode the image */
@@ -613,7 +615,7 @@ extern "C" {
     /* media file output */
 
     EXPORTED int initEncoder(FFmpegInitEncoderRequest* request) {
-        std::cout << "[INFO] Initializing encoder " << request->actualWidth << " " << request->actualHeight << std::endl;
+        std::cout << "[INFO] Initializing encoder " << request->actualWidth << " " << request->actualHeight << " " << request->fps << std::endl;
         av_register_all();
         AVFormatContext *oc;
         AVOutputFormat *fmt;
@@ -691,6 +693,7 @@ extern "C" {
          * video codecs and allocate the necessary encode buffers. */
         if (have_video) {
             ret = open_video(oc, video_codec, video_st, opt, request, videoPixelFormat);
+
             if (ret < 0) {
                 return ret;
             }
@@ -746,19 +749,22 @@ extern "C" {
     }
 
     EXPORTED void clearEncoder(FFmpegClearEncoderRequest* request) {
-        //av_interleaved_write_frame(renderContext.oc, NULL);
-        /* Write the trailer, if any. The trailer must be written before you
-         * close the CodecContexts open when you wrote the header; otherwise
-         * av_write_trailer() may try to use memory that was freed on
-         * av_codec_close(). */
+        std::cout << "Closing encoder stream" << std::endl;
 
-        /*
-        bool proceeding=true;
-        while(proceeding) {
-           // DELAYED frames
-           std::cout << "Writing delayed frames" << std::endl;
-           proceeding = write_video_frame(renderContext.oc, renderContext.video_st, NULL);
-        }*/
+        int delayedFrames = 0;
+        int responseCode = 0;
+        while (responseCode == 0 && delayedFrames < 200) {
+           std::cout << "Writing delayed video frames " << delayedFrames << std::endl;
+           responseCode = write_video_frame(renderContext.oc, renderContext.video_st, NULL);
+           ++delayedFrames;
+        }
+        delayedFrames = 0;
+        responseCode = 0;
+        while (responseCode == 0 && delayedFrames < 200) {
+           std::cout << "Writing delayed audio frames " << delayedFrames << std::endl;
+           responseCode = write_audio_frame(renderContext.oc, renderContext.video_st, NULL);
+           ++delayedFrames;
+        }
         av_write_trailer(renderContext.oc);
 
         /* Close each codec. */

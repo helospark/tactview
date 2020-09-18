@@ -105,7 +105,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
-        initNativeRequest.fps = renderRequest.getFps();
+        initNativeRequest.fps = renderRequest.getFps().doubleValue();
         int width = renderRequest.getWidth();
         if (width % 2 == 1) {
             width++;
@@ -261,6 +261,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     }
                     nativeRequest.encoderIndex = encoderIndex;
                     nativeRequest.startFrameIndex = frameIndex;
+
+                    System.out.println("Rendering frame at " + frameIndex);
+                    //DebugImageRenderer.render(frame.getVideoResult(), "frame_at_" + frameIndex);
 
                     int encodeResult = ffmpegBasedMediaEncoder.encodeFrames(nativeRequest);
                     if (encodeResult < 0) {
