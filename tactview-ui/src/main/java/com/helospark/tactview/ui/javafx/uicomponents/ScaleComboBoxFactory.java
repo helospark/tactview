@@ -6,13 +6,14 @@ import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
+import javafx.application.Platform;
 import javafx.scene.control.ComboBox;
 
 @Component
 public class ScaleComboBoxFactory {
-    private UiTimelineManager uiTimelineManager;
-    private ProjectRepository projectRepository;
-    private UiProjectRepository uiProjectRepository;
+    private final UiTimelineManager uiTimelineManager;
+    private final ProjectRepository projectRepository;
+    private final UiProjectRepository uiProjectRepository;
 
     public ScaleComboBoxFactory(UiTimelineManager uiTimelineManager, ProjectRepository projectRepository, UiProjectRepository uiProjectRepository, UiMessagingService messagingService) {
         this.uiTimelineManager = uiTimelineManager;
@@ -21,7 +22,7 @@ public class ScaleComboBoxFactory {
     }
 
     public ComboBox<String> create() {
-        ComboBox<String> sizeDropDown = new ComboBox<String>();
+        ComboBox<String> sizeDropDown = new ComboBox<>();
         sizeDropDown.getStyleClass().add("size-drop-down");
         sizeDropDown.getItems().add("10%");
         sizeDropDown.getItems().add("25%");
@@ -66,11 +67,12 @@ public class ScaleComboBoxFactory {
             previewWidth = (int) (width * scale);
             previewHeight = (int) (height * scale);
         }
-        uiProjectRepository.setPreviewWidth(previewWidth);
-        uiProjectRepository.setPreviewHeight(previewHeight);
-        uiProjectRepository.setScaleFactor(scale);
-
-        uiTimelineManager.refresh();
+        Platform.runLater(() -> {
+            uiProjectRepository.setPreviewWidth(previewWidth);
+            uiProjectRepository.setPreviewHeight(previewHeight);
+            uiProjectRepository.setScaleFactor(scale);
+            uiTimelineManager.refresh();
+        });
     }
 
 }

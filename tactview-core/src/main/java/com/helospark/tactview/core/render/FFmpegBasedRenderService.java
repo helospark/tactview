@@ -446,7 +446,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 .withShouldShow(a -> a.getFileName().endsWith(".mp4"))
                 .build();
 
-        int threads = Runtime.getRuntime().availableProcessors() - 1;
+        int threads = Runtime.getRuntime().availableProcessors() - 2;
         if (threads < 1) {
             threads = 1;
         }

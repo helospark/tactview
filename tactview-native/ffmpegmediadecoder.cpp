@@ -58,7 +58,6 @@ extern "C" {
 
     void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
     {
-        //std::cout << "Copying data " << width << " " << height << std::endl;
         for(int y=0; y<height; y++)
         {
             for (int i = 0; i < width; ++i)
@@ -246,6 +245,32 @@ extern "C" {
         }
     }
 
+    // Dropin replacement for legacy avcodec_decode_video2
+    // From here: https://blogs.gentoo.org/lu_zero/2016/03/29/new-avcodec-api/
+    int decode_video_frame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt)
+    {
+        int ret;
+
+        *got_frame = 0;
+
+        if (pkt) {
+            ret = avcodec_send_packet(avctx, pkt);
+            // In particular, we don't expect AVERROR(EAGAIN), because we read all
+            // decoded frames with avcodec_receive_frame() until done.
+            if (ret < 0)
+                return ret == AVERROR_EOF ? 0 : ret;
+        }
+
+        ret = avcodec_receive_frame(avctx, frame);
+        if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
+            return ret;
+        if (ret >= 0)
+            *got_frame = 1;
+
+        return 0;
+    }
+
+
     void fillQueue(DecodeStructure* element)
     {
         AVFormatContext   *pFormatCtx = element->pFormatCtx;
@@ -261,7 +286,7 @@ extern "C" {
         {
             if(packet.stream_index==videoStream)
             {
-                int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+                int decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
 
                 if(frameFinished)
                 {
@@ -271,6 +296,16 @@ extern "C" {
                               pFrame->linesize, 0, pCodecCtx->height,
                               pFrameRGB->data, pFrameRGB->linesize);
 
+                    /** // debug for https://trello.com/c/otpORnEy/445-black-bar-on-the-right-if-width-is-not-divisable-by-8-ex-854px-width-there-is-6px-black-bar
+                    if (pCodecCtx->width >= 850) {
+                        for (int id = 850; id < 854; ++id) {
+                            std::cout << "Unexpected color: " << (int)(*(pFrame->data[0] + id + 0)) << " " << 
+                                (int)(*(pFrame->data[0] + id + 1)) << " " << 
+                                (int)(*(pFrame->data[0] + id + 2)) << " " << 
+                                (int)(*(pFrame->data[0] + id + 3)) << " " << std::endl;
+                        }
+                    } */
+
                     DecodedPackage decodedPackage;
                     decodedPackage.pts = packet.pts;
                     decodedPackage.dts = packet.dts;
@@ -278,9 +313,6 @@ extern "C" {
                     decodedPackage.pFrame = pFrameRGB;
 
                     element->decodedPackages.insert(decodedPackage);
-
-                    //copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
-                    //++i;
                 }
                 element->lastPts = packet.pts;
                // std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
@@ -338,10 +370,6 @@ extern "C" {
         minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
         int64_t seek_distance = seek_target - decodedMinPts(decodeStructure);
 
-        //std::cout << "Seek distance " << seek_distance << std::endl;
-        //std::cout << "MIN TIME = " << minimumTimeRequiredToSeek << std::endl;
-        //std::cout << "Want to read " << request->startMicroseconds << " current packet pts " << element.lastPts << std::endl;
-
         std::cout << "Seeking info " << request->startMicroseconds << " current_position=" << decodeStructure->lastPts << " expected=" << seek_target << " distance=" << seek_distance << std::endl;
         int FRAME_TIME = 1; // rounding imprecision???
         if (seek_distance > minimumTimeRequiredToSeek || seek_distance < -FRAME_TIME)
@@ -362,7 +390,7 @@ extern "C" {
             {
                 if(packet.stream_index==videoStream)
                 {
-                    int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+                    int decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
 
                     if(frameFinished)
                     {
@@ -397,7 +425,6 @@ extern "C" {
                 }
                 else
                 {
-                    //std::cout << "Reading from queue " << i << " " << element.dts << " " << element.pts << " " << element.timestamp << std::endl;
                     copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
                     ++i;
                 }
