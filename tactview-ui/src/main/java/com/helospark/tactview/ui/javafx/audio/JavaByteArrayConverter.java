@@ -6,18 +6,24 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 @Configuration
 public class JavaByteArrayConverter {
 
-    public byte[] convert(AudioFrameResult audioFrameResult, int bytes, int samples, int channels) {
-        double length = audioFrameResult.getLength().getSeconds().doubleValue();
-        int numberOfSamplesPerChannel = (int) Math.ceil(bytes * samples * length);
+    /**
+     * Converts input into format that can be used to stream audio via Java Sound API. Bytes and bytes/samples is not touched
+     * @param audioFrameResult input
+     * @param channels number of channels
+     * @return converted sound
+     */
+    public byte[] convert(AudioFrameResult audioFrameResult, int channels) {
+        int bytes = audioFrameResult.getBytesPerSample();
+        int numberOfSamplesPerChannel = audioFrameResult.getNumberSamples();
         int numberOfChannels = channels;
         int originalNumberOfChannels = audioFrameResult.getChannels().size();
-        int fullLength = numberOfChannels * numberOfSamplesPerChannel;
+        int fullLength = numberOfChannels * numberOfSamplesPerChannel * bytes;
         byte[] result = new byte[fullLength];
 
-        for (int sample = 0; sample < (int) Math.floor(samples * length); ++sample) {
+        for (int sample = 0; sample < numberOfSamplesPerChannel; ++sample) {
             for (int channel = 0; channel < numberOfChannels; ++channel) {
                 if (channel < originalNumberOfChannels) {
-                    int rescaledSample = audioFrameResult.getRescaledSample(channel, bytes, samples, sample);
+                    int rescaledSample = audioFrameResult.getRescaledSample(channel, audioFrameResult.getBytesPerSample(), audioFrameResult.getSamplePerSecond(), sample);
                     byte[] bytesToAdd = toBytes(rescaledSample, bytes);
                     for (int i = 0; i < bytes; ++i) {
                         result[sample * bytes * numberOfChannels + channel * bytes + i] = bytesToAdd[i];

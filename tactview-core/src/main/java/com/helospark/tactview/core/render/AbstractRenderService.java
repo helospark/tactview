@@ -62,7 +62,7 @@ public abstract class AbstractRenderService implements RenderService {
                 .withPreviewWidth((int) (request.expectedWidth * upscale))
                 .withPreviewHeight((int) (request.expectedHeight * upscale))
                 .withScale(scaleMultiplier * upscale)
-                .withAudioBytesPerSample(sampleRate)
+                .withAudioSampleRate(sampleRate)
                 .withAudioBytesPerSample(bytesPerSample)
                 .withNeedVideo(needsVideo)
                 .withNeedSound(needsSound)

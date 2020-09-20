@@ -1,7 +1,5 @@
 package com.helospark.tactview.core.timeline;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +130,7 @@ public class TimelineManagerRenderService {
                         AudioRequest audioRequest = AudioRequest.builder()
                                 .withApplyEffects(request.isEffectsEnabled())
                                 .withPosition(request.getPosition())
-                                .withLength(new TimelineLength(BigDecimal.valueOf(1).divide(projectRepository.getFps(), 100, RoundingMode.HALF_DOWN)))
+                                .withLength(new TimelineLength(projectRepository.getFrameTime()))
                                 .withSampleRate(sampleRateToUse)
                                 .withBytesPerSample(bytesPerSampleToUse)
                                 .withNumberOfChannels(numberOfChannels)

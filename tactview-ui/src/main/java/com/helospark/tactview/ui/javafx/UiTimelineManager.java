@@ -11,37 +11,43 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.application.Platform;
 
 @Component
 public class UiTimelineManager {
-    private int numberOfFramesToCache = 4;
-    // private IntegerProperty timelinePosition = new SimpleIntegerProperty(0);
-    private List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
-    private List<Consumer<TimelinePosition>> playbackConsumers = new ArrayList<>();
-    private List<Consumer<PlaybackStatus>> statusChangeConsumers = new ArrayList<>();
+    private int numberOfFramesToCache = 2;
+    private final List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
+    private final List<Consumer<TimelinePosition>> playbackConsumers = new ArrayList<>();
+    private final List<Consumer<PlaybackStatus>> statusChangeConsumers = new ArrayList<>();
 
     private volatile TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
     private volatile boolean isPlaying;
     private Thread runThread;
-    private Object timelineLock = new Object();
+    private final Object timelineLock = new Object();
 
-    private ProjectRepository projectRepository;
-    private TimelineState timelineState;
+    private final ProjectRepository projectRepository;
+    private final TimelineState timelineState;
+    private final PlaybackController playbackController;
+    private final AudioStreamService audioStreamService;
+    private DisplayUpdaterService displayUpdaterService;
 
-    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState) {
+    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackController playbackController,
+            AudioStreamService audioStreamService) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
+        this.playbackController = playbackController;
+        this.audioStreamService = audioStreamService;
+    }
+
+    public void setDisplayUpdaterService(DisplayUpdaterService displayUpdaterService) {
+        this.displayUpdaterService = displayUpdaterService;
     }
 
     public void registerUiPlaybackConsumer(Consumer<TimelinePosition> consumer) {
         this.uiPlaybackConsumers.add(consumer);
-    }
-
-    public void registerPlaybackConsumer(Consumer<TimelinePosition> consumer) {
-        this.playbackConsumers.add(consumer);
     }
 
     public void registerStoppedConsumer(Consumer<PlaybackStatus> consumer) {
@@ -49,28 +55,26 @@ public class UiTimelineManager {
     }
 
     public void startPlayback() {
-        BigDecimal fps = projectRepository.getFps();
-        long sleepTime = BigDecimal.ONE.divide(fps, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(1000)).longValue();
-        BigDecimal increment = getIncrement();
-
         if (!isPlaying) {
             isPlaying = true;
             statusChangeConsumers.stream()
                     .forEach(consumer -> consumer.accept(PlaybackStatus.STARTED));
             runThread = new Thread(() -> {
                 while (isPlaying) {
-                    if (timelineState.loopingEnabled() && currentPosition.isLessThan(timelineState.getLoopStartTime())) {
-                        currentPosition = timelineState.getLoopStartTime();
-                    }
+                    TimelinePosition nextFrame = this.expectedNextFrames(1).get(0);
                     synchronized (timelineLock) {
-                        currentPosition = currentPosition.add(increment);
-
-                        if (timelineState.loopingEnabled() && currentPosition.isGreaterThan(timelineState.getLoopEndTime())) {
-                            currentPosition = timelineState.getLoopStartTime();
-                        }
+                        currentPosition = nextFrame;
                     }
+
+                    byte[] audioFrame = playbackController.getAudioFrameAt(currentPosition, 1);
+
+                    audioStreamService.streamAudio(audioFrame);
+
+                    // finished writing currentPosition to buffer, play this frame
+
+                    displayUpdaterService.updateDisplayAsync(currentPosition);
+
                     notifyConsumers();
-                    sleep(sleepTime);
                 }
             }, "playback-thread");
             runThread.start();
@@ -177,7 +181,7 @@ public class UiTimelineManager {
         return isPlaying;
     }
 
-    @PreferenceValue(name = "Number of frames to preload during playback", defaultValue = "4", group = "Performance")
+    @PreferenceValue(name = "Number of frames to preload during playback", defaultValue = "2", group = "Performance")
     public void setImageClipLength(Integer numberOfFrames) {
         numberOfFramesToCache = numberOfFrames;
     }

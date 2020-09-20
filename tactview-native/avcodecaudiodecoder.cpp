@@ -268,7 +268,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 AVFrame* frameToUse = frame;
                 if (needsResampling) {
 
-                  int resampledCount = (int)ceil(frame->nb_samples * ((double)codec->sample_rate / request->sampleRate));
+                  int resampledCount = (int)ceil(frame->nb_samples * ((double)request->sampleRate / codec->sample_rate));
 
                 //  std::cout << "Allocating " << resampledCount << std::endl;
 

@@ -29,10 +29,10 @@ public class AudioImagePatternService {
     private static final int NUMBER_OF_PIXELS_FOR_SAMPLE = 1;
     private static final int RECTANGLE_HEIGHT = 50;
 
-    private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
-    private ProjectRepository projectRepository;
-    private SoundRmsRepository soundRmsRepository;
-    private AudioRmsCalculator audioRmsCalculator;
+    private final ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
+    private final ProjectRepository projectRepository;
+    private final SoundRmsRepository soundRmsRepository;
+    private final AudioRmsCalculator audioRmsCalculator;
 
     public AudioImagePatternService(ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, ProjectRepository projectRepository, SoundRmsRepository soundRmsRepository,
             AudioRmsCalculator audioRmsCalculator) {
@@ -56,13 +56,13 @@ public class AudioImagePatternService {
 
         TimelineInterval interval = audibleTimelineClip.getInterval();
         BigDecimal lengthInSeconds = interval.getLength().getSeconds();
-        BigDecimal secondsPerPixel = lengthInSeconds.divide(BigDecimal.valueOf(width), 2, RoundingMode.HALF_UP);
+        BigDecimal secondsPerPixel = lengthInSeconds.divide(BigDecimal.valueOf(width), 10, RoundingMode.HALF_UP);
 
         int numberOfSamplesToCollect = lengthInSeconds
-                .divide(secondsPerPixel, 2, RoundingMode.HALF_UP)
-                .divide(BigDecimal.valueOf(NUMBER_OF_PIXELS_FOR_SAMPLE), 2, RoundingMode.HALF_UP)
+                .divide(secondsPerPixel, 10, RoundingMode.HALF_UP)
+                .divide(BigDecimal.valueOf(NUMBER_OF_PIXELS_FOR_SAMPLE), 10, RoundingMode.HALF_UP)
                 .intValue();
-        BigDecimal timeJump = lengthInSeconds.divide(BigDecimal.valueOf(numberOfSamplesToCollect), 2, RoundingMode.HALF_UP);
+        BigDecimal timeJump = lengthInSeconds.divide(BigDecimal.valueOf(numberOfSamplesToCollect), 10, RoundingMode.HALF_UP);
 
         BufferedImage result = new BufferedImage(scaledFrameWidth, scaledFrameHeight, TYPE_INT_RGB);
         Graphics graphics = result.getGraphics();

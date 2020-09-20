@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -20,7 +21,7 @@ import javafx.scene.paint.Color;
 @Component
 public class PlaybackController {
     public static final int CHANNELS = 2;
-    public static final int FREQUENCY = 44100;
+    public static final int SAMPLE_RATE = 44100;
     public static final int BYTES = 2;
     private final TimelineManagerRenderService timelineManager;
     private final UiProjectRepository uiProjectRepository;
@@ -96,7 +97,7 @@ public class PlaybackController {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             for (int i = 0; i < samples; ++i) {
                 AudioVideoFragment frame = getSingleAudioFrameAtPosition(position.add(projectRepository.getFrameTime().multiply(BigDecimal.valueOf(i))));
-                byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), BYTES, FREQUENCY, CHANNELS); // move data to repository
+                byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), CHANNELS); // move data to repository
 
                 frame.free();
 
@@ -120,6 +121,8 @@ public class PlaybackController {
                 .withPreviewHeight(height)
                 .withNeedSound(true)
                 .withNeedVideo(false)
+                .withAudioBytesPerSample(Optional.of(BYTES))
+                .withAudioSampleRate(Optional.of(SAMPLE_RATE))
                 .build();
         AudioVideoFragment frame = timelineManager.getFrame(request);
         return frame;

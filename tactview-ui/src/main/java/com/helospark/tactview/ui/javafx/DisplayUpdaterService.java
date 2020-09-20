@@ -1,15 +1,18 @@
 package com.helospark.tactview.ui.javafx;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
@@ -32,7 +35,8 @@ import javafx.scene.image.Image;
 
 @Component
 public class DisplayUpdaterService implements ScenePostProcessor {
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private static final int NUMBER_OF_CACHE_JOBS_TO_RUN = 2;
+    private final ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(NUMBER_OF_CACHE_JOBS_TO_RUN);
     private final Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
     private volatile long currentPositionLastRendered = -1;
     private volatile boolean running = true;
@@ -50,7 +54,11 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private Image cacheCurrentImage;
     private long cacheLastModifiedTime;
     private TimelinePosition cachePosition;
+
     // end of current frame cache
+
+    private final Queue<TimelinePosition> recentlyDroppedFrames = new CircularFifoQueue<>(4);
+    private final Queue<Boolean> droppedOrNotDroppedFrame = new CircularFifoQueue<>(30);
 
     @Slf4j
     private Logger logger;
@@ -126,6 +134,59 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         updateDisplay(currentPosition);
     }
 
+    int numberOfDroppedFrames = 0;
+
+    public void updateDisplayAsync(TimelinePosition currentPosition) {
+        JavaDisplayableAudioVideoFragment actualAudioVideoFragment = null;
+        Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.get(currentPosition);
+
+        if (cachedKey == null || !cachedKey.isDone()) {
+            actualAudioVideoFragment = null;
+            ++numberOfDroppedFrames;
+            recentlyDroppedFrames.add(currentPosition);
+        } else {
+            actualAudioVideoFragment = getValueFromCache(cachedKey);
+        }
+
+        if (actualAudioVideoFragment == null && numberOfDroppedFrames > 10) {
+            logger.info("There were " + numberOfDroppedFrames + " consecutive frame dropped, blocking sound until frame loads");
+            if (cachedKey != null) {
+                actualAudioVideoFragment = getValueFromCache(cachedKey);
+            } else {
+                actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
+            }
+
+            if (debugAudioUpdateEnabled) { // just so it is easier to debug. Will need to think of other solution later
+                AudioVideoFragment result = playbackController.getSingleAudioFrameAtPosition(currentPosition);
+                result.free();
+            }
+            numberOfDroppedFrames = 0;
+        }
+
+        if (actualAudioVideoFragment != null) {
+            displayFrameAsync(currentPosition, 0, actualAudioVideoFragment);
+            numberOfDroppedFrames = 0;
+            droppedOrNotDroppedFrame.add(false);
+        } else {
+            if (cachedKey != null) {
+                droppedOrNotDroppedFrame.add(true);
+            } else {
+                droppedOrNotDroppedFrame.add(false);
+            }
+        }
+        startCacheJobs(currentPosition);
+        currentPositionLastRendered = System.currentTimeMillis();
+        logger.debug("Rendered at {} dropped frames {}", currentPosition, numberOfDroppedFrames);
+    }
+
+    protected JavaDisplayableAudioVideoFragment getValueFromCache(Future<JavaDisplayableAudioVideoFragment> cachedKey) {
+        try {
+            return cachedKey.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void updateDisplay(TimelinePosition currentPosition) {
         long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
         JavaDisplayableAudioVideoFragment actualAudioVideoFragment;
@@ -141,15 +202,16 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                     result.free();
                 }
             } else {
-                try {
-                    actualAudioVideoFragment = cachedKey.get();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                actualAudioVideoFragment = getValueFromCache(cachedKey);
             }
             currentPositionLastRendered = System.currentTimeMillis();
             logger.debug("Rendered at {}", currentPositionLastRendered);
         }
+        displayFrameAsync(currentPosition, currentPostionLastModified, actualAudioVideoFragment);
+        startCacheJobs(currentPosition);
+    }
+
+    protected void displayFrameAsync(TimelinePosition currentPosition, long currentPostionLastModified, JavaDisplayableAudioVideoFragment actualAudioVideoFragment) {
         Platform.runLater(() -> {
             try {
                 int width = uiProjectRepostiory.getPreviewWidth();
@@ -174,19 +236,50 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 e.printStackTrace();
             }
         });
+    }
 
-        startCacheJobs(currentPosition);
+    public TimelinePosition getLastDisplayedImageTimestamp() {
+        return cachePosition;
     }
 
     private void startCacheJobs(TimelinePosition currentPosition) {
-        List<TimelinePosition> expectedNextFrames = uiTimelineManager.expectedNextFrames();
+        List<TimelinePosition> expectedNextFrames = uiTimelineManager.expectedNextFrames(5);
+
+        int allDroppedFrames = droppedOrNotDroppedFrame.stream()
+                .mapToInt(a -> a ? 1 : 0)
+                .sum();
+        int framesToPreempitvelyDrop = allDroppedFrames / 5;
+
+        if (framesToPreempitvelyDrop > 0) {
+            List<TimelinePosition> preemprivelyDroppedFramesCache = new ArrayList<>();
+            for (int i = 0; i < expectedNextFrames.size(); ++i) {
+                int current = i;
+                while (i < current + framesToPreempitvelyDrop && i < expectedNextFrames.size()) {
+                    logger.debug("Preempitevely dropping frame " + expectedNextFrames.get(i));
+                    ++i;
+                }
+                if (i < expectedNextFrames.size()) {
+                    preemprivelyDroppedFramesCache.add(expectedNextFrames.get(i));
+                }
+            }
+            expectedNextFrames = preemprivelyDroppedFramesCache;
+        }
         for (TimelinePosition nextFrameTime : expectedNextFrames) {
+            int numberOfJobsAdded = 0;
             if (!framecache.containsKey(nextFrameTime)) {
                 Future<JavaDisplayableAudioVideoFragment> task = executorService.submit(() -> {
-                    return playbackController.getVideoFrameAt(currentPosition);
+                    if (recentlyDroppedFrames.contains(currentPosition)) {
+                        return null; // result is ignored, we dropped this frame
+                    } else {
+                        return playbackController.getVideoFrameAt(currentPosition);
+                    }
                 });
                 framecache.put(nextFrameTime, task);
-                System.out.println("started " + nextFrameTime);
+                logger.debug("started " + nextFrameTime);
+                ++numberOfJobsAdded;
+                if (numberOfJobsAdded > NUMBER_OF_CACHE_JOBS_TO_RUN) {
+                    break;
+                }
             }
         }
     }

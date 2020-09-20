@@ -20,16 +20,16 @@ import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisuali
 public class AudioUpdaterService {
     private static final int AUDIOFRAME_NUMBER_PER_ELEMENT = 15;
 
-    private UiTimelineManager uiTimelineManager;
-    private PlaybackController playbackController;
-    private AudioStreamService audioStreamService;
-    private MessagingService messagingService;
-    private AudioVisualizationComponent audioVisualizationComponent;
-    private UiPlaybackPreferenceRepository playbackPreferenceRepository;
+    private final UiTimelineManager uiTimelineManager;
+    private final PlaybackController playbackController;
+    private final AudioStreamService audioStreamService;
+    private final MessagingService messagingService;
+    private final AudioVisualizationComponent audioVisualizationComponent;
+    private final UiPlaybackPreferenceRepository playbackPreferenceRepository;
 
-    private LinkedHashMap<BigDecimal, AudioData> buffer = new LinkedHashMap<>();
+    private final LinkedHashMap<BigDecimal, AudioData> buffer = new LinkedHashMap<>();
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     private volatile TimelinePosition lastPlayedTimelinePosition = TimelinePosition.ofZero();
     private volatile boolean playbackRunning = false;
