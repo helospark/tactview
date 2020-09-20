@@ -27,16 +27,16 @@ public class AudioVisualizationComponent {
     static final int CHANNEL_HEIGHT_GAP = 1;
     static final int BAR_WIDTH = 5;
     static final int BAR_SPACE_WIDTH = 2;
-    private boolean enabled = true;
+    private final boolean enabled = true;
     private volatile boolean isThreadAvailable = true;
-    private ExecutorService executorService = Executors.newFixedThreadPool(1);
-    private Canvas canvas;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    private final Canvas canvas;
 
     private int numberOfBars = 45;
 
-    private PlaybackController playbackController;
-    private SoundRmsRepository soundRmsRepository;
-    private AudioRmsCalculator audioRmsCalculator;
+    private final PlaybackController playbackController;
+    private final SoundRmsRepository soundRmsRepository;
+    private final AudioRmsCalculator audioRmsCalculator;
 
     public AudioVisualizationComponent(PlaybackController playbackController, SoundRmsRepository soundRmsRepository, AudioRmsCalculator audioRmsCalculator, UiProjectRepository uiProjectRepository) {
         canvas = new Canvas(numberOfBars * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
@@ -44,9 +44,9 @@ public class AudioVisualizationComponent {
         this.soundRmsRepository = soundRmsRepository;
         this.audioRmsCalculator = audioRmsCalculator;
 
-        uiProjectRepository.getPreviewWidthProperty().addListener((e, oldV, newV) -> {
+        uiProjectRepository.getPreviewAvailableWidth().addListener((e, oldV, newV) -> {
             int newNumberOfBars = (int) (newV.doubleValue() / (BAR_WIDTH + BAR_SPACE_WIDTH));
-            canvas.widthProperty().set(newV.doubleValue());
+            canvas.widthProperty().set(newV.doubleValue() - 40);
 
             numberOfBars = newNumberOfBars;
 
