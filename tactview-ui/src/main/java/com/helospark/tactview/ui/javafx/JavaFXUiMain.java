@@ -442,20 +442,16 @@ public class JavaFXUiMain extends Application {
         uiTimeline = lightDi.getBean(UiTimeline.class);
         uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
         effectPropertyView = lightDi.getBean(PropertyView.class);
+        AudioVisualizationComponent audioVisualizationComponent = lightDi.getBean(AudioVisualizationComponent.class);
 
         uiTimelineManager.registerUiPlaybackConsumer(position -> uiTimeline.updateLine(position));
         uiTimelineManager.registerUiPlaybackConsumer(position -> effectPropertyView.updateValues(position));
         uiTimelineManager.registerUiPlaybackConsumer(position -> updateTime(position));
+        uiTimelineManager.registerUiPlaybackConsumer(position -> audioVisualizationComponent.updateAudioComponent(position));
 
         displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
         projectSizeInitializer = lightDi.getBean(ProjectSizeInitializer.class);
         uiTimelineManager.setDisplayUpdaterService(lightDi.getBean(DisplayUpdaterService.class));
-        AudioUpdaterService audioUpdaterService = lightDi.getBean(AudioUpdaterService.class);
-        uiTimelineManager.registerStoppedConsumer(type -> {
-            if (type.equals(UiTimelineManager.PlaybackStatus.STOPPED)) {
-                audioUpdaterService.playbackStopped();
-            }
-        });
 
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
         renderService = lightDi.getBean(RenderDialogOpener.class);

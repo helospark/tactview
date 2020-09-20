@@ -22,10 +22,10 @@ import javafx.util.converter.NumberStringConverter;
 
 @Component
 public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<IntegerProvider> {
-    private UiCommandInterpreterService commandInterpreter;
-    private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager timelineManager;
-    private ContextMenuAppender contextMenuAppender;
+    private final UiCommandInterpreterService commandInterpreter;
+    private final EffectParametersRepository effectParametersRepository;
+    private final UiTimelineManager timelineManager;
+    private final ContextMenuAppender contextMenuAppender;
 
     public IntegerPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
             UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
@@ -57,7 +57,10 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
             slider.setMax(integerProvider.getMax());
             slider.setShowTickLabels(true);
             slider.setMinorTickCount(3);
-            slider.setMajorTickUnit((integerProvider.getMax() - integerProvider.getMin()) / 3);
+            int majorTickCount = (integerProvider.getMax() - integerProvider.getMin()) / 3;
+            if (majorTickCount > 0) {
+                slider.setMajorTickUnit(majorTickCount);
+            }
             slider.valueProperty().addListener((obs, oldval, newVal) -> {
                 if (slider.isValueChanging()) {
                     userChangedValueObservable.setValue(String.valueOf(slider.getValue()));

@@ -13,6 +13,7 @@ import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
 
+import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -70,22 +71,34 @@ public class AudioVisualizationComponent {
             // TODO: Do not query the sound again! Use the already queried sound
             AudioVideoFragment frame = playbackController.getSingleAudioFrameAtPosition(position);
             AudioFrameResult audioFrame = frame.getAudioResult();
-            clearCanvas();
 
+            double rms[] = new double[2];
             for (int i = 0; i < 2; ++i) {
                 double value = i < audioFrame.getChannels().size() ? audioRmsCalculator.calculateRms(audioFrame, i) : 0.0;
-                updateUiForChannel(i, value);
+                rms[i] = value;
             }
 
+            clearCanvas();
+
+            Platform.runLater(() -> {
+                for (int i = 0; i < 2; ++i) {
+                    double value = rms[i];
+                    updateUiForChannel(i, value);
+                }
+                isThreadAvailable = true;
+            });
+            frame.free();
+
         } finally {
-            isThreadAvailable = true;
         }
     }
 
     public void clearCanvas() {
-        GraphicsContext graphics = canvas.getGraphicsContext2D();
-        graphics.setFill(Color.rgb(60, 60, 60));
-        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        Platform.runLater(() -> {
+            GraphicsContext graphics = canvas.getGraphicsContext2D();
+            graphics.setFill(Color.rgb(60, 60, 60));
+            graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        });
     }
 
     private void updateUiForChannel(int channel, double value) {
