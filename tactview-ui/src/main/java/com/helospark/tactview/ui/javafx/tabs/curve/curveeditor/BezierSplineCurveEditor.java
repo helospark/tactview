@@ -49,7 +49,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
 
     private BezierMousePointDescriptor getElementUnderMouseOrNull(CurveEditorMouseRequest mouseEvent) {
         int i = 0;
-        TreeMap<TimelinePosition, CubicBezierPoint> bezierValues = ((BezierDoubleInterpolator) mouseEvent.currentKeyframeableEffect).getBezierValues();
+        TreeMap<TimelinePosition, CubicBezierPoint> bezierValues = ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).getBezierValues();
         for (var entry : bezierValues.entrySet()) {
             Point actualPoint = new Point(entry.getKey().getSeconds().doubleValue(), entry.getValue().value);
 
@@ -89,7 +89,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
         if (dragged == null) {
             return false;
         }
-        TreeMap<TimelinePosition, CubicBezierPoint> bezierValues = ((BezierDoubleInterpolator) mouseEvent.currentKeyframeableEffect).getBezierValues();
+        TreeMap<TimelinePosition, CubicBezierPoint> bezierValues = ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).getBezierValues();
 
         CubicBezierPoint pointToModify = null;
         TimelinePosition positionToModify = null;
@@ -109,6 +109,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
         if (pointToModify != null) {
             TimelinePosition newTime = positionToModify.add(new BigDecimal(mouseEvent.mouseDelta.x));
             double newValue = pointToModify.value + mouseEvent.mouseDelta.y;
+            double newPosition = mouseEvent.remappedMousePosition.y;
 
             double relativeX = newTime.getSeconds().doubleValue() - positionToModify.getSeconds().doubleValue();
             double relativeY = newValue - pointToModify.value;
@@ -116,11 +117,11 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
             Point relativePoint = new Point(relativeX, relativeY);
 
             if (draggedPointType == PointType.IN) {
-                ((BezierDoubleInterpolator) mouseEvent.currentKeyframeableEffect).updatedInControlPointAt(positionToModify, pointToModify.controlPointIn.add(relativePoint));
+                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).updatedInControlPointAt(positionToModify, pointToModify.controlPointIn.add(relativePoint));
             } else if (draggedPointType == PointType.OUT) {
-                ((BezierDoubleInterpolator) mouseEvent.currentKeyframeableEffect).updatedOutControlPointAt(positionToModify, pointToModify.controlPointOut.add(relativePoint));
+                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).updatedOutControlPointAt(positionToModify, pointToModify.controlPointOut.add(relativePoint));
             } else {
-                ((BezierDoubleInterpolator) mouseEvent.currentKeyframeableEffect).updateDoubleValueAt(positionToModify, newTime, newValue);
+                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).updateDoubleValueAt(positionToModify, newTime, newPosition);
             }
             return true;
         }
@@ -130,7 +131,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
 
     @Override
     public void drawAdditionalUi(CurveDrawRequest drawRequest) {
-        TreeMap<TimelinePosition, CubicBezierPoint> bezierValues = ((BezierDoubleInterpolator) drawRequest.currentKeyframeableEffect).getBezierValues();
+        TreeMap<TimelinePosition, CubicBezierPoint> bezierValues = ((BezierDoubleInterpolator) drawRequest.currentDoubleInterpolator).getBezierValues();
 
         int closeIndex = -1;
         PointType closePointType = null;

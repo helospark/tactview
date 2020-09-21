@@ -14,7 +14,7 @@ public class CurveDrawRequest extends AbstractCurveEditorRequest {
     @Generated("SparkTools")
     private CurveDrawRequest(Builder builder) {
         this.currentProvider = builder.currentProvider;
-        this.currentKeyframeableEffect = builder.currentKeyframeableEffect;
+        this.currentDoubleInterpolator = builder.currentKeyframeableEffect;
         this.curveViewerOffsetSeconds = builder.curveViewerOffsetSeconds;
         this.secondsPerPixel = builder.secondsPerPixel;
         this.minValue = builder.minValue;

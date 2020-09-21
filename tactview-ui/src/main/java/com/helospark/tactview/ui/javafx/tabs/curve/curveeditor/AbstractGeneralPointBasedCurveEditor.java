@@ -21,8 +21,8 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     protected int draggedIndex = -1;
     protected int closeIndex = -1;
 
-    private UiCommandInterpreterService commandInterpreter;
-    private EffectParametersRepository effectParametersRepository;
+    private final UiCommandInterpreterService commandInterpreter;
+    private final EffectParametersRepository effectParametersRepository;
 
     public AbstractGeneralPointBasedCurveEditor(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
         this.commandInterpreter = commandInterpreter;
@@ -46,7 +46,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
                 MenuItem deleteMenu = new MenuItem("Delete");
 
                 deleteMenu.setOnAction(e -> {
-                    KeyframePoint elementToRemove = getKeyframePoints((KeyframeSupportingDoubleInterpolator) request.currentKeyframeableEffect).get(elementIndex);
+                    KeyframePoint elementToRemove = getKeyframePoints((KeyframeSupportingDoubleInterpolator) request.currentDoubleInterpolator).get(elementIndex);
 
                     KeyframeRemovedRequest keyframeRemoveRequest = KeyframeRemovedRequest.builder()
                             .withDescriptorId(request.currentProvider.getId())
@@ -72,7 +72,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     protected void addNewPoint(Point remappedMousePosition, CurveEditorMouseRequest request) {
         // TODO: commandInterpreter
         TimelinePosition offset = effectParametersRepository.findGlobalPositionForValueProvider(request.currentProvider.getId()).get();
-        ((KeyframeSupportingDoubleInterpolator) request.currentKeyframeableEffect).valueAdded(new TimelinePosition(remappedMousePosition.x).subtract(offset), String.valueOf(remappedMousePosition.y));
+        ((KeyframeSupportingDoubleInterpolator) request.currentDoubleInterpolator).valueAdded(new TimelinePosition(remappedMousePosition.x).subtract(offset), String.valueOf(remappedMousePosition.y));
     }
 
     protected abstract List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request);
@@ -84,7 +84,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     }
 
     protected int getElementIndex(CurveEditorMouseRequest mouseEvent) {
-        List<KeyframePoint> bezierValues = getKeyframePoints((KeyframeSupportingDoubleInterpolator) mouseEvent.currentKeyframeableEffect);
+        List<KeyframePoint> bezierValues = getKeyframePoints((KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator);
         for (int i = 0; i < bezierValues.size(); ++i) {
             KeyframePoint element = bezierValues.get(i);
 
@@ -109,7 +109,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
             return false;
         }
 
-        KeyframeSupportingDoubleInterpolator effect = (KeyframeSupportingDoubleInterpolator) mouseEvent.currentKeyframeableEffect;
+        KeyframeSupportingDoubleInterpolator effect = (KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator;
 
         List<KeyframePoint> keyframePoints = getKeyframePoints(effect);
 
@@ -117,8 +117,8 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
         if (pointToModify != null) {
             TimelinePosition newTime = pointToModify.timelinePosition.add(new BigDecimal(mouseEvent.mouseDelta.x));
-            double newValue = pointToModify.value + mouseEvent.mouseDelta.y;
-            valueModifiedAt((KeyframeSupportingDoubleInterpolator) mouseEvent.currentKeyframeableEffect, pointToModify.timelinePosition, newTime, newValue);
+            double newValue = mouseEvent.remappedMousePosition.y;
+            valueModifiedAt((KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator, pointToModify.timelinePosition, newTime, newValue);
             return true;
         }
         return false;
@@ -148,7 +148,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
     @Override
     public void drawAdditionalUi(CurveDrawRequest drawRequest) {
-        List<KeyframePoint> keyframes = getKeyframePoints((KeyframeSupportingDoubleInterpolator) drawRequest.currentKeyframeableEffect);
+        List<KeyframePoint> keyframes = getKeyframePoints((KeyframeSupportingDoubleInterpolator) drawRequest.currentDoubleInterpolator);
 
         GraphicsContext graphics = drawRequest.graphics;
         graphics.setFill(Color.BLUE);

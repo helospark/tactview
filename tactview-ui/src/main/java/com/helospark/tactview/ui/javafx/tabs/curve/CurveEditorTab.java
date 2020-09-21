@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.helospark.lightdi.annotation.Component;
@@ -14,6 +15,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
@@ -44,9 +47,9 @@ import javafx.scene.text.Font;
 public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseListener {
     private static final String CURVE_EDITOR_ID = "curve-editor";
     private static final double samplesPerPixel = 1.0;
-    private List<CurveEditor> curveEditors;
-    private UiTimelineManager timelineManager;
-    private EffectParametersRepository effectParametersRepository;
+    private final List<CurveEditor> curveEditors;
+    private final UiTimelineManager timelineManager;
+    private final EffectParametersRepository effectParametersRepository;
     private double positionOffset;
 
     private double secondsPerPixel = 1 / 20.0;
@@ -58,17 +61,21 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
     private KeyframeableEffect currentKeyframeableEffect;
     private DoubleInterpolator currentInterpolator;
     private CurveEditor currentlyOpenEditor;
-    private MessagingService messagingService;
+    private final MessagingService messagingService;
 
     private double maxValue;
     private double minValue;
     private double interval;
     private double displayScale;
 
+    private Optional<Double> absoluteMinValue = Optional.empty();
+    private Optional<Double> absoluteMaxValue = Optional.empty();
+
     Point lastMousePosition = null;
 
     /// dragging
     private boolean isLeftRightDragging = false;
+    private boolean isDragging = false;
     private double lastDraggedX = 0;
     ///
 
@@ -117,8 +124,18 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
     }
 
     public void revealInEditor(KeyframeableEffect valueProvider) {
+        if (valueProvider instanceof DoubleProvider) {
+            absoluteMinValue = Optional.of(((DoubleProvider) valueProvider).getMin());
+            absoluteMaxValue = Optional.of(((DoubleProvider) valueProvider).getMax());
+        }
+        if (valueProvider instanceof IntegerProvider) {
+            absoluteMinValue = Optional.of((double) ((IntegerProvider) valueProvider).getMin());
+            absoluteMaxValue = Optional.of((double) ((IntegerProvider) valueProvider).getMax());
+        }
+
         EffectInterpolator effectInterpolator = valueProvider.getInterpolator();
         if (effectInterpolator instanceof DoubleInterpolator) {
+
             this.currentInterpolator = (DoubleInterpolator) effectInterpolator;
             this.currentKeyframeableEffect = valueProvider;
             currentlyOpenEditor = curveEditors.stream()
@@ -172,19 +189,37 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
             values.add(currentInterpolator.valueAt(current));
             current = current.add(increment);
         }
-        maxValue = Collections.max(values);
-        minValue = Collections.min(values);
-        interval = (maxValue - minValue);
 
-        maxValue += interval / 20;
-        minValue -= interval / 20;
-        interval = (maxValue - minValue);
+        if (!isDragging ||
+                (isDragging && (lastMousePosition.y < 10.0 || (canvas.getHeight() - lastMousePosition.y) < 10.0))) {
+            maxValue = Collections.max(values);
+            minValue = Collections.min(values);
 
-        if (interval <= 0.01) {
-            interval = 0.01;
-            minValue -= 0.005;
+            interval = (maxValue - minValue);
+
+            if (absoluteMinValue.isPresent()) {
+                double absoluteInterval = absoluteMaxValue.get() - absoluteMinValue.get();
+                if (minValue < absoluteMinValue.get()) {
+                    minValue = absoluteMinValue.get() - (absoluteInterval * 0.05);
+                }
+                if (maxValue > absoluteMaxValue.get()) {
+                    maxValue = absoluteMaxValue.get() + (absoluteInterval * 0.05);
+                }
+            }
+
+            interval = (maxValue - minValue);
+
+            if (interval <= 0.1) {
+                interval = 0.1;
+                minValue -= (interval / 2);
+                maxValue += (interval / 2);
+            } else {
+                maxValue += interval / 5;
+                minValue -= interval / 5;
+            }
+            interval = (maxValue - minValue);
+            displayScale = canvas.getHeight() / interval;
         }
-        displayScale = canvas.getHeight() / interval;
 
         double height = canvas.getHeight();
 
@@ -291,6 +326,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
         canvas.setOnMouseClicked(e -> sendToCurveEditorAndRedrawIfRequired(e, request -> currentlyOpenEditor.onMouseClicked(request)));
         canvas.setOnMousePressed(e -> sendToCurveEditorAndRedrawIfRequired(e, request -> currentlyOpenEditor.onMouseDown(request)));
         canvas.setOnMouseReleased(e -> sendToCurveEditorAndRedrawIfRequired(e, request -> currentlyOpenEditor.onMouseUp(request)));
+        canvas.setOnMouseDragExited(e -> sendToCurveEditorAndRedrawIfRequired(e, request -> currentlyOpenEditor.onMouseDragEnded(request)));
 
         canvas.setOnScroll(scrollEvent -> {
             double scrollAmount = scrollEvent.getDeltaY();
@@ -325,9 +361,24 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
             mouseDelta.y *= -1;
         }
         lastMousePosition = currentMousePosition;
+        isDragging = e.getEventType().equals(MouseEvent.MOUSE_DRAGGED);
 
         double remappedX = (currentMousePosition.x - scrollValue) * secondsPerPixel;
-        double remappedY = canvas.getHeight() - (currentMousePosition.y / displayScale + minValue);
+        double mouseY = currentMousePosition.y;
+        if (mouseY < -20) {
+            mouseY = -20;
+        }
+        if (mouseY > canvas.getHeight() + 20) {
+            mouseY = canvas.getHeight() + 20;
+        }
+        double remappedY = minValue + ((1.0 - (mouseY / canvas.getHeight())) * (maxValue - minValue));
+
+        if (absoluteMaxValue.isPresent() && remappedY > absoluteMaxValue.get()) {
+            remappedY = absoluteMaxValue.get();
+        }
+        if (absoluteMinValue.isPresent() && remappedY < absoluteMinValue.get()) {
+            remappedY = absoluteMinValue.get();
+        }
 
         Point remappedMousePosition = new Point(remappedX, remappedY);
 

@@ -16,6 +16,8 @@ public interface CurveEditor {
 
     public boolean onMouseDragged(CurveEditorMouseRequest mouseEvent);
 
+    public boolean onMouseDragEnded(CurveEditorMouseRequest mouseEvent);
+
     public boolean onMouseClicked(CurveEditorMouseRequest request);
 
     public void drawAdditionalUi(CurveDrawRequest drawRequest);

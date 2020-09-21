@@ -19,7 +19,7 @@ public class CurveEditorMouseRequest extends AbstractCurveEditorRequest {
     @Generated("SparkTools")
     private CurveEditorMouseRequest(Builder builder) {
         this.currentProvider = builder.currentProvider;
-        this.currentKeyframeableEffect = builder.currentKeyframeableEffect;
+        this.currentDoubleInterpolator = builder.currentKeyframeableEffect;
         this.curveViewerOffsetSeconds = builder.curveViewerOffsetSeconds;
         this.secondsPerPixel = builder.secondsPerPixel;
         this.minValue = builder.minValue;

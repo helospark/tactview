@@ -37,4 +37,8 @@ public abstract class AbstractNoOpCurveEditor implements CurveEditor {
 
     }
 
+    @Override
+    public boolean onMouseDragEnded(CurveEditorMouseRequest mouseEvent) {
+        return false;
+    }
 }

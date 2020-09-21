@@ -28,7 +28,7 @@ public class MixedDoubleInterpolatorCurveEditor extends TypeSupportingPointBased
 
     @Override
     protected List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request) {
-        TimelinePosition position = getKeyframePoints(((MixedDoubleInterpolator) request.currentKeyframeableEffect)).get(elementIndex).timelinePosition;
+        TimelinePosition position = getKeyframePoints(((MixedDoubleInterpolator) request.currentDoubleInterpolator)).get(elementIndex).timelinePosition;
         return List.of(easingInterpolatorContextMenuItem.createInterpolators(request.currentProvider.getId(), position));
     }
 

@@ -7,7 +7,7 @@ import javafx.scene.canvas.Canvas;
 
 public abstract class AbstractCurveEditorRequest {
     public KeyframeableEffect currentProvider;
-    public DoubleInterpolator currentKeyframeableEffect;
+    public DoubleInterpolator currentDoubleInterpolator;
     public double curveViewerOffsetSeconds;
     public double secondsPerPixel;
     public double minValue;
