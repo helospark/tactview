@@ -38,11 +38,28 @@ public class CurveProvider extends CompositeKeyframeableEffect implements Keyfra
     @Override
     public KnotAwareUnivariateFunction getValueAt(TimelinePosition position) {
         List<Point> result = new ArrayList<>();
+
         for (int i = 0; i < curvePoints.size(); ++i) {
-            result.add(curvePoints.get(i).getValueAt(position));
+            Point newPoint = curvePoints.get(i).getValueAt(position);
+            result.add(newPoint);
         }
 
         result.sort((point1, point2) -> Double.compare(point1.x, point2.x));
+
+        if (result.size() > 0) {
+            List<Point> increasingPoints = new ArrayList<>();
+            increasingPoints.add(new Point(result.get(0).x, result.get(0).y));
+            double lastX = result.get(0).x;
+            for (int i = 1; i < result.size(); ++i) {
+                double x = result.get(i).x;
+                if (x <= lastX + 0.001) {
+                    x = lastX + 0.001;
+                }
+                increasingPoints.add(new Point(x, result.get(i).y));
+                lastX = x;
+            }
+            result = increasingPoints;
+        }
 
         SplineInterpolator spi = new SplineInterpolator();
 
@@ -53,8 +70,6 @@ public class CurveProvider extends CompositeKeyframeableEffect implements Keyfra
             xs[i] = result.get(i).x;
             ys[i] = result.get(i).y;
         }
-
-        // TODO: Make xs unique
 
         PolynomialSplineFunction univariateFunction = spi.interpolate(xs, ys);
         return new KnotAwareUnivariateFunction(univariateFunction, univariateFunction.getKnots(), minY, maxY);

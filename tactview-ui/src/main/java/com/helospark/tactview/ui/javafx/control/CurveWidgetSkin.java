@@ -16,13 +16,13 @@ import javafx.scene.paint.Color;
 public class CurveWidgetSkin extends SkinBase<CurveWidget> {
     private static final int CONTROL_POINT_SIZE = 5;
 
-    private ObjectProperty<KnotAwareUnivariateFunction> curveProperty;
-    private ObjectProperty<KeyFrameInfo> onActionProvider;
+    private final ObjectProperty<KnotAwareUnivariateFunction> curveProperty;
+    private final ObjectProperty<KeyFrameInfo> onActionProvider;
 
     private Canvas canvas;
     private int currentWidth, currentHeight;
 
-    private List<Point> controlPoints = new ArrayList<>();
+    private final List<Point> controlPoints = new ArrayList<>();
 
     private int lastDraggedIndex = -1;
 
@@ -64,8 +64,7 @@ public class CurveWidgetSkin extends SkinBase<CurveWidget> {
         int currentlyDraggedPointIndex = -1;
 
         if (lastDraggedIndex >= 0 &&
-                lastDraggedIndex < controlPoints.size() &&
-                isClose(mouse, controlPoints.get(lastDraggedIndex), 20)) {
+                lastDraggedIndex < controlPoints.size()) {
             currentlyDraggedPointIndex = lastDraggedIndex;
         }
 
@@ -102,6 +101,7 @@ public class CurveWidgetSkin extends SkinBase<CurveWidget> {
     }
 
     private void handleMouseClickedEvent(MouseEvent e) {
+        lastDraggedIndex = -1;
         if (e.getClickCount() == 2) {
             int index = 0;
             for (index = 0; index < controlPoints.size(); ++index) {
