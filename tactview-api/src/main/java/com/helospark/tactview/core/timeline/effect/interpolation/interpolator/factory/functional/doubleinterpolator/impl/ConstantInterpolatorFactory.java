@@ -12,13 +12,17 @@ public class ConstantInterpolatorFactory implements DesSerFactory<ConstantInterp
     @Override
     public void addDataForDeserialize(ConstantInterpolator instance, Map<String, Object> data) {
         data.put("value", instance.value);
+        data.put("initialValue", instance.initialValue);
     }
 
     @Override
     public ConstantInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
             double value = data.get("value").asDouble();
-            return new ConstantInterpolator(value);
+            double initialValue = data.get("initialValue").asDouble();
+            ConstantInterpolator result = new ConstantInterpolator(value);
+            result.initialValue = initialValue;
+            return result;
         } catch (Exception e) {
             if (currentFieldValue instanceof ConstantInterpolator) {
                 return (ConstantInterpolator) currentFieldValue;

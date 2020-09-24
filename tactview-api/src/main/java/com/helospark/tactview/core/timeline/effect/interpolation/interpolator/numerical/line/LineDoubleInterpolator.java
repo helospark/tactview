@@ -11,9 +11,15 @@ public class LineDoubleInterpolator implements DoubleInterpolator {
     BigDecimal tangent;
     BigDecimal startValue;
 
+    BigDecimal initialTangent;
+    BigDecimal initialStartValue;
+
     public LineDoubleInterpolator(BigDecimal tangent, BigDecimal startValue) {
         this.tangent = tangent;
         this.startValue = startValue;
+
+        this.initialStartValue = startValue;
+        this.tangent = tangent;
     }
 
     @Override
@@ -45,6 +51,12 @@ public class LineDoubleInterpolator implements DoubleInterpolator {
 
     public void setStartValue(BigDecimal startValue) {
         this.startValue = startValue;
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.startValue = initialStartValue;
+        this.tangent = initialTangent;
     }
 
 }

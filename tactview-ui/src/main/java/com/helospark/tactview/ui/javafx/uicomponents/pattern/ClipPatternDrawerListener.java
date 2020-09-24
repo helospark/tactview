@@ -17,12 +17,10 @@ import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -86,19 +84,9 @@ public class ClipPatternDrawerListener {
         messagingService.register(ClipResizedMessage.class, message -> {
             updateRequests.add(new ClipPatternUpdateRequest(message.getClipId()));
         });
-        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> {
+        messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
             if (clipsToUpdate.containsKey(message.getContainingElementId())) {
                 updateRequests.add(new ClipPatternUpdateRequest(message.getContainingElementId()));
-            }
-        });
-        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> {
-            if (clipsToUpdate.containsKey(message.getContainingElementId())) {
-                updateRequests.add(new ClipPatternUpdateRequest(message.getContainingElementId()));
-            }
-        });
-        messagingService.register(KeyframeEnabledWasChangedMessage.class, message -> {
-            if (clipsToUpdate.containsKey(message.getContainerId())) {
-                updateRequests.add(new ClipPatternUpdateRequest(message.getContainerId()));
             }
         });
         messagingService.register(RegenerateAllImagePatternsMessage.class, message -> {
@@ -119,7 +107,7 @@ public class ClipPatternDrawerListener {
             while (running) {
                 try {
                     ThreadSleep.sleep(1000);
-                    Set<ClipPatternUpdateRequest> clonedRequests = new HashSet<ClipPatternUpdateRequest>(updateRequests);
+                    Set<ClipPatternUpdateRequest> clonedRequests = new HashSet<>(updateRequests);
                     updateRequests.removeAll(clonedRequests);
                     for (var request : clonedRequests) {
                         if (clipsToUpdate.containsKey(request.clipId)) {

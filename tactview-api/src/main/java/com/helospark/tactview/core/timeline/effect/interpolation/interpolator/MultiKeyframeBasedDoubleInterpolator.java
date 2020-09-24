@@ -16,19 +16,31 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
     protected double defaultValue;
     protected boolean useKeyframes;
 
+    protected double initializationDefaultValue;
+    protected TreeMap<TimelinePosition, Double> initializationValues;
+
     public MultiKeyframeBasedDoubleInterpolator(Double singleDefaultValue) {
         this.values = new TreeMap<>();
         this.defaultValue = singleDefaultValue;
+
+        this.initializationDefaultValue = this.defaultValue;
+        this.initializationValues = new TreeMap<>(this.values);
     }
 
     public MultiKeyframeBasedDoubleInterpolator(Double singleDefaultValue, UnivariateInterpolator interpolatorImplementation) {
         this.values = new TreeMap<>();
         this.defaultValue = singleDefaultValue;
         this.interpolatorImplementation = interpolatorImplementation;
+
+        this.initializationDefaultValue = this.defaultValue;
+        this.initializationValues = new TreeMap<>(this.values);
     }
 
     public MultiKeyframeBasedDoubleInterpolator(TreeMap<TimelinePosition, Double> values) {
         this.values = values;
+
+        this.initializationDefaultValue = this.defaultValue;
+        this.initializationValues = new TreeMap<>(this.values);
     }
 
     @Override
@@ -106,6 +118,10 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
         result.values = newValues;
         result.interpolatorImplementation = newInterpolatorImplementation;
         result.useKeyframes = useKeyframes;
+
+        result.initializationDefaultValue = initializationDefaultValue;
+        result.initializationValues = new TreeMap<>(initializationValues);
+
         return result;
     }
 
@@ -138,6 +154,12 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
 
     public UnivariateInterpolator getInterpolatorFunction() {
         return interpolatorImplementation;
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.defaultValue = initializationDefaultValue;
+        this.values = new TreeMap<>(initializationValues);
     }
 
 }

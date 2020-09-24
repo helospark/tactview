@@ -40,7 +40,7 @@ public class TypingStringInterpolator implements StringInterpolator {
             Entry<TimelinePosition, String> nextEntry = getNextEntry(position);
 
             if (currentValue == null) {
-                currentValue = new AbstractMap.SimpleEntry<TimelinePosition, String>(TimelinePosition.ofZero(), stepStringInterpolator.defaultValue);
+                currentValue = new AbstractMap.SimpleEntry<>(TimelinePosition.ofZero(), stepStringInterpolator.defaultValue);
             }
             if (nextEntry == null) {
                 return currentValue.getValue();
@@ -128,5 +128,10 @@ public class TypingStringInterpolator implements StringInterpolator {
     @Override
     public String getDefaultValue() {
         return stepStringInterpolator.getDefaultValue();
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.stepStringInterpolator.resetToDefaultValue();
     }
 }

@@ -1,17 +1,19 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
-import java.io.IOException;
+import static com.helospark.tactview.core.util.StaticObjectMapper.objectMapper;
+
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
-import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class StepStringInterpolatorFactory implements DesSerFactory<StepStringInterpolator> {
     private ObjectMapper regularObjectMapper;
@@ -24,18 +26,38 @@ public class StepStringInterpolatorFactory implements DesSerFactory<StepStringIn
 
     @Override
     public void addDataForDeserialize(StepStringInterpolator instance, Map<String, Object> data) {
-        try {
-            data.put("instance", regularObjectMapper.writeValueAsString(instance));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        data.put("defaultValue", instance.defaultValue);
+        data.put("values", instance.values);
+        data.put("useKeyframes", instance.useKeyframes);
+
+        data.put("initialDefaultValue", instance.initialDefaultValue);
+        data.put("initialValues", instance.initialValues);
     }
 
     @Override
     public StepStringInterpolator deserialize(JsonNode data, SavedContentAddable<?> currentFieldValue, LoadMetadata loadMetadata) {
         try {
-            return StaticObjectMapper.getterIgnoringOjectMapper.readValue(data.get("instance").asText(), StepStringInterpolator.class);
-        } catch (IOException e) {
+            StepStringInterpolator result = new StepStringInterpolator();
+
+            String defaultValue = data.get("defaultValue").asText();
+            String initialDefaultValue = data.get("initialDefaultValue").asText();
+            TreeMap<TimelinePosition, String> values = objectMapper.readValue(
+                    objectMapper.treeAsTokens(data.get("values")),
+                    objectMapper.getTypeFactory().constructType(new TypeReference<TreeMap<TimelinePosition, String>>() {
+                    }));
+            TreeMap<TimelinePosition, String> initialValues = objectMapper.readValue(
+                    objectMapper.treeAsTokens(data.get("initialValues")),
+                    objectMapper.getTypeFactory().constructType(new TypeReference<TreeMap<TimelinePosition, String>>() {
+                    }));
+
+            result.defaultValue = defaultValue;
+            result.values = values;
+            result.initialValues = initialValues;
+            result.initialDefaultValue = initialDefaultValue;
+            result.useKeyframes = data.get("useKeyframes").asBoolean();
+
+            return result;
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

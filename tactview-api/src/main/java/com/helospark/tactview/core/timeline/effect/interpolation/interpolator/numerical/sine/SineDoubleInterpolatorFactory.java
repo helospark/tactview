@@ -15,6 +15,11 @@ public class SineDoubleInterpolatorFactory implements DesSerFactory<SineDoubleIn
         data.put("minValue", instance.minValue);
         data.put("maxValue", instance.maxValue);
         data.put("startOffset", instance.startOffset);
+
+        data.put("initialFrequency", instance.initialFrequency);
+        data.put("initialStartOffset", instance.initialStartOffset);
+        data.put("initialMinValue", instance.initialMinValue);
+        data.put("initialMaxValue", instance.initialMaxValue);
     }
 
     @Override
@@ -25,12 +30,19 @@ public class SineDoubleInterpolatorFactory implements DesSerFactory<SineDoubleIn
             double maxValue = data.get("maxValue").asDouble();
             double startOffset = data.get("startOffset").asDouble();
 
-            return SineDoubleInterpolator.builder()
+            SineDoubleInterpolator result = SineDoubleInterpolator.builder()
                     .withFrequency(frequency)
                     .withMaxValue(maxValue)
                     .withMinValue(minValue)
                     .withStartOffset(startOffset)
                     .build();
+
+            result.initialFrequency = data.get("initialFrequency").asDouble();
+            result.initialStartOffset = data.get("initialStartOffset").asDouble();
+            result.initialMinValue = data.get("initialMinValue").asDouble();
+            result.initialMaxValue = data.get("initialMaxValue").asDouble();
+
+            return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

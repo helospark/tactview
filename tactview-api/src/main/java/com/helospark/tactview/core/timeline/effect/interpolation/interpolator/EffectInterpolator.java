@@ -11,4 +11,5 @@ public interface EffectInterpolator extends StatefulCloneable<EffectInterpolator
     @Override
     public EffectInterpolator deepClone();
 
+    public void resetToDefaultValue();
 }

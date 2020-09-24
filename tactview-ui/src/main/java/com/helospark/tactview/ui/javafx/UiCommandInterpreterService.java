@@ -39,7 +39,7 @@ public class UiCommandInterpreterService implements ResettableBean {
         if (uiCommand.isRevertable()) {
             commandHistory.push(uiCommand);
             while (commandHistory.size() > historySize) {
-                UiCommand command = commandHistory.pollFirst();
+                UiCommand command = commandHistory.pollLast();
                 if (command != null) {
                     command.preDestroy();
                 }

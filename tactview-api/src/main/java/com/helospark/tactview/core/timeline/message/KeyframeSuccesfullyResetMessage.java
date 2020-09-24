@@ -5,12 +5,12 @@ import java.util.List;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 
-public class KeyframeSuccesfullyAddedMessage extends AbstractKeyframeChangedMessage implements AffectedModifiedIntervalAware {
+public class KeyframeSuccesfullyResetMessage extends AbstractKeyframeChangedMessage implements AffectedModifiedIntervalAware {
     private final String descriptorId;
     private final TimelineInterval interval;
     private final String containingElementId;
 
-    public KeyframeSuccesfullyAddedMessage(String descriptorId, TimelineInterval globalInterval, String containingElementId) {
+    public KeyframeSuccesfullyResetMessage(String descriptorId, TimelineInterval globalInterval, String containingElementId) {
         this.descriptorId = descriptorId;
         this.interval = globalInterval;
         this.containingElementId = containingElementId;
@@ -38,7 +38,7 @@ public class KeyframeSuccesfullyAddedMessage extends AbstractKeyframeChangedMess
 
     @Override
     public String toString() {
-        return "KeyframeSuccesfullyAddedMessage [descriptorId=" + descriptorId + ", interval=" + interval + ", containingElementId=" + containingElementId + "]";
+        return "KeyframeSuccesfullyResetMessage [descriptorId=" + descriptorId + ", interval=" + interval + ", containingElementId=" + containingElementId + "]";
     }
 
 }

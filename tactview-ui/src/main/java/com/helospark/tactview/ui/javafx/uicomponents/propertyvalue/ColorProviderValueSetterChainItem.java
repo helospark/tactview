@@ -24,6 +24,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
 @Component
@@ -137,6 +138,13 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
             });
 
             contextMenuAppender.addContextMenu(result, colorProvider, descriptor, hbox);
+
+            // Do not trigger colorPicker to allow context-menu to be viewed
+            colorPicker.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+                if (e.getButton().equals(MouseButton.SECONDARY)) {
+                    e.consume();
+                }
+            });
 
             return result;
         }

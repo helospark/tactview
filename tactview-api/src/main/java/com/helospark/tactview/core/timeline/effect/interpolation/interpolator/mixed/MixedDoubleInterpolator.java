@@ -17,13 +17,22 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
     protected double defaultValue;
     protected boolean useKeyframes;
 
+    protected TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> initialValues;
+    protected double initialDefaultValue;
+
     public MixedDoubleInterpolator(Double singleDefaultValue) {
         this.values = new TreeMap<>();
         this.defaultValue = singleDefaultValue;
+
+        this.initialValues = new TreeMap<>(values);
+        this.initialDefaultValue = defaultValue;
     }
 
     public MixedDoubleInterpolator(TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> values) {
         this.values = new TreeMap<>(values);
+
+        this.initialValues = new TreeMap<>(values);
+        this.initialDefaultValue = defaultValue;
     }
 
     @Override
@@ -142,6 +151,12 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
     public void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
         MixedDoubleInterpolatorElement originalValue = values.remove(timelinePosition);
         values.put(newTime, originalValue.butWithPoint(newValue));
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.values = new TreeMap<>(initialValues);
+        this.defaultValue = initialDefaultValue;
     }
 
 }

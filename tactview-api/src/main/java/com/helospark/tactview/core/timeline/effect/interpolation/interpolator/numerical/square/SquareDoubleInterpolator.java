@@ -16,12 +16,22 @@ public class SquareDoubleInterpolator implements DoubleInterpolator {
     double minValue;
     double maxValue;
 
+    double initialOnTime;
+    double initialOffTime;
+    double initialMinValue;
+    double initialMaxValue;
+
     @Generated("SparkTools")
     private SquareDoubleInterpolator(Builder builder) {
         this.onTime = builder.onTime;
         this.offTime = builder.offTime;
         this.minValue = builder.minValue;
         this.maxValue = builder.maxValue;
+
+        this.initialOnTime = onTime;
+        this.initialOffTime = offTime;
+        this.initialMinValue = minValue;
+        this.initialMaxValue = maxValue;
     }
 
     @Override
@@ -82,6 +92,14 @@ public class SquareDoubleInterpolator implements DoubleInterpolator {
                 .withOnTime(onTime)
                 .withOffTime(offTime)
                 .build();
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.onTime = initialOnTime;
+        this.offTime = initialOffTime;
+        this.minValue = initialMinValue;
+        this.maxValue = initialMaxValue;
     }
 
     @Generated("SparkTools")

@@ -14,6 +14,9 @@ public class LineInterpolatorFactory implements DesSerFactory<LineDoubleInterpol
     public void addDataForDeserialize(LineDoubleInterpolator instance, Map<String, Object> data) {
         data.put("tangent", instance.tangent.toString());
         data.put("startValue", instance.startValue.toString());
+
+        data.put("initialTangent", instance.initialTangent);
+        data.put("initialStartValue", instance.initialStartValue);
     }
 
     @Override
@@ -22,7 +25,12 @@ public class LineInterpolatorFactory implements DesSerFactory<LineDoubleInterpol
             BigDecimal tangent = new BigDecimal(data.get("tangent").asText());
             BigDecimal startValue = new BigDecimal(data.get("startValue").asText());
 
-            return new LineDoubleInterpolator(tangent, startValue);
+            LineDoubleInterpolator result = new LineDoubleInterpolator(tangent, startValue);
+
+            result.initialTangent = new BigDecimal(data.get("initialTangent").asText());
+            result.initialStartValue = new BigDecimal(data.get("initialStartValue").asText());
+
+            return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

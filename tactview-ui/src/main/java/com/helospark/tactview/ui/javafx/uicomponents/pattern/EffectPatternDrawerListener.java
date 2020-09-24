@@ -14,12 +14,10 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.StatelessEffect;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -63,19 +61,9 @@ public class EffectPatternDrawerListener {
         messagingService.register(EffectResizedMessage.class, message -> {
             updateRequests.add(new EffectPatternUpdateRequest(message.getEffectId()));
         });
-        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> {
+        messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
             if (effectToUpdate.containsKey(message.getContainingElementId())) {
                 updateRequests.add(new EffectPatternUpdateRequest(message.getContainingElementId()));
-            }
-        });
-        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> {
-            if (effectToUpdate.containsKey(message.getContainingElementId())) {
-                updateRequests.add(new EffectPatternUpdateRequest(message.getContainingElementId()));
-            }
-        });
-        messagingService.register(KeyframeEnabledWasChangedMessage.class, message -> {
-            if (effectToUpdate.containsKey(message.getContainerId())) {
-                updateRequests.add(new EffectPatternUpdateRequest(message.getContainerId()));
             }
         });
     }
@@ -90,7 +78,7 @@ public class EffectPatternDrawerListener {
             while (running) {
                 try {
                     ThreadSleep.sleep(1000);
-                    Set<EffectPatternUpdateRequest> clonedRequests = new HashSet<EffectPatternUpdateRequest>(updateRequests);
+                    Set<EffectPatternUpdateRequest> clonedRequests = new HashSet<>(updateRequests);
                     updateRequests.clear();
                     for (var request : clonedRequests) {
                         if (effectToUpdate.containsKey(request.effectId)) {

@@ -35,20 +35,21 @@ import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
+import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyResetMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class EffectParametersRepository {
-    private MessagingService messagingService;
-    private TimelineManagerAccessor timelineManagerAccessor;
-    private List<DoubleInterpolatorFactory> doubleInterpolatorFactories;
-    private List<StringInterpolatorFactory> stringInterpolatorFactories;
+    private final MessagingService messagingService;
+    private final TimelineManagerAccessor timelineManagerAccessor;
+    private final List<DoubleInterpolatorFactory> doubleInterpolatorFactories;
+    private final List<StringInterpolatorFactory> stringInterpolatorFactories;
     @Slf4j
     private Logger logger;
 
-    private Map<String, EffectStore> primitiveEffectIdToEffectMap = new ConcurrentHashMap<>();
-    private Map<String, EffectStore> allEffectIdToEffectMap = new ConcurrentHashMap<>();
+    private final Map<String, EffectStore> primitiveEffectIdToEffectMap = new ConcurrentHashMap<>();
+    private final Map<String, EffectStore> allEffectIdToEffectMap = new ConcurrentHashMap<>();
 
     public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories,
             TimelineManagerAccessor timelineManagerAccessor) {
@@ -84,6 +85,15 @@ public class EffectParametersRepository {
                     primitiveEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
                     //                    allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
                 });
+    }
+
+    public KeyframeableEffect getKeyframeableEffect(String keyframeableEffectId) {
+        EffectStore effectStore = allEffectIdToEffectMap.get(keyframeableEffectId);
+        if (effectStore != null) {
+            return effectStore.effect;
+        } else {
+            return primitiveEffectIdToEffectMap.get(keyframeableEffectId).effect;
+        }
     }
 
     public EffectInterpolator getKeyframeableValue(String keyframeableEffectId) {
@@ -130,6 +140,17 @@ public class EffectParametersRepository {
         } else {
             System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
         }
+    }
+
+    public void resetToDefaultValue(String descriptorId) {
+        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(descriptorId);
+        if (valueToChange != null) {
+            valueToChange.effect.getInterpolator().resetToDefaultValue();
+            messagingService.sendAsyncMessage(new KeyframeSuccesfullyResetMessage(descriptorId, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
+        } else {
+            System.out.println("We wanted to change " + descriptorId + " but it was removed");
+        }
+
     }
 
     public void removeKeyframe(String id, TimelinePosition globalPosition) {
@@ -223,7 +244,7 @@ public class EffectParametersRepository {
         EffectStore effectStore = primitiveEffectIdToEffectMap.get(descriptorId);
         effectStore.effect.setInterpolator(interpolator);
 
-        messagingService.sendAsyncMessage(new InterpolatorChangedMessage(descriptorId));
+        messagingService.sendAsyncMessage(new InterpolatorChangedMessage(descriptorId, effectStore.effectAware.getGlobalInterval(), effectStore.containingElementId));
     }
 
     public Boolean isUsingKeyframes(String keyframeableEffectId) {

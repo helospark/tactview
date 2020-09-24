@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
@@ -58,7 +59,7 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
 
     @Override
     public ValueListProvider<T> deepClone() {
-        return new ValueListProvider<T>(new ArrayList<T>(elements.values()), stringInterpolator.deepClone());
+        return new ValueListProvider<>(new ArrayList<>(elements.values()), stringInterpolator.deepClone());
     }
 
     @Override
@@ -79,6 +80,11 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
     @Override
     public boolean keyframesEnabled() {
         return ((KeyframeSupportingInterpolator) stringInterpolator).isUsingKeyframes();
+    }
+
+    @Override
+    public EffectInterpolator getInterpolator() {
+        return stringInterpolator;
     }
 
 }

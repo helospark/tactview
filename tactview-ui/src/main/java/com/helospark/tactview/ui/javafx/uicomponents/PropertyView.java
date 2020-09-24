@@ -15,6 +15,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
@@ -22,8 +23,6 @@ import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
@@ -115,10 +114,7 @@ public class PropertyView {
             EffectPropertyPage asd = createBox(message.getDescriptors(), message.getClipId());
             clipProperties.put(message.getClipId(), asd);
         }));
-        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> Platform.runLater(() -> {
-            updateValuesAtCurrentPosition();
-        }));
-        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> Platform.runLater(() -> {
+        messagingService.register(AbstractKeyframeChangedMessage.class, message -> Platform.runLater(() -> {
             updateValuesAtCurrentPosition();
         }));
         messagingService.register(ClipRemovedMessage.class, message -> {

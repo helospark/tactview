@@ -13,12 +13,22 @@ public class SineDoubleInterpolator implements DoubleInterpolator {
     double minValue;
     double maxValue;
 
+    double initialFrequency;
+    double initialStartOffset;
+    double initialMinValue;
+    double initialMaxValue;
+
     @Generated("SparkTools")
     private SineDoubleInterpolator(Builder builder) {
         this.frequency = builder.frequency;
         this.startOffset = builder.startOffset;
         this.minValue = builder.minValue;
         this.maxValue = builder.maxValue;
+
+        this.initialStartOffset = startOffset;
+        this.initialFrequency = frequency;
+        this.initialMinValue = minValue;
+        this.initialMaxValue = maxValue;
     }
 
     @Override
@@ -72,6 +82,14 @@ public class SineDoubleInterpolator implements DoubleInterpolator {
                 .withMinValue(minValue)
                 .withStartOffset(startOffset)
                 .build();
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.startOffset = this.initialStartOffset;
+        this.frequency = this.initialFrequency;
+        this.minValue = this.initialMinValue;
+        this.maxValue = this.initialMaxValue;
     }
 
     @Generated("SparkTools")

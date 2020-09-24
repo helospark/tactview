@@ -16,6 +16,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
 @Component
@@ -130,7 +132,16 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         comboBox.setOnAction(e -> {
             result.sendKeyframe(timelineManager.getCurrentPosition());
         });
+
         contextMenuAppender.addContextMenu(result, typeFixedValueProvider, descriptor, comboBox);
+
+        // Do not trigger combobox dropdown to allow context-menu to be viewed
+        comboBox.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            if (e.getButton().equals(MouseButton.SECONDARY)) {
+                e.consume();
+            }
+        });
+
         return result;
     }
 

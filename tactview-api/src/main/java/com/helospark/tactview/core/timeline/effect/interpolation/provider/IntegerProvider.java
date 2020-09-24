@@ -113,4 +113,9 @@ public class IntegerProvider extends KeyframeableEffect {
     public EffectInterpolator getInterpolator() {
         return interpolator;
     }
+
+    @Override
+    public void setInterpolator(Object interpolator) {
+        this.interpolator = (DoubleInterpolator) interpolator;
+    }
 }

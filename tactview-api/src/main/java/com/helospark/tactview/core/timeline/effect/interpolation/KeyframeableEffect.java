@@ -60,7 +60,12 @@ public abstract class KeyframeableEffect implements StatefulCloneable<Keyframeab
     }
 
     public EffectInterpolator getInterpolatorClone() {
-        return null;
+        EffectInterpolator interpolator = getInterpolator();
+        if (interpolator != null) {
+            return interpolator.deepClone();
+        } else {
+            return null;
+        }
     }
 
     public EffectInterpolator getInterpolator() {

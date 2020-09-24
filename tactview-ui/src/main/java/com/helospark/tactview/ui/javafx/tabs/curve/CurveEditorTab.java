@@ -17,10 +17,9 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ef
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.TabCloseListener;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -85,12 +84,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
         this.messagingService = messagingService;
         this.effectParametersRepository = effectParametersRepository;
 
-        messagingService.register(KeyframeSuccesfullyAddedMessage.class, e -> {
-            if (currentlyOpenEditor != null && e.getDescriptorId().equals(currentKeyframeableEffect.getId())) {
-                Platform.runLater(() -> updateCanvas());
-            }
-        });
-        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, e -> {
+        messagingService.register(AbstractKeyframeChangedMessage.class, e -> {
             if (currentlyOpenEditor != null && e.getDescriptorId().equals(currentKeyframeableEffect.getId())) {
                 Platform.runLater(() -> updateCanvas());
             }

@@ -6,8 +6,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
-import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyRemovedMessage;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
@@ -29,10 +28,7 @@ public class ClipRateScaledHandlerListener {
     @PostConstruct
     public void init() {
         // TODO: custom message may be better?!
-        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> {
-            changeScaleIfNeeded(message.getContainingElementId());
-        });
-        messagingService.register(KeyframeSuccesfullyRemovedMessage.class, message -> {
+        messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
             changeScaleIfNeeded(message.getContainingElementId());
         });
     }

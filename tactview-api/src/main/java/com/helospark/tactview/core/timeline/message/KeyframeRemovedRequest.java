@@ -5,9 +5,9 @@ import javax.annotation.Generated;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class KeyframeRemovedRequest {
-    private String descriptorId;
-    private TimelinePosition globalTimelinePosition;
-    private TimelinePosition localTimelinePosition;
+    private final String descriptorId;
+    private final TimelinePosition globalTimelinePosition;
+    private final TimelinePosition localTimelinePosition;
 
     @Generated("SparkTools")
     private KeyframeRemovedRequest(Builder builder) {

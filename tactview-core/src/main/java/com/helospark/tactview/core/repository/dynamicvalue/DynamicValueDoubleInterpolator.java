@@ -34,4 +34,8 @@ public class DynamicValueDoubleInterpolator implements DoubleInterpolator {
         return null; // TODO:
     }
 
+    @Override
+    public void resetToDefaultValue() {
+    }
+
 }

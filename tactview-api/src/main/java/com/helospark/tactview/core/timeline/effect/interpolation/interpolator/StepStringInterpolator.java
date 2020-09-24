@@ -12,25 +12,40 @@ public class StepStringInterpolator implements StringInterpolator {
     TreeMap<TimelinePosition, String> values;
     boolean useKeyframes;
 
+    String initialDefaultValue;
+    TreeMap<TimelinePosition, String> initialValues;
+
     public StepStringInterpolator() {
         this.values = new TreeMap<>();
         this.defaultValue = "";
+
+        this.initialDefaultValue = defaultValue;
+        this.initialValues = new TreeMap<>(values);
     }
 
     public StepStringInterpolator(String defaultValue) {
         this.values = new TreeMap<>();
         this.defaultValue = defaultValue;
+
+        this.initialDefaultValue = defaultValue;
+        this.initialValues = new TreeMap<>(values);
     }
 
     public StepStringInterpolator(TreeMap<TimelinePosition, String> values) {
         this.values = values;
         this.defaultValue = "";
+
+        this.initialDefaultValue = defaultValue;
+        this.initialValues = new TreeMap<>(initialValues);
     }
 
     public StepStringInterpolator(String defaultValue, TreeMap<TimelinePosition, String> values, boolean useKeyframes) {
         this.defaultValue = defaultValue;
         this.values = values;
         this.useKeyframes = useKeyframes;
+
+        this.initialDefaultValue = defaultValue;
+        this.initialValues = new TreeMap<>(initialValues);
     }
 
     @Override
@@ -109,4 +124,9 @@ public class StepStringInterpolator implements StringInterpolator {
         return defaultValue;
     }
 
+    @Override
+    public void resetToDefaultValue() {
+        this.defaultValue = initialDefaultValue;
+        this.values = new TreeMap<>(initialValues);
+    }
 }

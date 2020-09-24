@@ -16,4 +16,10 @@ public class VisualMediaSource extends MediaSource {
         this.backingFile = backingFile;
         this.decoder = decoder;
     }
+
+    @Override
+    public String toString() {
+        return "VisualMediaSource [decoder=" + decoder + ", backingFile=" + backingFile + "]";
+    }
+
 }

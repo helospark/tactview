@@ -15,6 +15,11 @@ public class SquareDoubleInterpolatorFactory implements DesSerFactory<SquareDoub
         data.put("maxValue", instance.maxValue);
         data.put("onTime", instance.onTime);
         data.put("offTime", instance.offTime);
+
+        data.put("initialOnTime", instance.initialOnTime);
+        data.put("initialOffTime", instance.initialOffTime);
+        data.put("initialMinValue", instance.initialMinValue);
+        data.put("initialMaxValue", instance.initialMaxValue);
     }
 
     @Override
@@ -25,12 +30,19 @@ public class SquareDoubleInterpolatorFactory implements DesSerFactory<SquareDoub
             double onTime = data.get("onTime").asDouble();
             double offTime = data.get("offTime").asDouble();
 
-            return SquareDoubleInterpolator.builder()
+            SquareDoubleInterpolator result = SquareDoubleInterpolator.builder()
                     .withMaxValue(maxValue)
                     .withMinValue(minValue)
                     .withOnTime(onTime)
                     .withOffTime(offTime)
                     .build();
+
+            result.initialOnTime = data.get("initialOnTime").asDouble();
+            result.initialOffTime = data.get("initialOffTime").asDouble();
+            result.initialMinValue = data.get("initialMinValue").asDouble();
+            result.initialMaxValue = data.get("initialMaxValue").asDouble();
+
+            return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

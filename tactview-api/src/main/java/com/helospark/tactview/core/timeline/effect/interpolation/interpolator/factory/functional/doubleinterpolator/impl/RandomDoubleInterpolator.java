@@ -17,11 +17,22 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
     BigDecimal changeScale;
     LinearInterpolator linearInterpolator = new LinearInterpolator();
 
+    double initialMin;
+    double initialMax;
+    RepeatableRandom initialRepeatableRandom;
+    BigDecimal initialChangeScale;
+    LinearInterpolator initialLinearInterpolator;
+
     public RandomDoubleInterpolator(double min, double max, BigDecimal changeScale) {
         this.min = min;
         this.max = max;
         this.changeScale = changeScale;
         this.repeatableRandom = new RepeatableRandom();
+
+        initialMin = min;
+        initialMax = max;
+        initialRepeatableRandom = repeatableRandom;
+        initialChangeScale = changeScale;
     }
 
     @Override
@@ -87,6 +98,14 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
 
     public void changeScale(BigDecimal changeScale) {
         this.changeScale = changeScale;
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.min = initialMin;
+        this.max = initialMax;
+        this.repeatableRandom = initialRepeatableRandom;
+        this.changeScale = initialChangeScale;
     }
 
 }

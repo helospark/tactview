@@ -16,9 +16,15 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
     protected double defaultValue;
     protected boolean useKeyframes;
 
+    protected TreeMap<TimelinePosition, CubicBezierPoint> initialValues;
+    protected double initialDefaultValue;
+
     public BezierDoubleInterpolator(Double singleDefaultValue) {
         this.values = new TreeMap<>();
         this.defaultValue = singleDefaultValue;
+
+        this.initialValues = new TreeMap<>(values);
+        this.initialDefaultValue = defaultValue;
     }
 
     public BezierDoubleInterpolator(TreeMap<TimelinePosition, CubicBezierPoint> values) {
@@ -174,10 +180,9 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
         values.put(positionToModify, values.get(positionToModify).butWithOutControlPoint(point));
     }
 
-    //    @Override
-    //    protected void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
-    //        values.remove(timelinePosition);
-    //        values.put(newTime, newValue);
-    //    }
-
+    @Override
+    public void resetToDefaultValue() {
+        this.values = new TreeMap<>(initialValues);
+        this.defaultValue = initialDefaultValue;
+    }
 }

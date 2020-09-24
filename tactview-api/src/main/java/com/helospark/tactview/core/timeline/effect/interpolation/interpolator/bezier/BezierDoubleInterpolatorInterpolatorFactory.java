@@ -20,6 +20,9 @@ public class BezierDoubleInterpolatorInterpolatorFactory implements DesSerFactor
         data.put("defaultValue", instance.defaultValue);
         data.put("values", instance.values);
         data.put("useKeyframes", instance.useKeyframes);
+
+        data.put("initialValues", instance.initialValues);
+        data.put("initialDefaultValue", instance.initialDefaultValue);
     }
 
     @Override
@@ -31,9 +34,19 @@ public class BezierDoubleInterpolatorInterpolatorFactory implements DesSerFactor
                     objectMapper.getTypeFactory().constructType(new TypeReference<TreeMap<TimelinePosition, CubicBezierPoint>>() {
                     }));
 
+            Double initialDefaultValue = data.get("initialDefaultValue").asDouble();
+            TreeMap<TimelinePosition, CubicBezierPoint> initialValues = objectMapper.readValue(
+                    objectMapper.treeAsTokens(data.get("initialValues")),
+                    objectMapper.getTypeFactory().constructType(new TypeReference<TreeMap<TimelinePosition, CubicBezierPoint>>() {
+                    }));
+
             BezierDoubleInterpolator result = new BezierDoubleInterpolator(defaultValue);
             result.values = new TreeMap<>(values);
             result.useKeyframes = data.get("useKeyframes").asBoolean();
+
+            result.initialValues = new TreeMap<>(initialValues);
+            result.initialDefaultValue = initialDefaultValue;
+
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -19,6 +19,10 @@ public class MixedDoubleInterpolatorInterpolatorFactory implements DesSerFactory
         data.put("defaultValue", instance.defaultValue);
         data.put("values", instance.values);
         data.put("useKeyframes", instance.useKeyframes);
+
+        data.put("initialValues", instance.initialValues);
+        data.put("initialDefaultValue", instance.initialDefaultValue);
+
     }
 
     @Override
@@ -30,9 +34,19 @@ public class MixedDoubleInterpolatorInterpolatorFactory implements DesSerFactory
                     objectMapper.getTypeFactory().constructType(new TypeReference<TreeMap<TimelinePosition, MixedDoubleInterpolatorElement>>() {
                     }));
 
+            Double initialDefaultValue = data.get("initialDefaultValue").asDouble();
+            TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> initialValues = objectMapper.readValue(
+                    objectMapper.treeAsTokens(data.get("initialValues")),
+                    objectMapper.getTypeFactory().constructType(new TypeReference<TreeMap<TimelinePosition, MixedDoubleInterpolatorElement>>() {
+                    }));
+
             MixedDoubleInterpolator result = new MixedDoubleInterpolator(defaultValue);
             result.values = new TreeMap<>(values);
             result.useKeyframes = data.get("useKeyframes").asBoolean();
+
+            result.initialValues = new TreeMap<>(initialValues);
+            result.initialDefaultValue = initialDefaultValue;
+
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);

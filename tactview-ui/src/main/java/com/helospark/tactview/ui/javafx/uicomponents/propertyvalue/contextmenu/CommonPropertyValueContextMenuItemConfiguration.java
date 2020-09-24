@@ -8,6 +8,7 @@ import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.ResetDefaultValuesCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PrimitiveEffectLine;
 
 import javafx.scene.control.MenuItem;
@@ -83,6 +84,18 @@ public class CommonPropertyValueContextMenuItemConfiguration {
         });
     }
 
+    @Bean
+    @Order(30)
+    public PropertyValueContextMenuItem resetDefaultsValues(UiTimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+        return alwaysEnableContextMenu(request -> {
+            MenuItem resetDefaultsMenuItem = new MenuItem("Reset defaults");
+            resetDefaultsMenuItem.setOnAction(e -> {
+                commandInterpreter.sendWithResult(new ResetDefaultValuesCommand(effectParametersRepository, request.valueProvider.getId()));
+            });
+            return resetDefaultsMenuItem;
+        });
+    }
+
     private PropertyValueContextMenuItem contextMenuEnabledIfKeyframesEnabled(Function<PropertyValueContextMenuRequest, MenuItem> function) {
         return new PropertyValueContextMenuItem() {
 
@@ -113,6 +126,21 @@ public class CommonPropertyValueContextMenuItemConfiguration {
             @Override
             public boolean supports(PropertyValueContextMenuRequest request) {
                 return request.effectLine instanceof PrimitiveEffectLine;
+            }
+
+            @Override
+            public MenuItem createMenuItem(PropertyValueContextMenuRequest request) {
+                return function.apply(request);
+            }
+        };
+    }
+
+    private PropertyValueContextMenuItem alwaysEnableContextMenu(Function<PropertyValueContextMenuRequest, MenuItem> function) {
+        return new PropertyValueContextMenuItem() {
+
+            @Override
+            public boolean supports(PropertyValueContextMenuRequest request) {
+                return true;
             }
 
             @Override

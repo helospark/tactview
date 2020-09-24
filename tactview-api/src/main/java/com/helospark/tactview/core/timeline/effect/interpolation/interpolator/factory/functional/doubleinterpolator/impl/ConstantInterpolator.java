@@ -11,8 +11,12 @@ import com.helospark.tactview.core.util.DesSerFactory;
 public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
     double value;
 
+    double initialValue;
+
     public ConstantInterpolator(double defaultValue) {
         this.value = defaultValue;
+
+        this.initialValue = value;
     }
 
     @Override
@@ -63,6 +67,11 @@ public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
     @Override
     public boolean supportsKeyframes() {
         return false; // this is most likely on the wrong interface
+    }
+
+    @Override
+    public void resetToDefaultValue() {
+        this.value = initialValue;
     }
 
 }

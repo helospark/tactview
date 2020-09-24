@@ -5,11 +5,11 @@ import java.util.List;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 
-public class KeyframeEnabledWasChangedMessage implements AffectedModifiedIntervalAware {
-    private TimelineInterval interval;
-    private boolean useKeyframes;
-    private String containerId;
-    private String keyframeableEffectId;
+public class KeyframeEnabledWasChangedMessage extends AbstractKeyframeChangedMessage implements AffectedModifiedIntervalAware {
+    private final TimelineInterval interval;
+    private final boolean useKeyframes;
+    private final String containerId;
+    private final String keyframeableEffectId;
 
     public KeyframeEnabledWasChangedMessage(String containerId, String keyframeableEffectId, boolean useKeyframes, TimelineInterval interval) {
         this.useKeyframes = useKeyframes;
@@ -22,6 +22,7 @@ public class KeyframeEnabledWasChangedMessage implements AffectedModifiedInterva
         return containerId;
     }
 
+    @Override
     public TimelineInterval getInterval() {
         return interval;
     }
@@ -32,6 +33,16 @@ public class KeyframeEnabledWasChangedMessage implements AffectedModifiedInterva
 
     public String getKeyframeableEffectId() {
         return keyframeableEffectId;
+    }
+
+    @Override
+    public String getDescriptorId() {
+        return containerId;
+    }
+
+    @Override
+    public String getContainingElementId() {
+        return containerId;
     }
 
     @Override
