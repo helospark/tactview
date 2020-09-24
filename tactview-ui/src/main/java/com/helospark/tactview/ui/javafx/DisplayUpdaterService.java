@@ -42,7 +42,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private volatile long currentPositionLastRendered = -1;
     private volatile boolean running = true;
 
-    private final PlaybackController playbackController;
+    private final PlaybackFrameAccessor playbackController;
     private final UiProjectRepository uiProjectRepostiory;
     private final UiTimelineManager uiTimelineManager;
     private final GlobalDirtyClipManager globalDirtyClipManager;
@@ -65,7 +65,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     private Canvas canvas;
 
-    public DisplayUpdaterService(PlaybackController playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
+    public DisplayUpdaterService(PlaybackFrameAccessor playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
             @Value("${debug.display-audio-updater.enabled}") boolean debugAudioUpdateEnabled) {
         this.playbackController = playbackController;
@@ -195,7 +195,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
 
                 if (debugAudioUpdateEnabled) { // just so it is easier to debug. Will need to think of other solution later
-                    AudioVideoFragment result = playbackController.getSingleAudioFrameAtPosition(currentPosition);
+                    AudioVideoFragment result = playbackController.getSingleAudioFrameAtPosition(currentPosition, false);
                     result.free();
                 }
             } else {

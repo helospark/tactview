@@ -226,7 +226,8 @@ public class PropertyView {
             }
         });
         GridPane hbox = new GridPane();
-        hbox.getChildren().addAll(nameField, button);
+        hbox.add(nameField, 0, 0);
+        hbox.add(button, 1, 0);
 
         result.getBox().add(new Label("name"), 0, 0);
         result.getBox().add(hbox, 1, 0);

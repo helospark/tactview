@@ -2,10 +2,15 @@ package com.helospark.tactview.ui.javafx;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
@@ -19,7 +24,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
 @Component
-public class PlaybackController {
+public class PlaybackFrameAccessor {
     public static final int CHANNELS = 2;
     public static final int SAMPLE_RATE = 44100;
     public static final int BYTES = 2;
@@ -30,7 +35,7 @@ public class PlaybackController {
     private final JavaByteArrayConverter javaByteArrayConverter;
     private final UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
 
-    public PlaybackController(TimelineManagerRenderService timelineManager, UiProjectRepository uiProjectRepository, ProjectRepository projectRepository,
+    public PlaybackFrameAccessor(TimelineManagerRenderService timelineManager, UiProjectRepository uiProjectRepository, ProjectRepository projectRepository,
             ByteBufferToJavaFxImageConverter byteBufferToImageConverter, JavaByteArrayConverter javaByteArrayConverter,
             UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
         this.timelineManager = timelineManager;
@@ -92,17 +97,15 @@ public class PlaybackController {
         return javafxImage;
     }
 
-    public byte[] getAudioFrameAt(TimelinePosition position, int samples) {
+    public byte[] getAudioFrameAt(TimelinePosition position, boolean isMute) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            for (int i = 0; i < samples; ++i) {
-                AudioVideoFragment frame = getSingleAudioFrameAtPosition(position.add(projectRepository.getFrameTime().multiply(BigDecimal.valueOf(i))));
-                byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), CHANNELS); // move data to repository
+            AudioVideoFragment frame = getSingleAudioFrameAtPosition(position, isMute);
+            byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), CHANNELS); // move data to repository
 
-                frame.free();
+            frame.free();
 
-                baos.write(buffer);
-            }
+            baos.write(buffer);
 
             return baos.toByteArray();
         } catch (Exception e) {
@@ -111,20 +114,30 @@ public class PlaybackController {
         }
     }
 
-    public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position) {
-        Integer width = uiProjectRepository.getPreviewWidth();
-        Integer height = uiProjectRepository.getPreviewHeight();
-        TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
-                .withPosition(position)
-                .withScale(uiProjectRepository.getScaleFactor())
-                .withPreviewWidth(width)
-                .withPreviewHeight(height)
-                .withNeedSound(true)
-                .withNeedVideo(false)
-                .withAudioBytesPerSample(Optional.of(BYTES))
-                .withAudioSampleRate(Optional.of(SAMPLE_RATE))
-                .build();
-        AudioVideoFragment frame = timelineManager.getFrame(request);
-        return frame;
+    public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position, boolean isMute) {
+        if (isMute) { // this is so the same audio->video sync code can be used to play video, instead of writing a secondary play video logic
+            int bytes = projectRepository.getFrameTime().multiply(BigDecimal.valueOf(SAMPLE_RATE)).intValue() * BYTES;
+            List<ByteBuffer> channels = new ArrayList<>(CHANNELS);
+            for (int i = 0; i < CHANNELS; ++i) {
+                channels.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(bytes));
+            }
+
+            return new AudioVideoFragment(null, new AudioFrameResult(channels, SAMPLE_RATE, BYTES));
+        } else {
+            Integer width = uiProjectRepository.getPreviewWidth();
+            Integer height = uiProjectRepository.getPreviewHeight();
+            TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
+                    .withPosition(position)
+                    .withScale(uiProjectRepository.getScaleFactor())
+                    .withPreviewWidth(width)
+                    .withPreviewHeight(height)
+                    .withNeedSound(!isMute)
+                    .withNeedVideo(false)
+                    .withAudioBytesPerSample(Optional.of(BYTES))
+                    .withAudioSampleRate(Optional.of(SAMPLE_RATE))
+                    .build();
+            AudioVideoFragment frame = timelineManager.getFrame(request);
+            return frame;
+        }
     }
 }

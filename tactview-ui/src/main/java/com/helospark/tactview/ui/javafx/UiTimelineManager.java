@@ -32,16 +32,18 @@ public class UiTimelineManager {
 
     private final ProjectRepository projectRepository;
     private final TimelineState timelineState;
-    private final PlaybackController playbackController;
+    private final PlaybackFrameAccessor playbackController;
     private final AudioStreamService audioStreamService;
     private DisplayUpdaterService displayUpdaterService;
+    private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
 
-    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackController playbackController,
-            AudioStreamService audioStreamService) {
+    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
+            AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
         this.playbackController = playbackController;
         this.audioStreamService = audioStreamService;
+        this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
     }
 
     public void setDisplayUpdaterService(DisplayUpdaterService displayUpdaterService) {
@@ -71,7 +73,9 @@ public class UiTimelineManager {
                             currentPosition = nextFrame;
                         }
 
-                        byte[] audioFrame = playbackController.getAudioFrameAt(currentPosition, 1);
+                        boolean isMute = uiPlaybackPreferenceRepository.isMute();
+
+                        byte[] audioFrame = playbackController.getAudioFrameAt(currentPosition, isMute);
 
                         audioStreamService.streamAudio(audioFrame);
 

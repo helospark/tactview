@@ -15,7 +15,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFu
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
-import com.helospark.tactview.ui.javafx.PlaybackController;
+import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.BezierPolygonInputTypeStrategy;
@@ -49,14 +49,14 @@ public class InputModeRepository implements CleanableMode {
     private UiProjectRepository projectRepository;
     private DisplayUpdaterService displayUpdaterService;
     private InputModeInput<?> inputModeInput;
-    private PlaybackController playbackController;
+    private PlaybackFrameAccessor playbackController;
     private UiTimelineManager timelineManager;
     private VideoStatusBarUpdater videoStatusBarUpdater;
     private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
     private List<Consumer<Boolean>> inputModeConsumer = new ArrayList<>();
 
     public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService,
-            SizeFunctionImplementation sizeFunctionImplementation, PlaybackController playbackController,
+            SizeFunctionImplementation sizeFunctionImplementation, PlaybackFrameAccessor playbackController,
             UiTimelineManager timelineManager, VideoStatusBarUpdater videoStatusBarUpdater,
             CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
         this.projectRepository = projectRepository;

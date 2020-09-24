@@ -22,14 +22,20 @@ public class AudioVideoFragment {
     }
 
     public void free() {
-        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(videoResult.getBuffer());
-        for (int i = 0; i < audioResult.getChannels().size(); ++i) {
-            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(audioResult.getChannels().get(i));
+        if (videoResult != null) {
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(videoResult.getBuffer());
+        }
+        if (audioResult != null) {
+            for (int i = 0; i < audioResult.getChannels().size(); ++i) {
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(audioResult.getChannels().get(i));
+            }
         }
     }
 
     public AudioVideoFragment butFreeAndReplaceVideoFrame(ClipImage scaledImage) {
-        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(videoResult.getBuffer());
+        if (videoResult != null) {
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(videoResult.getBuffer());
+        }
         return new AudioVideoFragment(scaledImage, audioResult);
     }
 

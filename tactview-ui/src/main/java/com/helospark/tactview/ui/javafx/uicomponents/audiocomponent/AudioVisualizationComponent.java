@@ -8,7 +8,8 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.MathUtil;
-import com.helospark.tactview.ui.javafx.PlaybackController;
+import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
+import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
@@ -35,15 +36,18 @@ public class AudioVisualizationComponent {
 
     private int numberOfBars = 45;
 
-    private final PlaybackController playbackController;
+    private final PlaybackFrameAccessor playbackController;
     private final SoundRmsRepository soundRmsRepository;
     private final AudioRmsCalculator audioRmsCalculator;
+    private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
 
-    public AudioVisualizationComponent(PlaybackController playbackController, SoundRmsRepository soundRmsRepository, AudioRmsCalculator audioRmsCalculator, UiProjectRepository uiProjectRepository) {
+    public AudioVisualizationComponent(PlaybackFrameAccessor playbackController, SoundRmsRepository soundRmsRepository, AudioRmsCalculator audioRmsCalculator, UiProjectRepository uiProjectRepository,
+            UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
         canvas = new Canvas(numberOfBars * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
         this.playbackController = playbackController;
         this.soundRmsRepository = soundRmsRepository;
         this.audioRmsCalculator = audioRmsCalculator;
+        this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
 
         uiProjectRepository.getPreviewAvailableWidth().addListener((e, oldV, newV) -> {
             int newNumberOfBars = (int) (newV.doubleValue() / (BAR_WIDTH + BAR_SPACE_WIDTH));
@@ -69,7 +73,7 @@ public class AudioVisualizationComponent {
         try {
             isThreadAvailable = false;
             // TODO: Do not query the sound again! Use the already queried sound
-            AudioVideoFragment frame = playbackController.getSingleAudioFrameAtPosition(position);
+            AudioVideoFragment frame = playbackController.getSingleAudioFrameAtPosition(position, uiPlaybackPreferenceRepository.isMute());
             AudioFrameResult audioFrame = frame.getAudioResult();
 
             double rms[] = new double[2];

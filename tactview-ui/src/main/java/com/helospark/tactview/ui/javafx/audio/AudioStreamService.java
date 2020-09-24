@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.logger.Slf4j;
-import com.helospark.tactview.ui.javafx.PlaybackController;
+import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
 
 @Component
 public class AudioStreamService {
@@ -24,13 +24,13 @@ public class AudioStreamService {
 
     public void streamAudio(byte[] data) {
         logger.debug("Streaming " + data.length + " at " + System.currentTimeMillis() + " with length "
-                + (1000 * data.length / (PlaybackController.BYTES * PlaybackController.CHANNELS * PlaybackController.SAMPLE_RATE)));
+                + (1000 * data.length / (PlaybackFrameAccessor.BYTES * PlaybackFrameAccessor.CHANNELS * PlaybackFrameAccessor.SAMPLE_RATE)));
 
         if (data.length > 0) {
             if (sourceDataLine == null) { // TODO: reinit
                 try {
                     logger.info("Initializing sourceDataLine");
-                    AudioFormat format = new AudioFormat(PlaybackController.SAMPLE_RATE, PlaybackController.BYTES * 8, PlaybackController.CHANNELS, true, true);
+                    AudioFormat format = new AudioFormat(PlaybackFrameAccessor.SAMPLE_RATE, PlaybackFrameAccessor.BYTES * 8, PlaybackFrameAccessor.CHANNELS, true, true);
                     dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
                     sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
                     sourceDataLine.open(format, data.length);
