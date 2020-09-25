@@ -27,6 +27,7 @@ import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -102,12 +103,15 @@ public class ImageSequenceRenderService extends AbstractRenderService {
                         .withExpectedHeight(renderRequest.getHeight())
                         .build();
 
-                ByteBuffer frame = queryFrameAt(superRequest).getVideoResult().getBuffer();
+                ReadOnlyClipImage videoResult = queryFrameAt(superRequest).getVideoResult();
+                ByteBuffer frame = videoResult.getBuffer();
 
                 BufferedImage image = byteBufferToImageConverter.byteBufferToBufferedImage(frame, renderRequest.getWidth(), renderRequest.getHeight());
 
                 File outputfile = new File(fileNameWithoutExtension + "_" + currentFrame + "." + extension);
                 ImageIO.write(image, extension, outputfile);
+
+                renderRequest.getEncodedImageCallback().accept(videoResult);
 
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame);
                 currentPosition = currentPosition.add(renderRequest.getStep());

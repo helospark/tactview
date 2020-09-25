@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.render;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormat;
 
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.render.CreateValueProvidersRequest;
 import com.helospark.tactview.core.render.RenderRequest;
@@ -24,19 +26,26 @@ import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
+import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
+import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 import com.helospark.tactview.ui.javafx.util.DurationFormatter;
 
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -44,6 +53,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -57,6 +68,7 @@ import javafx.stage.Stage;
 
 public class RenderDialog {
     private static final int COLUMNS = 2;
+    private static final int ADDITIONAL_OPTIONS_COLUMNS = 3;
 
     private ProjectRepository projectRepository;
     private AlertDialogFactory alertDialogFactory;
@@ -65,6 +77,8 @@ public class RenderDialog {
     private boolean isRenderCancelled = false;
     private RenderService previousRenderService = null;
     private Map<String, OptionProvider<?>> optionProviders = Map.of();
+    private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
+    private ScaleService scaleService;
 
     TextField fileNameTextField;
     GridPane rendererOptions;
@@ -76,12 +90,21 @@ public class RenderDialog {
     VBox metadataVBox;
     ComboBox<ComboBoxElement> extensionComboBox;
 
+    int previewWidth;
+    int previewHeight;
+    ImageView previewImageView;
+    private long previewLastUpdated = 0;
+    CheckBox updatePreviewCheckbox;
+
     boolean shouldUpdateVisibility = false;
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
-            StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory) {
+            StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter,
+            ScaleService scaleService) {
         this.projectRepository = projectRepository;
         this.alertDialogFactory = alertDialogFactory;
+        this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
+        this.scaleService = scaleService;
 
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
@@ -92,24 +115,28 @@ public class RenderDialog {
 
         int linePosition = 0;
 
-        GridPane gridPane = new GridPane();
-        gridPane.setVgap(4.0);
-        gridPane.setHgap(15.0);
-        gridPane.getStyleClass().add("render-dialog-grid-pane");
+        VBox fullVerticalBox = new VBox(4.0);
+
+        HBox upperHBox = new HBox(4.0);
+
+        GridPane upperGridPane = new GridPane();
+        upperGridPane.setVgap(4.0);
+        upperGridPane.setHgap(15.0);
+        upperGridPane.getStyleClass().add("render-dialog-grid-pane");
 
         startPositionTextField = new TextField(DurationFormatter.fromSeconds(BigDecimal.ZERO));
         startPositionTextField.getStyleClass().add("render-dialog-time-selector");
-        addGridElement("start position", linePosition++, gridPane, startPositionTextField);
+        addGridElement("start position", linePosition++, upperGridPane, startPositionTextField);
 
         endPositionTextField = new TextField(DurationFormatter.fromSeconds(timelineManager.findEndPosition().getSeconds()));
         endPositionTextField.getStyleClass().add("render-dialog-time-selector");
-        addGridElement("end position", linePosition++, gridPane, endPositionTextField);
+        addGridElement("end position", linePosition++, upperGridPane, endPositionTextField);
 
         resolutionField = new ResolutionComponent(projectRepository.getWidth(), projectRepository.getHeight());
-        addGridElement("resolution", linePosition++, gridPane, resolutionField);
+        addGridElement("resolution", linePosition++, upperGridPane, resolutionField);
 
         upscaleField = createComboBox(List.of("1", "2", "4"), 0);
-        addGridElement("upscale", linePosition++, gridPane, upscaleField);
+        addGridElement("upscale", linePosition++, upperGridPane, upscaleField);
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
@@ -150,7 +177,7 @@ public class RenderDialog {
 
         linePosition += (linePosition % COLUMNS);
 
-        addGridElementForFullLine("File name", linePosition += 2, gridPane, fileNameGrid);
+        addGridElementForFullLine("File name", linePosition += 2, upperGridPane, fileNameGrid);
 
         metadataVBox = new VBox();
         TitledPane metadataPane = new TitledPane();
@@ -167,14 +194,32 @@ public class RenderDialog {
         });
         metadataVBox.getChildren().add(createMetadataBox("Description", "Edited with Tactview", a -> metadataVBox.getChildren().remove(a)));
 
-        addGridElementForFullLine("Metadata", linePosition += 2, gridPane, metadataPane);
+        addGridElementForFullLine("Metadata", linePosition += 2, upperGridPane, metadataPane);
 
         linePosition += (linePosition % COLUMNS);
 
+        previewWidth = 250;
+        previewHeight = (int) (previewWidth * ((double) projectRepository.getHeight() / projectRepository.getWidth()));
+
+        previewImageView = new ImageView(byteBufferToJavaFxImageConverter.convertToJavafxImage(ByteBuffer.allocate(previewWidth * previewHeight * 4), previewWidth, previewHeight));
+
+        previewImageView.minWidth(previewWidth);
+        previewImageView.minHeight(previewHeight);
+        previewImageView.maxWidth(previewWidth);
+        previewImageView.maxHeight(previewHeight);
+        updatePreviewCheckbox = new CheckBox("Update preview");
+        updatePreviewCheckbox.setSelected(true);
+
+        VBox previewVBox = new VBox(1.0);
+        previewVBox.getChildren().addAll(previewImageView, updatePreviewCheckbox);
+
+        upperHBox.getChildren().addAll(upperGridPane, previewVBox);
+        fullVerticalBox.getChildren().add(upperHBox);
+
         rendererOptions = new GridPane();
+        rendererOptions.getStyleClass().add("additional-render-options-panel");
         rendererOptions.setVgap(4.0);
         rendererOptions.setHgap(15.0);
-        gridPane.add(rendererOptions, 0, linePosition++, COLUMNS * 2, 1);
 
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress(0);
@@ -186,10 +231,9 @@ public class RenderDialog {
         StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(progressBar, progressText);
 
-        GridPane.setColumnSpan(stackPane, COLUMNS * 2);
-        gridPane.add(stackPane, 0, linePosition++);
+        fullVerticalBox.getChildren().add(rendererOptions);
 
-        ScrollPane centerScrollPane = new ScrollPane(gridPane);
+        ScrollPane centerScrollPane = new ScrollPane(fullVerticalBox);
         centerScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         centerScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 
@@ -291,10 +335,14 @@ public class RenderDialog {
 
         buttonBar.getChildren().add(okButton);
 
-        borderPane.setBottom(buttonBar);
+        VBox bottomVBox = new VBox();
+        bottomVBox.getChildren().addAll(stackPane, buttonBar);
+
+        borderPane.setBottom(bottomVBox);
 
         stage.setTitle("Render");
         stage.setScene(dialog);
+        stage.setResizable(false);
     }
 
     protected RenderRequest getRenderRequest() {
@@ -319,6 +367,7 @@ public class RenderDialog {
                 .withIsCancelledSupplier(() -> isRenderCancelled)
                 .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
                 .withMetadata(collectMetadata(metadataVBox))
+                .withEncodedImageCallback(image -> updatePreviewConsumer(image))
                 .build();
     }
 
@@ -331,6 +380,24 @@ public class RenderDialog {
             result.put(key, value);
         }
         return result;
+    }
+
+    private void updatePreviewConsumer(ReadOnlyClipImage image) {
+        long now = System.currentTimeMillis();
+        if ((now - previewLastUpdated) > 1000 && updatePreviewCheckbox.isSelected()) { // small chance of doule update, but that's ok
+            previewLastUpdated = now;
+            ScaleRequest request = ScaleRequest.builder()
+                    .withImage(image)
+                    .withNewWidth(previewWidth)
+                    .withNewHeight(previewHeight)
+                    .build();
+            ClipImage scaledImage = scaleService.createScaledImage(request);
+            Image javafxImage = byteBufferToJavaFxImageConverter.convertToJavafxImage(scaledImage.getBuffer(), scaledImage.getWidth(), scaledImage.getHeight());
+            Platform.runLater(() -> {
+                previewImageView.setImage(javafxImage);
+                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(scaledImage.getBuffer());
+            });
+        }
     }
 
     private HBox createMetadataBox(String key, String value, Consumer<HBox> removeConsumer) {
@@ -366,8 +433,8 @@ public class RenderDialog {
         // TODO: all the below out of here
         int i = 0;
         for (var value : values) {
-            int row = i / COLUMNS;
-            int column = i % COLUMNS;
+            int row = i / ADDITIONAL_OPTIONS_COLUMNS;
+            int column = i % ADDITIONAL_OPTIONS_COLUMNS;
 
             OptionProvider<Object> optionProvider = (OptionProvider<Object>) value;
 
@@ -376,7 +443,7 @@ public class RenderDialog {
             }
 
             Label label = new Label(optionProvider.getTitle());
-            rendererOptions.add(label, column * COLUMNS, row);
+            rendererOptions.add(label, column * ADDITIONAL_OPTIONS_COLUMNS, row);
 
             if (optionProvider.getValidValues().isEmpty()) {
                 TextField textField = new TextField();
@@ -390,7 +457,7 @@ public class RenderDialog {
                     updateProvidersAfterUpdate();
                 });
 
-                rendererOptions.add(textField, column * COLUMNS + 1, row);
+                rendererOptions.add(textField, column * ADDITIONAL_OPTIONS_COLUMNS + 1, row);
             } else {
                 ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
                 comboBox.getStyleClass().add("render-dialog-option");
@@ -411,7 +478,7 @@ public class RenderDialog {
                     updateProvidersAfterUpdate();
                 });
 
-                rendererOptions.add(comboBox, column * COLUMNS + 1, row);
+                rendererOptions.add(comboBox, column * ADDITIONAL_OPTIONS_COLUMNS + 1, row);
             }
 
             ++i;

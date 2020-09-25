@@ -4,12 +4,14 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class RenderRequest {
     private final String renderId = UUID.randomUUID().toString();
@@ -24,6 +26,7 @@ public class RenderRequest {
     private final Map<String, OptionProvider<?>> options;
     private final Supplier<Boolean> isCancelledSupplier;
     private final Map<String, String> metadata;
+    private final Consumer<ReadOnlyClipImage> encodedImageCallback;
 
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
@@ -38,6 +41,7 @@ public class RenderRequest {
         this.options = builder.options;
         this.metadata = builder.metadata;
         this.isCancelledSupplier = builder.isCancelledSupplier;
+        this.encodedImageCallback = builder.encodedImageCallback;
     }
 
     public String getRenderId() {
@@ -88,6 +92,10 @@ public class RenderRequest {
         return metadata;
     }
 
+    public Consumer<ReadOnlyClipImage> getEncodedImageCallback() {
+        return encodedImageCallback;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -106,6 +114,7 @@ public class RenderRequest {
         private Map<String, OptionProvider<?>> options = Collections.emptyMap();
         private Supplier<Boolean> isCancelledSupplier;
         private Map<String, String> metadata = Collections.emptyMap();
+        private Consumer<ReadOnlyClipImage> encodedImageCallback;
 
         private Builder() {
         }
@@ -162,6 +171,11 @@ public class RenderRequest {
 
         public Builder withIsCancelledSupplier(Supplier<Boolean> isCancelledSupplier) {
             this.isCancelledSupplier = isCancelledSupplier;
+            return this;
+        }
+
+        public Builder withEncodedImageCallback(Consumer<ReadOnlyClipImage> encodedImageCallback) {
+            this.encodedImageCallback = encodedImageCallback;
             return this;
         }
 

@@ -266,6 +266,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     if (encodeResult < 0) {
                         throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
                     }
+                    renderRequest.getEncodedImageCallback().accept(frame.getVideoResult());
 
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
                     for (var buffer : frame.getAudioResult().getChannels()) {
@@ -467,14 +468,17 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         LinkedHashMap<String, OptionProvider<?>> result = new LinkedHashMap<>();
 
+        result.put("videocodec", videoCodecProvider);
         result.put("videobitrate", bitRateProvider);
+        result.put("videoPixelFormat", videoPixelFormatProvider);
+
+        result.put("audiocodec", audioCodecProvider);
         result.put("audiobitrate", audioBitRateProvider);
         result.put("audiosamplerate", audioSampleRateProvider);
+
         result.put("audiobytespersample", audioBytesPerSampelProvider);
         result.put("audionumberofchannels", numberOfChannelsProvider);
-        result.put("videocodec", videoCodecProvider);
-        result.put("audiocodec", audioCodecProvider);
-        result.put("videoPixelFormat", videoPixelFormatProvider);
+
         result.put("preset", presetProviders);
         result.put("threads", numberOfThreadsProvider);
 

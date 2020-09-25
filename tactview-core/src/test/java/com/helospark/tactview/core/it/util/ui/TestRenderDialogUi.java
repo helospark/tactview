@@ -132,6 +132,8 @@ public class TestRenderDialogUi {
                 .withOptions(optionProviders)
                 .withIsCancelledSupplier(() -> false)
                 .withUpscale(upscale)
+                .withEncodedImageCallback(image -> {
+                })
                 .build();
         return request;
     }

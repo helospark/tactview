@@ -85,6 +85,8 @@ public class AsciiArtRenderService extends AbstractRenderService {
                 outputStreamWriter.write("sleep " + renderRequest.getStep().setScale(3, RoundingMode.HALF_UP) + "\n");
                 outputStreamWriter.write("clear\n\n");
 
+                renderRequest.getEncodedImageCallback().accept(videoResult.getVideoResult());
+
                 videoResult.free();
                 position = position.add(renderRequest.getStep());
                 messagingService.sendAsyncMessage(new ProgressAdvancedMessage(renderRequest.getRenderId(), 1));

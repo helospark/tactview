@@ -75,10 +75,6 @@
     -fx-text-inner-color: white;
 }
 
-.render-dialog-option {
-    -fx-pref-width: 200px;
-}
-
 .progress-text {
     -fx-fill:white;
 }
@@ -244,12 +240,24 @@
     -fx-max-width: 400px;
 }
 
+.additional-render-options-panel > .render-dialog-option {
+    -fx-pref-width: 110px;
+}
+
+.render-dialog-option {
+    -fx-pref-width: 150px;
+}
+
 .render-dialog-grid-pane {
     -fx-padding: 10px;
-    -fx-pref-width: 650px;
+    -fx-pref-width: 540px;
 }
 
 .render-dialog-button-bar {
+    -fx-padding: 10px;
+}
+
+.additional-render-options-panel {
     -fx-padding: 10px;
 }
 
@@ -502,7 +510,7 @@
 }
 
 .render-dialog-time-selector {
-    -fx-max-width: 200px;
+    -fx-max-width: 145px;
 }
 
 .resolution-component>.text-field {
