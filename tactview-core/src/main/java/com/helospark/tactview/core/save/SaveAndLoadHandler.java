@@ -50,8 +50,7 @@ public class SaveAndLoadHandler {
             throw new RuntimeException(e);
         }
 
-        String extension = saveRequest.getFileName().endsWith(".tvs") ? "" : ".tvs";
-        File resultFile = new File(saveRequest.getFileName() + extension);
+        File resultFile = new File(saveRequest.getFileName());
 
         resultFile.delete();
 

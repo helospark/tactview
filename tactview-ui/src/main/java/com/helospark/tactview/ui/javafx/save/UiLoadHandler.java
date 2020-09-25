@@ -20,21 +20,27 @@ public class UiLoadHandler {
     private CurrentProjectSavedFileRepository currentProjectSavedFileRepository;
     private File autosaveRootDirectory;
     private AlertDialogFactory alertDialogFactory;
+    private RecentlyAccessedRepository recentlyAccessedRepository;
 
     private UiSaveHandler uiSaveHandler;
 
     public UiLoadHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, @Value("${autosave.directory}") File autosaveRootDirectory,
-            UiSaveHandler uiSaveHandler, AlertDialogFactory alertDialogFactory) {
+            UiSaveHandler uiSaveHandler, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.autosaveRootDirectory = autosaveRootDirectory;
         this.uiSaveHandler = uiSaveHandler;
         this.alertDialogFactory = alertDialogFactory;
+        this.recentlyAccessedRepository = recentlyAccessedRepository;
     }
 
     public void load() {
         openFileChooser(Optional.ofNullable(uiSaveHandler.lastOpenedDirectoryName).map(File::new));
+    }
 
+    public void loadFile(File file) {
+        saveAndLoadHandler.load(new LoadRequest(file.getAbsolutePath()));
+        recentlyAccessedRepository.addNewRecentlySavedElement(file);
     }
 
     public void loadAutosaved() {
@@ -52,6 +58,7 @@ public class UiLoadHandler {
             try {
                 uiSaveHandler.lastOpenedDirectoryName = file.getParentFile().getAbsolutePath();
                 saveAndLoadHandler.load(new LoadRequest(file.getAbsolutePath()));
+                recentlyAccessedRepository.addNewRecentlySavedElement(file);
                 currentProjectSavedFileRepository.setCurrentSavedFile(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();

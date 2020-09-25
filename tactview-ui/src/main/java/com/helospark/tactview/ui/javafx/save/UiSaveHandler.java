@@ -27,18 +27,20 @@ public class UiSaveHandler {
     private DirtyRepository dirtyRepository;
     private StylesheetAdderService stylesheetAdderService;
     private AlertDialogFactory alertDialogFactory;
+    private RecentlyAccessedRepository recentlyAccessedRepository;
     @Slf4j
     private Logger logger;
     @PersistentState
     String lastOpenedDirectoryName;
 
     public UiSaveHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, DirtyRepository dirtyRepository,
-            StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory) {
+            StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.dirtyRepository = dirtyRepository;
         this.stylesheetAdderService = stylesheetAdderService;
         this.alertDialogFactory = alertDialogFactory;
+        this.recentlyAccessedRepository = recentlyAccessedRepository;
     }
 
     public boolean save() {
@@ -56,15 +58,23 @@ public class UiSaveHandler {
         Optional<String> currentSavedFile = currentProjectSavedFileRepository.getCurrentSavedFile();
         if (currentSavedFile.isPresent()) {
             dirtyRepository.setDirty(false);
-            saveAndLoadHandler.save(new SaveRequest(currentSavedFile.get()));
+            String filePath = currentSavedFile.get();
+            saveAndLoadHandler.save(new SaveRequest(filePath));
+            recentlyAccessedRepository.addNewRecentlySavedElement(new File(filePath));
             return true;
         } else {
             Optional<String> fileName = queryUserAboutFileName();
             if (fileName.isPresent()) {
-                lastOpenedDirectoryName = new File(fileName.get()).getParentFile().getAbsolutePath();
+                String pathName = fileName.get();
+                if (!pathName.endsWith(".tvs")) {
+                    pathName += ".tvs";
+                }
+                lastOpenedDirectoryName = new File(pathName).getParentFile().getAbsolutePath();
                 dirtyRepository.setDirty(false);
-                saveAndLoadHandler.save(new SaveRequest(fileName.get()));
-                currentProjectSavedFileRepository.setCurrentSavedFile(fileName.get());
+                saveAndLoadHandler.save(new SaveRequest(pathName));
+
+                recentlyAccessedRepository.addNewRecentlySavedElement(new File(pathName));
+                currentProjectSavedFileRepository.setCurrentSavedFile(pathName);
                 return true;
             }
         }
@@ -74,8 +84,14 @@ public class UiSaveHandler {
     public void saveAs() {
         Optional<String> fileName = queryUserAboutFileName();
         if (fileName.isPresent()) {
-            lastOpenedDirectoryName = new File(fileName.get()).getParentFile().getAbsolutePath();
-            saveAndLoadHandler.save(new SaveRequest(fileName.get()));
+            String resultFilePath = fileName.get();
+            if (!resultFilePath.endsWith(".tvs")) {
+                resultFilePath += ".tvs";
+            }
+            File resultFile = new File(resultFilePath);
+            lastOpenedDirectoryName = resultFile.getParentFile().getAbsolutePath();
+            saveAndLoadHandler.save(new SaveRequest(resultFilePath));
+            recentlyAccessedRepository.addNewRecentlySavedElement(resultFile);
         }
     }
 

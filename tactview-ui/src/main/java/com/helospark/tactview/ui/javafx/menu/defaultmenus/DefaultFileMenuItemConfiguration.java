@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.menu.defaultmenus;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
@@ -12,6 +13,7 @@ import com.helospark.tactview.ui.javafx.menu.SeparatorMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.importMenu.clip.ImportClipFileChooser;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.importMenu.imagesequence.ImageSequenceChooserDialogOpener;
 import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
+import com.helospark.tactview.ui.javafx.save.RecentlyAccessedRepository;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 
@@ -21,6 +23,7 @@ import javafx.scene.input.KeyCodeCombination;
 
 @Configuration
 public class DefaultFileMenuItemConfiguration {
+    private static final String LOAD_RECENT_MENU_ITEM = "Load _recent";
     private static final String IMPORT_SUBMENU_ITEM = "Import";
     public static final String FILE_ROOT = "_File";
 
@@ -44,7 +47,18 @@ public class DefaultFileMenuItemConfiguration {
     @Bean
     @Order(10)
     public SelectableMenuContribution loadAutosavedContributionMenuItem(UiLoadHandler loadHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "Load _audosaved"), event -> loadHandler.loadAutosaved());
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "Load _autosaved"), event -> loadHandler.loadAutosaved());
+    }
+
+    @Bean
+    @Order(12)
+    public List<SelectableMenuContribution> recentFiles(RecentlyAccessedRepository recentlySavedRepository, UiLoadHandler loadHandler) {
+        return recentlySavedRepository.getRecentlySavedElements()
+                .stream()
+                .map(a -> new DefaultMenuContribution(List.of(FILE_ROOT, LOAD_RECENT_MENU_ITEM, a.getAbsolutePath()), event -> {
+                    loadHandler.loadFile(a);
+                }))
+                .collect(Collectors.toList());
     }
 
     @Bean

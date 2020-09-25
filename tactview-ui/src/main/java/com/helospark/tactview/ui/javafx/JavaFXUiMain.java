@@ -124,7 +124,6 @@ public class JavaFXUiMain extends Application {
 
         StylesheetAdderService styleSheetAdder = lightDi.getBean(StylesheetAdderService.class);
 
-        //root.getStylesheets().add("stylesheet.css");
         styleSheetAdder.addStyleSheets(root, "stylesheet.css");
 
         MenuBar menuBar = lightDi.getBean(MenuProcessor.class).createMenuBar();

@@ -78,7 +78,7 @@ public class AutoSaveService {
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm_ss");
 
-                File saveFile = new File(autosaveFileSaveDirectory, "autosave_" + formatter.format(localDateTime));
+                File saveFile = new File(autosaveFileSaveDirectory, "autosave_" + formatter.format(localDateTime) + ".tvs");
 
                 SaveRequest saveRequest = new SaveRequest(saveFile.getAbsolutePath());
 
