@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Tactview
+GenericName=Video Editor
+
+Keywords=video;audio;editor;
+
+Icon=tactview
+
+Type=Application
+Categories=AudioVideo;Video;AudioVideoEditing;
+
+Exec=__INSTALLLOCATION__/tactview
+StartupNotify=false
+Terminal=false

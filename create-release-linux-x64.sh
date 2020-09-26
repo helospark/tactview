@@ -1,5 +1,7 @@
 #!/bin/bash
 
+skipDebian=false
+
 set -e
 
 rm -rf release/linux64 || true
@@ -14,7 +16,7 @@ cp tactview-ui/target/tactview-ui*.jar release/linux64/tactview.jar
 
 jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported,java.compiler,jdk.compiler,jdk.zipfs,java.sql,java.management --output release/linux64/java-runtime
 
-g++ --std=c++17 tactview-native/linux/startup.cpp -o release/linux64/tactview -lstdc++fs
+g++ --std=c++17 -no-pie tactview-native/linux/startup.cpp -o release/linux64/tactview -lstdc++fs
 
 echo "Copying dynamic library dependencies"
 
@@ -34,3 +36,45 @@ cd release
 builddate=`date '+%Y%m%d_%H%M%S'`
 filename="tactview_linux64_$builddate.zip"
 zip -r $filename linux64/
+
+cd ..
+
+if [ "$skipDebian" = false ]
+then
+  echo "[DEB] Debian release not skipped, creating .deb file"
+  echo "[DEB] Cleaning up old build"
+  rm -rf release/debian
+
+  echo "[DEB] Setup control file"
+  mkdir -p release/debian/tactview/DEBIAN
+  cp buildconfig/debian/control release/debian/tactview/DEBIAN/control
+
+  size=`du -s release/linux64 | cut -f -1`
+
+  sed -i "s/__VERSION__/1.0/g" release/debian/tactview/DEBIAN/control
+  sed -i "s/__SIZE__/$size/g" release/debian/tactview/DEBIAN/control
+
+  echo "[DEB] Setup desktop entry"
+  mkdir -p release/debian/tactview/usr/share/applications
+  cp buildconfig/debian/tactview.desktop release/debian/tactview/usr/share/applications
+
+  echo "[DEB] Setup icons, this requires imagemagick..."
+  mkdir -p release/debian/tactview/usr/share/icons/hicolor
+
+  sizes="16x16 32x32 64x64 128x128 256x256"
+  for i in $sizes; do
+    echo "Scaling icon to $i"
+    mkdir -p release/debian/tactview/usr/share/icons/hicolor/$i/apps/
+    convert images/icons/icon_full.png -resize $i release/debian/tactview/usr/share/icons/hicolor/$i/apps/tactview.png
+  done
+
+  sed -i "s/__INSTALLLOCATION__/\/opt\/tactview/g" release/debian/tactview/usr/share/applications/tactview.desktop
+
+  echo "[DEB] Copying executable"
+  mkdir -p release/debian/tactview/opt/tactview/
+  cp -r release/linux64/* release/debian/tactview/opt/tactview/
+
+  echo "[DEB] Building, this could take a few minutes..."
+  dpkg-deb --build release/debian/tactview
+
+fi

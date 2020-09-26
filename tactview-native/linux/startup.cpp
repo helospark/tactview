@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <pwd.h>
 #include <sys/types.h>
@@ -65,9 +66,17 @@ std::string getCommandLine() {
   return commandLine;
 }
 
-int main() {
+int main(int argc, char** argv) {
   int statusCode = 0;
   do {
+
+    // If launched from another folder, we have to move into the executable's folder, because of relative paths in command line
+    char *dirsep = strrchr( argv[0], '/' );
+    if( dirsep != NULL ) *dirsep = 0;
+    if (strlen(argv[0]) > 0) {
+      std::cout << "Working directory is " << argv[0] << std::endl;
+      chdir(argv[0]);
+    }
     std::string commandLine = getCommandLine();
 
     // -Djdk.gtk.version=2 -> https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8211302

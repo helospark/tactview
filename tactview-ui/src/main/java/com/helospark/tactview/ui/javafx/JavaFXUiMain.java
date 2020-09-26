@@ -85,6 +85,8 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
+    private static final String ICON_PATH = "/icons/tactview_icon.png";
+
     public static Stage STAGE = null;
 
     static LightDiContext lightDi;
@@ -116,6 +118,8 @@ public class JavaFXUiMain extends Application {
     public void start(Stage stage) throws IOException {
         DirtyRepository dirtyRepository = lightDi.getBean(DirtyRepository.class);
         ExitWithSaveService exitWithSaveService = lightDi.getBean(ExitWithSaveService.class);
+
+        setTactviewIconForStage(stage);
 
         JavaFXUiMain.STAGE = stage;
         NotificationPane notificationPane = new NotificationPane();
@@ -365,6 +369,10 @@ public class JavaFXUiMain extends Application {
         }
     }
 
+    protected void setTactviewIconForStage(Stage stage) {
+        stage.getIcons().add(new Image(getClass().getResource(ICON_PATH).toString()));
+    }
+
     private void showSplash(Stage splashStage, ImageView splash) {
         StackPane splashLayout = new StackPane();
         splashLayout.setStyle("-fx-background-color: transparent;");
@@ -418,6 +426,7 @@ public class JavaFXUiMain extends Application {
         Platform.runLater(() -> {
             splashStage = new Stage(StageStyle.DECORATED);
             splashStage.setTitle("Tactview starting...");
+            setTactviewIconForStage(splashStage);
 
             splasViewh = new ImageView(new Image(getClass().getResource("/tactview-splash.png").toString()));
 

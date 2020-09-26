@@ -1,0 +1,9 @@
+Package: tactview
+Version: __VERSION__
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Installed-Size: __SIZE__
+Maintainer: Helospark
+Description: Tactview video editor
