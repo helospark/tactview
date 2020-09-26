@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -54,6 +55,18 @@ public class PrimitiveEffectLine extends EffectLine {
                 .withGlobalTimelinePosition(position)
                 .withValue(value)
                 .withRevertable(revertable)
+                .build();
+
+        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+    }
+
+    public void sendKeyframeWithPreviousValue(TimelinePosition position, String value, String previousValue) {
+        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                .withDescriptorId(descriptorId)
+                .withGlobalTimelinePosition(position)
+                .withValue(value)
+                .withRevertable(true)
+                .withPreviousValue(Optional.of(previousValue))
                 .build();
 
         commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));

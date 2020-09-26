@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline.message;
 
+import java.util.Optional;
+
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -9,6 +11,7 @@ public class KeyframeAddedRequest {
     private TimelinePosition globalTimelinePosition;
     private String value;
     private boolean revertable;
+    private Optional<Object> previousValue;
 
     @Generated("SparkTools")
     private KeyframeAddedRequest(Builder builder) {
@@ -16,6 +19,7 @@ public class KeyframeAddedRequest {
         this.globalTimelinePosition = builder.globalTimelinePosition;
         this.value = builder.value;
         this.revertable = builder.revertable;
+        this.previousValue = builder.previousValue;
     }
 
     public String getDescriptorId() {
@@ -34,9 +38,14 @@ public class KeyframeAddedRequest {
         return revertable;
     }
 
+    public Optional<Object> getPreviousValue() {
+        return previousValue;
+    }
+
     @Override
     public String toString() {
-        return "KeyframeAddedRequest [descriptorId=" + descriptorId + ", globalTimelinePosition=" + globalTimelinePosition + ", value=" + value + ", revertable=" + revertable + "]";
+        return "KeyframeAddedRequest [descriptorId=" + descriptorId + ", globalTimelinePosition=" + globalTimelinePosition + ", value=" + value + ", revertable=" + revertable + ", previousValue="
+                + previousValue + "]";
     }
 
     @Generated("SparkTools")
@@ -50,6 +59,7 @@ public class KeyframeAddedRequest {
         private TimelinePosition globalTimelinePosition;
         private String value;
         private boolean revertable;
+        private Optional<Object> previousValue = Optional.empty();
 
         private Builder() {
         }
@@ -71,6 +81,11 @@ public class KeyframeAddedRequest {
 
         public Builder withRevertable(boolean revertable) {
             this.revertable = revertable;
+            return this;
+        }
+
+        public Builder withPreviousValue(Optional<Object> previousValue) {
+            this.previousValue = previousValue;
             return this;
         }
 

@@ -58,7 +58,18 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
             Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
             slider.valueProperty().addListener((o, old, newValue) -> {
                 if (slider.isValueChanging()) {
-                    userChangedValueObservable.setValue(String.valueOf(newValue));
+                    userChangedValueObservable.setValue(String.valueOf(newValue), true);
+                }
+            });
+            slider.valueChangingProperty().addListener((abs, oldVal, newVal) -> {
+                if (newVal == false) {
+                    String startValue = (String) slider.getUserData();
+                    if (startValue != null) {
+                        userChangedValueObservable.setValueWithRevertablePreviousValue(String.valueOf(slider.getValue()), startValue);
+                    }
+                    slider.setUserData(null);
+                } else {
+                    slider.setUserData(String.valueOf(slider.getValue()));
                 }
             });
             hbox.getChildren().add(slider);
@@ -86,11 +97,14 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .build();
 
         textField.setOnKeyReleased(event -> {
-            userChangedValueObservable.setValue(textField.getText());
+            userChangedValueObservable.setValue(textField.getText(), true);
         });
 
-        userChangedValueObservable.registerListener(newValue -> {
-            result.sendKeyframeWithValue(timelineManager.getCurrentPosition(), newValue);
+        userChangedValueObservable.registerListener((newValue, revertable) -> {
+            result.sendKeyframeWithValueAndRevertable(timelineManager.getCurrentPosition(), newValue, revertable);
+        });
+        userChangedValueObservable.registerPreviousValueListener((value, oldValue) -> {
+            result.sendKeyframeWithPreviousValue(timelineManager.getCurrentPosition(), value, oldValue);
         });
 
         contextMenuAppender.addContextMenu(result, doubleProvider, descriptor, hbox);

@@ -112,6 +112,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                 });
 
         comboBox.getSelectionModel().select(comboBoxElements.get(currentlySelectedId));
+        comboBox.setMaxWidth(200);
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
                 .withCurrentValueProvider(() -> comboBox.getValue().getId())

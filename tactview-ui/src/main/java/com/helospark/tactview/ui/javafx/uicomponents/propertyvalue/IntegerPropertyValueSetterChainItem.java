@@ -49,7 +49,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         if (Objects.equals(descriptor.getRenderHints().get(RenderTypeHint.TYPE), SliderValueType.INPUT_FIELD) || integerProvider.getMin().equals(Integer.MIN_VALUE)
                 || integerProvider.getMax().equals(Integer.MAX_VALUE)) {
             textField.setOnKeyReleased(newValue -> {
-                userChangedValueObservable.setValue(textField.getText());
+                userChangedValueObservable.setValue(textField.getText(), true);
             });
         } else {
             Slider slider = new Slider();
@@ -63,13 +63,24 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
             }
             slider.valueProperty().addListener((obs, oldval, newVal) -> {
                 if (slider.isValueChanging()) {
-                    userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
+                    userChangedValueObservable.setValue(String.valueOf(slider.getValue()), false);
                 }
                 slider.setValue(newVal.intValue());
             });
+            slider.valueChangingProperty().addListener((abs, oldVal, newVal) -> {
+                if (newVal == false) {
+                    String startValue = (String) slider.getUserData();
+                    if (startValue != null) {
+                        userChangedValueObservable.setValueWithRevertablePreviousValue(String.valueOf(slider.getValue()), startValue);
+                    }
+                    slider.setUserData(null);
+                } else {
+                    slider.setUserData(String.valueOf((int) (slider.getValue())));
+                }
+            });
 
             textField.setOnKeyReleased(newValue -> {
-                userChangedValueObservable.setValue(String.valueOf(slider.getValue()));
+                userChangedValueObservable.setValue(String.valueOf(slider.getValue()), true);
             });
 
             StringConverter<Number> converter = new NumberStringConverter();
@@ -97,8 +108,11 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withCommandInterpreter(commandInterpreter)
                 .build();
 
-        userChangedValueObservable.registerListener(value -> {
-            result.sendKeyframeWithValue(timelineManager.getCurrentPosition(), value);
+        userChangedValueObservable.registerListener((value, revertable) -> {
+            result.sendKeyframeWithValueAndRevertable(timelineManager.getCurrentPosition(), value, revertable);
+        });
+        userChangedValueObservable.registerPreviousValueListener((value, oldValue) -> {
+            result.sendKeyframeWithPreviousValue(timelineManager.getCurrentPosition(), value, oldValue);
         });
 
         contextMenuAppender.addContextMenu(result, integerProvider, descriptor, result.visibleNode);

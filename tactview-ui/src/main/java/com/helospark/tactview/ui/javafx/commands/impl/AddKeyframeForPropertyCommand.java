@@ -22,7 +22,8 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
     public void execute() {
         hadKeyframingEnabled = effectParametersRepository.isUsingKeyframes(request.getDescriptorId());
         hadPreviousKeyframe = effectParametersRepository.isKeyframeAt(request.getDescriptorId(), request.getGlobalTimelinePosition());
-        if (!hadKeyframingEnabled || hadPreviousKeyframe) {
+        previousValue = request.getPreviousValue();
+        if (!previousValue.isPresent() && (!hadKeyframingEnabled || hadPreviousKeyframe)) {
             previousValue = effectParametersRepository.getKeyframeableEffectValue(request.getDescriptorId(), request.getGlobalTimelinePosition());
         }
         effectParametersRepository.keyframeAdded(request);
