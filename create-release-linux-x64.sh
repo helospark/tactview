@@ -10,7 +10,7 @@ cd tactview-native
 echo "Compiling native code..."
 ./build.sh
 cd ..
-mvn clean install
+mvn clean install #-Dmaven.test.skip
 
 cp tactview-ui/target/tactview-ui*.jar release/linux64/tactview.jar
 
@@ -45,18 +45,32 @@ then
   echo "[DEB] Cleaning up old build"
   rm -rf release/debian
 
+  version=`mvn -q -N org.codehaus.mojo:build-helper-maven-plugin:3.0.0:parse-version     org.codehaus.mojo:exec-maven-plugin:1.3.1:exec     -Dexec.executable='echo'     -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}'`
+  buildnumber=`cat buildconfig/debian/buildnumber`
+  new_buildnumber=$((buildnumber + 1))
+  
+  fullVersion="$version-$buildnumber"
+
+  echo "[DEB] Build number is $fullVersion"
+
+  echo "$new_buildnumber" > buildconfig/debian/buildnumber
+
   echo "[DEB] Setup control file"
   mkdir -p release/debian/tactview/DEBIAN
   cp buildconfig/debian/control release/debian/tactview/DEBIAN/control
 
   size=`du -s release/linux64 | cut -f -1`
 
-  sed -i "s/__VERSION__/1.0/g" release/debian/tactview/DEBIAN/control
+  sed -i "s/__VERSION__/$fullVersion/g" release/debian/tactview/DEBIAN/control
   sed -i "s/__SIZE__/$size/g" release/debian/tactview/DEBIAN/control
 
   echo "[DEB] Setup desktop entry"
   mkdir -p release/debian/tactview/usr/share/applications
   cp buildconfig/debian/tactview.desktop release/debian/tactview/usr/share/applications
+
+  mkdir -p release/debian/tactview/usr/bin
+  cp buildconfig/debian/tactview.sh release/debian/tactview/usr/bin/tactview
+  chmod +x release/debian/tactview/usr/bin/tactview
 
   echo "[DEB] Setup icons, this requires imagemagick..."
   mkdir -p release/debian/tactview/usr/share/icons/hicolor
@@ -76,5 +90,9 @@ then
 
   echo "[DEB] Building, this could take a few minutes..."
   dpkg-deb --build release/debian/tactview
+
+  outputFileName="release/tactview_${fullVersion}_amd64.deb"
+  mv "release/debian/tactview.deb" "$outputFileName"
+  echo "$outputFileName created"
 
 fi

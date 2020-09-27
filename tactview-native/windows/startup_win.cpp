@@ -77,7 +77,7 @@ int execute(std::string commandLine) {
     sa.bInheritHandle = TRUE;   
 
 	std::cout << "Create file" << std::endl;
-    HANDLE h = CreateFile("out.log",
+    HANDLE h = CreateFile("tactview.log",
         FILE_APPEND_DATA,
         FILE_SHARE_WRITE | FILE_SHARE_READ,
         &sa,
@@ -99,7 +99,7 @@ int execute(std::string commandLine) {
         lpstr,        // Command line
         NULL,           // Process handle not inheritable
         NULL,           // Thread handle not inheritable
-        FALSE,          // Set handle inheritance to FALSE
+        TRUE,          // Set handle inheritance to FALSE
         0,              // No creation flags
         NULL,           // Use parent's environment block
         NULL,           // Use parent's starting directory 

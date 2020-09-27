@@ -8,7 +8,7 @@ Tactview is an open-source advanced multi-track video editor aims to provide bot
 
 ### Binary
 
-Download the latest binaty release for your OS:
+Download the latest binary release for your OS:
   
   - [Linux-x64](https://helospark.com/tactview/download/tactview_linux64_snapshot.zip)
   - [Windows-x64](https://helospark.com/tactview/download/tactview_win64_snapshot.zip)
