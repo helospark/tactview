@@ -34,7 +34,7 @@ After install you can find Tactview either in your OS's program menu and under /
 
  - FFmpeg (AVCodec)
  - OpenCV
- - Java 11
+ - Java 15
  - Apache Maven (for building)
  - ImageMagick (on Linux during release used to convert icons)
 
