@@ -16,6 +16,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -75,7 +76,7 @@ public class LinkClipRepository implements SaveLoadContributor {
     }
 
     @Override
-    public void generateSavedContent(Map<String, Object> generatedContent) {
+    public void generateSavedContent(Map<String, Object> generatedContent, SaveMetadata saveMetadata) {
         generatedContent.put("linkedClips", linkedClips);
     }
 

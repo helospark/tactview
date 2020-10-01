@@ -16,6 +16,7 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 
 public class TimelineChannel {
     private NonIntersectingIntervalList<TimelineClip> clips = new NonIntersectingIntervalList<>();
@@ -51,14 +52,14 @@ public class TimelineChannel {
 
     }
 
-    public Map<String, Object> generateSavedContent() {
+    public Map<String, Object> generateSavedContent(SaveMetadata saveMetadata) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", id);
         result.put("disabled", disabled);
         result.put("mute", mute);
         List<Object> serializedClips = new ArrayList<>();
         for (TimelineClip clip : clips) {
-            serializedClips.add(clip.generateSavedContent());
+            serializedClips.add(clip.generateSavedContent(saveMetadata));
         }
         result.put("clips", serializedClips);
         return result;

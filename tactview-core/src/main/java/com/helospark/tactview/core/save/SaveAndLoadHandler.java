@@ -38,14 +38,40 @@ public class SaveAndLoadHandler {
 
         Map<String, Object> result = new LinkedHashMap<>();
 
+        SaveMetadata saveMetadata = new SaveMetadata(saveRequest.isPackageAllContent());
+
         try (FileOutputStream outstream = new FileOutputStream(saveDataJson)) {
             context.getListOfBeans(SaveLoadContributor.class)
-                    .forEach(a -> a.generateSavedContent(result));
+                    .forEach(a -> a.generateSavedContent(result, saveMetadata));
 
             ObjectMapper mapper = StaticObjectMapper.objectMapper;
             String saveData = mapper.writeValueAsString(result);
 
             outstream.write(saveData.getBytes());
+
+            // copy files
+            for (var entry : saveMetadata.getFilesToCopy().entrySet()) {
+                File toFile = new File(rootDirectory, entry.getKey());
+                File fromFile = new File(entry.getValue());
+
+                toFile.getParentFile().mkdirs();
+
+                if (fromFile.exists()) {
+                    FileUtils.copyFile(fromFile, toFile);
+                }
+            }
+
+            // Copy data
+            for (var entry : saveMetadata.getDataToCopy().entrySet()) {
+                File toFile = new File(rootDirectory, entry.getKey());
+                byte[] data = entry.getValue();
+
+                toFile.getParentFile().mkdirs();
+
+                try (var fos = new FileOutputStream(toFile)) {
+                    fos.write(data);
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

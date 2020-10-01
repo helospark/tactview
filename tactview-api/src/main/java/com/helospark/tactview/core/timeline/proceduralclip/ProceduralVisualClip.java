@@ -9,6 +9,7 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.RequestFrameParameter;
 import com.helospark.tactview.core.timeline.TimelineClipType;
@@ -75,7 +76,7 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
     }
 
     @Override
-    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
+    protected void generateSavedContentInternal(Map<String, Object> savedContent, SaveMetadata saveMetadata) {
         savedContent.put("proceduralFactoryId", proceduralFactoryId);
     }
 

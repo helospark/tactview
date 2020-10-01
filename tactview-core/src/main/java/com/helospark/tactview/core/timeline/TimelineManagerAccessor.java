@@ -20,6 +20,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
@@ -584,10 +585,10 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     }
 
     @Override
-    public void generateSavedContent(Map<String, Object> generatedContent) {
+    public void generateSavedContent(Map<String, Object> generatedContent, SaveMetadata saveMetadata) {
         List<Object> channelContent = new ArrayList<>();
         for (TimelineChannel channel : timelineChannelsState.channels) {
-            channelContent.add(channel.generateSavedContent());
+            channelContent.add(channel.generateSavedContent(saveMetadata));
         }
         generatedContent.put("channels", channelContent);
     }

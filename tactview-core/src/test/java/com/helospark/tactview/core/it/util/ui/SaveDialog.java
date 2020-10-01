@@ -13,7 +13,7 @@ public class SaveDialog {
     }
 
     public void selectFile(File tmpFile) {
-        SaveRequest saveRequest = new SaveRequest(tmpFile.getAbsolutePath());
+        SaveRequest saveRequest = SaveRequest.builder().withFileName(tmpFile.getAbsolutePath()).build();
         saveAndLoadHandler.save(saveRequest);
     }
 

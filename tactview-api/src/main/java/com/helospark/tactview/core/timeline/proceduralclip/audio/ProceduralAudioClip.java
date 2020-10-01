@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 
@@ -25,7 +26,7 @@ public abstract class ProceduralAudioClip extends AudibleTimelineClip {
     }
 
     @Override
-    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
+    protected void generateSavedContentInternal(Map<String, Object> savedContent, SaveMetadata saveMetadata) {
         savedContent.put("proceduralFactoryId", proceduralFactoryId);
     }
 

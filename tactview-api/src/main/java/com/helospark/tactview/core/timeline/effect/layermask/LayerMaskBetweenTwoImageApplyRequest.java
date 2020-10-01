@@ -2,7 +2,6 @@ package com.helospark.tactview.core.timeline.effect.layermask;
 
 import javax.annotation.Generated;
 
-import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskAlphaCalculator;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class LayerMaskBetweenTwoImageApplyRequest {

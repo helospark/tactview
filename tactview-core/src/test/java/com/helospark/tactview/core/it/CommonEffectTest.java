@@ -12,6 +12,7 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.it.util.IntegrationTestUtil;
 import com.helospark.tactview.core.it.util.ui.FakeUi;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelineClipType;
@@ -73,7 +74,9 @@ public class CommonEffectTest {
 
             ReadOnlyClipImage originalFrame = getFrame((StatelessVideoEffect) effect, clip);
 
-            Object savedEffect = effect.generateSavedContent();
+            SaveMetadata saveMetadata = new SaveMetadata(false);
+
+            Object savedEffect = effect.generateSavedContent(saveMetadata);
             String saveData = StaticObjectMapper.objectMapper.writeValueAsString(savedEffect);
 
             JsonNode readData = StaticObjectMapper.objectMapper.readTree(saveData);

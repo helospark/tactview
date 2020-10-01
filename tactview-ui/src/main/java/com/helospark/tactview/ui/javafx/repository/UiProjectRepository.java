@@ -12,6 +12,7 @@ import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
+import com.helospark.tactview.core.save.SaveMetadata;
 
 import javafx.beans.property.SimpleIntegerProperty;
 
@@ -98,7 +99,7 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
     }
 
     @Override
-    public void generateSavedContent(Map<String, Object> generatedContent) {
+    public void generateSavedContent(Map<String, Object> generatedContent, SaveMetadata saveMetadata) {
         Map<String, Object> data = new HashMap<>();
         data.put("scaleFactor", scaleFactor);
         data.put("previewWidth", previewWidth.get());

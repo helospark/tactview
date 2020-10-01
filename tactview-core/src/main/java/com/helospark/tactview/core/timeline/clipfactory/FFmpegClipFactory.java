@@ -62,7 +62,8 @@ public class FFmpegClipFactory implements ClipFactory {
 
     @Override
     public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
-        File file = new File(savedClip.get("backingFile").asText());
+        File file = loadMetadata.resolveFilePath(savedClip.get("backingFile").asText());
+
         VideoMetadata metadata = mediaDecoder.readMetadata(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, mediaDecoder);
 

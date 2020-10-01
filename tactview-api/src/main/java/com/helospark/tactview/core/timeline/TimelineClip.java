@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -49,7 +50,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         this.renderOffset = clip.renderOffset;
         this.creatorFactoryId = clip.creatorFactoryId;
 
-        this.effectChannels = new ArrayList<NonIntersectingIntervalList<StatelessEffect>>(effectChannels.size());
+        this.effectChannels = new ArrayList<>(effectChannels.size());
         for (int i = 0; i < clip.effectChannels.size(); ++i) {
             this.effectChannels.add(cloneEffectList(clip.effectChannels.get(i), cloneRequestMetadata));
         }
@@ -66,7 +67,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         ReflectionUtil.realoadSavedFields(savedClip.get("savedFields"), this, loadMetadata);
     }
 
-    public Object generateSavedContent() {
+    public Object generateSavedContent(SaveMetadata saveMetadata) {
         Map<String, Object> savedContent = new LinkedHashMap<>();
 
         savedContent.put("id", id);
@@ -81,7 +82,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
             List<Object> generatedEffects = new ArrayList<>();
 
             for (var effect : effectChannel) {
-                generatedEffects.add(effect.generateSavedContent());
+                generatedEffects.add(effect.generateSavedContent(saveMetadata));
             }
 
             generatedEffectChannels.add(generatedEffects);
@@ -93,7 +94,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         ReflectionUtil.collectSaveableFields(this, saveableFields);
         savedContent.put("savedFields", saveableFields);
 
-        generateSavedContentInternal(savedContent);
+        generateSavedContentInternal(savedContent, saveMetadata);
 
         return savedContent;
     }
@@ -126,7 +127,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
             valueDescriptors = getDescriptorsInternal();
         }
         return valueDescriptors;
-    };
+    }
 
     protected abstract void initializeValueProvider();
 
@@ -339,7 +340,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         }
     }
 
-    protected abstract void generateSavedContentInternal(Map<String, Object> savedContent);
+    protected abstract void generateSavedContentInternal(Map<String, Object> savedContent, SaveMetadata saveMetadata);
 
     protected List<String> getClipDependency(TimelinePosition position) {
         ArrayList<String> result = new ArrayList<>();

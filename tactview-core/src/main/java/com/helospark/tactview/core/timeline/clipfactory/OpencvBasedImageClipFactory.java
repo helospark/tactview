@@ -43,7 +43,7 @@ public class OpencvBasedImageClipFactory implements ClipFactory {
 
     @Override
     public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
-        File file = new File(savedClip.get("backingFile").asText());
+        File file = loadMetadata.resolveFilePath(savedClip.get("backingFile").asText());
         ImageMetadata metadata = readMetadata(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, mediaDecoder);
 

@@ -49,7 +49,7 @@ public class GifClipFactory implements ClipFactory {
 
     @Override
     public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
-        File file = new File(savedClip.get("backingFile").asText());
+        File file = loadMetadata.resolveFilePath(savedClip.get("backingFile").asText());
         GifVideoMetadata metadata = gifMediaDecoder.readMetadata(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, gifMediaDecoder);
 

@@ -1,7 +1,9 @@
 package com.helospark.tactview.core.timeline.clipfactory;
 
+import static com.helospark.tactview.core.save.SaveMetadata.LOCALLY_SAVED_SOURCE_PREFIX;
 import static com.helospark.tactview.core.timeline.AddClipRequestMetaDataKey.FPS;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -57,7 +59,7 @@ public class ImageSequenceClipFactory implements ClipFactory {
         TimelinePosition position = request.getPosition();
         VideoMetadata metadata = (VideoMetadata) readMetadata(request);
         VisualMediaSource videoSource = new VisualMediaSource(filePath, imageSequenceDecoder);
-        ImageSequenceVideoClip result = new ImageSequenceVideoClip(metadata, videoSource, position, metadata.getLength());
+        ImageSequenceVideoClip result = new ImageSequenceVideoClip(metadata, videoSource, position, metadata.getLength(), fileNamePatternToFileResolverService);
         result.setCreatorFactoryId(getId());
         return result;
     }
@@ -68,15 +70,23 @@ public class ImageSequenceClipFactory implements ClipFactory {
     }
 
     @Override
-    public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata metadata) {
+    public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
         String file = savedClip.get("backingFile").asText();
+
+        if (file.startsWith(LOCALLY_SAVED_SOURCE_PREFIX)) {
+            File f = new File(loadMetadata.getFileLocation() + "/" + file.replaceFirst(LOCALLY_SAVED_SOURCE_PREFIX, ""));
+
+            file = f.getParentFile().getAbsolutePath() + FileNamePatternToFileResolverService.PATH_FILENAME_SEPARATOR + f.getName();
+
+        }
+
         BigDecimal fps = new BigDecimal(savedClip.get("fps").asDouble());
 
         VideoMetadata mediaMetadata = (VideoMetadata) readMetadataFromFileAndFps(fps, file);
 
         VisualMediaSource videoSource = new VisualMediaSource(file, imageSequenceDecoder);
 
-        return new ImageSequenceVideoClip(mediaMetadata, videoSource, savedClip, metadata);
+        return new ImageSequenceVideoClip(mediaMetadata, videoSource, savedClip, loadMetadata, fileNamePatternToFileResolverService);
     }
 
     public MediaMetadata readMetadataFromFileAndFps(BigDecimal fps, String backingFiles) {

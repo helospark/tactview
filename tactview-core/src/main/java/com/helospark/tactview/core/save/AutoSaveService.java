@@ -80,7 +80,10 @@ public class AutoSaveService {
 
                 File saveFile = new File(autosaveFileSaveDirectory, "autosave_" + formatter.format(localDateTime) + ".tvs");
 
-                SaveRequest saveRequest = new SaveRequest(saveFile.getAbsolutePath());
+                SaveRequest saveRequest = SaveRequest.builder()
+                        .withFileName(saveFile.getAbsolutePath())
+                        .withPackageAllContent(false)
+                        .build();
 
                 saveAndLoadHandler.save(saveRequest);
 

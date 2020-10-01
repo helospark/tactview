@@ -39,4 +39,10 @@ public class FileNamePatternToFileResolverService {
         return new ArrayList<>(files);
     }
 
+    public String resolveFilePattern(String filePathAndPattern) {
+        int index = filePathAndPattern.lastIndexOf(PATH_FILENAME_SEPARATOR);
+
+        return filePathAndPattern.substring(index + PATH_FILENAME_SEPARATOR.length());
+    }
+
 }

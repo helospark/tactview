@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
@@ -45,7 +46,7 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
         this.factoryId = node.get("factoryId").asText();
     }
 
-    public Object generateSavedContent() {
+    public Object generateSavedContent(SaveMetadata saveMetadata) {
         Map<String, Object> result = new LinkedHashMap<>();
 
         result.put("id", id);
@@ -56,7 +57,7 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
         ReflectionUtil.collectSaveableFields(this, saveableFields);
         result.put("savedFields", saveableFields);
 
-        generateSavedContentInternal(result);
+        generateSavedContentInternal(result, saveMetadata);
 
         return result;
     }
@@ -130,7 +131,7 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
 
     public abstract StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata);
 
-    protected void generateSavedContentInternal(Map<String, Object> result) {
+    protected void generateSavedContentInternal(Map<String, Object> result, SaveMetadata saveMetadata) {
         // clients can optionally override if necessary
     }
 

@@ -11,6 +11,7 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class VideoClip extends VisualTimelineClip {
@@ -42,8 +43,8 @@ public class VideoClip extends VisualTimelineClip {
     }
 
     @Override
-    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
-        super.generateSavedContentInternal(savedContent);
+    protected void generateSavedContentInternal(Map<String, Object> savedContent, SaveMetadata saveMetadata) {
+        super.generateSavedContentInternal(savedContent, saveMetadata);
         savedContent.put("startPosition", startPosition);
         savedContent.put("shouldHaveLowResolutionProxy", lowResolutionProxySource.isPresent());
     }

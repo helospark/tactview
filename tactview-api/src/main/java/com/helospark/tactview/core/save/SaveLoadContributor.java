@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface SaveLoadContributor {
 
-    public void generateSavedContent(Map<String, Object> generatedContent);
+    public void generateSavedContent(Map<String, Object> generatedContent, SaveMetadata saveMetadata);
 
     public void loadFrom(JsonNode tree, LoadMetadata metadata);
 

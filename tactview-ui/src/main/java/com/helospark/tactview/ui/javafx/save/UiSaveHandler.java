@@ -59,7 +59,7 @@ public class UiSaveHandler {
         if (currentSavedFile.isPresent()) {
             dirtyRepository.setDirty(false);
             String filePath = currentSavedFile.get();
-            saveAndLoadHandler.save(new SaveRequest(filePath));
+            saveAndLoadHandler.save(createSaveRequest(filePath));
             recentlyAccessedRepository.addNewRecentlySavedElement(new File(filePath));
             return true;
         } else {
@@ -71,7 +71,7 @@ public class UiSaveHandler {
                 }
                 lastOpenedDirectoryName = new File(pathName).getParentFile().getAbsolutePath();
                 dirtyRepository.setDirty(false);
-                saveAndLoadHandler.save(new SaveRequest(pathName));
+                saveAndLoadHandler.save(createSaveRequest(pathName));
 
                 recentlyAccessedRepository.addNewRecentlySavedElement(new File(pathName));
                 currentProjectSavedFileRepository.setCurrentSavedFile(pathName);
@@ -79,6 +79,13 @@ public class UiSaveHandler {
             }
         }
         return false;
+    }
+
+    protected SaveRequest createSaveRequest(String filePath) {
+        return SaveRequest.builder()
+                .withFileName(filePath)
+                .withPackageAllContent(false)
+                .build();
     }
 
     public void saveAs() {
@@ -90,7 +97,7 @@ public class UiSaveHandler {
             }
             File resultFile = new File(resultFilePath);
             lastOpenedDirectoryName = resultFile.getParentFile().getAbsolutePath();
-            saveAndLoadHandler.save(new SaveRequest(resultFilePath));
+            saveAndLoadHandler.save(createSaveRequest(resultFilePath));
             recentlyAccessedRepository.addNewRecentlySavedElement(resultFile);
         }
     }

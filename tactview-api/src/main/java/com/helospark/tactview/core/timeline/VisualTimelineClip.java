@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.alignment.AlignmentValueListElement;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategyAccessor;
@@ -292,8 +294,15 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     @Override
-    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
-        savedContent.put("backingFile", backingSource.getBackingFile());
+    protected void generateSavedContentInternal(Map<String, Object> savedContent, SaveMetadata saveMetadata) {
+        if (saveMetadata.isPackageAllContent()) {
+            String fullBackingFile = new File(backingSource.getBackingFile()).getName();
+            String copiedFileName = "data/" + this.getId() + "/" + fullBackingFile;
+            saveMetadata.getFilesToCopy().put(copiedFileName, backingSource.getBackingFile());
+            savedContent.put("backingFile", SaveMetadata.LOCALLY_SAVED_SOURCE_PREFIX + copiedFileName);
+        } else {
+            savedContent.put("backingFile", backingSource.getBackingFile());
+        }
     }
 
     @Override

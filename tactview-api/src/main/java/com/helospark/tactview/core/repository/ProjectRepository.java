@@ -13,6 +13,7 @@ import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
+import com.helospark.tactview.core.save.SaveMetadata;
 
 @Component
 public class ProjectRepository implements SaveLoadContributor, ResettableBean {
@@ -105,7 +106,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
     }
 
     @Override
-    public void generateSavedContent(Map<String, Object> generatedContent) {
+    public void generateSavedContent(Map<String, Object> generatedContent, SaveMetadata saveMetadata) {
         generatedContent.put("projectRepository", objectMapper.valueToTree(this));
     }
 

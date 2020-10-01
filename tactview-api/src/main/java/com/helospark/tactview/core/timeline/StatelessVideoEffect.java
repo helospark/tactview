@@ -10,6 +10,7 @@ import com.helospark.lightdi.annotation.Autowired;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
@@ -42,8 +43,8 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
     }
 
     @Override
-    protected void generateSavedContentInternal(Map<String, Object> result) {
-        super.generateSavedContentInternal(result);
+    protected void generateSavedContentInternal(Map<String, Object> result, SaveMetadata saveMetadata) {
+        super.generateSavedContentInternal(result, saveMetadata);
     }
 
     public ReadOnlyClipImage createFrameExternal(StatelessEffectRequest request) {

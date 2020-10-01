@@ -12,6 +12,7 @@ import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.decoder.ffmpeg.audio.AVCodecAudioMediaDecoderDecorator;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
 public class SoundClip extends AudibleTimelineClip {
@@ -66,8 +67,15 @@ public class SoundClip extends AudibleTimelineClip {
     }
 
     @Override
-    protected void generateSavedContentInternal(Map<String, Object> savedContent) {
-        savedContent.put("backingFile", backingSource.getBackingFile());
+    protected void generateSavedContentInternal(Map<String, Object> savedContent, SaveMetadata saveMetadata) {
+        if (saveMetadata.isPackageAllContent()) {
+            String fullBackingFile = new File(backingSource.getBackingFile()).getName();
+            String copiedFileName = "data/" + this.getId() + "/" + fullBackingFile;
+            saveMetadata.getFilesToCopy().put(copiedFileName, backingSource.getBackingFile());
+            savedContent.put("backingFile", SaveMetadata.LOCALLY_SAVED_SOURCE_PREFIX + copiedFileName);
+        } else {
+            savedContent.put("backingFile", backingSource.getBackingFile());
+        }
     }
 
     @Override
