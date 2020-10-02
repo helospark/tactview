@@ -154,4 +154,8 @@ public class AudioFrameResult {
         return new AudioFrameResult(newChannels, input.getSamplePerSecond(), input.getBytesPerSample());
     }
 
+    public boolean isEmpty() {
+        return this.channels.isEmpty() || this.getNumberSamples() == 0;
+    }
+
 }

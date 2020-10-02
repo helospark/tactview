@@ -115,15 +115,8 @@ public class PlaybackFrameAccessor {
     }
 
     public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position, boolean isMute) {
-        if (isMute) { // this is so the same audio->video sync code can be used to play video, instead of writing a secondary play video logic
-            int bytes = projectRepository.getFrameTime().multiply(BigDecimal.valueOf(SAMPLE_RATE)).intValue() * BYTES;
-            List<ByteBuffer> channels = new ArrayList<>(CHANNELS);
-            for (int i = 0; i < CHANNELS; ++i) {
-                channels.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(bytes));
-            }
-
-            return new AudioVideoFragment(null, new AudioFrameResult(channels, SAMPLE_RATE, BYTES));
-        } else {
+        AudioVideoFragment frame = null;
+        if (!isMute) {
             Integer width = uiProjectRepository.getPreviewWidth();
             Integer height = uiProjectRepository.getPreviewHeight();
             TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
@@ -136,8 +129,17 @@ public class PlaybackFrameAccessor {
                     .withAudioBytesPerSample(Optional.of(BYTES))
                     .withAudioSampleRate(Optional.of(SAMPLE_RATE))
                     .build();
-            AudioVideoFragment frame = timelineManager.getFrame(request);
-            return frame;
+            frame = timelineManager.getFrame(request);
         }
+        if (frame == null || frame.getAudioResult().isEmpty()) {
+            // this is so the same audio->video sync code can be used to play video, instead of writing a secondary play video logic
+            int bytes = projectRepository.getFrameTime().multiply(BigDecimal.valueOf(SAMPLE_RATE)).intValue() * BYTES;
+            List<ByteBuffer> channels = new ArrayList<>(CHANNELS);
+            for (int i = 0; i < CHANNELS; ++i) {
+                channels.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(bytes));
+            }
+            frame = new AudioVideoFragment(null, new AudioFrameResult(channels, SAMPLE_RATE, BYTES));
+        }
+        return frame;
     }
 }
