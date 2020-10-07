@@ -50,5 +50,6 @@ public abstract class EffectLine {
             }
 
         }
+
     }
 }

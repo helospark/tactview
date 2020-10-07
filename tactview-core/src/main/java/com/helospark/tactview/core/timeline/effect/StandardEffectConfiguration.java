@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
+import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -453,10 +454,11 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory lutEffect(IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
+    public StandardEffectFactory lutEffect(IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService,
+            @Value("${tactview.lut.dropinFolders}") List<String> lutLocations) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new LutEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, lutProviderService))
-                .withRestoreFactory((node, loadMetadata) -> new LutEffect(node, loadMetadata, independentPixelOperation, lutProviderService))
+                .withFactory(request -> new LutEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), independentPixelOperation, lutProviderService, lutLocations))
+                .withRestoreFactory((node, loadMetadata) -> new LutEffect(node, loadMetadata, independentPixelOperation, lutProviderService, lutLocations))
                 .withName("LUT")
                 .withSupportedEffectId("lut")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))

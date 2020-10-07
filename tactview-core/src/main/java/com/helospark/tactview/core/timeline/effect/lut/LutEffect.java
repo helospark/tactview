@@ -1,7 +1,10 @@
 package com.helospark.tactview.core.timeline.effect.lut;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
@@ -14,8 +17,11 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -26,13 +32,18 @@ public class LutEffect extends StatelessVideoEffect {
     private IndependentPixelOperation independentPixelOperation;
     private LutProviderService lutProviderService;
     private DoubleProvider intensityProvider;
+    private BooleanProvider customFileProvider;
+    private ValueListProvider<ValueListElement> buildInFilesProvider;
 
     private FileProvider lutFileProvider;
 
-    public LutEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
+    private List<String> dropinLocations;
+
+    public LutEffect(TimelineInterval interval, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService, List<String> dropinLocations) {
         super(interval);
         this.independentPixelOperation = independentPixelOperation;
         this.lutProviderService = lutProviderService;
+        this.dropinLocations = dropinLocations;
     }
 
     public LutEffect(LutEffect lutEffect, CloneRequestMetadata cloneRequestMetadata) {
@@ -40,16 +51,23 @@ public class LutEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(lutEffect, this);
     }
 
-    public LutEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService) {
+    public LutEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService, List<String> dropinLocations) {
         super(node, loadMetadata);
         this.independentPixelOperation = independentPixelOperation;
         this.lutProviderService = lutProviderService;
+        this.dropinLocations = dropinLocations;
     }
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        File lutFile = lutFileProvider.getValueAt(request.getEffectPosition());
-
+        File lutFile;
+        if (customFileProvider.getValueAt(request.getEffectPosition())) {
+            lutFile = lutFileProvider.getValueAt(request.getEffectPosition());
+        } else {
+            ValueListElement element = buildInFilesProvider.getValueAt(request.getEffectPosition());
+            String fileName = Optional.ofNullable(element).map(a -> a.getId()).orElse("");
+            lutFile = new File(fileName);
+        }
         double intensity = intensityProvider.getValueAt(request.getEffectPosition());
 
         if (lutFile.exists()) {
@@ -75,21 +93,71 @@ public class LutEffect extends StatelessVideoEffect {
     protected void initializeValueProviderInternal() {
         lutFileProvider = new FileProvider("cube", new StepStringInterpolator(""));
         intensityProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
+
+        List<ValueListElement> droppedInFiles = getDroppedInFiles();
+        String defaultFile = "";
+        if (droppedInFiles.size() > 0) {
+            defaultFile = droppedInFiles.get(0).getId();
+        }
+
+        buildInFilesProvider = new ValueListProvider<>(droppedInFiles, new StepStringInterpolator(defaultFile));
+
+        customFileProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(droppedInFiles.size() > 0 ? 0.0 : 1.0));
+    }
+
+    private List<ValueListElement> getDroppedInFiles() {
+        return dropinLocations.stream()
+                .map(folderPath -> new File(folderPath))
+                .filter(a -> a.exists())
+                .flatMap(a -> listAllFilesUnder(a).stream())
+                .filter(a -> a.getName().endsWith(".cube") || a.getName().endsWith(".3dl"))
+                .map(a -> new ValueListElement(a.getAbsolutePath(), a.getName()))
+                .collect(Collectors.toList());
+    }
+
+    private List<File> listAllFilesUnder(File folder) {
+        List<File> result = new ArrayList<>();
+
+        listAllFilesUnder(folder, result);
+
+        return result;
+    }
+
+    private void listAllFilesUnder(File folder, List<File> result) {
+        for (var file : folder.listFiles()) {
+            if (file.isDirectory()) {
+                listAllFilesUnder(file, result);
+            } else {
+                result.add(file);
+            }
+        }
     }
 
     @Override
     protected List<ValueProviderDescriptor> getValueProvidersInternal() {
+        ValueProviderDescriptor customFileDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(customFileProvider)
+                .withName("Browse file")
+                .build();
 
         ValueProviderDescriptor lutFileProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lutFileProvider)
                 .withName("file")
+                .withShowPredicate(a -> !customFileProvider.getValueAt(a))
                 .build();
+
+        ValueProviderDescriptor droppedInLutProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(buildInFilesProvider)
+                .withName("LUT")
+                .withShowPredicate(a -> customFileProvider.getValueAt(a))
+                .build();
+
         ValueProviderDescriptor intensityProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(intensityProvider)
                 .withName("intensity")
                 .build();
 
-        return List.of(lutFileProviderDescriptor, intensityProviderDescriptor);
+        return List.of(intensityProviderDescriptor, customFileDescriptor, droppedInLutProviderDescriptor, lutFileProviderDescriptor);
     }
 
     @Override

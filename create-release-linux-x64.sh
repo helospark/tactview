@@ -31,6 +31,13 @@ BLACKLISTED_DEPENDENCIES="$LSB_LIBRARIES\|$ADDITIONAL_EXCLUDES"
 
 ldd tactview-native/*.so | grep "=> /" | grep -v $BLACKLISTED_DEPENDENCIES | awk '{print $3}' | sort -u | xargs -I '{}' cp -v '{}' release/linux64/libs/.
 
+
+echo "Moving static data"
+
+buildconfig/prepare_static_files.sh "$(pwd)/release/linux64"
+
+echo "Zipping"
+
 cd release
 
 builddate=`date '+%Y%m%d_%H%M%S'`

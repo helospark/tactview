@@ -14,7 +14,7 @@ public class ValueProviderDescriptor {
     private String name;
     private KeyframeableEffect keyframeableEffect;
     private List<ActivePredicate> activePredicate;
-    private List<ActivePredicate> showPredicate;
+    private Optional<Function<TimelinePosition, Boolean>> showPredicate;
     private Map<Object, Object> renderHints;
     private Optional<Function<TimelinePosition, Boolean>> enabledIf;
     private Optional<String> group;
@@ -42,7 +42,7 @@ public class ValueProviderDescriptor {
         return activePredicate;
     }
 
-    public List<ActivePredicate> getShowPredicate() {
+    public Optional<Function<TimelinePosition, Boolean>> getShowPredicate() {
         return showPredicate;
     }
 
@@ -74,7 +74,7 @@ public class ValueProviderDescriptor {
         private String name;
         private KeyframeableEffect keyframeableEffect;
         private List<ActivePredicate> activePredicate = Collections.emptyList();
-        private List<ActivePredicate> showPredicate = Collections.emptyList();
+        private Optional<Function<TimelinePosition, Boolean>> showPredicate = Optional.empty();
         private Map<Object, Object> renderHints = Collections.emptyMap();
         private Optional<Function<TimelinePosition, Boolean>> enabledIf = Optional.empty();
         private Optional<String> group = Optional.empty();
@@ -97,8 +97,8 @@ public class ValueProviderDescriptor {
             return this;
         }
 
-        public Builder withShowPredicate(List<ActivePredicate> showPredicate) {
-            this.showPredicate = showPredicate;
+        public Builder withShowPredicate(Function<TimelinePosition, Boolean> showPredicate) {
+            this.showPredicate = Optional.ofNullable(showPredicate);
             return this;
         }
 

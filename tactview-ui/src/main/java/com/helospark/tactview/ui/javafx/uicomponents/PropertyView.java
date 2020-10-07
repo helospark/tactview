@@ -48,6 +48,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
 @Component
@@ -153,6 +154,7 @@ public class PropertyView {
     private EffectPropertyPage createBox(List<ValueProviderDescriptor> descriptors, String id) {
         GridPane grid = new GridPane();
         grid.getStyleClass().add("effect-property-grid");
+        grid.getRowConstraints().add(new RowConstraints());
         Builder result = EffectPropertyPage.builder()
                 .withBox(grid)
                 .withComponentId(id);
@@ -239,7 +241,7 @@ public class PropertyView {
     }
 
     private void addElement(ValueProviderDescriptor descriptor, Builder result, int line, GridPane currentGridLocation) {
-        System.out.println("Adding " + descriptor);
+        logger.debug("Adding " + descriptor + " at index " + line);
         HBox labelBox = new HBox(10);
         Label label = new Label(descriptor.getName());
         labelBox.getChildren().add(label);
@@ -267,7 +269,14 @@ public class PropertyView {
 
         result.addUpdateFunctions(currentTime -> Platform.runLater(() -> {
             keyframeChange.updateUi(currentTime);
+            if (descriptor != null && descriptor.getShowPredicate().isPresent()) {
+                Boolean visible = !descriptor.getShowPredicate().get().apply(currentTime);
 
+                labelBox.setVisible(visible);
+                labelBox.setManaged(visible);
+                key.setVisible(visible);
+                key.setManaged(visible);
+            }
         }));
     }
 
@@ -324,7 +333,7 @@ public class PropertyView {
             propertyWindow.getChildren().add(shownEntries.getBox());
             shownEntries2.getUpdateFunctions().stream().forEach(a -> a.accept(uiTimelineManager.getCurrentPosition()));
         } else {
-            System.out.println("Effect not found, should not happen");
+            logger.error("Effect not found, should not happen");
         }
     }
 

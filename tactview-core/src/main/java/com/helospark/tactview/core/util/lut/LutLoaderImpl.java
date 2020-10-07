@@ -24,4 +24,5 @@ public class LutLoaderImpl implements LutLoader {
             throw new IllegalArgumentException("Unsupported lut format " + filename);
         }
     }
+
 }
