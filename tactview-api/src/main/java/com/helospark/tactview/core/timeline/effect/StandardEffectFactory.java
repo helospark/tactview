@@ -105,7 +105,7 @@ public class StandardEffectFactory implements EffectFactory, ContextAware {
         private String name;
         private Function<CreateEffectRequest, StatelessEffect> factory;
         private BiFunction<JsonNode, LoadMetadata, StatelessEffect> restoreFactory;
-        private boolean isFullWidth;
+        private boolean isFullWidth = true;
 
         private Builder() {
         }
@@ -117,6 +117,11 @@ public class StandardEffectFactory implements EffectFactory, ContextAware {
 
         public Builder withEffectType(TimelineEffectType effectType) {
             this.effectType = effectType;
+
+            if (effectType.equals(TimelineEffectType.VIDEO_TRANSITION) || effectType.equals(TimelineEffectType.AUDIO_TRANSITION)) {
+                this.isFullWidth = false;
+            }
+
             return this;
         }
 
