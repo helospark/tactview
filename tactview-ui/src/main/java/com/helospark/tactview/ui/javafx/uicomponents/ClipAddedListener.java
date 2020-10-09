@@ -37,6 +37,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipAddedListener {
+    private static final int RESIZE_WIDTH = 10;
     private UiMessagingService messagingService;
     private TimelineState timelineState;
     private EffectDragAdder effectDragAdder;
@@ -125,7 +126,7 @@ public class ClipAddedListener {
 
         rectangle.setOnDragDetected(e -> {
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
-            double currentX = e.getX();
+            double currentX = dragRepository.getInitialX();
 
             /* put a string on dragboard */
             ClipboardContent content = new ClipboardContent();
@@ -145,6 +146,15 @@ public class ClipAddedListener {
             });
 
             db.setContent(content);
+        });
+
+        rectangle.setOnMousePressed(event -> {
+            double currentX = event.getX();
+
+            if (event.isPrimaryButtonDown() && dragRepository.getInitialX() == -1) {
+                dragRepository.setInitialX(currentX); // this hack is needed because by dragDetect event, cursor could have moved a few pixels
+            }
+
         });
 
         rectangle.setOnMouseMoved(event -> {
@@ -177,11 +187,22 @@ public class ClipAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX - rectangle.getLayoutX() < 15 / timelineState.getZoom();
+        double divider = getDivider(rectangle);
+        return currentX - rectangle.getLayoutX() < RESIZE_WIDTH / timelineState.getZoom() / divider;
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {
-        return rectangle.getLayoutX() + rectangle.getWidth() - currentX < 15 / timelineState.getZoom();
+        double divider = getDivider(rectangle);
+        return rectangle.getLayoutX() + rectangle.getWidth() - currentX < RESIZE_WIDTH / timelineState.getZoom() / divider;
+    }
+
+    // When the width is small, decrease the resize width
+    private double getDivider(Rectangle rectangle) {
+        double divider = 1.0;
+        if (rectangle.getWidth() < 20.0) {
+            divider = 10;
+        }
+        return divider;
     }
 
 }

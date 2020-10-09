@@ -42,13 +42,20 @@ std::string getCommandLine(const char* logFile) {
   try {
     struct passwd *pw = getpwuid(getuid());
     homedir = std::string(pw->pw_dir) + "/.tactview/plugins/";
-
+    std::cout << "Plugin directory: " << homedir << std::endl;
     for (const auto & entry : std::experimental::filesystem::directory_iterator(homedir)) {
         findPathAndNativesFor(entry.path(), jars, natives);        
-        std::cout << entry.path() << std::endl;
+        std::cout << "Adding plugin " << entry.path() << std::endl;
+    }
+
+    std::string dropinPluginDirectory = std::string(get_current_dir_name()) + "/dropin/plugins"; // We have already CDd into the directory
+    std::cout << "Dropin plugin directory: " << dropinPluginDirectory << std::endl;
+    for (const auto & entry : std::experimental::filesystem::directory_iterator(dropinPluginDirectory)) {
+        findPathAndNativesFor(entry.path(), jars, natives);
+        std::cout << "Adding plugin " << entry.path() << std::endl;
     }
   } catch(...) {
-    std::cout << "Cannot load plugins" << std::endl;
+    std::cout << "[ERROR] Cannot load plugins" << std::endl;
   }
     
   jars.push_back("tactview.jar");
@@ -60,7 +67,7 @@ std::string getCommandLine(const char* logFile) {
 
 //  std::cout << classpathString << " " << nativesString << std::endl;
 
-  std::string commandLine = "LD_LIBRARY_PATH=" + nativesString + " java-runtime/bin/java -classpath " + classpathString + " -Djdk.gtk.version=2 -Dprism.order=sw -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir + " >> " + logFile;
+  std::string commandLine = "LD_LIBRARY_PATH=" + nativesString + " java-runtime/bin/java -classpath " + classpathString + " -Djdk.gtk.version=2 -Dprism.order=sw -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir + " >> " + logFile + " 2>&1";
   std::cout << commandLine << std::endl;
 
   return commandLine;
@@ -77,7 +84,6 @@ int main(int argc, char** argv) {
     if (strlen(argv[0]) > 0) {
       std::cout << "Working directory is " << argv[0] << std::endl;
       chdir(argv[0]);
-      
     }
     std::string commandLine = getCommandLine(logFile.c_str());
 

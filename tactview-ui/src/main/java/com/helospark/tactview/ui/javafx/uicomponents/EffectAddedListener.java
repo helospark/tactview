@@ -30,8 +30,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectAddedListener {
-    private static final int LAYOUT_FIXER_HACK = 7; // TODO!!! mouseMove and mouseDrag returns different values
-    private static final int DRAG_PIXEL_DISTANCE = 10;
+    private static final int DRAG_PIXEL_DISTANCE = 5;
     public static final int EFFECTS_OFFSET = 50;
     public static final int EFFECT_HEIGHT = 30;
     private UiMessagingService messagingService;
@@ -95,12 +94,13 @@ public class EffectAddedListener {
         rectangle.setOnDragDetected(event -> {
             ClipboardContent content = new ClipboardContent();
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
-            double currentX = event.getX();
+            double currentX = dragRepository.getInitialX();
+            System.out.println("X is : " + currentX + " ");
             EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
                     event.getX());
-            boolean isResizing = isResizing(rectangle, currentX - LAYOUT_FIXER_HACK) || isResizing(rectangle, currentX + LAYOUT_FIXER_HACK);
+            boolean isResizing = isResizing(rectangle, currentX);
             if (isResizing) {
-                DragDirection dragDirection = isDraggingLeft(rectangle, currentX - LAYOUT_FIXER_HACK) ? DragDirection.LEFT : DragDirection.RIGHT;
+                DragDirection dragDirection = isDraggingLeft(rectangle, currentX) ? DragDirection.LEFT : DragDirection.RIGHT;
                 System.out.println("DragDirection: " + dragDirection);
                 dragRepository.onEffectResized(dragInformation, dragDirection);
                 content.putString("effectresized");
@@ -111,8 +111,18 @@ public class EffectAddedListener {
             db.setContent(content);
         });
 
+        rectangle.setOnMousePressed(event -> {
+            double currentX = event.getX();
+
+            if (event.isPrimaryButtonDown() && dragRepository.getInitialX() == -1) {
+                dragRepository.setInitialX(currentX); // this hack is needed because by dragDetect event, cursor could have moved a few pixels
+            }
+
+        });
+
         rectangle.setOnMouseMoved(event -> {
             double currentX = event.getX();
+            System.out.println("X is : " + currentX + " " + event.isPrimaryButtonDown());
             boolean isResizing = isResizing(rectangle, currentX);
             if (isResizing) {
                 rectangle.setCursor(Cursor.H_RESIZE);
@@ -124,6 +134,7 @@ public class EffectAddedListener {
         rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, e -> {
             ContextMenu contextMenu = effectContextMenuFactory.createContextMenuForEffect(effectAddedMessage.getEffect());
             contextMenu.show(rectangle.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+            e.consume();
         });
 
         return rectangle;
@@ -165,11 +176,22 @@ public class EffectAddedListener {
     }
 
     private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        return currentX < DRAG_PIXEL_DISTANCE / timelineState.getZoom();
+        double divider = getDivider(rectangle);
+        return currentX < (DRAG_PIXEL_DISTANCE / timelineState.getZoom() / divider);
     }
 
     private boolean isDraggingRight(Rectangle rectangle, double currentX) {
-        return rectangle.getWidth() - currentX < DRAG_PIXEL_DISTANCE / timelineState.getZoom();
+        double divider = getDivider(rectangle);
+        return rectangle.getWidth() - currentX < (DRAG_PIXEL_DISTANCE / timelineState.getZoom() / divider);
+    }
+
+    // When the width is small, decrease the resize width
+    private double getDivider(Rectangle rectangle) {
+        double divider = 1.0;
+        if (rectangle.getWidth() < 20.0) {
+            divider = 10;
+        }
+        return divider;
     }
 
 }

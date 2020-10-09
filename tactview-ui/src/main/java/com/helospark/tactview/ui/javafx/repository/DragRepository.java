@@ -13,6 +13,8 @@ public class DragRepository implements CleanableMode {
     private boolean isResizing;
     private DragDirection dragDirection;
 
+    private double initialX = -1;
+
     public void onClipDragged(ClipDragInformation information) {
         this.clipDragInformation = information;
         this.isResizing = false;
@@ -32,6 +34,7 @@ public class DragRepository implements CleanableMode {
         clipDragInformation = null;
         isResizing = false;
         dragDirection = null;
+        initialX = -1;
     }
 
     public void onEffectDragged(EffectDragInformation effectDragInformation) {
@@ -46,6 +49,7 @@ public class DragRepository implements CleanableMode {
         effectDragInformation = null;
         isResizing = false;
         dragDirection = null;
+        initialX = -1;
     }
 
     public boolean isResizing() {
@@ -58,6 +62,14 @@ public class DragRepository implements CleanableMode {
 
     public DragDirection getDragDirection() {
         return dragDirection;
+    }
+
+    public double getInitialX() {
+        return initialX;
+    }
+
+    public void setInitialX(double initialX) {
+        this.initialX = initialX;
     }
 
     public void onEffectResized(EffectDragInformation dragInformation, DragDirection dragDirection) {
