@@ -22,6 +22,12 @@ BLACKLISTED_DEPENDENCIES="advapi32.dll\|bcrypt.dll\|bcryptPrimitives.dll\|cfgmgr
 
 ldd tactview-native/*.dll | grep "=> /" | grep -i -v $BLACKLISTED_DEPENDENCIES | awk '{print $3}' | sort -u | xargs -I '{}' cp -v '{}' release/win64/.
 
+echo "Moving static data"
+
+buildconfig/prepare_static_files.sh "$(pwd)/release/win64"
+
+echo "Zipping"
+
 cd release
 
 builddate=`date '+%Y%m%d_%H%M%S'`

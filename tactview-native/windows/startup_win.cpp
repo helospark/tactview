@@ -87,7 +87,7 @@ int execute(std::string commandLine) {
 
     ZeroMemory( &si, sizeof(si) );
     si.cb = sizeof(si);
-    si.dwFlags |= STARTF_USESTDHANDLES;
+    si.dwFlags |= (STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW);
     si.hStdInput = NULL;
     si.hStdError = h;
     si.hStdOutput = h;
@@ -99,7 +99,7 @@ int execute(std::string commandLine) {
         lpstr,        // Command line
         NULL,           // Process handle not inheritable
         NULL,           // Thread handle not inheritable
-        TRUE,          // Set handle inheritance to FALSE
+        TRUE,           // Set handle inheritance to FALSE
         0,              // No creation flags
         NULL,           // Use parent's environment block
         NULL,           // Use parent's starting directory 
