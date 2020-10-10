@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Optional;
+
 import javax.annotation.Generated;
 
 public class ResizeEffectRequest {
@@ -9,6 +11,7 @@ public class ResizeEffectRequest {
     private boolean useSpecialPoints;
     private boolean moreResizeExpected;
     private TimelineLength maximumJumpLength;
+    private TimelineLength minimumLength;
 
     @Generated("SparkTools")
     private ResizeEffectRequest(Builder builder) {
@@ -18,6 +21,7 @@ public class ResizeEffectRequest {
         this.useSpecialPoints = builder.useSpecialPoints;
         this.moreResizeExpected = builder.moreResizeExpected;
         this.maximumJumpLength = builder.maximumJumpLength;
+        this.minimumLength = builder.minimumLength;
     }
 
     public StatelessEffect getEffect() {
@@ -40,6 +44,10 @@ public class ResizeEffectRequest {
         return useSpecialPoints;
     }
 
+    public Optional<TimelineLength> getMinimumLength() {
+        return Optional.ofNullable(minimumLength);
+    }
+
     public TimelineLength getMaximumJumpLength() {
         return maximumJumpLength;
     }
@@ -57,6 +65,7 @@ public class ResizeEffectRequest {
         private boolean useSpecialPoints;
         private boolean moreResizeExpected;
         private TimelineLength maximumJumpLength;
+        private TimelineLength minimumLength;
 
         private Builder() {
         }
@@ -88,6 +97,11 @@ public class ResizeEffectRequest {
 
         public Builder withMaximumJumpLength(TimelineLength maximumJumpLength) {
             this.maximumJumpLength = maximumJumpLength;
+            return this;
+        }
+
+        public Builder withMinimumLength(TimelineLength minimumLength) {
+            this.minimumLength = minimumLength;
             return this;
         }
 

@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.SecondsAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -32,6 +35,7 @@ import javafx.scene.layout.VBox;
 
 @Component
 public class TimelineState {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimelineState.class);
     public static final BigDecimal PIXEL_PER_SECOND = new BigDecimal(10L);
 
     private ObservableIntegerValue horizontalScrollPosition = new SimpleIntegerProperty(0);
@@ -91,7 +95,6 @@ public class TimelineState {
     }
 
     public int secondsToPixelsWidthZoomAndTranslate(SecondsAware length) {
-        System.out.println(translate.get());
         return length.getSeconds()
                 .multiply(PIXEL_PER_SECOND) // todo: zoom and scroll
                 .multiply(BigDecimal.valueOf(zoomValue.get()))
@@ -207,7 +210,6 @@ public class TimelineState {
 
     public void setLinePosition(TimelinePosition position) {
         double pixels = secondsToPixels(position);
-        System.out.println("Moving line to " + pixels + " " + position + " " + zoomValue.get());
         linePosition.set(pixels);
     }
 
@@ -267,7 +269,6 @@ public class TimelineState {
             channelToClips.get(originalChannel.getUserData()).remove(clip);
             channelToClips.get(newChannelId).add(clip);
         }
-        // System.out.println("Channel change: " + channel.getUserData() + " " + newChannelId);
     }
 
     public TimelineLineProperties getMoveSpecialPointLineProperties() {
@@ -275,12 +276,12 @@ public class TimelineState {
     }
 
     public void setZoom(double zoom) {
-        System.out.println("zoom:" + zoom);
+        LOGGER.debug("zoom:" + zoom);
         this.zoomValue.set(zoom);
     }
 
     public void setTranslate(double newTranslate) {
-        System.out.println("translate:" + newTranslate);
+        LOGGER.debug("translate:" + newTranslate);
         this.translate.set(newTranslate);
     }
 

@@ -41,6 +41,8 @@ import javafx.scene.shape.Rectangle;
 public class TimelineDragAndDropHandler {
     private static final KeyCode SPECIAL_POSITION_DISABLE_KEY = KeyCode.ALT; // TODO: make switchable
     private static final int MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS = 30;
+    private static final int MINIMUM_CLIP_SIZE = 10;
+    private static final int MINIMUM_EFFECT_SIZE = 10;
     private TimelineManagerAccessor timelineManager;
     private UiCommandInterpreterService commandInterpreter;
     private TimelineState timelineState;
@@ -136,8 +138,6 @@ public class TimelineDragAndDropHandler {
             ZoomableScrollPane pane = timelineState.getTimeLineScrollPane();
 
             Bounds paneBounds = pane.getViewportBounds();
-
-            System.out.println("$$$$$$$$ " + x + " " + pane.getViewportBounds() + " " + pane.getLayoutX() + " " + x + " " + event.getSceneX() + " " + event.getScreenX() + " " + event.getX());
 
             scrollRightWhenNeeded(x, paneBounds);
             scrollLeftWhenNeeded(x, paneBounds);
@@ -293,6 +293,7 @@ public class TimelineDragAndDropHandler {
                     .withRevertable(revertable)
                     .withTimelineManager(timelineManager)
                     .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
+                    .withMinimumSize(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MINIMUM_CLIP_SIZE).getSeconds()))
                     .withMoreResizeExpected(!revertable)
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                     .build();
@@ -339,6 +340,7 @@ public class TimelineDragAndDropHandler {
                 .withGlobalPosition(timelineState.pixelsToSeconds(x))
                 .withRevertable(revertable)
                 .withTimelineManager(timelineManager)
+                .withMinimumLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MINIMUM_EFFECT_SIZE).getSeconds()))
                 .build();
 
         commandInterpreter.sendWithResult(resizedCommand);
@@ -347,8 +349,6 @@ public class TimelineDragAndDropHandler {
     private void moveEffect(DragEvent event, boolean revertable) {
         EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
         TimelinePosition position = timelineState.pixelsToSeconds(event.getX() - draggedEffect.getAnchorPointX());
-
-        System.out.println("Anchor point: " + draggedEffect.getAnchorPointX() + "x: " + event.getX());
 
         EffectMovedCommand command = EffectMovedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())

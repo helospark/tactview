@@ -24,6 +24,7 @@ public class EffectResizedCommand implements UiCommand {
 
     private boolean useSpecialPoints;
     private TimelineLength maximumJumpLength;
+    private TimelineLength minimumLength;
 
     @Generated("SparkTools")
     private EffectResizedCommand(Builder builder) {
@@ -36,6 +37,7 @@ public class EffectResizedCommand implements UiCommand {
         this.moreResizeExpected = builder.moreResizeExpected;
         this.useSpecialPoints = builder.useSpecialPoints;
         this.maximumJumpLength = builder.maximumJumpLength;
+        this.minimumLength = builder.minimumLength;
     }
 
     @Override
@@ -50,6 +52,7 @@ public class EffectResizedCommand implements UiCommand {
                 .withUseSpecialPoints(useSpecialPoints)
                 .withMoreResizeExpected(moreResizeExpected)
                 .withMaximumJumpLength(maximumJumpLength)
+                .withMinimumLength(minimumLength)
                 .build();
 
         timelineManager.resizeEffect(request);
@@ -79,7 +82,7 @@ public class EffectResizedCommand implements UiCommand {
     public String toString() {
         return "EffectResizedCommand [timelineManager=" + timelineManager + ", effectId=" + effectId + ", globalPosition=" + globalPosition + ", left=" + left + ", originalInterval="
                 + originalInterval + ", revertable=" + revertable + ", moreResizeExpected=" + moreResizeExpected + ", useSpecialPoints=" + useSpecialPoints + ", maximumJumpLength=" + maximumJumpLength
-                + "]";
+                + ", minimumLength=" + minimumLength + "]";
     }
 
     @Generated("SparkTools")
@@ -98,6 +101,7 @@ public class EffectResizedCommand implements UiCommand {
         private boolean moreResizeExpected;
         private boolean useSpecialPoints;
         private TimelineLength maximumJumpLength;
+        private TimelineLength minimumLength;
 
         private Builder() {
         }
@@ -144,6 +148,11 @@ public class EffectResizedCommand implements UiCommand {
 
         public Builder withMaximumJumpLength(TimelineLength maximumJumpLength) {
             this.maximumJumpLength = maximumJumpLength;
+            return this;
+        }
+
+        public Builder withMinimumLength(TimelineLength minimumLength) {
+            this.minimumLength = minimumLength;
             return this;
         }
 

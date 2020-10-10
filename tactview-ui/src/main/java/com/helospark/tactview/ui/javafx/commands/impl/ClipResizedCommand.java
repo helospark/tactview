@@ -24,6 +24,7 @@ public class ClipResizedCommand implements UiCommand {
     private boolean useSpecialPoints;
     private boolean moreResizeExpected;
     private TimelineLength maximumJumpLength;
+    private TimelineLength minimumSize;
 
     @Generated("SparkTools")
     private ClipResizedCommand(Builder builder) {
@@ -36,6 +37,7 @@ public class ClipResizedCommand implements UiCommand {
         this.useSpecialPoints = builder.useSpecialPoints;
         this.maximumJumpLength = builder.maximumJumpLength;
         this.moreResizeExpected = builder.moreResizeExpected;
+        this.minimumSize = builder.minimumSize;
     }
 
     @Override
@@ -50,6 +52,7 @@ public class ClipResizedCommand implements UiCommand {
                 .withPosition(position)
                 .withMaximumJumpLength(maximumJumpLength)
                 .withMoreResizeExpected(moreResizeExpected)
+                .withMinimumSize(minimumSize)
                 .build();
 
         timelineManager.resizeClip(request);
@@ -75,6 +78,13 @@ public class ClipResizedCommand implements UiCommand {
         return revertable;
     }
 
+    @Override
+    public String toString() {
+        return "ClipResizedCommand [timelineManager=" + timelineManager + ", clipId=" + clipId + ", position=" + position + ", left=" + left + ", originalInterval=" + originalInterval
+                + ", revertable=" + revertable + ", useSpecialPoints=" + useSpecialPoints + ", moreResizeExpected=" + moreResizeExpected + ", maximumJumpLength=" + maximumJumpLength + ", minimumSize="
+                + minimumSize + "]";
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -91,6 +101,7 @@ public class ClipResizedCommand implements UiCommand {
         private boolean useSpecialPoints;
         private boolean moreResizeExpected;
         private TimelineLength maximumJumpLength;
+        private TimelineLength minimumSize;
 
         private Builder() {
         }
@@ -137,6 +148,11 @@ public class ClipResizedCommand implements UiCommand {
 
         public Builder withMaximumJumpLength(TimelineLength maximumJumpLength) {
             this.maximumJumpLength = maximumJumpLength;
+            return this;
+        }
+
+        public Builder withMinimumSize(TimelineLength minimumSize) {
+            this.minimumSize = minimumSize;
             return this;
         }
 

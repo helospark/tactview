@@ -94,7 +94,8 @@ public class ClipMovedCommand implements UiCommand {
     public String toString() {
         return "ClipMovedCommand [isRevertable=" + isRevertable + ", clipId=" + clipId + ", additionalClipIds=" + additionalClipIds + ", originalChannelId=" + originalChannelId + ", newChannelId="
                 + newChannelId + ", newPosition=" + newPosition + ", previousPosition=" + previousPosition + ", timelineManager=" + timelineManager + ", enableJumpingToSpecialPosition="
-                + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + ", moreMoveExpected=" + moreMoveExpected + "]";
+                + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + ", moreMoveExpected=" + moreMoveExpected + ", wasOperationSuccessful=" + wasOperationSuccessful
+                + ", additionalPositions=" + additionalPositions + "]";
     }
 
     @Generated("SparkTools")

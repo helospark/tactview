@@ -488,6 +488,15 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         TimelinePosition globalPosition = resizeEffectRequest.getPosition();
         boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
 
+        TimelineLength minimumSize = resizeEffectRequest.getMinimumSize().orElse(null);
+        if (minimumSize != null && getIntervalWhenResizedTo(clip, left, globalPosition).getLength().lessThanOrEqual(minimumSize)) {
+            if (left) {
+                globalPosition = clip.getInterval().getEndPosition().subtract(minimumSize);
+            } else {
+                globalPosition = clip.getInterval().getStartPosition().add(minimumSize);
+            }
+        }
+
         TimelineInterval originalInterval = clip.getInterval();
         TimelineChannel channel = findChannelForClipId(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such channel"));
 
@@ -502,6 +511,14 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
 
             specialPointUsed = findSpecialPositionAround(globalPosition, resizeEffectRequest.getMaximumJumpLength(), excludedIds)
                     .stream()
+                    .filter(a -> {
+                        if (minimumSize == null) {
+                            return true;
+                        }
+                        TimelinePosition newPosition = a.getSpecialPosition();
+                        TimelineInterval interval = getIntervalWhenResizedTo(clip, left, newPosition);
+                        return interval.getLength().greaterThan(minimumSize);
+                    })
                     .findFirst();
             if (specialPointUsed.isPresent()) {
                 globalPosition = specialPointUsed.get().getSpecialPosition();
@@ -522,11 +539,30 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
     }
 
+    private TimelineInterval getIntervalWhenResizedTo(IntervalAware clip, boolean left, TimelinePosition newPosition) {
+        TimelineInterval interval;
+        if (left) {
+            interval = clip.getInterval().butWithStartPosition(newPosition);
+        } else {
+            interval = clip.getInterval().butWithEndPosition(newPosition);
+        }
+        return interval;
+    }
+
     public void resizeEffect(ResizeEffectRequest resizeEffectRequest) {
         StatelessEffect effect = resizeEffectRequest.getEffect();
         boolean left = resizeEffectRequest.isLeft();
         TimelinePosition globalPosition = resizeEffectRequest.getGlobalPosition();
         boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
+
+        TimelineLength minimumSize = resizeEffectRequest.getMinimumLength().orElse(null);
+        if (minimumSize != null && getIntervalWhenResizedTo(effect, left, globalPosition).getLength().lessThanOrEqual(minimumSize)) {
+            if (left) {
+                globalPosition = effect.getInterval().getEndPosition().subtract(minimumSize);
+            } else {
+                globalPosition = effect.getInterval().getStartPosition().add(minimumSize);
+            }
+        }
 
         TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
         TimelineInterval originalInterval = clip.getInterval();
@@ -537,6 +573,13 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         if (useSpecialPoints) {
             specialPointUsed = findSpecialPositionAround(globalPosition, resizeEffectRequest.getMaximumJumpLength(), List.of(effect.getId()))
                     .stream()
+                    .filter(a -> {
+                        if (minimumSize == null) {
+                            return true;
+                        }
+                        TimelineInterval interval = getIntervalWhenResizedTo(clip, left, a.getSpecialPosition());
+                        return interval.getLength().greaterThan(minimumSize);
+                    })
                     .findFirst();
             if (specialPointUsed.isPresent()) {
                 TimelinePosition specialPosition = specialPointUsed.get().getSpecialPosition();

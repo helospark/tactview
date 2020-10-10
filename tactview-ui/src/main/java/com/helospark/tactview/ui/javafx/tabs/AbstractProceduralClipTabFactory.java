@@ -52,6 +52,7 @@ public abstract class AbstractProceduralClipTabFactory<T> extends AbstractSearch
         List<ScoredNodeHolder> icons = new ArrayList<>();
 
         proceduralClips.stream()
+                .sorted((a, b) -> getInfoFor(a).getProceduralClipName().compareToIgnoreCase(getInfoFor(b).getProceduralClipName()))
                 .forEach(chainItem -> {
                     ProceduralFactoryInfo factoryInfo = getInfoFor(chainItem);
 

@@ -40,6 +40,7 @@ public abstract class AbstractEffectTabFactory extends AbstractSearchableTabFact
 
         effects.stream()
                 .filter(factory -> factory.getEffectType().equals(effectType))
+                .sorted((a, b) -> a.getEffectName().compareToIgnoreCase(b.getEffectName()))
                 .forEach(factory -> {
                     Optional<LocalizedDetailDomain> localizedDetail = localizedDetailRepository.queryData(factory.getEffectId());
                     int score = getScore(localizedDetail, factory.getId(), factory.getEffectName(), searchData);

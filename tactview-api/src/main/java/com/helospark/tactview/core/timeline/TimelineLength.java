@@ -68,6 +68,10 @@ public class TimelineLength implements SecondsAware {
         return this.getSeconds().compareTo(length.getSeconds()) < 0;
     }
 
+    public boolean lessThanOrEqual(TimelineLength length) {
+        return this.getSeconds().compareTo(length.getSeconds()) <= 0;
+    }
+
     public boolean greaterThan(TimelineLength length) {
         return this.getSeconds().compareTo(length.getSeconds()) > 0;
     }

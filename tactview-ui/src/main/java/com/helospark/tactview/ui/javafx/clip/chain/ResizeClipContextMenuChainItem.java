@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.clip.chain;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem 
                     .getInterval()
                     .getLength()
                     .getSeconds()
-                    .setScale(4)
+                    .setScale(4, RoundingMode.HALF_UP)
                     .toString();
             TextInputDialog dialog = new TextInputDialog(currentLength);
 
