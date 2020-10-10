@@ -34,7 +34,7 @@ public class ProjectInitializer {
                 .forEach(channel -> timelineManager.removeChannel(channel.getId()));
 
         for (int i = 0; i < 8; ++i) {
-            commandInterpreter.sendWithResult(new CreateChannelCommand(timelineManager, LAST_INDEX)).join();
+            commandInterpreter.synchronousSend(new CreateChannelCommand(timelineManager, LAST_INDEX));
         }
 
         dirtyRepository.setDirty(false);

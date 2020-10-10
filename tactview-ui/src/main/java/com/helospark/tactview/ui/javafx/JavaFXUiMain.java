@@ -20,6 +20,7 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
 import com.helospark.lightdi.properties.Environment;
 import com.helospark.lightdi.properties.PropertySourceHolder;
+import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.plugin.PluginMainClassProviders;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -85,6 +86,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
+    private static String[] mainArgs;
     private static final String ICON_PATH = "/icons/tactview_icon.png";
 
     public static Stage STAGE = null;
@@ -350,7 +352,8 @@ public class JavaFXUiMain extends Application {
                 .stream()
                 .forEach(processor -> processor.postProcess(scene));
 
-        lightDi.getBean(ProjectInitializer.class).clearAndInitialize();
+        lightDi.getListOfBeans(PostInitializationArgsCallback.class)
+                .forEach(postInitCallback -> postInitCallback.call(mainArgs));
 
         if (splashStage.isShowing()) {
             stage.show();
@@ -480,6 +483,7 @@ public class JavaFXUiMain extends Application {
 
     // Do NOT run this one. Run the one in {@link application.HackyMain}!
     public static void main(String[] args) {
+        JavaFXUiMain.mainArgs = args; // Since Javafx init does not give access to this
         launch(args);
     }
 

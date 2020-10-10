@@ -75,9 +75,15 @@ then
   mkdir -p release/debian/tactview/usr/share/applications
   cp buildconfig/debian/tactview.desktop release/debian/tactview/usr/share/applications
 
+
   mkdir -p release/debian/tactview/usr/bin
   cp buildconfig/debian/tactview.sh release/debian/tactview/usr/bin/tactview
   chmod +x release/debian/tactview/usr/bin/tactview
+
+
+  mkdir -p release/debian/tactview/usr/share/mime/packages/
+  cp buildconfig/debian/mime-tactview.xml release/debian/tactview/usr/share/mime/packages/tactview.xml
+
 
   echo "[DEB] Setup icons, this requires imagemagick..."
   mkdir -p release/debian/tactview/usr/share/icons/hicolor
@@ -87,6 +93,10 @@ then
     echo "Scaling icon to $i"
     mkdir -p release/debian/tactview/usr/share/icons/hicolor/$i/apps/
     convert images/icons/icon_full.png -resize $i release/debian/tactview/usr/share/icons/hicolor/$i/apps/tactview.png
+
+    # Icon for the save file
+    mkdir -p release/debian/tactview/usr/share/icons/hicolor/$i/mimetypes/
+    cp release/debian/tactview/usr/share/icons/hicolor/$i/apps/tactview.png release/debian/tactview/usr/share/icons/hicolor/$i/mimetypes/application-x-tactviewsavefile.png
   done
 
   sed -i "s/__INSTALLLOCATION__/\/opt\/tactview/g" release/debian/tactview/usr/share/applications/tactview.desktop

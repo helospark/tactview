@@ -3,6 +3,9 @@ package com.helospark.tactview.ui.javafx.stylesheet;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Component;
 
 import javafx.application.Platform;
@@ -15,6 +18,7 @@ import javafx.scene.layout.Priority;
 
 @Component
 public class AlertDialogFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlertDialogFactory.class);
     private final StylesheetAdderService stylesheetAdderService;
 
     public AlertDialogFactory(StylesheetAdderService stylesheetAdderService) {
@@ -32,6 +36,7 @@ public class AlertDialogFactory {
 
     // for now same as above, but this could use different UI
     public Alert createErrorAlertWithStackTrace(String title, Throwable ex) {
+        LOGGER.error("Exception happened showing dialog with title {}", title, ex);
         Alert alert = new Alert(AlertType.ERROR);
         alert.getDialogPane().getStylesheets().add("stylesheet.css");
 

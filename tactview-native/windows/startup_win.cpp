@@ -31,7 +31,7 @@ std::string mergeWithDelimiter(std::vector<std::string>& elements, std::string s
   return result;
 }
 
-std::string getCommandLine() {
+std::string getCommandLine(char* startupFile) {
   std::vector<std::string> jars;
   std::vector<std::string> natives;
   std::string homedir = "/tmp";
@@ -56,7 +56,7 @@ std::string getCommandLine() {
 
 //  std::cout << classpathString << " " << nativesString << std::endl;
 
-  std::string commandLine = "\"java-runtime/bin/java\" -classpath " + classpathString + " -Dprism.order=sw -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir;
+  std::string commandLine = "\"java-runtime/bin/java\" -classpath " + classpathString + " -Dprism.order=sw -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=\"" + homedir + "\" \"" + startupFile + "\"";
   std::cout << commandLine << std::endl;
 
   if (nativesString.size() > 0) {
@@ -125,10 +125,16 @@ int execute(std::string commandLine) {
 	return (int)returnCode;
 }
 
-int main() {
+int main(int args, char** argv) {
   int statusCode = 0;
   do {
-	std::string commandLine = getCommandLine();
+    char* startupFile = "";
+    if (argc > 1) {
+      startupFile = argv[1];
+    }
+
+	  std::string commandLine = getCommandLine(startupFile);
+
     statusCode = execute(commandLine.c_str());
     std::cout << "Tactview returned " << statusCode << std::endl;
   } while (statusCode == 3);

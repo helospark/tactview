@@ -34,7 +34,7 @@ std::string mergeWithDelimiter(std::vector<std::string>& elements, std::string s
   return result;
 }
 
-std::string getCommandLine(const char* logFile) {
+std::string getCommandLine(const char* logFile, char* startFileName) {
   std::vector<std::string> jars;
   std::vector<std::string> natives;
   std::string homedir = "/tmp";
@@ -67,7 +67,7 @@ std::string getCommandLine(const char* logFile) {
 
 //  std::cout << classpathString << " " << nativesString << std::endl;
 
-  std::string commandLine = "LD_LIBRARY_PATH=" + nativesString + " java-runtime/bin/java -classpath " + classpathString + " -Djdk.gtk.version=2 -Dprism.order=sw -Xmx8g application.HackyMain -Dtactview.plugindirectory=" + homedir + " >> " + logFile + " 2>&1";
+  std::string commandLine = "LD_LIBRARY_PATH=" + nativesString + " java-runtime/bin/java -classpath " + classpathString + " -Djdk.gtk.version=2 -Dprism.order=sw -Xmx8g application.HackyMain -Dtactview.plugindirectory=\"" + homedir + "\" \"" + startFileName + "\" >> " + logFile + " 2>&1";
   std::cout << commandLine << std::endl;
 
   return commandLine;
@@ -85,7 +85,13 @@ int main(int argc, char** argv) {
       std::cout << "Working directory is " << argv[0] << std::endl;
       chdir(argv[0]);
     }
-    std::string commandLine = getCommandLine(logFile.c_str());
+
+    char* startFileName = "";
+    if (argc > 1) {
+       startFileName = argv[1];
+    }
+
+    std::string commandLine = getCommandLine(logFile.c_str(), startFileName);
 
     // -Djdk.gtk.version=2 -> https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8211302
     // -Dprism.order=sw -> Avoid exception due to too wide texture (occures in com.sun.prism.es2.ES2Texture "Requested texture dimensions...")

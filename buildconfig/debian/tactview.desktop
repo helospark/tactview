@@ -9,6 +9,7 @@ Icon=tactview
 Type=Application
 Categories=AudioVideo;Video;AudioVideoEditing;
 
-Exec=__INSTALLLOCATION__/tactview
+Exec=__INSTALLLOCATION__/tactview %F
 StartupNotify=false
 Terminal=false
+MimeType=application/x-tactviewsavefile
