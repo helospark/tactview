@@ -30,14 +30,15 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
     }
 
     public StatelessEffect(StatelessEffect effect, CloneRequestMetadata cloneRequestMetadata) {
+        ReflectionUtil.copyOrCloneFieldFromTo(effect, this, StatelessEffect.class);
+
+        this.interval = effect.interval;
+        this.factoryId = effect.factoryId;
         if (cloneRequestMetadata.isDeepCloneId()) {
             this.id = effect.id;
         } else {
             this.id = UUID.randomUUID().toString();
         }
-        this.interval = effect.interval;
-        this.factoryId = effect.factoryId;
-        ReflectionUtil.copyOrCloneFieldFromTo(effect, this, StatelessEffect.class);
     }
 
     public StatelessEffect(JsonNode node, LoadMetadata loadMetadata) {

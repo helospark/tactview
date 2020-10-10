@@ -136,4 +136,7 @@ public class CopyPasteRepository {
         commandInterpreter.sendWithResult(addClipCommand);
     }
 
+    public boolean isEffectOnClipboard() {
+        return clipboardContent != null && clipboardContent instanceof EffectCopyPasteDomain;
+    }
 }

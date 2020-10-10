@@ -2,46 +2,46 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 
 public class TimelineLineProperties {
-    private SimpleIntegerProperty startX = new SimpleIntegerProperty(0);
-    private SimpleIntegerProperty startY = new SimpleIntegerProperty(0);
+    private SimpleDoubleProperty startX = new SimpleDoubleProperty(0);
+    private SimpleDoubleProperty startY = new SimpleDoubleProperty(0);
 
-    private SimpleIntegerProperty endX = new SimpleIntegerProperty(0);
-    private SimpleIntegerProperty endY = new SimpleIntegerProperty(0);
+    private SimpleDoubleProperty endX = new SimpleDoubleProperty(0);
+    private SimpleDoubleProperty endY = new SimpleDoubleProperty(0);
 
     private BooleanProperty enabledProperty = new SimpleBooleanProperty(false);
 
-    public SimpleIntegerProperty getStartX() {
+    public SimpleDoubleProperty getStartX() {
         return startX;
     }
 
-    public void setStartX(int startX) {
+    public void setStartX(double startX) {
         this.startX.set(startX);
     }
 
-    public SimpleIntegerProperty getStartY() {
+    public SimpleDoubleProperty getStartY() {
         return startY;
     }
 
-    public void setStartY(int startY) {
+    public void setStartY(double startY) {
         this.startY.set(startY);
     }
 
-    public SimpleIntegerProperty getEndX() {
+    public SimpleDoubleProperty getEndX() {
         return endX;
     }
 
-    public void setEndX(int endX) {
+    public void setEndX(double endX) {
         this.endX.set(endX);
     }
 
-    public SimpleIntegerProperty getEndY() {
+    public SimpleDoubleProperty getEndY() {
         return endY;
     }
 
-    public void setEndY(int endY) {
+    public void setEndY(double endY) {
         this.endY.set(endY);
     }
 

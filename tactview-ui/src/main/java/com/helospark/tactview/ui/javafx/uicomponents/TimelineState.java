@@ -70,7 +70,14 @@ public class TimelineState {
         return new TimelinePosition(position);
     }
 
-    public int secondsToPixels(SecondsAware length) {
+    public TimelinePosition pixelsToSecondsWithZoom(double xCoordinate) {
+        BigDecimal position = new BigDecimal(xCoordinate)
+                .divide(PIXEL_PER_SECOND, 10, RoundingMode.HALF_UP)
+                .divide(BigDecimal.valueOf(zoomValue.get()), 10, RoundingMode.HALF_UP);
+        return new TimelinePosition(position);
+    }
+
+    public double secondsToPixels(SecondsAware length) {
         return length.getSeconds()
                 .multiply(PIXEL_PER_SECOND)
                 .intValue();
@@ -199,7 +206,7 @@ public class TimelineState {
     }
 
     public void setLinePosition(TimelinePosition position) {
-        int pixels = secondsToPixels(position);
+        double pixels = secondsToPixels(position);
         System.out.println("Moving line to " + pixels + " " + position + " " + zoomValue.get());
         linePosition.set(pixels);
     }

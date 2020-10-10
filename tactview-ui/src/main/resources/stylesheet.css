@@ -106,8 +106,8 @@
 
 .timelinerow {
     -fx-border-color: rgba(150,150,150,0.4);
-    -fx-border-insets: 5;
-    -fx-border-width: 1;
+    -fx-border-insets: 5 5 5 0;
+    -fx-border-width: 1 1 1 0;
     -fx-border-style: hidden hidden dashed hidden;
 }
 
@@ -179,12 +179,12 @@
 
 #timeline-position-line {
 	-fx-stroke: yellow;
-	-fx-stroke-width: 2px;
+	-fx-stroke-width: 1.5px;
 }
 
 #special-position-line {
     -fx-stroke: red;
-    -fx-stroke-width: 2px;
+    -fx-stroke-width: 1.5px;
 }
 
 #loop-a-line,#loop-b-line {
@@ -416,23 +416,23 @@
 }
 
 .timeline-clip.primary-active .clip-rectangle {
-   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
-   -fx-opacity: 0.95;
+   -fx-effect: innershadow(three-pass-box, rgba(255,160,0,1.0), 4, 0.9, 0, 0);
+   -fx-opacity: 1.0;
 }
 
 .timeline-effect.primary-active {
-   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
-   -fx-opacity: 0.95;
+   -fx-effect: innershadow(three-pass-box, rgba(255,160,0,1.0), 5, 0.6, 0, 0);
+   -fx-opacity: 1.0;
 }
 
 .timeline-clip.secondary-active .clip-rectangle {
-   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
-   -fx-opacity: 0.95;
+   -fx-effect: innershadow(three-pass-box, rgba(255,160,0,0.7), 5, 0.6, 0, 0);
+   -fx-opacity: 1.0;
 }
 
 .timeline-effect.secondary-active {
-   -fx-effect: dropshadow(three-pass-box, rgba(0,230,255,0.95), 5, 0, 0, 0);
-   -fx-opacity: 0.95;
+   -fx-effect: innershadow(three-pass-box, rgba(255,160,0,0.7), 5, 0.6, 0, 0);
+   -fx-opacity: 1.0;
 }
 
 .markdown-title-one {

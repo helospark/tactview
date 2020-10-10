@@ -103,7 +103,7 @@ public class ClipAddedListener {
         nameToIdRepository.generateAndAddNameForIdIfNotPresent(clip.getClass().getSimpleName(), clip.getId());
         Pane parentPane = new Pane();
         Rectangle rectangle = new Rectangle();
-        int width = timelineState.secondsToPixels(clip.getInterval().getLength());
+        double width = timelineState.secondsToPixels(clip.getInterval().getLength());
         rectangle.setWidth(width);
         rectangle.setHeight(50);
         parentPane.layoutXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));

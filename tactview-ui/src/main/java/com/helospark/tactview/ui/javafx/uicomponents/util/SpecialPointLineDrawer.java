@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.util;
 
+import java.util.Optional;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.ClosesIntervalChannel;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineLineProperties;
@@ -19,8 +21,8 @@ public class SpecialPointLineDrawer {
         HBox specialPositionChannel = timelineState.findChannelById(specialPosition.getChannelId()).orElseThrow();
         HBox currentChannel = timelineState.findChannelForClip(originalClipId).orElseThrow();
 
-        int lineStartX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
-        int lineEndX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
+        double lineStartX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
+        double lineEndX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
 
         int lineStartY = (int) specialPositionChannel.getLayoutY();
         int lineEndY = (int) (currentChannel.getLayoutY() + currentChannel.getHeight());
@@ -34,13 +36,25 @@ public class SpecialPointLineDrawer {
     }
 
     public void drawSpecialPositionLineForClip(ClosesIntervalChannel specialPosition, String channelId) {
-        HBox specialPositionChannel = timelineState.findChannelById(specialPosition.getChannelId()).orElseThrow();
-        HBox currentChannel = timelineState.findChannelById(channelId).orElseThrow();
+        Optional<Integer> optionalSpecialChannelIndex = timelineState.findChannelIndex(specialPosition.getChannelId());
+        Optional<Integer> optionalCurrentChannelIndex = timelineState.findChannelIndex(channelId);
 
-        int lineStartX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
-        int lineEndX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
+        if (optionalSpecialChannelIndex.isEmpty() || optionalCurrentChannelIndex.isEmpty()) {
+            return;
+        }
+        int specialChannelIndex = optionalSpecialChannelIndex.get();
+        int currentChannelIndex = optionalCurrentChannelIndex.get();
 
-        int lineStartY = (int) specialPositionChannel.getLayoutY();
+        int upperIndex = Math.min(specialChannelIndex, currentChannelIndex);
+        int lowerIndex = Math.max(specialChannelIndex, currentChannelIndex);
+
+        HBox specialPositionChannel = timelineState.getChannels().get(upperIndex);
+        HBox currentChannel = timelineState.getChannels().get(lowerIndex);
+
+        double lineStartX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
+        double lineEndX = timelineState.secondsToPixels(specialPosition.getSpecialPosition());
+
+        int lineStartY = (int) (specialPositionChannel.getLayoutY());
         int lineEndY = (int) (currentChannel.getLayoutY() + currentChannel.getHeight());
 
         TimelineLineProperties properties = timelineState.getMoveSpecialPointLineProperties();

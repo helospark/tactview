@@ -28,4 +28,9 @@ public class CompositeCommand implements UiCommand {
                 .forEach(child -> child.revert());
     }
 
+    @Override
+    public String toString() {
+        return "CompositeCommand [children=" + children + "]";
+    }
+
 }

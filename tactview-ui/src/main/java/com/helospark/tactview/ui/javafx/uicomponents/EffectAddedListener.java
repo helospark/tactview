@@ -30,7 +30,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectAddedListener {
-    private static final int DRAG_PIXEL_DISTANCE = 5;
+    private static final int DRAG_PIXEL_DISTANCE = 8;
     public static final int EFFECTS_OFFSET = 50;
     public static final int EFFECT_HEIGHT = 30;
     private UiMessagingService messagingService;
@@ -71,7 +71,7 @@ public class EffectAddedListener {
         nameToIdRepository.generateAndAddNameForIdIfNotPresent(effectAddedMessage.getEffect().getClass().getSimpleName(), effectAddedMessage.getEffectId());
         Rectangle rectangle = new Rectangle();
         rectangle.setFill(new Color(0 / 255.0, 102 / 255.0, 204 / 255.0, 1.0));
-        int width = timelineState.secondsToPixels(effectAddedMessage.getEffect().getInterval().getLength());
+        double width = timelineState.secondsToPixels(effectAddedMessage.getEffect().getInterval().getLength());
         rectangle.setWidth(width);
         rectangle.setHeight(EFFECT_HEIGHT);
         rectangle.layoutXProperty().set(timelineState.secondsToPixels(effectAddedMessage.getPosition()));
@@ -188,7 +188,7 @@ public class EffectAddedListener {
     // When the width is small, decrease the resize width
     private double getDivider(Rectangle rectangle) {
         double divider = 1.0;
-        if (rectangle.getWidth() < 20.0) {
+        if (rectangle.getWidth() * timelineState.getZoom() < 20.0) {
             divider = 10;
         }
         return divider;

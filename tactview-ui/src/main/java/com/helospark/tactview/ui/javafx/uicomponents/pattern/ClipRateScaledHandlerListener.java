@@ -39,7 +39,7 @@ public class ClipRateScaledHandlerListener {
 
         if (clip != null && clipRectangle != null) {
             TimelineLength newLength = clip.getInterval().getLength();
-            int newWidth = timelineState.secondsToPixels(newLength);
+            double newWidth = timelineState.secondsToPixels(newLength);
             if (Math.abs(newWidth - clipRectangle.getWidth()) >= 0.01) {
                 Platform.runLater(() -> clipRectangle.setWidth(newWidth));
             }

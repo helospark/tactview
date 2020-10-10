@@ -26,7 +26,7 @@ public class EffectMovedListener {
     @PostConstruct
     public void init() {
         this.messagingService.register(EffectMovedMessage.class, message -> {
-            int position = timelineState.secondsToPixels(message.getNewPosition());
+            double position = timelineState.secondsToPixels(message.getNewPosition());
             timelineState.findEffectById(message.getEffectId())
                     .ifPresent(effect -> {
                         System.out.println("Moved to " + position);

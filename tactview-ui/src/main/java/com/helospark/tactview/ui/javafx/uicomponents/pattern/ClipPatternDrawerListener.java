@@ -148,7 +148,7 @@ public class ClipPatternDrawerListener {
             ClipPatternUpdateDomain clipsToUpdateDomain = clipsToUpdate.get(request.clipId);
             double zoom = timelineState.getZoom();
 
-            int pixelWidth = timelineState.secondsToPixels(timelineManager.findClipById(request.clipId).map(cl -> cl.getInterval().getLength()).get());
+            double pixelWidth = timelineState.secondsToPixels(timelineManager.findClipById(request.clipId).map(cl -> cl.getInterval().getLength()).get());
             int width = (int) (pixelWidth * zoom);
             Rectangle rectangle = (Rectangle) clip.getChildren().get(0);
 

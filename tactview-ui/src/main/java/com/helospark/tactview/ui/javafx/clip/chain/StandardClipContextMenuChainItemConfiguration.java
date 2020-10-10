@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx.clip.chain;
 
+import java.util.List;
 import java.util.function.Function;
 
 import com.helospark.lightdi.annotation.Bean;
@@ -49,6 +50,26 @@ public class StandardClipContextMenuChainItemConfiguration {
             MenuItem copyClip = new MenuItem("Copy");
             copyClip.setOnAction(e -> copyPasteRepository.copyClip(request.getPrimaryClip().getId()));
             return copyClip;
+        });
+    }
+
+    @Bean
+    @Order(101)
+    public ClipContextMenuChainItem pasteMenuItem(CopyPasteRepository copyPasteRepository) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem pasteEffectOnClipMenuItem = new MenuItem("Paste effect on clip");
+
+            pasteEffectOnClipMenuItem.setOnAction(e -> {
+                if (copyPasteRepository.isEffectOnClipboard()) {
+                    copyPasteRepository.pasteOnExistingClips(List.of(request.getPrimaryClip().getId()));
+                }
+            });
+
+            if (!copyPasteRepository.isEffectOnClipboard()) {
+                pasteEffectOnClipMenuItem.setDisable(true);
+            }
+
+            return pasteEffectOnClipMenuItem;
         });
     }
 

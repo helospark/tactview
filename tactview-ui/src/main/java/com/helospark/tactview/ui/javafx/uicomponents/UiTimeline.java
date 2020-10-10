@@ -103,7 +103,7 @@ public class UiTimeline {
         timelineState.setTimeLineScrollPane(timeLineScrollPane);
         timelineBoxes = new VBox();
         timelineBoxes.prefWidthProperty().bind(timelineState.getTimelineWidthProperty());
-        timelineBoxes.setPadding(new Insets(0, 0, 0, -6));
+        timelineBoxes.setPadding(new Insets(0, 0, 0, 0));
         zoomGroup.getChildren().add(timelineBoxes);
 
         positionIndicatorLine = createCurrentPositionLine(timelineBoxes);
