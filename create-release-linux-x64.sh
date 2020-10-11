@@ -17,7 +17,7 @@ cp tactview-ui/target/tactview-ui*.jar release/linux64/tactview.jar
 
 jlink --no-header-files --no-man-pages --compress=2 --strip-debug --add-modules java.base,java.xml,java.naming,java.desktop,jdk.unsupported,java.compiler,jdk.compiler,jdk.zipfs,java.sql,java.management --output release/linux64/java-runtime
 
-g++ --std=c++17 -no-pie tactview-native/linux/startup.cpp -o release/linux64/tactview -lstdc++fs
+g++ --std=c++17 -no-pie tactview-native/linux/startup.cpp -o release/linux64/tactview -lstdc++fs -static-libstdc++
 
 echo "Copying dynamic library dependencies"
 

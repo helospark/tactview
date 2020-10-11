@@ -1,5 +1,5 @@
 # This Dockerfile configures the build environment in a Docker for Tactview for Linux environment, but does not actually build Tactview.
-FROM ubuntu:focal-20200925
+FROM ubuntu:bionic-20200921
 
 VOLUME /tactview
 WORKDIR /tmp
@@ -29,6 +29,9 @@ RUN echo $(pwd)
 ADD tactview-native/build_dependencies.sh /tmp/build_dependencies.sh
 RUN chmod +x /tmp/build_dependencies.sh
 RUN ./build_dependencies.sh -r
+
+# Set .m2 directory to tmp, so it can be attached locally for better caching
+RUN sed -i "s/<\!-- localRepository/<localRepository>\/tmp\/.m2<\/localRepository>\n<\!--/g" /opt/apache-maven/conf/settings.xml
 
 WORKDIR /tactview
 
