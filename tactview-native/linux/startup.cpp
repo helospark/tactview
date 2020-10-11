@@ -34,7 +34,7 @@ std::string mergeWithDelimiter(std::vector<std::string>& elements, std::string s
   return result;
 }
 
-std::string getCommandLine(const char* logFile, char* startFileName) {
+std::string getCommandLine(const char* logFile, const char* startFileName) {
   std::vector<std::string> jars;
   std::vector<std::string> natives;
   std::string homedir = "/tmp";
@@ -47,17 +47,21 @@ std::string getCommandLine(const char* logFile, char* startFileName) {
         findPathAndNativesFor(entry.path(), jars, natives);        
         std::cout << "Adding plugin " << entry.path() << std::endl;
     }
+  } catch(const std::exception &e) {
+    std::cout << "[ERROR] Cannot load plugins from home " << e.what() << std::endl;
+  }
 
+  try {
     std::string dropinPluginDirectory = std::string(get_current_dir_name()) + "/dropin/plugins"; // We have already CDd into the directory
     std::cout << "Dropin plugin directory: " << dropinPluginDirectory << std::endl;
     for (const auto & entry : std::experimental::filesystem::directory_iterator(dropinPluginDirectory)) {
         findPathAndNativesFor(entry.path(), jars, natives);
         std::cout << "Adding plugin " << entry.path() << std::endl;
     }
-  } catch(...) {
-    std::cout << "[ERROR] Cannot load plugins" << std::endl;
+  } catch(const std::exception &e) {
+    std::cout << "[ERROR] Cannot load plugins from dropin folder " << e.what() << std::endl;
   }
-    
+
   jars.push_back("tactview.jar");
   natives.insert(natives.begin(), "libs");
   natives.push_back("$LD_LIBRARY_PATH");
@@ -86,7 +90,7 @@ int main(int argc, char** argv) {
       chdir(argv[0]);
     }
 
-    char* startFileName = "";
+    const char* startFileName = "";
     if (argc > 1) {
        startFileName = argv[1];
     }
@@ -98,6 +102,12 @@ int main(int argc, char** argv) {
     statusCode = system(commandLine.c_str());
     statusCode = statusCode >> 8;
     std::cout << "Tactview returned " << statusCode << std::endl;
+
+    if (statusCode == 1) {
+      system((std::string("tail -n 100 ") + logFile).c_str()); 
+    }
+
   } while (statusCode == 3);
+
   std::cout << "Exiting tactview, bye!" << std::endl;
 }

@@ -1,74 +1,66 @@
 set -e
 
+usage() {
+        echo "./$(basename $0) [arguments]"
+        echo "Arguments:"
+        echo "   -r Release build, strip debug symbols, use optimization for libraries"
+}
+
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root"
    exit 1
 fi
 
-apt-get update
+RELEASE_BUILD=false
 
-echo "Installing AVcodec ..."
+while getopts ":r" arg; do
+  case ${arg} in
+    r)
+      RELEASE_BUILD=true
+      ;;
+    ?)
+      echo "Invalid option: -${OPTARG}."
+      usage
+      exit 2
+      ;;
+  esac
+done
 
-echo "Installing dependencies"
+echo "RELEASE_BUILD=$RELEASE_BUILD"
 
-apt-get -y install \
-  autoconf \
-  automake \
-  build-essential \
-  cmake \
-  git-core \
-  libass-dev \
-  libfreetype6-dev \
-  libsdl2-dev \
-  libtool \
-  libva-dev \
-  libvdpau-dev \
-  libvorbis-dev \
-  libxcb1-dev \
-  libxcb-shm0-dev \
-  libxcb-xfixes0-dev \
-  texinfo \
-  zlib1g-dev \
-  nasm \
-  libmp3lame-dev \
-  libopus-dev \
-  libvpx-dev \
-  libx264-dev \
-  libx265-dev \
-  libnuma-dev \
-  libbluray-dev \
-  libmysofa-dev \
-  libopencore-amrnb-dev \
-  libopencore-amrwb-dev \
-  libshine-dev \
-  libsnappy-dev \
-  libspeex-dev \
-  libtheora-dev \
-  libtwolame-dev \
-  libwavpack-dev \
-  libwebp-dev \
-  libxvidcore-dev \
-  libbz2-dev \
-  libbz2-1.0 \
-  liblzma-dev
+echo "Installing dependencies using $(nproc) threads"
+
+./dependency_fragments/install_apt_dependencies.sh
 
 cd /tmp
 
 echo "Installing libaom for AV1 decoding"
 mkdir -p libaom && \
-  cd libaom && \
-  git clone https://aomedia.googlesource.com/aom && \
-  cmake ./aom -DBUILD_SHARED_LIBS=1 && \
-  make && \
-  sudo make install
+cd libaom
 
-cd ..
+if [ ! -d aom ]; then
+  git clone --depth 1 https://aomedia.googlesource.com/aom
+else
+  git pull
+fi
+
+cmake ./aom -DBUILD_SHARED_LIBS=1 && \
+make -j$(nproc) && \
+make install
+
+cd /tmp
 
 echo "Installing Nvidia headers"
-git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
-cd nv-codec-headers
+if [ ! -d nv-codec-headers ]; then
+  git clone --depth 1 https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+  cd nv-codec-headers
+else
+  cd nv-codec-headers
+  git pull
+  # make clean
+fi
 make
-sudo make install
+make install
 
 cd ..
 
@@ -79,14 +71,22 @@ echo "Downloading FFmpeg"
 # fire.webm test fails with that and crashes when no scaling applied
 FFMPEG_VERSION=4.2.2
 
-wget "http://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz"
+if [ ! -e ffmpeg-$FFMPEG_VERSION.tar.gz ]; then
+  wget "http://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz"
+fi
 tar -xvf "ffmpeg-$FFMPEG_VERSION.tar.gz"
 
 cd "ffmpeg-$FFMPEG_VERSION"
 
 echo "Configuring FFmpeg"
 
-./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom --enable-debug --disable-stripping
+additional_ffmpeg_arguments=""
+
+if [ "$RELEASE_BUILD" = false ]; then
+  additional_ffmpeg_arguments="--enable-debug --disable-stripping"
+fi
+
+./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom $additional_ffmpeg_arguments
 # Enabled debugging: --enable-debug --disable-stripping
 # --enable-libmfx - Intel HW accelerated encoding/decoding, could be useful
 # --enable-libopenjpeg - decode jpeg
@@ -100,24 +100,26 @@ echo "Installing FFmpeg (Requires root)"
 
 make install
 
+cd /tmp
 
 echo "Installing OpenCV"
 
-echo "Installing dependencies"
-
-apt-get install -y cmake git libgtk2.0-dev pkg-config python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
-
-cd /tmp
-
 echo "Cloning OpenCV"
 
-wget -O opencv.tar.gz https://github.com/opencv/opencv/archive/4.1.0.tar.gz
-tar -xvzf opencv.tar.gz
-mv  opencv-4.1.0 opencv
+OPENCV_VERSION=4.1.0
+OPENCV_CONTRIB_VERSION=4.1.1
 
-wget -O opencv_contrib.tar.gz https://github.com/opencv/opencv_contrib/archive/4.1.1.tar.gz
-tar -xvzf opencv_contrib.tar.gz
-mv  opencv_contrib-4.1.1 opencv_contrib
+if [ ! -e opencv-$OPENCV_VERSION.tar.gz ]; then
+  wget -O opencv-$OPENCV_VERSION.tar.gz https://github.com/opencv/opencv/archive/$OPENCV_VERSION.tar.gz
+fi
+tar -xvzf opencv-$OPENCV_VERSION.tar.gz
+mv  opencv-$OPENCV_VERSION opencv
+
+if [ ! -e opencv_contrib-$OPENCV_CONTRIB_VERSION.tar.gz ]; then
+  wget -O opencv_contrib-$OPENCV_CONTRIB_VERSION.tar.gz https://github.com/opencv/opencv_contrib/archive/$OPENCV_CONTRIB_VERSION.tar.gz  
+fi
+tar -xvzf opencv_contrib-$OPENCV_CONTRIB_VERSION.tar.gz
+mv  opencv_contrib-$OPENCV_CONTRIB_VERSION opencv_contrib
 
 cd ./opencv
 mkdir build
@@ -128,10 +130,9 @@ make -j$(nproc)
 
 make install
 
-cd ..
-cd ..
-rm opencv.tar.gz opencv_contrib.tar.gz
+cd /tmp
 rm -r opencv
 rm -r opencv_contrib
+rm -r ffmpeg-$FFMPEG_VERSION
 
 ldconfig -v

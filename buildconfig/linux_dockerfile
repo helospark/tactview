@@ -1,0 +1,11 @@
+# This docker file builds a Docker image containing the runnable tactview for Linux.
+# Once built, run it like:
+# sudo docker run --net=host --env="DISPLAY" --volume="$HOME:$HOME" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -it tactview_0.0.1
+FROM ubuntu:focal-20200925
+
+VOLUME /root/.tactview
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libgtk-3-0
+ADD linux64 /opt/tactview
+WORKDIR /opt/tactview
+
+#ENTRYPOINT [ "./tactview" ]

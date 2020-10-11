@@ -1,6 +1,7 @@
 #!/bin/bash
 
 skipDebian=false
+skipDocker=true
 
 set -e
 
@@ -36,13 +37,18 @@ echo "Moving static data"
 
 buildconfig/prepare_static_files.sh "$(pwd)/release/linux64"
 
-echo "Zipping"
+echo "Compressing..."
 
 cd release
 
 builddate=`date '+%Y%m%d_%H%M%S'`
-filename="tactview_linux64_$builddate.zip"
-zip -r $filename linux64/
+filename="tactview_linux64_$builddate.tar.xz"
+
+# Use all threads for the compression
+export XZ_DEFAULTS="-T 0"
+
+tar -cJf $filename linux64/
+#zip -r $filename linux64/
 
 cd ..
 
@@ -112,4 +118,12 @@ then
   mv "release/debian/tactview.deb" "$outputFileName"
   echo "$outputFileName created"
 
+fi
+
+
+if [ "$skipDocker" = false ]
+then
+  rm release/Dockerfile || true
+  cp buildconfig/linux_dockerfile release/Dockerfile
+  sudo docker build -t tactview_0.0.1 release/.
 fi

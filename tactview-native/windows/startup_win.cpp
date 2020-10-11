@@ -31,7 +31,7 @@ std::string mergeWithDelimiter(std::vector<std::string>& elements, std::string s
   return result;
 }
 
-std::string getCommandLine(char* startupFile) {
+std::string getCommandLine(const char* startupFile) {
   std::vector<std::string> jars;
   std::vector<std::string> natives;
   std::string homedir = "/tmp";
@@ -128,7 +128,7 @@ int execute(std::string commandLine) {
 int main(int args, char** argv) {
   int statusCode = 0;
   do {
-    char* startupFile = "";
+    const char* startupFile = "";
     if (argc > 1) {
       startupFile = argv[1];
     }
