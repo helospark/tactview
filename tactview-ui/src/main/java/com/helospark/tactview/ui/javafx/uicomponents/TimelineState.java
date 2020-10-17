@@ -361,6 +361,12 @@ public class TimelineState {
                 .flatMap(a -> a.getValue().stream());
     }
 
+    public Stream<Node> findEffectsForClip(String clipId) {
+        return Optional.ofNullable(clipsToEffects.get(clipId))
+                .stream()
+                .flatMap(a -> a.stream());
+    }
+
     public void moveChannel(int originalIndex, int newIndex) {
         Platform.runLater(() -> {
             HBox originalChannel = channels.remove(originalIndex);

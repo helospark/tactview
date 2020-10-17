@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -10,10 +11,14 @@ import java.util.function.Consumer;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService.TimelineDisplayAsyncUpdateRequest;
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
+import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
+import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
+import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
 
 import javafx.application.Platform;
 
@@ -36,14 +41,19 @@ public class UiTimelineManager {
     private final AudioStreamService audioStreamService;
     private DisplayUpdaterService displayUpdaterService;
     private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
+    private JavaByteArrayConverter javaByteArrayConverter;
+    private List<AudioPlayedListener> audioPlayedListeners;
 
     public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
-            AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
+            AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository, JavaByteArrayConverter javaByteArrayConverter,
+            List<AudioPlayedListener> audioPlayedListeners) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
         this.playbackController = playbackController;
         this.audioStreamService = audioStreamService;
         this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
+        this.javaByteArrayConverter = javaByteArrayConverter;
+        this.audioPlayedListeners = audioPlayedListeners;
     }
 
     public void setDisplayUpdaterService(DisplayUpdaterService displayUpdaterService) {
@@ -74,8 +84,11 @@ public class UiTimelineManager {
                         }
 
                         boolean isMute = uiPlaybackPreferenceRepository.isMute();
+                        AudioVideoFragment audioVideoFragment = playbackController.getSingleAudioFrameAtPosition(currentPosition, isMute);
 
-                        byte[] audioFrame = playbackController.getAudioFrameAt(currentPosition, isMute);
+                        byte[] audioFrame = convertToPlayableFormat(audioVideoFragment);
+
+                        notifyAudioListeners(audioVideoFragment);
 
                         audioStreamService.streamAudio(audioFrame);
 
@@ -87,6 +100,7 @@ public class UiTimelineManager {
                                 .withExpectedNextPositions(expectedNextFramesWithDroppedFrameModulo(10, CACHE_MODULO, frame + 1))
                                 .build();
 
+                        audioVideoFragment.free();
                         if (frame % CACHE_MODULO == 0) {
                             displayUpdaterService.updateDisplayAsync(request);
                         }
@@ -104,9 +118,33 @@ public class UiTimelineManager {
         }
     }
 
+    private void notifyAudioListeners(AudioVideoFragment audioVideoFragment) {
+        audioPlayedListeners.stream()
+                .forEach(listener -> listener.onAudioPlayed(new AudioPlayedRequest(currentPosition, audioVideoFragment.getAudioResult())));
+    }
+
+    private byte[] convertToPlayableFormat(AudioVideoFragment videoFragment) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = javaByteArrayConverter.convert(videoFragment.getAudioResult(), PlaybackFrameAccessor.CHANNELS); // move data to repository
+
+            baos.write(buffer);
+
+            return baos.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new byte[0];
+        }
+    }
+
     public void refreshDisplay() {
         displayUpdaterService.updateDisplay(this.getCurrentPosition());
         notifyConsumers();
+
+        // TODO: this is also a consumer, but due to playback it would be doublecalled during playback
+        AudioVideoFragment audioVideoFragment = playbackController.getSingleAudioFrameAtPosition(currentPosition, false);
+        notifyAudioListeners(audioVideoFragment);
+        audioVideoFragment.free();
     }
 
     public void stopPlayback() {

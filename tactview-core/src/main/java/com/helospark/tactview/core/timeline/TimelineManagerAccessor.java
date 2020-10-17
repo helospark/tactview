@@ -482,13 +482,13 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return findClipForEffect(effectId).flatMap(clip -> clip.getEffect(effectId));
     }
 
-    public void resizeClip(ResizeClipRequest resizeEffectRequest) {
-        TimelineClip clip = resizeEffectRequest.getClip();
-        boolean left = resizeEffectRequest.isLeft();
-        TimelinePosition globalPosition = resizeEffectRequest.getPosition();
-        boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
+    public void resizeClip(ResizeClipRequest resizeClipRequest) {
+        TimelineClip clip = resizeClipRequest.getClip();
+        boolean left = resizeClipRequest.isLeft();
+        TimelinePosition globalPosition = resizeClipRequest.getPosition();
+        boolean useSpecialPoints = resizeClipRequest.isUseSpecialPoints();
 
-        TimelineLength minimumSize = resizeEffectRequest.getMinimumSize().orElse(null);
+        TimelineLength minimumSize = resizeClipRequest.getMinimumSize().orElse(null);
         if (minimumSize != null && getIntervalWhenResizedTo(clip, left, globalPosition).getLength().lessThanOrEqual(minimumSize)) {
             if (left) {
                 globalPosition = clip.getInterval().getEndPosition().subtract(minimumSize);
@@ -509,7 +509,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .map(effect -> effect.getId())
                     .forEach(effectId -> excludedIds.add(effectId));
 
-            specialPointUsed = findSpecialPositionAround(globalPosition, resizeEffectRequest.getMaximumJumpLength(), excludedIds)
+            specialPointUsed = findSpecialPositionAround(globalPosition, resizeClipRequest.getMaximumJumpLength(), excludedIds)
                     .stream()
                     .filter(a -> {
                         if (minimumSize == null) {
@@ -525,6 +525,15 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             }
         }
 
+        // resize full size effects
+        List<StatelessEffect> effectsToResize = clip.getEffects()
+                .stream()
+                .filter(effect -> {
+                    System.out.println("Interval: " + effect.getGlobalInterval() + " " + clip.getInterval());
+                    return effect.getGlobalInterval().getLength().isEquals(clip.getInterval().getLength());
+                })
+                .collect(Collectors.toList());
+
         boolean success = channel.resizeClip(clip, left, globalPosition);
         if (success) {
             TimelineClip renewedClip = findClipById(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
@@ -533,9 +542,26 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .withOriginalInterval(originalInterval)
                     .withNewInterval(renewedClip.getInterval())
                     .withSpecialPointUsed(specialPointUsed)
-                    .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
+                    .withMoreResizeExpected(resizeClipRequest.isMoreResizeExpected())
                     .build();
             messagingService.sendMessage(clipResizedMessage);
+
+            effectsToResize.stream()
+                    .forEach(effect -> {
+                        TimelineInterval originalEffectInterval = effect.getInterval();
+                        boolean asd = clip.resizeEffect(effect, false, clip.getInterval().getEndPosition());
+                        System.out.println("Effect resize " + asd);
+                        EffectResizedMessage effectResizedMessage = EffectResizedMessage.builder()
+                                .withClipId(clip.getId())
+                                .withEffectId(effect.getId())
+                                .withNewInterval(effect.getInterval())
+                                .withOriginalInterval(originalEffectInterval)
+                                .withSpecialPositionUsed(Optional.empty())
+                                .withMoreResizeExpected(false)
+                                .build();
+                        messagingService.sendMessage(effectResizedMessage);
+                    });
+
         }
     }
 

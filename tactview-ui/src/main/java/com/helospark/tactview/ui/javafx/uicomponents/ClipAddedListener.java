@@ -37,7 +37,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipAddedListener {
-    private static final int RESIZE_WIDTH = 10;
+    private static final int RESIZE_WIDTH = 15;
     private UiMessagingService messagingService;
     private TimelineState timelineState;
     private EffectDragAdder effectDragAdder;

@@ -331,8 +331,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
             if (newInterval.getStartPosition().isLessThan(0)) {
                 return false;
             }
-            if (newInterval.getEndPosition().isGreaterThan(interval.getEndPosition().from(interval.getStartPosition()))) {
-                return false;
+            TimelinePosition localEndPosition = interval.getEndPosition().from(interval.getStartPosition());
+            if (newInterval.getEndPosition().isGreaterThan(localEndPosition)) {
+                newInterval = newInterval.butWithEndPosition(localEndPosition);
             }
             effect.notifyAfterResize();
 

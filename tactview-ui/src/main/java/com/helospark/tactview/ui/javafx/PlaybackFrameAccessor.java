@@ -1,6 +1,5 @@
 package com.helospark.tactview.ui.javafx;
 
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -95,23 +94,6 @@ public class PlaybackFrameAccessor {
         Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame.getVideoResult().getBuffer(), width, height);
         frame.free();
         return javafxImage;
-    }
-
-    public byte[] getAudioFrameAt(TimelinePosition position, boolean isMute) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            AudioVideoFragment frame = getSingleAudioFrameAtPosition(position, isMute);
-            byte[] buffer = javaByteArrayConverter.convert(frame.getAudioResult(), CHANNELS); // move data to repository
-
-            frame.free();
-
-            baos.write(buffer);
-
-            return baos.toByteArray();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new byte[0];
-        }
     }
 
     public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position, boolean isMute) {

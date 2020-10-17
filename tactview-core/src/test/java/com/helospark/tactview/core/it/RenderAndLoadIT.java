@@ -57,7 +57,7 @@ public class RenderAndLoadIT {
 
         fakeUi.openRenderDialog()
                 .setFileName(renderTargetFile.getAbsolutePath())
-                .setEndPosition(TimelinePosition.ofSeconds(5.0))
+                .setEndPosition(TimelinePosition.ofSeconds(3))
                 .clickRender()
                 .waitUntilRenderFinishes();
 

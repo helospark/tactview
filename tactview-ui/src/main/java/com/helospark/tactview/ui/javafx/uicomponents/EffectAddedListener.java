@@ -30,7 +30,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectAddedListener {
-    private static final int DRAG_PIXEL_DISTANCE = 8;
+    private static final int DRAG_PIXEL_DISTANCE = 15;
     public static final int EFFECTS_OFFSET = 50;
     public static final int EFFECT_HEIGHT = 30;
     private UiMessagingService messagingService;

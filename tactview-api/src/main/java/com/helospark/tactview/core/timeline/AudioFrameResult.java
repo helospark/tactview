@@ -158,4 +158,19 @@ public class AudioFrameResult {
         return this.channels.isEmpty() || this.getNumberSamples() == 0;
     }
 
+    public AudioFrameResult onHeapCopy() {
+        List<ByteBuffer> newChannels = this.getChannels()
+                .stream()
+                .map(channelBuffer -> {
+                    ByteBuffer heapBuffer = ByteBuffer.allocate(channelBuffer.capacity());
+                    for (int i = 0; i < channelBuffer.capacity(); ++i) {
+                        heapBuffer.put(i, channelBuffer.get(i));
+                    }
+                    return heapBuffer;
+                })
+                .collect(Collectors.toList());
+
+        return new AudioFrameResult(newChannels, this.getSamplePerSecond(), this.getBytesPerSample());
+    }
+
 }
