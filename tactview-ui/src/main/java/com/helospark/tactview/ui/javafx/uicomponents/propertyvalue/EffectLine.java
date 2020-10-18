@@ -1,11 +1,13 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 
 import javafx.scene.Node;
 
@@ -24,6 +26,10 @@ public abstract class EffectLine {
     }
 
     public abstract void sendKeyframe(TimelinePosition position);
+
+    public abstract void sendKeyframeWithRevertable(TimelinePosition position, boolean revertable);
+
+    public abstract List<AddKeyframeForPropertyCommand> getKeyframeAddCommands(TimelinePosition position);
 
     public abstract void updateUi(TimelinePosition position);
 

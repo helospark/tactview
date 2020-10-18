@@ -248,6 +248,10 @@ public class InputModeRepository implements CleanableMode {
         }
     }
 
+    public ResultType getResultType() {
+        return this.inputModeInput.currentStrategy.getResultType();
+    }
+
     public void reset() {
         inputModeInput = null;
         inputModeChanged(false);
