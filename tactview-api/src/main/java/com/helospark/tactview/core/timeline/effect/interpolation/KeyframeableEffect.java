@@ -11,7 +11,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFu
 import com.helospark.tactview.core.util.SavedContentAddable;
 import com.helospark.tactview.core.util.StatefulCloneable;
 
-public abstract class KeyframeableEffect implements StatefulCloneable<KeyframeableEffect>, SavedContentAddable<KeyframeableEffect> {
+public abstract class KeyframeableEffect<T> implements StatefulCloneable<KeyframeableEffect>, SavedContentAddable<KeyframeableEffect> {
     String id = UUID.randomUUID().toString();
     boolean scaleDependent;
 
@@ -21,7 +21,7 @@ public abstract class KeyframeableEffect implements StatefulCloneable<Keyframeab
         return id;
     }
 
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, T value) {
 
     }
 
@@ -35,7 +35,7 @@ public abstract class KeyframeableEffect implements StatefulCloneable<Keyframeab
 
     public abstract boolean isPrimitive();
 
-    public List<KeyframeableEffect> getChildren() {
+    public List<KeyframeableEffect<?>> getChildren() {
         return Collections.emptyList();
     }
 
@@ -94,6 +94,31 @@ public abstract class KeyframeableEffect implements StatefulCloneable<Keyframeab
     @Override
     public String toString() {
         return "KeyframeableEffect [id=" + id + ", scaleDependent=" + scaleDependent + ", getClass()=" + getClass() + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        KeyframeableEffect other = (KeyframeableEffect) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
     }
 
 }

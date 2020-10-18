@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ke
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class DoubleProvider extends KeyframeableEffect {
+public class DoubleProvider extends KeyframeableEffect<Double> {
     SizeFunction sizeFunction;
     double min;
     double max;
@@ -58,7 +58,7 @@ public class DoubleProvider extends KeyframeableEffect {
     }
 
     @Override
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, Double value) {
         if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
             ((KeyframeSupportingDoubleInterpolator) interpolator).valueAdded(globalTimelinePosition, value);
         }

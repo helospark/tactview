@@ -1,9 +1,11 @@
 package com.helospark.tactview.core.timeline.effect;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,34 +75,30 @@ public class EffectParametersRepository {
     }
 
     private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, EffectAware intervalAware, String containingElementId) {
-        for (var element : list) {
-            var a = element.getKeyframeableEffect();
-            allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware, element));
-        }
+        list.stream()
+                .forEach(a -> {
+                    allEffectIdToEffectMap.put(a.getKeyframeableEffect().getId(), new EffectStore(a.getKeyframeableEffect(), containingElementId, intervalAware, a));
+                });
 
         list.stream()
                 .map(a -> a.getKeyframeableEffect())
-                .flatMap(a -> getPrimitiveKeyframeableEffects(a))
+                .flatMap(a -> getAllKeyframeableEffects(a))
                 .forEach(a -> {
-                    primitiveEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
-                    //                    allEffectIdToEffectMap.put(a.getId(), new EffectStore(a, containingElementId, intervalAware));
+                    allEffectIdToEffectMap.putIfAbsent(a.getId(), new EffectStore(a, containingElementId, intervalAware));
                 });
     }
 
     public KeyframeableEffect getKeyframeableEffect(String keyframeableEffectId) {
         EffectStore effectStore = allEffectIdToEffectMap.get(keyframeableEffectId);
-        if (effectStore != null) {
-            return effectStore.effect;
-        } else {
-            return primitiveEffectIdToEffectMap.get(keyframeableEffectId).effect;
-        }
+        return effectStore.effect;
     }
 
     public EffectInterpolator getKeyframeableValue(String keyframeableEffectId) {
         return allEffectIdToEffectMap.get(keyframeableEffectId).effect.getInterpolator();
     }
 
-    private Stream<KeyframeableEffect> getPrimitiveKeyframeableEffects(KeyframeableEffect a) {
+    private Stream<KeyframeableEffect> getAllKeyframeableEffects(KeyframeableEffect a) {
+        Set<KeyframeableEffect> result = new HashSet<>();
         List<KeyframeableEffect> effects = new ArrayList<>();
         List<KeyframeableEffect> effects2 = new ArrayList<>();
 
@@ -118,6 +116,8 @@ public class EffectParametersRepository {
                 }
             }
             ++counterToAvoidInfiniteLoops;
+            result.addAll(effects2);
+            result.addAll(effects);
             effects.clear();
             effects.addAll(effects2);
             effects2.clear();
@@ -127,11 +127,11 @@ public class EffectParametersRepository {
             logger.error("Infinite loop why extracting effects, elements: {}", effects);
         }
 
-        return effects.stream();
+        return result.stream();
     }
 
     public void keyframeAdded(KeyframeAddedRequest message) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(message.getDescriptorId());
+        EffectStore valueToChange = allEffectIdToEffectMap.get(message.getDescriptorId());
         if (valueToChange != null) {
             TimelinePosition relativePosition = positionToLocal(message.getGlobalTimelinePosition(), valueToChange);
             valueToChange.effect.keyframeAdded(relativePosition, message.getValue());
@@ -143,7 +143,7 @@ public class EffectParametersRepository {
     }
 
     public void resetToDefaultValue(String descriptorId) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(descriptorId);
+        EffectStore valueToChange = allEffectIdToEffectMap.get(descriptorId);
         if (valueToChange != null) {
             valueToChange.effect.getInterpolator().resetToDefaultValue();
             messagingService.sendAsyncMessage(new KeyframeSuccesfullyResetMessage(descriptorId, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
@@ -154,14 +154,14 @@ public class EffectParametersRepository {
     }
 
     public void removeKeyframe(String id, TimelinePosition globalPosition) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(id);
+        EffectStore valueToChange = allEffectIdToEffectMap.get(id);
         valueToChange.effect.removeKeyframeAt(positionToLocal(globalPosition, valueToChange));
         valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
         messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(id, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
     }
 
     public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
-        return Optional.ofNullable(primitiveEffectIdToEffectMap.get(id))
+        return Optional.ofNullable(allEffectIdToEffectMap.get(id))
                 .map(a -> a.effect)
                 .map(a -> a.getValueAt(position));
     }
@@ -186,23 +186,29 @@ public class EffectParametersRepository {
             this.descriptor = Optional.ofNullable(descriptor);
         }
 
+        @Override
+        public String toString() {
+            return "EffectStore [effect=" + effect + ", containingElementId=" + containingElementId + ", effectAware=" + effectAware + ", descriptor=" + descriptor + "]";
+        }
+
     }
 
     public Map<TimelinePosition, Object> getAllKeyframes(String id) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(id);
-        return valueToChange.effect.getValues()
+        EffectStore valueToChange = allEffectIdToEffectMap.get(id);
+        Stream<Map.Entry<TimelinePosition, Object>> stream = valueToChange.effect.getValues()
                 .entrySet()
-                .stream()
+                .stream();
+        return stream
                 .collect(Collectors.toMap(a -> a.getKey().add(valueToChange.effectAware.getGlobalInterval().getStartPosition()), b -> b.getValue()));
     }
 
     public String getValueAt(String id, TimelinePosition position) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(id);
+        EffectStore valueToChange = allEffectIdToEffectMap.get(id);
         return String.valueOf(valueToChange.effect.getValueAt(positionToLocal(position, valueToChange)));
     }
 
     public Object getValueAtAsObject(String id, TimelinePosition position) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(id);
+        EffectStore valueToChange = allEffectIdToEffectMap.get(id);
         return valueToChange.effect.getValueAt(positionToLocal(position, valueToChange));
     }
 
@@ -211,17 +217,17 @@ public class EffectParametersRepository {
     }
 
     public boolean isKeyframeAt(String id, TimelinePosition position) {
-        EffectStore valueToChange = primitiveEffectIdToEffectMap.get(id);
-        return valueToChange.effect.isKeyframe(positionToLocal(position, valueToChange));
+        EffectStore valueToChange = allEffectIdToEffectMap.get(id);
+        return valueToChange != null && valueToChange.effect.isKeyframe(positionToLocal(position, valueToChange));
     }
 
     public Object getCurrentInterpolator(String descriptorId) {
-        EffectStore effectStore = primitiveEffectIdToEffectMap.get(descriptorId);
+        EffectStore effectStore = allEffectIdToEffectMap.get(descriptorId);
         return effectStore.effect.getInterpolatorClone();
     }
 
     public void changeInterpolator(String descriptorId, String newInterpolatorId) {
-        KeyframeableEffect previousInterpolator = primitiveEffectIdToEffectMap.get(descriptorId).effect;
+        KeyframeableEffect previousInterpolator = allEffectIdToEffectMap.get(descriptorId).effect;
         if (previousInterpolator instanceof DoubleProvider) {
             DoubleInterpolator interpolator = doubleInterpolatorFactories.stream()
                     .filter(factory -> factory.doesSuppert(newInterpolatorId))
@@ -241,7 +247,7 @@ public class EffectParametersRepository {
     }
 
     public void changeInterpolatorToInstance(String descriptorId, Object interpolator) {
-        EffectStore effectStore = primitiveEffectIdToEffectMap.get(descriptorId);
+        EffectStore effectStore = allEffectIdToEffectMap.get(descriptorId);
         effectStore.effect.setInterpolator(interpolator);
 
         messagingService.sendAsyncMessage(new InterpolatorChangedMessage(descriptorId, effectStore.effectAware.getGlobalInterval(), effectStore.containingElementId));
@@ -277,10 +283,6 @@ public class EffectParametersRepository {
 
     public Optional<TimelinePosition> findGlobalPositionForValueProvider(String id) {
         EffectStore effectStore = allEffectIdToEffectMap.get(id);
-
-        if (effectStore == null) {
-            effectStore = primitiveEffectIdToEffectMap.get(id);
-        }
 
         if (effectStore != null) {
             Optional<TimelineClip> optionalClip = timelineManagerAccessor.findClipById(effectStore.containingElementId);

@@ -8,8 +8,10 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.ComboBox;
@@ -86,7 +88,15 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                 .build();
 
         group.selectedToggleProperty().addListener((a, oldValue, newValue) -> {
-            result.sendKeyframe(timelineManager.getCurrentPosition());
+
+            KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                    .withDescriptorId(typeFixedValueProvider.getId())
+                    .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                    .withValue(newValue.getUserData())
+                    .withRevertable(true)
+                    .build();
+
+            commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
         });
 
         contextMenuAppender.addContextMenu(result, typeFixedValueProvider, descriptor, box);
@@ -131,7 +141,15 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                 .build();
 
         comboBox.setOnAction(e -> {
-            result.sendKeyframe(timelineManager.getCurrentPosition());
+
+            KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                    .withDescriptorId(typeFixedValueProvider.getId())
+                    .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                    .withValue(elements.get(comboBox.getSelectionModel().getSelectedItem().getId()))
+                    .withRevertable(true)
+                    .build();
+
+            commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
         });
 
         contextMenuAppender.addContextMenu(result, typeFixedValueProvider, descriptor, comboBox);

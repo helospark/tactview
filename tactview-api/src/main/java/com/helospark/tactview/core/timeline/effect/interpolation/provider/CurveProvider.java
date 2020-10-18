@@ -9,14 +9,14 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.CurveProvider.KeyFrameInfo;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class CurveProvider extends CompositeKeyframeableEffect implements KeyframeSupportingInterpolator {
+public class CurveProvider extends CompositeKeyframeableEffect<KeyFrameInfo> implements KeyframeSupportingInterpolator {
     List<PointProvider> curvePoints;
 
     boolean isUsingKeyframes = false;
@@ -76,9 +76,9 @@ public class CurveProvider extends CompositeKeyframeableEffect implements Keyfra
     }
 
     @Override
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, KeyFrameInfo value) {
         try {
-            KeyFrameInfo keyframeInfo = new ObjectMapper().readValue(value, KeyFrameInfo.class);
+            KeyFrameInfo keyframeInfo = value;
 
             if (keyframeInfo.newPoint) {
                 PointProvider newPoint = PointProvider.of(keyframeInfo.x, keyframeInfo.y);
@@ -89,8 +89,8 @@ public class CurveProvider extends CompositeKeyframeableEffect implements Keyfra
                 }
             } else {
                 PointProvider curvePoint = curvePoints.get(keyframeInfo.index);
-                curvePoint.xProvider.keyframeAdded(globalTimelinePosition, keyframeInfo.x + "");
-                curvePoint.yProvider.keyframeAdded(globalTimelinePosition, keyframeInfo.y + "");
+                curvePoint.xProvider.keyframeAdded(globalTimelinePosition, keyframeInfo.x);
+                curvePoint.yProvider.keyframeAdded(globalTimelinePosition, keyframeInfo.y);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

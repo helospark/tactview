@@ -8,7 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ke
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class StringProvider extends KeyframeableEffect {
+public class StringProvider extends KeyframeableEffect<String> {
     StringInterpolator stringInterpolator;
 
     public StringProvider(StringInterpolator stringInterpolator) {

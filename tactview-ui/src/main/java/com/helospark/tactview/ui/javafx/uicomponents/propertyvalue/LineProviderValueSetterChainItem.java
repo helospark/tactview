@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -11,9 +12,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
@@ -72,10 +76,19 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
+                InterpolationLine previousValue = lineProvider.getValueAt(uiTimelineManager.getCurrentPosition());
                 inputModeRepository.requestLine(line -> {
-                    startPointProvider.getUpdateFromValue().accept(line.start);
-                    endPointProvider.getUpdateFromValue().accept(line.end);
-                    result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                    boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
+
+                    KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                            .withDescriptorId(lineProvider.getId())
+                            .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                            .withValue(line)
+                            .withPreviousValue(Optional.ofNullable(previousValue))
+                            .withRevertable(revertable)
+                            .build();
+
+                    commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
                 }, (InterpolationLine) result.getCurrentValue(), lineProvider.getSizeFunction());
             }
         });

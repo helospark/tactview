@@ -35,7 +35,7 @@ public class AddKeyframeForPropertyCommand implements UiCommand {
             KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
                     .withDescriptorId(request.getDescriptorId())
                     .withGlobalTimelinePosition(request.getGlobalTimelinePosition())
-                    .withValue(previousValue.map(String::valueOf).get())
+                    .withValue(previousValue.get())
                     .build();
             effectParametersRepository.keyframeAdded(keyframeAddedRequest);
         } else {

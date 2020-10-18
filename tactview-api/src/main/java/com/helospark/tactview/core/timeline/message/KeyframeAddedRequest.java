@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 public class KeyframeAddedRequest {
     private String descriptorId;
     private TimelinePosition globalTimelinePosition;
-    private String value;
+    private Object value;
     private boolean revertable;
     private Optional<Object> previousValue;
 
@@ -30,7 +30,7 @@ public class KeyframeAddedRequest {
         return globalTimelinePosition;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 
@@ -57,7 +57,7 @@ public class KeyframeAddedRequest {
     public static final class Builder {
         private String descriptorId;
         private TimelinePosition globalTimelinePosition;
-        private String value;
+        private Object value;
         private boolean revertable;
         private Optional<Object> previousValue = Optional.empty();
 
@@ -74,7 +74,7 @@ public class KeyframeAddedRequest {
             return this;
         }
 
-        public Builder withValue(String value) {
+        public Builder withValue(Object value) {
             this.value = value;
             return this;
         }

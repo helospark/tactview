@@ -13,7 +13,7 @@ public abstract class KeyframeSupportingDoubleInterpolator implements DoubleInte
     private static final BigDecimal integralCacheResolution = new BigDecimal("0.1");
     TreeMap<TimelinePosition, BigDecimal> integralCache;
 
-    public void valueAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void valueAdded(TimelinePosition globalTimelinePosition, Double value) {
         if (integralCache != null) {
             integralCache.clear();
             integralCache.put(TimelinePosition.ofZero(), BigDecimal.ZERO);
@@ -29,7 +29,7 @@ public abstract class KeyframeSupportingDoubleInterpolator implements DoubleInte
         valueRemovedInternal(globalTimelinePosition);
     }
 
-    public abstract void valueAddedInternal(TimelinePosition globalTimelinePosition, String value);
+    public abstract void valueAddedInternal(TimelinePosition globalTimelinePosition, Double value);
 
     public abstract void valueRemovedInternal(TimelinePosition globalTimelinePosition);
 

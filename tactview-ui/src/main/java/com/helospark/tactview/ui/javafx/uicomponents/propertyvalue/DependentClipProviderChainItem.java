@@ -12,8 +12,10 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
@@ -108,7 +110,14 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                 .build();
 
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-            result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+            KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                    .withDescriptorId(stringProvider.getId())
+                    .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                    .withValue(newValue)
+                    .withRevertable(true)
+                    .build();
+
+            commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
         });
 
         contextMenuAppender.addContextMenu(result, stringProvider, descriptor, browseButton);

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 
-public abstract class CompositeKeyframeableEffect extends KeyframeableEffect {
+public abstract class CompositeKeyframeableEffect<T> extends KeyframeableEffect<T> {
     private List<KeyframeableEffect> compositeElements;
 
     public CompositeKeyframeableEffect(List<KeyframeableEffect> compositeElements) {

@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +9,6 @@ import java.util.TreeMap;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
@@ -19,8 +16,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.B
 import com.helospark.tactview.core.util.DesSerFactory;
 
 // TODO: Too many copypaste from PolygonProvider
-public class BezierPolygonProvider extends KeyframeableEffect {
-    private ObjectMapper objectMapper = new ObjectMapper();
+public class BezierPolygonProvider extends KeyframeableEffect<List<BezierPolygonPoint>> {
     protected boolean useKeyframes;
     protected List<BezierPolygonPoint> defaultValues;
     protected TreeMap<TimelinePosition, List<BezierPolygonPoint>> values = new TreeMap<>();
@@ -44,7 +40,7 @@ public class BezierPolygonProvider extends KeyframeableEffect {
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<List<BezierPolygonPoint>>>> generateSerializableContent() {
         return BezierPolygonProviderDesSerFactory.class;
     }
 
@@ -106,22 +102,17 @@ public class BezierPolygonProvider extends KeyframeableEffect {
     }
 
     @Override
-    public KeyframeableEffect deepClone() {
+    public KeyframeableEffect<List<BezierPolygonPoint>> deepClone() {
         return new BezierPolygonProvider(useKeyframes, new ArrayList<>(defaultValues), new TreeMap<>(values), interpolatorImplementation);
     }
 
     @Override
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
-        try {
-            List<BezierPolygonPoint> newPoints = objectMapper.readValue(value, new TypeReference<List<BezierPolygonPoint>>() {
-            });
-            if (useKeyframes) {
-                values.put(globalTimelinePosition, newPoints);
-            } else {
-                defaultValues = newPoints;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, List<BezierPolygonPoint> value) {
+        List<BezierPolygonPoint> newPoints = value;
+        if (useKeyframes) {
+            values.put(globalTimelinePosition, newPoints);
+        } else {
+            defaultValues = newPoints;
         }
     }
 

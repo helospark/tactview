@@ -13,7 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ke
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class ValueListProvider<T extends ValueListElement> extends KeyframeableEffect {
+public class ValueListProvider<T extends ValueListElement> extends KeyframeableEffect<T> {
     Map<String, T> elements;
     StepStringInterpolator stringInterpolator;
 
@@ -39,8 +39,8 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
     }
 
     @Override
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
-        stringInterpolator.valueAdded(globalTimelinePosition, value);
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, T value) {
+        stringInterpolator.valueAdded(globalTimelinePosition, value.getId());
     }
 
     @Override

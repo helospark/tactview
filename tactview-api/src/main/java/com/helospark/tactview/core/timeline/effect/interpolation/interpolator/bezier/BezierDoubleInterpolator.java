@@ -139,8 +139,8 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
     }
 
     @Override
-    public void valueAddedInternal(TimelinePosition globalTimelinePosition, String value) {
-        Double valueToSet = Double.valueOf(value);
+    public void valueAddedInternal(TimelinePosition globalTimelinePosition, Double value) {
+        Double valueToSet = value;
         if (!useKeyframes) {
             defaultValue = valueToSet;
         } else {

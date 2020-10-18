@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -12,9 +13,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.hint.MovementTy
 import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
@@ -71,17 +75,14 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 Object renderHint = descriptor.getRenderHints().get(RenderTypeHint.TYPE);
+                Point previousValue = pointProvider.getValueAt(uiTimelineManager.getCurrentPosition());
                 if (renderHint != null && renderHint.equals(MovementType.RELATIVE)) {
                     inputModeRepository.requestRelativePoint(point -> {
-                        xProvider.getUpdateFromValue().accept(point.x);
-                        yProvider.getUpdateFromValue().accept(point.y);
-                        result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                        sendKeyframe(pointProvider, point, previousValue);
                     }, pointProvider.getSizeFunction(), (Point) result.getCurrentValue());
                 } else {
                     inputModeRepository.requestPoint(point -> {
-                        xProvider.getUpdateFromValue().accept(point.x);
-                        yProvider.getUpdateFromValue().accept(point.y);
-                        result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                        sendKeyframe(pointProvider, point, previousValue);
                     }, pointProvider.getSizeFunction());
                 }
             }
@@ -90,6 +91,20 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         contextMenuAppender.addContextMenu(result, pointProvider, descriptor, button);
 
         return result;
+    }
+
+    private void sendKeyframe(PointProvider pointProvider, Point currentPoint, Point previousValue) {
+        boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
+
+        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                .withDescriptorId(pointProvider.getId())
+                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                .withValue(currentPoint)
+                .withRevertable(revertable)
+                .withPreviousValue(Optional.ofNullable(previousValue))
+                .build();
+
+        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
     }
 
 }

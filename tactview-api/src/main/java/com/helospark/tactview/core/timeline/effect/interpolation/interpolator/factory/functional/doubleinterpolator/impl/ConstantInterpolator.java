@@ -25,8 +25,8 @@ public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
     }
 
     @Override
-    public void valueAddedInternal(TimelinePosition globalTimelinePosition, String value) {
-        this.value = Double.valueOf(value);
+    public void valueAddedInternal(TimelinePosition globalTimelinePosition, Double value) {
+        this.value = value;
     }
 
     @Override

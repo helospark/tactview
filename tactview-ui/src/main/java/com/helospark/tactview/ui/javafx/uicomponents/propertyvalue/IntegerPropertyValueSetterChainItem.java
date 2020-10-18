@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -9,8 +10,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.hint.SliderValueType;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.beans.binding.Bindings;
@@ -99,7 +102,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                     if (effectParametersRepository.isKeyframeAt(integerProvider.getId(), position)) {
                         textField.getStyleClass().add("on-keyframe");
                     } else {
-                        textField.getStyleClass().remove("on-keyframe");
+                        textField.getStyleClass().removeAll("on-keyframe");
                     }
                 })
                 .withDescriptor(descriptor)
@@ -108,11 +111,37 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withCommandInterpreter(commandInterpreter)
                 .build();
 
-        userChangedValueObservable.registerListener((value, revertable) -> {
-            result.sendKeyframeWithValueAndRevertable(timelineManager.getCurrentPosition(), value, revertable);
+        userChangedValueObservable.registerListener((newValue, revertable) -> {
+            try {
+                double dValue = Double.valueOf(newValue);
+
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(integerProvider.getId())
+                        .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                        .withValue(dValue)
+                        .withRevertable(revertable)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+            } catch (NumberFormatException e) {
+            }
         });
         userChangedValueObservable.registerPreviousValueListener((value, oldValue) -> {
-            result.sendKeyframeWithPreviousValue(timelineManager.getCurrentPosition(), value, oldValue);
+            try {
+                double nValue = Double.valueOf(value);
+                double dValue = Double.valueOf(oldValue);
+
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(integerProvider.getId())
+                        .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                        .withValue(nValue)
+                        .withPreviousValue(Optional.ofNullable(dValue))
+                        .withRevertable(true)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+            } catch (NumberFormatException e) {
+            }
         });
 
         contextMenuAppender.addContextMenu(result, integerProvider, descriptor, result.visibleNode);

@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.be
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class PointProvider extends CompositeKeyframeableEffect {
+public class PointProvider extends CompositeKeyframeableEffect<Point> {
     DoubleProvider xProvider;
     DoubleProvider yProvider;
 
@@ -40,8 +40,14 @@ public class PointProvider extends CompositeKeyframeableEffect {
     }
 
     @Override
-    public List<KeyframeableEffect> getChildren() {
+    public List<KeyframeableEffect<?>> getChildren() {
         return Arrays.asList(xProvider, yProvider);
+    }
+
+    @Override
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, Point value) {
+        this.xProvider.keyframeAdded(globalTimelinePosition, value.x);
+        this.yProvider.keyframeAdded(globalTimelinePosition, value.y);
     }
 
     @Override
@@ -55,7 +61,7 @@ public class PointProvider extends CompositeKeyframeableEffect {
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<Point>>> generateSerializableContent() {
         return PointProviderFactory.class;
     }
 

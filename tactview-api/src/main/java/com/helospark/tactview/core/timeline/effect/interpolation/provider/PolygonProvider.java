@@ -15,7 +15,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class PolygonProvider extends KeyframeableEffect {
+public class PolygonProvider extends KeyframeableEffect<Polygon> {
     protected boolean useKeyframes;
     protected List<Point> defaultValues;
     protected TreeMap<TimelinePosition, List<Point>> values = new TreeMap<>();
@@ -38,7 +38,7 @@ public class PolygonProvider extends KeyframeableEffect {
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<Polygon>>> generateSerializableContent() {
         return PolygonProviderDesSerFactory.class;
     }
 
@@ -98,18 +98,17 @@ public class PolygonProvider extends KeyframeableEffect {
     }
 
     @Override
-    public KeyframeableEffect deepClone() {
+    public KeyframeableEffect<Polygon> deepClone() {
         return new PolygonProvider(useKeyframes, new ArrayList<>(defaultValues), new TreeMap<>(values), interpolatorImplementation);
     }
 
     @Override
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, Polygon value) {
         System.out.println("Adding polygon keyframe " + globalTimelinePosition + " " + value);
-        List<Point> newPoints = Polygon.deserializePointsFromString(value); // TODO: we need providers
         if (useKeyframes) {
-            values.put(globalTimelinePosition, newPoints);
+            values.put(globalTimelinePosition, value.getPoints());
         } else {
-            defaultValues = newPoints;
+            defaultValues = value.getPoints();
         }
     }
 

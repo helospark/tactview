@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.controlsfx.glyphfont.FontAwesome;
@@ -13,9 +14,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.RectangleProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
@@ -77,11 +81,19 @@ public class RectangleProviderValueSetterChainItem extends TypeBasedPropertyValu
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
+                Rectangle previousValue = rectangleProvider.getValueAt(uiTimelineManager.getCurrentPosition());
                 inputModeRepository.requestRectangle(rectangle -> {
-                    for (int i = 0; i < 4; ++i) {
-                        pointProviders.get(i).getUpdateFromValue().accept(rectangle.points.get(i));
-                    }
-                    result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                    boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
+
+                    KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                            .withDescriptorId(rectangleProvider.getId())
+                            .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                            .withValue(rectangle)
+                            .withPreviousValue(Optional.ofNullable(previousValue))
+                            .withRevertable(revertable)
+                            .build();
+
+                    commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
                 }, getCurrentValue(pointProviders), rectangleProvider.getSizeFunction());
             }
         });

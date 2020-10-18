@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import java.util.Optional;
+
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
@@ -8,9 +10,12 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PolygonProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseButton;
@@ -56,11 +61,29 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
                 Polygon currentPolygon = (Polygon) effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition());
                 if (currentPolygon.getPoints().isEmpty()) {
                     inputModeRepository.requestPolygon(polygon -> {
-                        result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
+                        boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
+
+                        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                                .withDescriptorId(polygonProvider.getId())
+                                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                                .withValue(polygon)
+                                .withRevertable(revertable)
+                                .withPreviousValue(Optional.of(currentPolygon))
+                                .build();
+
+                        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
                     }, polygonProvider.getSizeFunction());
                 } else {
                     inputModeRepository.requestPolygonPrefilled(polygon -> {
-                        result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), polygon.serializeToString());
+
+                        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                                .withDescriptorId(polygonProvider.getId())
+                                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                                .withValue(polygon)
+                                .withRevertable(true)
+                                .build();
+
+                        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
                     }, polygonProvider.getSizeFunction(), currentPolygon.getPoints());
                 }
             }

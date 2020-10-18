@@ -31,49 +31,40 @@ public class TestKeyframeUi {
 
     public void addKeyframe(double value) {
         DoubleProvider doubleProvider = (DoubleProvider) descriptor.getKeyframeableEffect();
-        setKeyframeForPrimitive(String.valueOf(value), doubleProvider);
+        setKeyframeForPrimitive(value, doubleProvider);
     }
 
     public void addKeyframe(InterpolationLine interpolationLine) {
         LineProvider lineProvider = (LineProvider) descriptor.getKeyframeableEffect();
 
-        PointProvider point1 = (PointProvider) lineProvider.getChildren().get(0);
-        PointProvider point2 = (PointProvider) lineProvider.getChildren().get(1);
-
-        addKeyframeForChild(String.valueOf(interpolationLine.start.x), 0, point1);
-        addKeyframeForChild(String.valueOf(interpolationLine.start.y), 1, point1);
-
-        addKeyframeForChild(String.valueOf(interpolationLine.end.x), 0, point2);
-        addKeyframeForChild(String.valueOf(interpolationLine.end.y), 1, point2);
+        addKeyframeForChild(interpolationLine, lineProvider);
     }
 
     public TestKeyframeUi addKeyframe(Point point) {
         PointProvider pointProvider = (PointProvider) descriptor.getKeyframeableEffect();
-        addKeyframeForChild(String.valueOf(point.x), 0, pointProvider);
-        addKeyframeForChild(String.valueOf(point.y), 1, pointProvider);
+
+        addKeyframeForChild(point, pointProvider);
         return this;
     }
 
     public TestKeyframeUi addKeyframe(Color color) {
         ColorProvider colorProvider = (ColorProvider) descriptor.getKeyframeableEffect();
 
-        addKeyframeForChild(String.valueOf(color.red), 0, colorProvider);
-        addKeyframeForChild(String.valueOf(color.green), 1, colorProvider);
-        addKeyframeForChild(String.valueOf(color.blue), 2, colorProvider);
+        addKeyframeForChild(color, colorProvider);
 
         return this;
     }
 
-    private void addKeyframeForChild(String data, int index, CompositeKeyframeableEffect composite) {
+    private void addKeyframeForChild(Object data, CompositeKeyframeableEffect composite) {
         KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
-                .withDescriptorId(composite.getChildren().get(index).getId())
+                .withDescriptorId(composite.getId())
                 .withGlobalTimelinePosition(position)
                 .withValue(data)
                 .build();
         parametersRepository.keyframeAdded(keyframeAddedRequest);
     }
 
-    private void setKeyframeForPrimitive(String value, KeyframeableEffect effect) {
+    private void setKeyframeForPrimitive(Object value, KeyframeableEffect effect) {
         KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
                 .withDescriptorId(effect.getId())
                 .withGlobalTimelinePosition(position)

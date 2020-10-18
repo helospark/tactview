@@ -72,7 +72,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     protected void addNewPoint(Point remappedMousePosition, CurveEditorMouseRequest request) {
         // TODO: commandInterpreter
         TimelinePosition offset = effectParametersRepository.findGlobalPositionForValueProvider(request.currentProvider.getId()).get();
-        ((KeyframeSupportingDoubleInterpolator) request.currentDoubleInterpolator).valueAdded(new TimelinePosition(remappedMousePosition.x).subtract(offset), String.valueOf(remappedMousePosition.y));
+        ((KeyframeSupportingDoubleInterpolator) request.currentDoubleInterpolator).valueAdded(new TimelinePosition(remappedMousePosition.x).subtract(offset), remappedMousePosition.y);
     }
 
     protected abstract List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request);

@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.St
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class DependentClipProvider extends KeyframeableEffect {
+public class DependentClipProvider extends KeyframeableEffect<String> {
     StepStringInterpolator stringInterpolator;
 
     public DependentClipProvider(StepStringInterpolator stringInterpolator) {
@@ -46,12 +46,12 @@ public class DependentClipProvider extends KeyframeableEffect {
     }
 
     @Override
-    public KeyframeableEffect deepClone() {
+    public KeyframeableEffect<String> deepClone() {
         return new DependentClipProvider(stringInterpolator.deepClone());
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<String>>> generateSerializableContent() {
         return DependentClipProviderFactory.class;
     }
 

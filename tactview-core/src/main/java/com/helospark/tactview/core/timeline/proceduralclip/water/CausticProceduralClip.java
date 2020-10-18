@@ -200,8 +200,8 @@ public class CausticProceduralClip extends ProceduralVisualClip {
 
         timeProvider = new DoubleProvider(0.0, 100.0, new MultiKeyframeBasedDoubleInterpolator(0.0));
         timeProvider.setUseKeyframes(true);
-        timeProvider.keyframeAdded(TimelinePosition.ofZero(), "0.0");
-        timeProvider.keyframeAdded(TimelinePosition.ofSeconds(30), "10.0");
+        timeProvider.keyframeAdded(TimelinePosition.ofZero(), 0.0);
+        timeProvider.keyframeAdded(TimelinePosition.ofSeconds(30), 10.0);
 
         brightnessProvider = new IntegerProvider(0, 30, new MultiKeyframeBasedDoubleInterpolator(10.0));
         samplesProvider = new IntegerProvider(0, 10, new MultiKeyframeBasedDoubleInterpolator(2.0));

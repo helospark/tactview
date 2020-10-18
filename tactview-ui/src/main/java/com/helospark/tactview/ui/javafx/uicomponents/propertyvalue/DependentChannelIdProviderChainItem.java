@@ -5,8 +5,10 @@ import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentChannelIdProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
@@ -79,7 +81,14 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
                 .build();
 
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-            result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+            KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                    .withDescriptorId(stringProvider.getId())
+                    .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                    .withValue(textArea.getText())
+                    .withRevertable(true)
+                    .build();
+            AddKeyframeForPropertyCommand command = new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest);
+            this.commandInterpreter.sendWithResult(command);
         });
 
         contextMenuAppender.addContextMenu(result, stringProvider, descriptor, hbox);

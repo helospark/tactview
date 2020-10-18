@@ -1,14 +1,14 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.CurveProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.CurveProvider.KnotAwareUnivariateFunction;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.control.CurveWidget;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
@@ -63,11 +63,14 @@ public class CurveProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         control.onActionProperty()
                 .addListener((e, oldValue, newValue) -> {
                     if (newValue != null) {
-                        try {
-                            result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), new ObjectMapper().writeValueAsString(newValue));
-                        } catch (JsonProcessingException e1) {
-                            e1.printStackTrace();
-                        }
+                        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                                .withDescriptorId(colorProvider.getId())
+                                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                                .withValue(newValue)
+                                .withRevertable(true)
+                                .build();
+
+                        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
                     }
                 });
 

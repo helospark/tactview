@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class ColorProvider extends CompositeKeyframeableEffect {
+public class ColorProvider extends CompositeKeyframeableEffect<Color> {
     protected DoubleProvider redProvider;
     protected DoubleProvider greenProvider;
     protected DoubleProvider blueProvider;
@@ -32,17 +32,24 @@ public class ColorProvider extends CompositeKeyframeableEffect {
     }
 
     @Override
-    public List<KeyframeableEffect> getChildren() {
+    public List<KeyframeableEffect<?>> getChildren() {
         return Arrays.asList(redProvider, greenProvider, blueProvider);
     }
 
     @Override
-    public KeyframeableEffect deepClone() {
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, Color value) {
+        this.redProvider.keyframeAdded(globalTimelinePosition, value.red);
+        this.greenProvider.keyframeAdded(globalTimelinePosition, value.green);
+        this.blueProvider.keyframeAdded(globalTimelinePosition, value.blue);
+    }
+
+    @Override
+    public KeyframeableEffect<Color> deepClone() {
         return new ColorProvider(redProvider.deepClone(), greenProvider.deepClone(), blueProvider.deepClone());
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<Color>>> generateSerializableContent() {
         return ColorProviderFactory.class;
     }
 

@@ -5,8 +5,10 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.TextArea;
@@ -50,7 +52,14 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
             TimelinePosition position = timelineManager.getCurrentPosition();
             String currentValue = stringProvider.getValueAt(position);
             if (!textArea.getText().equals(currentValue)) {
-                result.sendKeyframe(position);
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(stringProvider.getId())
+                        .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                        .withValue(newValue)
+                        .withRevertable(true)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
             }
         });
 

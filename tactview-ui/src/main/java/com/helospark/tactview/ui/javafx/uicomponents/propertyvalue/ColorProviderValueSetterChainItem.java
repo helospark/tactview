@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
@@ -14,10 +15,13 @@ import com.helospark.tactview.core.timeline.effect.interpolation.hint.ColorPicke
 import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderTypeHint;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.control.ColorWheelPicker;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.beans.property.ObjectProperty;
@@ -82,10 +86,16 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
             ObjectProperty<javafx.scene.paint.Color> property = control.onActionProperty();
             property.addListener((e, oldValue, newValue) -> {
                 javafx.scene.paint.Color color = newValue;
-                redProvider.updateFromValue.accept(color.getRed());
-                greenProvider.updateFromValue.accept(color.getGreen());
-                blueProvider.updateFromValue.accept(color.getBlue());
-                result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                Color keyframeColor = new Color(color.getRed(), color.getGreen(), color.getBlue());
+
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(colorProvider.getId())
+                        .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                        .withValue(keyframeColor)
+                        .withRevertable(true)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
             });
 
             contextMenuAppender.addContextMenu(result, colorProvider, descriptor, control);
@@ -120,19 +130,33 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     .build();
 
             colorPicker.setOnAction(e -> {
-                javafx.scene.paint.Color color = colorPicker.getValue();
-                redProvider.updateFromValue.accept(color.getRed());
-                greenProvider.updateFromValue.accept(color.getGreen());
-                blueProvider.updateFromValue.accept(color.getBlue());
-                result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                Color keyframeColor = new Color(colorPicker.getValue().getRed(), colorPicker.getValue().getGreen(), colorPicker.getValue().getBlue());
+
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(colorProvider.getId())
+                        .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                        .withValue(keyframeColor)
+                        .withRevertable(true)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+
             });
             colorPickerInputButton.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY) {
+                    Color previousValue = colorProvider.getValueAt(uiTimelineManager.getCurrentPosition());
                     inputModeRepository.requestColor(color -> {
-                        redProvider.updateFromValue.accept(color.red);
-                        greenProvider.updateFromValue.accept(color.green);
-                        blueProvider.updateFromValue.accept(color.blue);
-                        result.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                        boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
+
+                        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                                .withDescriptorId(colorProvider.getId())
+                                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                                .withValue(color)
+                                .withRevertable(revertable)
+                                .withPreviousValue(Optional.of(previousValue))
+                                .build();
+
+                        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
                     });
                 }
             });

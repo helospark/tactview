@@ -8,7 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ke
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class BooleanProvider extends KeyframeableEffect {
+public class BooleanProvider extends KeyframeableEffect<Boolean> {
     DoubleInterpolator doubleInterpolator;
 
     public BooleanProvider(DoubleInterpolator doubleInterpolator) {
@@ -22,15 +22,13 @@ public class BooleanProvider extends KeyframeableEffect {
     }
 
     @Override
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, String value) {
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, Boolean value) {
         if (doubleInterpolator instanceof KeyframeSupportingDoubleInterpolator) {
             KeyframeSupportingDoubleInterpolator keyframeInterpolator = ((KeyframeSupportingDoubleInterpolator) doubleInterpolator);
-            if (value.equalsIgnoreCase("true")) {
-                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, "1.0");
-            } else if (value.equalsIgnoreCase("false")) {
-                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, "0.0");
+            if (value) {
+                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, 1.0);
             } else {
-                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, value);
+                keyframeInterpolator.valueAddedInternal(globalTimelinePosition, 0.0);
             }
         }
     }
@@ -46,7 +44,7 @@ public class BooleanProvider extends KeyframeableEffect {
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<Boolean>>> generateSerializableContent() {
         return BooleanProviderFactory.class;
     }
 

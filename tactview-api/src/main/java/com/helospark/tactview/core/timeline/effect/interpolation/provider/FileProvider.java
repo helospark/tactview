@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ke
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class FileProvider extends KeyframeableEffect {
+public class FileProvider extends KeyframeableEffect<String> {
     String extension;
     StepStringInterpolator stringInterpolator;
 
@@ -44,7 +44,7 @@ public class FileProvider extends KeyframeableEffect {
     }
 
     @Override
-    public KeyframeableEffect deepClone() {
+    public KeyframeableEffect<String> deepClone() {
         return new FileProvider(extension, stringInterpolator.deepClone());
     }
 
@@ -53,7 +53,7 @@ public class FileProvider extends KeyframeableEffect {
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<String>>> generateSerializableContent() {
         return FileProviderFactory.class;
     }
 

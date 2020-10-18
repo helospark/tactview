@@ -7,9 +7,11 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.Button;
@@ -65,8 +67,14 @@ public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSett
         browseButton.setOnMouseClicked(e -> {
             File file = fileChooser.showOpenDialog(JavaFXUiMain.STAGE);
             if (file != null) {
-                lineItem.updateFromValue.accept(file.getAbsolutePath());
-                lineItem.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(fileProvider.getId())
+                        .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                        .withValue(file.getAbsolutePath())
+                        .withRevertable(true)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
             }
         });
         contextMenuAppender.addContextMenu(lineItem, fileProvider, descriptor, hbox);
