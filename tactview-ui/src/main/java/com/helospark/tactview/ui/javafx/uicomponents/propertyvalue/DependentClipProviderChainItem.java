@@ -96,7 +96,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         hbox.getChildren().add(browseButton);
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> nameToIdRepository.getIdForName(textArea.getText()))
+                .withCurrentValueProvider(() -> textArea.getText())
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
                     String currentId = stringProvider.getValueAt(position);

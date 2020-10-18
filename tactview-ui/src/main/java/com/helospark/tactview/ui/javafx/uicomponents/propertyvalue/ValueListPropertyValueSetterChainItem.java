@@ -72,7 +72,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         }
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> ((ValueListElement) group.getSelectedToggle().getUserData()).getId())
+                .withCurrentValueProvider(() -> group.getSelectedToggle().getUserData())
                 .withDescriptorId(typeFixedValueProvider.getId())
                 .withUpdateFunction(position -> {
                     String id = effectParametersRepository.getValueAt(typeFixedValueProvider.getId(), position);
@@ -125,7 +125,7 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
         comboBox.setMaxWidth(200);
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> comboBox.getValue().getId())
+                .withCurrentValueProvider(() -> comboBox.getValue())
                 .withDescriptorId(typeFixedValueProvider.getId())
                 .withUpdateFunction(position -> {
                     String value = effectParametersRepository.getValueAt(typeFixedValueProvider.getId(), position);

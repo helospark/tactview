@@ -175,11 +175,7 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     }
 
     private double effectLineToDouble(PrimitiveEffectLine provider) {
-        try {
-            return Double.valueOf(provider.currentValueProvider.get());
-        } catch (Exception e) {
-            return 0.0;
-        }
+        return (double) provider.currentValueSupplier.get();
     }
 
 }

@@ -69,7 +69,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                     xProvider.getUpdateFromValue().accept(point.x);
                     yProvider.getUpdateFromValue().accept(point.y);
                 })
-                .withCurrentValueSupplier(() -> new Point(Double.valueOf(xProvider.currentValueProvider.get()), Double.valueOf(yProvider.currentValueProvider.get())))
+                .withCurrentValueSupplier(() -> new Point((double) (xProvider.currentValueSupplier.get()), (double) (yProvider.currentValueSupplier.get())))
                 .build();
 
         button.setOnMouseClicked(event -> {

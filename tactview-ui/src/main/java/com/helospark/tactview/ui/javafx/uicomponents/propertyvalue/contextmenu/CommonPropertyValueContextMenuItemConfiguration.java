@@ -6,14 +6,17 @@ import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ResetDefaultValuesCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PrimitiveEffectLine;
 
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
 
 @Configuration
 public class CommonPropertyValueContextMenuItemConfiguration {
@@ -24,11 +27,11 @@ public class CommonPropertyValueContextMenuItemConfiguration {
         return allPrimitiveEffectLineSupportingMenuIfRequired(request -> {
             MenuItem copyKeyframeMenuItem = new MenuItem("Copy");
             copyKeyframeMenuItem.setOnAction(e -> {
-                String currentValue = ((PrimitiveEffectLine) (request.effectLine)).currentValueProvider.get();
+                Object currentValue = ((PrimitiveEffectLine) (request.effectLine)).getCurrentValueSupplier().get();
 
                 Clipboard clipboard = Clipboard.getSystemClipboard();
                 ClipboardContent content = new ClipboardContent();
-                content.putString(currentValue);
+                content.put(new DataFormat("raw"), currentValue);
                 clipboard.setContent(content);
             });
             return copyKeyframeMenuItem;
@@ -42,9 +45,12 @@ public class CommonPropertyValueContextMenuItemConfiguration {
             MenuItem pasteKeyframeMenuItem = new MenuItem("Paste");
             pasteKeyframeMenuItem.setOnAction(e -> {
                 Clipboard clipboard = Clipboard.getSystemClipboard();
-                String value = clipboard.getString();
-                // TODO: Maybe we need a value update function rather
-                ((PrimitiveEffectLine) (request.effectLine)).sendKeyframeWithValue(timelineManager.getCurrentPosition(), value);
+                Object value = clipboard.getContent(new DataFormat("raw"));
+                try {
+                    ((PrimitiveEffectLine) (request.effectLine)).getUpdateFromValue().accept(value);
+                } catch (Exception ex) {
+                    ex.printStackTrace(); // this happens if user paste uncompatible objects
+                }
             });
             return pasteKeyframeMenuItem;
         });
@@ -52,10 +58,21 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(0)
-    public PropertyValueContextMenuItem addKeyframeItem(UiTimelineManager timelineManager) {
-        return contextMenuEnabledIfKeyframesEnabled(request -> {
+    public PropertyValueContextMenuItem addKeyframeItem(UiTimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+        return contextMenuEnabledIfKeyframesEnabledAndKeyframeConsumerExists(request -> {
             MenuItem addKeyframeMenuItem = new MenuItem("Add keyframe");
-            addKeyframeMenuItem.setOnAction(e -> request.effectLine.sendKeyframe(timelineManager.getCurrentPosition()));
+            addKeyframeMenuItem.setOnAction(e -> {
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(request.effectLine.getDescriptorId())
+                        .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                        .withValue(request.effectLine.getCurrentValueSupplier().get())
+                        .withRevertable(true)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+
+                request.effectLine.sendKeyframe(timelineManager.getCurrentPosition());
+            });
             return addKeyframeMenuItem;
         });
     }
@@ -108,9 +125,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
             public MenuItem createMenuItem(PropertyValueContextMenuRequest request) {
                 MenuItem result = function.apply(request);
 
-                boolean isDisabled = request.containerDescriptor.getEnabledIf()
-                        .map(enabledIf -> !enabledIf.apply(request.timelinePosition))
-                        .orElse(false);
+                boolean isDisabled = isKeyframingEnabled(request);
                 if (isDisabled) {
                     result.setDisable(true);
                 }
@@ -118,6 +133,35 @@ public class CommonPropertyValueContextMenuItemConfiguration {
                 return result;
             }
         };
+    }
+
+    private PropertyValueContextMenuItem contextMenuEnabledIfKeyframesEnabledAndKeyframeConsumerExists(Function<PropertyValueContextMenuRequest, MenuItem> function) {
+        return new PropertyValueContextMenuItem() {
+
+            @Override
+            public boolean supports(PropertyValueContextMenuRequest request) {
+                return request.valueProvider.keyframesEnabled();
+            }
+
+            @Override
+            public MenuItem createMenuItem(PropertyValueContextMenuRequest request) {
+                MenuItem result = function.apply(request);
+
+                boolean isDisabled = isKeyframingEnabled(request);
+                if (isDisabled || request.effectLine.getKeyframeConsumer() == null) {
+                    result.setDisable(true);
+                }
+
+                return result;
+            }
+
+        };
+    }
+
+    private Boolean isKeyframingEnabled(PropertyValueContextMenuRequest request) {
+        return request.containerDescriptor.getEnabledIf()
+                .map(enabledIf -> !enabledIf.apply(request.timelinePosition))
+                .orElse(false);
     }
 
     private PropertyValueContextMenuItem allPrimitiveEffectLineSupportingMenuIfRequired(Function<PropertyValueContextMenuRequest, MenuItem> function) {

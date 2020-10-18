@@ -69,7 +69,7 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
         hbox.getChildren().add(browseButton);
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> nameToIdRepository.getIdForName(textArea.getText()))
+                .withCurrentValueProvider(() -> textArea.getText())
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
                     String currentValue = nameToIdRepository.getNameForId(stringProvider.getValueAt(position));

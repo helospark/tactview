@@ -9,9 +9,13 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRange;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleRangeProvider;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.layout.HBox;
@@ -54,6 +58,7 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
                 .withDescriptor(descriptor)
+                .withCurrentValueSupplier(() -> new InterpolationLine((Point) lowEndProvider.getCurrentValueSupplier().get(), (Point) highEndProvider.getCurrentValueSupplier().get()))
                 .withUpdateFromValue(value -> {
                     DoubleRange point = (DoubleRange) value;
                     lowEndProvider.getUpdateFromValue().accept(point.lowEnd);
@@ -73,15 +78,24 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
 
         rangeSlider.lowValueProperty().addListener((obj, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
-                lowEndProvider.getUpdateFromValue().accept(newValue);
-                lowEndProvider.sendKeyframeWithValue(timelineManager.getCurrentPosition(), String.valueOf(newValue));
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(doubleRangeProvider.getLowEnd().getId())
+                        .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                        .withValue(newValue)
+                        .withRevertable(true)
+                        .build();
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
             }
         });
         rangeSlider.highValueProperty().addListener((obj, oldValue, newValue) -> {
-            System.out.println("High value change " + newValue);
             if (!Objects.equals(oldValue, newValue)) {
-                lowEndProvider.getUpdateFromValue().accept(newValue);
-                highEndProvider.sendKeyframeWithValue(timelineManager.getCurrentPosition(), String.valueOf(newValue));
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(doubleRangeProvider.getHighEnd().getId())
+                        .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                        .withValue(newValue)
+                        .withRevertable(true)
+                        .build();
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
             }
         });
         contextMenuAppender.addContextMenu(result, doubleRangeProvider, descriptor, rangeSlider);
@@ -90,11 +104,7 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
     }
 
     private double effectLineToDouble(PrimitiveEffectLine provider) {
-        try {
-            return Double.valueOf(provider.currentValueProvider.get());
-        } catch (Exception e) {
-            return 0.0;
-        }
+        return (double) provider.currentValueSupplier.get();
     }
 
 }

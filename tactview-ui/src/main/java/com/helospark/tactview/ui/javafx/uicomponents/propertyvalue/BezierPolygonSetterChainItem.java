@@ -47,7 +47,7 @@ public class BezierPolygonSetterChainItem extends TypeBasedPropertyValueSetterCh
 
         PrimitiveEffectLine result = PrimitiveEffectLine
                 .builder()
-                .withCurrentValueProvider(() -> "???")
+                .withCurrentValueProvider(() -> effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition()))
                 .withVisibleNode(button)
                 .withDescriptorId(polygonProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
@@ -79,7 +79,14 @@ public class BezierPolygonSetterChainItem extends TypeBasedPropertyValueSetterCh
                     }, polygonProvider.getSizeFunction());
                 } else {
                     inputModeRepository.requestBezierPolygonPrefilled(polygon -> {
-                        result.sendKeyframeWithValue(uiTimelineManager.getCurrentPosition(), getAsString(polygon.points));
+
+                        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                                .withDescriptorId(polygonProvider.getId())
+                                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                                .withValue(polygon)
+                                .withRevertable(true)
+                                .build();
+                        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
                     }, polygonProvider.getSizeFunction(), currentPolygon.getPoints());
                 }
             }

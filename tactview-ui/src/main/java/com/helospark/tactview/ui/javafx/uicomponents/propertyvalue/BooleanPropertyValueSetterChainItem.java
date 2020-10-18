@@ -35,7 +35,7 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         checkbox.getStyleClass().add("boolean-property-field");
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> checkbox.isSelected() ? "true" : "false")
+                .withCurrentValueProvider(() -> checkbox.isSelected())
                 .withDescriptorId(booleanProvider.getId())
                 .withUpdateFunction(position -> checkbox.setSelected(providerValueToString(booleanProvider.getId(), position)))
                 .withVisibleNode(checkbox)

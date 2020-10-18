@@ -42,7 +42,7 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
 
         PrimitiveEffectLine result = PrimitiveEffectLine
                 .builder()
-                .withCurrentValueProvider(() -> "???")
+                .withCurrentValueProvider(() -> effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition()))
                 .withVisibleNode(button)
                 .withDescriptorId(polygonProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)

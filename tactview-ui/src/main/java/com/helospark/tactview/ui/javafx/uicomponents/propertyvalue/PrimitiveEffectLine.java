@@ -1,7 +1,5 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -21,7 +19,6 @@ import javafx.scene.Node;
 
 public class PrimitiveEffectLine extends EffectLine {
     public Consumer<TimelinePosition> updateFunction;
-    public Supplier<String> currentValueProvider;
 
     @Generated("SparkTools")
     private PrimitiveEffectLine(Builder builder) {
@@ -31,67 +28,10 @@ public class PrimitiveEffectLine extends EffectLine {
         this.descriptorId = builder.descriptorId;
         this.updateFromValue = builder.updateFromValue;
         this.updateFunction = builder.updateFunction;
-        this.currentValueProvider = builder.currentValueProvider;
+        this.currentValueSupplier = builder.currentValueProvider;
         this.disabledUpdater = builder.disabledUpdater;
         this.descriptor = builder.descriptor;
-    }
-
-    @Override
-    public void sendKeyframe(TimelinePosition position) {
-        List<AddKeyframeForPropertyCommand> command = getKeyframeAddCommands(position);
-
-        commandInterpreter.sendWithResult(new CompositeCommand(command));
-    }
-
-    @Override
-    public List<AddKeyframeForPropertyCommand> getKeyframeAddCommands(TimelinePosition position) {
-        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
-                .withDescriptorId(descriptorId)
-                .withGlobalTimelinePosition(position)
-                .withValue(currentValueProvider.get())
-                .withRevertable(true)
-                .build();
-        AddKeyframeForPropertyCommand command = new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest);
-        return List.of(command);
-    }
-
-    @Override
-    public void sendKeyframeWithRevertable(TimelinePosition position, boolean revertable) {
-        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
-                .withDescriptorId(descriptorId)
-                .withGlobalTimelinePosition(position)
-                .withValue(currentValueProvider.get())
-                .withRevertable(revertable)
-                .build();
-
-        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
-    }
-
-    public void sendKeyframeWithValue(TimelinePosition position, String value) {
-        sendKeyframeWithValueAndRevertable(position, value, true);
-    }
-
-    public void sendKeyframeWithValueAndRevertable(TimelinePosition position, String value, boolean revertable) {
-        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
-                .withDescriptorId(descriptorId)
-                .withGlobalTimelinePosition(position)
-                .withValue(value)
-                .withRevertable(revertable)
-                .build();
-
-        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
-    }
-
-    public void sendKeyframeWithPreviousValue(TimelinePosition position, String value, String previousValue) {
-        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
-                .withDescriptorId(descriptorId)
-                .withGlobalTimelinePosition(position)
-                .withValue(value)
-                .withRevertable(true)
-                .withPreviousValue(Optional.of(previousValue))
-                .build();
-
-        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+        this.keyframeConsumer = builder.keyframeConsumer;
     }
 
     @Override
@@ -101,7 +41,7 @@ public class PrimitiveEffectLine extends EffectLine {
         KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                 .withDescriptorId(descriptorId)
                 .withGlobalTimelinePosition(currentPosition)
-                .withValue(currentValueProvider.get())
+                .withValue(currentValueSupplier.get())
                 .build();
         AddKeyframeForPropertyCommand addKeyframeCommand = new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest);
 
@@ -138,8 +78,9 @@ public class PrimitiveEffectLine extends EffectLine {
         private Consumer<Object> updateFromValue;
         private Consumer<Boolean> disabledUpdater;
         private Consumer<TimelinePosition> updateFunction;
-        private Supplier<String> currentValueProvider;
+        private Supplier<Object> currentValueProvider;
         private ValueProviderDescriptor descriptor;
+        private Consumer<TimelinePosition> keyframeConsumer;
 
         private Builder() {
         }
@@ -174,7 +115,7 @@ public class PrimitiveEffectLine extends EffectLine {
             return this;
         }
 
-        public Builder withCurrentValueProvider(Supplier<String> currentValueProvider) {
+        public Builder withCurrentValueProvider(Supplier<Object> currentValueProvider) {
             this.currentValueProvider = currentValueProvider;
             return this;
         }
@@ -186,6 +127,11 @@ public class PrimitiveEffectLine extends EffectLine {
 
         public Builder withDescriptor(ValueProviderDescriptor descriptor) {
             this.descriptor = descriptor;
+            return this;
+        }
+
+        public Builder withKeyframeConsumer(Consumer<TimelinePosition> keyframeConsumer) {
+            this.keyframeConsumer = keyframeConsumer;
             return this;
         }
 

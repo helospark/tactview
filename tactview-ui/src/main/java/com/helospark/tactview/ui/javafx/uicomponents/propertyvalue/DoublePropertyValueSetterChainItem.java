@@ -79,7 +79,7 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         }
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> textField.getText())
+                .withCurrentValueProvider(() -> Double.valueOf(textField.getText()))
                 .withDescriptorId(doubleProvider.getId())
                 .withUpdateFunction(position -> {
                     if (!textField.isFocused()) { // otherwise user may want to type
@@ -97,6 +97,16 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withDescriptor(descriptor)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
+                .withKeyframeConsumer(t -> {
+                    KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                            .withDescriptorId(doubleProvider.getId())
+                            .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                            .withValue(Double.valueOf(textField.getText()))
+                            .withRevertable(true)
+                            .build();
+
+                    commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                })
                 .build();
 
         textField.setOnKeyReleased(event -> {

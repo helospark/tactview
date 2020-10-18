@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.annotation.Generated;
 
@@ -12,15 +11,12 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 
 import javafx.scene.Node;
 
 public class CompositeEffectLine extends EffectLine {
     private List<EffectLine> values;
     public Consumer<TimelinePosition> additionalUpdateUi;
-    public Supplier<Object> currentValueSupplier;
 
     @Generated("SparkTools")
     private CompositeEffectLine(Builder builder) {
@@ -33,28 +29,7 @@ public class CompositeEffectLine extends EffectLine {
         this.additionalUpdateUi = builder.additionalUpdateUi;
         this.descriptor = builder.descriptor;
         this.currentValueSupplier = builder.currentValueSupplier;
-    }
-
-    @Override
-    public void sendKeyframe(TimelinePosition position) {
-        List<AddKeyframeForPropertyCommand> commands = values.stream()
-                .flatMap(a -> a.getKeyframeAddCommands(position).stream())
-                .collect(Collectors.toList());
-
-        commandInterpreter.sendWithResult(new CompositeCommand(commands));
-    }
-
-    @Override
-    public List<AddKeyframeForPropertyCommand> getKeyframeAddCommands(TimelinePosition position) {
-        return values.stream()
-                .flatMap(a -> a.getKeyframeAddCommands(position).stream())
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void sendKeyframeWithRevertable(TimelinePosition position, boolean revertable) {
-        values.stream()
-                .forEach(a -> a.sendKeyframeWithRevertable(position, revertable));
+        this.keyframeConsumer = builder.keyframeConsumer;
     }
 
     @Override
@@ -97,6 +72,7 @@ public class CompositeEffectLine extends EffectLine {
         private Consumer<Object> updateFromValue;
         private List<EffectLine> values = Collections.emptyList();
         private Consumer<TimelinePosition> additionalUpdateUi;
+        private Consumer<TimelinePosition> keyframeConsumer;
         private ValueProviderDescriptor descriptor;
         private Supplier<Object> currentValueSupplier;
 
@@ -135,6 +111,11 @@ public class CompositeEffectLine extends EffectLine {
 
         public Builder withAdditionalUpdateUi(Consumer<TimelinePosition> additionalUpdateUi) {
             this.additionalUpdateUi = additionalUpdateUi;
+            return this;
+        }
+
+        public Builder withKeyframeConsumer(Consumer<TimelinePosition> keyframeConsumer) {
+            this.keyframeConsumer = keyframeConsumer;
             return this;
         }
 

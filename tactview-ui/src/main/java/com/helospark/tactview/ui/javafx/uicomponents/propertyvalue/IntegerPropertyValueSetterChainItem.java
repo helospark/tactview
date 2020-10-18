@@ -93,7 +93,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
         }
 
         PrimitiveEffectLine result = PrimitiveEffectLine.builder()
-                .withCurrentValueProvider(() -> textField.getText())
+                .withCurrentValueProvider(() -> Integer.valueOf(textField.getText()))
                 .withDescriptorId(integerProvider.getId())
                 .withUpdateFunction(position -> {
                     if (!textField.isFocused()) {
@@ -109,6 +109,16 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withVisibleNode(hbox)
                 .withEffectParametersRepository(effectParametersRepository)
                 .withCommandInterpreter(commandInterpreter)
+                .withKeyframeConsumer(t -> {
+                    KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                            .withDescriptorId(integerProvider.getId())
+                            .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
+                            .withValue(Integer.valueOf(textField.getText()))
+                            .withRevertable(true)
+                            .build();
+
+                    commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                })
                 .build();
 
         userChangedValueObservable.registerListener((newValue, revertable) -> {

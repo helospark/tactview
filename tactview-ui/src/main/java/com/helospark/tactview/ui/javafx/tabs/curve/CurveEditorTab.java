@@ -118,7 +118,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
     }
 
     public void revealInEditor(KeyframeableEffect valueProvider) {
-        if (valueProvider instanceof DoubleProvider) {
+        if (valueProvider instanceof DoubleProvider && ((DoubleProvider) valueProvider).hasRangeSet()) {
             absoluteMinValue = Optional.of(((DoubleProvider) valueProvider).getMin());
             absoluteMaxValue = Optional.of(((DoubleProvider) valueProvider).getMax());
         }
