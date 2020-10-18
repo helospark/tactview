@@ -85,17 +85,35 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
 
             ObjectProperty<javafx.scene.paint.Color> property = control.onActionProperty();
             property.addListener((e, oldValue, newValue) -> {
+                if (control.isListenersDisabled()) {
+                    return;
+                }
+
                 javafx.scene.paint.Color color = newValue;
                 Color keyframeColor = new Color(color.getRed(), color.getGreen(), color.getBlue());
 
-                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
-                        .withDescriptorId(colorProvider.getId())
-                        .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
-                        .withValue(keyframeColor)
-                        .withRevertable(true)
-                        .build();
+                boolean revertable = !control.onValueChangingProperty().get();
+                Optional<Color> previousColor = Optional.empty();
+                if (revertable) {
+                    previousColor = Optional.ofNullable(new Color(oldValue.getRed(), oldValue.getGreen(), oldValue.getBlue()));
+                }
 
-                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                addKeyframe(colorProvider, control, keyframeColor, revertable, previousColor);
+            });
+            control.onValueChangingProperty().addListener((e, oldValue, newValue) -> {
+                if (control.isListenersDisabled()) {
+                    return;
+                }
+                if (oldValue && !newValue) {
+                    System.out.println("Not chaning anymore");
+                    javafx.scene.paint.Color color = control.colorProperty().get();
+                    Color keyframeColor = new Color(color.getRed(), color.getGreen(), color.getBlue());
+
+                    Optional<Color> previousColor = Optional.ofNullable(control.getColorChangeStart())
+                            .map(javafxColor -> new Color(javafxColor.getRed(), javafxColor.getGreen(), javafxColor.getBlue()));
+
+                    addKeyframe(colorProvider, control, keyframeColor, true, previousColor);
+                }
             });
 
             contextMenuAppender.addContextMenu(result, colorProvider, descriptor, control);
@@ -172,6 +190,21 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
 
             return result;
         }
+    }
+
+    private void addKeyframe(ColorProvider colorProvider, ColorWheelPicker control, Color keyframeColor, boolean revertable, Optional<Color> previousColor) {
+
+        System.out.println("Previous color " + previousColor);
+
+        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                .withDescriptorId(colorProvider.getId())
+                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                .withValue(keyframeColor)
+                .withRevertable(revertable)
+                .withPreviousValue((Optional<Object>) (Object) previousColor)
+                .build();
+
+        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
     }
 
     private double effectLineToDouble(PrimitiveEffectLine provider) {

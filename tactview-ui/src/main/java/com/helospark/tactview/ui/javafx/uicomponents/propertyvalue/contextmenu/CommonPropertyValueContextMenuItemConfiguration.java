@@ -2,6 +2,9 @@ package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu;
 
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
@@ -20,6 +23,8 @@ import javafx.scene.input.DataFormat;
 
 @Configuration
 public class CommonPropertyValueContextMenuItemConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommonPropertyValueContextMenuItemConfiguration.class);
+    private static final DataFormat RAW_DATA_FORMAT = new DataFormat("raw");
 
     @Bean
     @Order(-20)
@@ -31,7 +36,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
                 Clipboard clipboard = Clipboard.getSystemClipboard();
                 ClipboardContent content = new ClipboardContent();
-                content.put(new DataFormat("raw"), currentValue);
+                content.put(RAW_DATA_FORMAT, currentValue);
                 clipboard.setContent(content);
             });
             return copyKeyframeMenuItem;
@@ -45,11 +50,13 @@ public class CommonPropertyValueContextMenuItemConfiguration {
             MenuItem pasteKeyframeMenuItem = new MenuItem("Paste");
             pasteKeyframeMenuItem.setOnAction(e -> {
                 Clipboard clipboard = Clipboard.getSystemClipboard();
-                Object value = clipboard.getContent(new DataFormat("raw"));
-                try {
-                    ((PrimitiveEffectLine) (request.effectLine)).getUpdateFromValue().accept(value);
-                } catch (Exception ex) {
-                    ex.printStackTrace(); // this happens if user paste uncompatible objects
+                Object value = clipboard.getContent(RAW_DATA_FORMAT);
+                if (value != null) {
+                    try {
+                        request.effectLine.getUpdateFromValue().accept(value);
+                    } catch (Exception ex) {
+                        LOGGER.debug("Trying to paste {} into type {}, which is not supported", value, request.containerDescriptor.getKeyframeableEffect().getClass(), ex);
+                    }
                 }
             });
             return pasteKeyframeMenuItem;
@@ -59,7 +66,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
     @Bean
     @Order(0)
     public PropertyValueContextMenuItem addKeyframeItem(UiTimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
-        return contextMenuEnabledIfKeyframesEnabledAndKeyframeConsumerExists(request -> {
+        return contextMenuEnabledIfKeyframesEnabled(request -> {
             MenuItem addKeyframeMenuItem = new MenuItem("Add keyframe");
             addKeyframeMenuItem.setOnAction(e -> {
                 KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
@@ -70,8 +77,6 @@ public class CommonPropertyValueContextMenuItemConfiguration {
                         .build();
 
                 commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
-
-                request.effectLine.sendKeyframe(timelineManager.getCurrentPosition());
             });
             return addKeyframeMenuItem;
         });
@@ -132,29 +137,6 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
                 return result;
             }
-        };
-    }
-
-    private PropertyValueContextMenuItem contextMenuEnabledIfKeyframesEnabledAndKeyframeConsumerExists(Function<PropertyValueContextMenuRequest, MenuItem> function) {
-        return new PropertyValueContextMenuItem() {
-
-            @Override
-            public boolean supports(PropertyValueContextMenuRequest request) {
-                return request.valueProvider.keyframesEnabled();
-            }
-
-            @Override
-            public MenuItem createMenuItem(PropertyValueContextMenuRequest request) {
-                MenuItem result = function.apply(request);
-
-                boolean isDisabled = isKeyframingEnabled(request);
-                if (isDisabled || request.effectLine.getKeyframeConsumer() == null) {
-                    result.setDisable(true);
-                }
-
-                return result;
-            }
-
         };
     }
 

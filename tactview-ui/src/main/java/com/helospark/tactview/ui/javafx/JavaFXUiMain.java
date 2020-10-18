@@ -36,6 +36,8 @@ import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
+import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
+import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
@@ -183,6 +185,9 @@ public class JavaFXUiMain extends Application {
                 .addListener((e, oldValue, newValue) -> {
                     if (oldValue instanceof TabCloseListener) {
                         ((TabCloseListener) oldValue).tabClosed();
+                    }
+                    if (newValue instanceof TabOpenListener) {
+                        ((TabOpenListener) newValue).tabOpened();
                     }
                 });
 

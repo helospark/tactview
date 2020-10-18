@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx;
+package com.helospark.tactview.ui.javafx.tabs.listener;
 
 public interface TabCloseListener {
 

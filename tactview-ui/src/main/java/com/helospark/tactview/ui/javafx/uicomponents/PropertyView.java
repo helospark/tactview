@@ -22,11 +22,13 @@ import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
 import com.helospark.tactview.ui.javafx.notification.NotificationService;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
@@ -258,7 +260,15 @@ public class PropertyView {
         Node key = keyframeChange.getVisibleNode();
         key.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode().equals(KeyCode.INSERT)) {
-                keyframeChange.sendKeyframe(uiTimelineManager.getCurrentPosition());
+                KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                        .withDescriptorId(keyframeChange.getDescriptorId())
+                        .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                        .withValue(keyframeChange.getCurrentValueSupplier().get())
+                        .withRevertable(true)
+                        .build();
+
+                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+
                 logger.info("Keyframe added");
                 event.consume();
             }

@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.control;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -14,6 +15,7 @@ public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
 
     private ObjectProperty<javafx.scene.paint.Color> colorProperty;
     private ObjectProperty<javafx.scene.paint.Color> onActionProvider;
+    private BooleanProperty onColorChangingProvider;
 
     private Canvas canvas;
     private int radius = 1;
@@ -24,13 +26,13 @@ public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
         super(control);
         colorProperty = control.colorProperty();
         onActionProvider = control.onActionProperty();
+        onColorChangingProvider = control.onValueChangingProperty();
         radius = DEFAULT_SIZE / 2;
 
         setSelectionPosition(toColor(colorProperty.get()));
         createColorWheel(DEFAULT_SIZE);
 
         colorProperty.addListener((change, oldValue, newValue) -> {
-            System.out.println("Color changed " + Thread.currentThread().getName());
             setSelectionPosition(toColor(oldValue));
             updateCanvasPart(radius, canvas, selectedX - radius, selectedY - radius);
             setSelectionPosition(toColor(newValue));
@@ -50,13 +52,14 @@ public class ColorWheelPickerSkin extends SkinBase<ColorWheelPicker> {
         canvas = new Canvas(size, size);
 
         canvas.setOnMouseDragged(e -> {
+            System.out.println("Dragged");
+            onColorChangingProvider.setValue(true);
             handleMouseEvent(e);
         });
 
-        canvas.setOnMouseDragOver(e -> {
-            handleMouseEvent(e);
-        });
-        canvas.setOnMouseClicked(e -> {
+        canvas.setOnMouseReleased(e -> {
+            System.out.println("Mouse release");
+            onColorChangingProvider.setValue(false);
             handleMouseEvent(e);
         });
 

@@ -85,6 +85,9 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                 .withDescriptor(descriptor)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
+                .withUpdateFromValue(value -> {
+                    group.selectToggle(toggleMap.get(((ValueListElement) value).getId()));
+                })
                 .build();
 
         group.selectedToggleProperty().addListener((a, oldValue, newValue) -> {
@@ -138,6 +141,9 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
                 .withDescriptor(descriptor)
                 .withCommandInterpreter(commandInterpreter)
                 .withEffectParametersRepository(effectParametersRepository)
+                .withUpdateFromValue(value -> {
+                    comboBox.getSelectionModel().select(comboBoxElements.get(((ValueListElement) value).getId()));
+                })
                 .build();
 
         comboBox.setOnAction(e -> {
