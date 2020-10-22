@@ -4,6 +4,7 @@ usage() {
         echo "./$(basename $0) [arguments]"
         echo "Arguments:"
         echo "   -r Release build, strip debug symbols, use optimization for libraries"
+        echo "   -c Clean downloaded libraries after install"
 }
 
 if [ "$(id -u)" != "0" ]; then
@@ -12,11 +13,15 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 RELEASE_BUILD=false
+CLEAN_DOWNLOADS=false
 
-while getopts ":r" arg; do
+while getopts "rc" arg; do
   case ${arg} in
     r)
       RELEASE_BUILD=true
+      ;;
+    c)
+      CLEAN_DOWNLOADS=true
       ;;
     ?)
       echo "Invalid option: -${OPTARG}."
@@ -27,6 +32,7 @@ while getopts ":r" arg; do
 done
 
 echo "RELEASE_BUILD=$RELEASE_BUILD"
+echo "CLEAN_DOWNLOADS=$CLEAN_DOWNLOADS"
 
 echo "Installing dependencies using $(nproc) threads"
 
@@ -134,5 +140,13 @@ cd /tmp
 rm -r opencv
 rm -r opencv_contrib
 rm -r ffmpeg-$FFMPEG_VERSION
+
+if [ "$CLEAN_DOWNLOADS" = true ]; then
+  rm opencv-$OPENCV_VERSION.tar.gz
+  rm opencv_contrib-$OPENCV_CONTRIB_VERSION.tar.gz
+  rm ffmpeg-$FFMPEG_VERSION.tar.gz
+  rm -r libaom
+  rm -r nv-codec-headers
+fi
 
 ldconfig -v

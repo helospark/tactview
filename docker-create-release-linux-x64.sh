@@ -3,4 +3,7 @@
 # Build image can be build by running "docker build -t helospark/tactview_build ." in the root of tactview, however building that image takes a long time due to download, compilation and installation of all dependencies.
 #!/bin/sh
 
-sudo docker run -v $(pwd):/tactview -v "$HOME/.m2/repository:/tmp/.m2" -u $(id -u ${USER}):$(id -g ${USER}) helospark/tactview_build:latest
+mkdir -p $HOME/.m2/repository
+mkdir -p $HOME/.tactview-build
+
+sudo docker run -v $(pwd):/tactview -v "$HOME/.m2/repository:/tmp/.m2" -v "$HOME/.tactview-build:/tmp/.tactview" -e "_JAVA_OPTIONS=-Duser.home=/tmp"  -u $(id -u ${USER}):$(id -g ${USER}) helospark/tactview_build:latest

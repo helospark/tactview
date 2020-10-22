@@ -1,6 +1,6 @@
 # Tactview
 
-Tactview is an open-source advanced multi-track video editor aims to provide both powerful feature and intuitive usage.
+Tactview is an open-source advanced multi-track video editor aims to provide both powerful features and intuitive usage.
 
 ![Screenshot](/images/screenshot-2.png)
 
@@ -10,7 +10,7 @@ Tactview is an open-source advanced multi-track video editor aims to provide bot
 
 Download the latest binary release for your OS:
   
-  - [Linux-x64](https://helospark.com/tactview/download/tactview_linux64_snapshot.zip)
+  - [Linux-x64](https://helospark.com/tactview/download/tactview_linux64_snapshot.tar.xz)
   - [Windows-x64](https://helospark.com/tactview/download/tactview_win64_snapshot.zip)
 
 Or check out all releases: [all releases](https://helospark.com/tactview/download/)
