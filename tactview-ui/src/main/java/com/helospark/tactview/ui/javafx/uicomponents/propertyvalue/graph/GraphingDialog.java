@@ -20,7 +20,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ty
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.ui.javafx.uicomponents.window.SingletonOpenableWindow;
 
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -29,11 +28,12 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.transform.Affine;
 
 @Component
 public class GraphingDialog extends SingletonOpenableWindow {
-    private static final int DEFAULT_WIDTH = 500;
-    private static final int DEFAULT_HEIGHT = 400;
+    private static final int DEFAULT_WIDTH = 800;
+    private static final int DEFAULT_HEIGHT = 500;
 
     private static final double GRAPH_HEADER_HEIGHT = 20;
     private static final double GRAPH_HEADER_WIDTH = 100;
@@ -52,9 +52,10 @@ public class GraphingDialog extends SingletonOpenableWindow {
     private Map<GraphIndex, GraphCoordinate> graphCoordinateCache = new HashMap<>();
 
     double cameraPositionX = -DEFAULT_WIDTH / 2, cameraPositionY = -DEFAULT_HEIGHT / 2;
-    SimpleDoubleProperty zoom = new SimpleDoubleProperty(1.0);
+    double zoom = 1.0;
 
     private EffectGraphAccessor effectGraphAccessor;
+    private double mouseClickX, mouseClickY;
 
     public GraphingDialog(EffectGraphAccessor effectGraphAccessor) {
         this.effectGraphAccessor = effectGraphAccessor;
@@ -67,6 +68,9 @@ public class GraphingDialog extends SingletonOpenableWindow {
 
     public void open(GraphProvider graphProvider) {
         this.graphProvider = graphProvider;
+        this.zoom = 1.0;
+        this.cameraPositionX = -DEFAULT_WIDTH / 2;
+        this.cameraPositionY = -DEFAULT_HEIGHT / 2;
         open();
     }
 
@@ -80,8 +84,11 @@ public class GraphingDialog extends SingletonOpenableWindow {
         borderPane.setCenter(canvas);
 
         canvas.setOnMousePressed(event -> {
-            double mouseX = event.getX();
-            double mouseY = event.getY();
+            double mouseX = (event.getX() + cameraPositionX) / zoom;
+            double mouseY = (event.getY() + cameraPositionY) / zoom;
+
+            mouseClickX = mouseX;
+            mouseClickY = mouseY;
 
             if (event.getButton().equals(MouseButton.PRIMARY)) {
                 Optional<ConnectionIndex> connectionPointClicked = findConnectionPointAt(mouseX, mouseY);
@@ -104,8 +111,8 @@ public class GraphingDialog extends SingletonOpenableWindow {
             System.out.println("Mouse pressed " + mouseX + " " + mouseY);
         });
         canvas.setOnContextMenuRequested(event -> {
-            double mouseX = event.getX();
-            double mouseY = event.getY();
+            double mouseX = (event.getX() + cameraPositionX) / zoom;
+            double mouseY = (event.getY() + cameraPositionY) / zoom;
 
             Map<ConnectionIndex, List<ConnectionIndex>> connections = graphProvider.getEffectGraph().getConnections();
             Map<GraphIndex, GraphElement> graphElements = graphProvider.getEffectGraph().getGraphElements();
@@ -151,8 +158,8 @@ public class GraphingDialog extends SingletonOpenableWindow {
         });
 
         canvas.setOnMouseReleased(event -> {
-            double mouseX = event.getX();
-            double mouseY = event.getY();
+            double mouseX = (event.getX() + cameraPositionX) / zoom;
+            double mouseY = (event.getY() + cameraPositionY) / zoom;
 
             Optional<ConnectionIndex> optionalConnectionPoint = findConnectionPointAt(mouseX, mouseY);
 
@@ -199,12 +206,36 @@ public class GraphingDialog extends SingletonOpenableWindow {
         });
         canvas.setOnScroll(event -> {
             double scrollDelta = event.getDeltaY();
-            zoom.add(scrollDelta / 5.0);
+            zoom += scrollDelta / 1000.0;
+
+            if (zoom <= 0.1) {
+                zoom = 0.1;
+            }
+            if (zoom >= 10) {
+                zoom = 10;
+            }
+
+            redrawGraphProvider();
+            System.out.println("Zoom " + zoom);
         });
         canvas.setOnMouseDragged(event -> {
-            double mouseX = event.getX() + cameraPositionX;
-            double mouseY = event.getY() + cameraPositionY;
-            onMouseDragged(mouseX, mouseY);
+            double mouseX = (event.getX() + cameraPositionX) / zoom;
+            double mouseY = (event.getY() + cameraPositionY) / zoom;
+
+            if (graphDragTarget != null) {
+                onMouseDragged(mouseX, mouseY);
+            } else {
+                double rx = mouseX - mouseClickX;
+                double ry = mouseY - mouseClickY;
+
+                cameraPositionX -= rx * zoom;
+                cameraPositionY -= ry * zoom;
+
+                mouseClickX = (event.getX() + cameraPositionX) / zoom;
+                mouseClickY = (event.getY() + cameraPositionY) / zoom;
+
+                redrawGraphProvider();
+            }
 
             System.out.println("Dragged");
         });
@@ -234,14 +265,11 @@ public class GraphingDialog extends SingletonOpenableWindow {
             System.out.println("Drag entered " + dragBoardContent);
         });
         canvas.setOnDragOver(event -> {
-            double mouseX = event.getX() + cameraPositionX;
-            double mouseY = event.getY() + cameraPositionY;
+            double mouseX = (event.getX() + cameraPositionX) / zoom;
+            double mouseY = (event.getY() + cameraPositionY) / zoom;
             onMouseDragged(mouseX, mouseY);
             System.out.println("Drag Over " + event.getDragboard().getString());
         });
-
-        canvas.scaleXProperty().bind(zoom);
-        canvas.scaleYProperty().bind(zoom);
 
         redrawGraphProvider();
 
@@ -292,8 +320,13 @@ public class GraphingDialog extends SingletonOpenableWindow {
     }
 
     private void redrawGraphProvider() {
+
+        graphicsContext.setTransform(new Affine()); // reset transform
         graphicsContext.setFill(Color.BLACK);
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        graphicsContext.translate(-cameraPositionX, -cameraPositionY);
+        graphicsContext.scale(zoom, zoom);
 
         connectionCoordinateCache.clear();
         graphCoordinateCache.clear();
@@ -315,21 +348,22 @@ public class GraphingDialog extends SingletonOpenableWindow {
             for (var endIndex : entry.getValue()) {
                 GraphCoordinate endPosition = connectionCoordinateCache.get(endIndex);
 
-                graphicsContext.strokeLine(startPosition.x + GRAPH_CONNECTION_POINT_RADIUS / 2, startPosition.y + GRAPH_CONNECTION_POINT_RADIUS / 2, endPosition.x, endPosition.y);
+                graphicsContext.strokeLine(startPosition.x + GRAPH_CONNECTION_POINT_RADIUS / 2, startPosition.y + GRAPH_CONNECTION_POINT_RADIUS / 2,
+                        endPosition.x + GRAPH_CONNECTION_POINT_RADIUS / 2, endPosition.y + GRAPH_CONNECTION_POINT_RADIUS / 2);
             }
         }
         if (graphDragTarget != null && graphDragTarget.isDraggingConnectionPoint()) {
             GraphCoordinate draggedConnectionPoint = connectionCoordinateCache.get(graphDragTarget.connectionIndex);
 
             graphicsContext.strokeLine(draggedConnectionPoint.x + GRAPH_CONNECTION_POINT_RADIUS / 2, draggedConnectionPoint.y + GRAPH_CONNECTION_POINT_RADIUS / 2,
-                    graphDragTarget.currentX - cameraPositionX, graphDragTarget.currentY - cameraPositionY);
+                    graphDragTarget.currentX, graphDragTarget.currentY);
 
         }
     }
 
     private void drawElement(GraphElement element, GraphIndex graphIndex) {
-        double x = element.getX() - cameraPositionX;
-        double y = element.getY() - cameraPositionY;
+        double x = element.getX();
+        double y = element.getY();
         List<ConnectionIndex> inputList = new ArrayList<>(element.getInputs().keySet());
         List<ConnectionIndex> outputList = new ArrayList<>(element.getOutputs().keySet());
         int maxConnections = Math.max(inputList.size(), outputList.size());
