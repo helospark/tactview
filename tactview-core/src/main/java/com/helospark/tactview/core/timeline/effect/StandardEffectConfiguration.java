@@ -58,6 +58,7 @@ import com.helospark.tactview.core.timeline.effect.framehold.FrameHoldEffect;
 import com.helospark.tactview.core.timeline.effect.fun.AsciiArtEffect;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.glow.LightGlowEffect;
+import com.helospark.tactview.core.timeline.effect.graphing.GraphEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenImplementation;
 import com.helospark.tactview.core.timeline.effect.histogramequization.HistogramEquizationEffect;
@@ -868,6 +869,19 @@ public class StandardEffectConfiguration {
                 .withRestoreFactory((node, loadMetadata) -> new StabilizeVideoEffect(node, loadMetadata, openCVStabilizeVideoService, projectRepository))
                 .withName("Stabilize")
                 .withSupportedEffectId("stabilize")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .withIsFullWidth(true)
+                .build();
+    }
+
+    @Bean
+    public StandardEffectFactory graphingVideoEffect() {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new GraphEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000))))
+                .withRestoreFactory((node, loadMetadata) -> new GraphEffect(node, loadMetadata))
+                .withName("Graph")
+                .withSupportedEffectId("graphing")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
                 .withEffectType(TimelineEffectType.VIDEO_EFFECT)
                 .withIsFullWidth(true)

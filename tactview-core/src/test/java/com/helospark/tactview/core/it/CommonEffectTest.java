@@ -68,7 +68,9 @@ public class CommonEffectTest {
             if (!(effect instanceof StatelessVideoEffect)) {
                 continue;
             }
-            if (!(effect instanceof StatelessVideoEffect) || effectFactory.getEffectId().equals("lensdistort")) { /** trello.201, check why this occasionally fails */
+            if (!(effect instanceof StatelessVideoEffect)
+                    || effectFactory.getEffectId().equals("lensdistort")/** trello.201, check why this occasionally fails */
+                    || effectFactory.getEffectId().equals("graphing")) {
                 continue;
             }
 
