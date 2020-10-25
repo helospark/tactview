@@ -5,12 +5,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Bean;
+import com.helospark.lightdi.annotation.ConditionalOnProperty;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.tactview.core.timeline.effect.StandardEffectFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraphAccessor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.OutputElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.realtime.CameraOutputToV4L2LoopbackElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.realtime.camera.OpencvL4V2LoopbackImplementation;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralClipFactoryChainItem;
+import com.helospark.tactview.core.util.conditional.ConditionalOnPlatform;
+import com.helospark.tactview.core.util.conditional.TactviewPlatform;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.command.GraphAddNewNodeByReferenceCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.command.GraphAddNewNodeByUriCommand;
@@ -24,6 +29,17 @@ public class StandardCategoryMenuItemConfiguration {
     public GraphingComponentFactory outputGraphComponent(UiCommandInterpreterService commandInterpreter, EffectGraphAccessor effectGraphAccessor) {
         return referenceAwareFactory(commandInterpreter, effectGraphAccessor, "Output", "Effect output", request -> {
             OutputElement outputElement = new OutputElement();
+            commandInterpreter.sendWithResult(new GraphAddNewNodeByReferenceCommand(request.provider, effectGraphAccessor, outputElement));
+            return outputElement;
+        });
+    }
+
+    @ConditionalOnPlatform(TactviewPlatform.LINUX)
+    @ConditionalOnProperty(property = "tactview.realtime", havingValue = "true")
+    @Bean
+    public GraphingComponentFactory v4l2LoopbackGraphComponent(UiCommandInterpreterService commandInterpreter, EffectGraphAccessor effectGraphAccessor, OpencvL4V2LoopbackImplementation loopback) {
+        return referenceAwareFactory(commandInterpreter, effectGraphAccessor, "Output", "V4L2 loopback", request -> {
+            CameraOutputToV4L2LoopbackElement outputElement = new CameraOutputToV4L2LoopbackElement(loopback);
             commandInterpreter.sendWithResult(new GraphAddNewNodeByReferenceCommand(request.provider, effectGraphAccessor, outputElement));
             return outputElement;
         });

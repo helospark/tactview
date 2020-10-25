@@ -18,6 +18,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.Ef
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphNodeOutputMarker;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.InputElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.OutputElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.StatelessEffectElement;
@@ -41,20 +42,14 @@ public class EffectGraph {
     }
 
     public ReadOnlyClipImage evaluate(EffectGraphInputRequest request) {
-        Optional<GraphIndex> optionalOutputNode = graphElements.entrySet().stream().filter(a -> a.getValue() instanceof OutputElement).map(a -> a.getKey()).findFirst();
+        List<GraphIndex> outputNodes = graphElements.entrySet().stream().filter(a -> a.getValue() instanceof GraphNodeOutputMarker).map(a -> a.getKey()).collect(Collectors.toList());
         List<GraphIndex> inputNode = graphElements.entrySet().stream().filter(a -> a.getValue() instanceof InputElement).map(a -> a.getKey()).collect(Collectors.toList());
 
-        if (!optionalOutputNode.isPresent()) {
+        if (outputNodes.isEmpty()) {
             return ClipImage.fromSize(request.expectedWidth, request.expectedHeight);
         }
-        GraphIndex outputNode = optionalOutputNode.get();
 
-        List<List<GraphIndex>> graphLayers = precomputeGraph(outputNode, inputNode);
-
-        System.out.println("Render order");
-        for (var layer : graphLayers) {
-            System.out.println(" - " + layer);
-        }
+        List<List<GraphIndex>> graphLayers = precomputeGraph(outputNodes, inputNode);
 
         Map<ConnectionIndex, ReadOnlyClipImage> images = new HashMap<>();
         for (int i = 0; i < graphLayers.size(); ++i) {
@@ -82,11 +77,14 @@ public class EffectGraph {
             }
         }
 
-        OutputElement outputElement = (OutputElement) graphElements.get(outputNode);
-        Optional<ReadOnlyClipImage> output = findOutputForInput(outputElement.getInputIndex())
-                .map(index -> images.get(index))
-                .map(img -> ClipImage.copyOf(img));
-        ReadOnlyClipImage resultImage = output.orElse(null);
+        Optional<OutputElement> outputElement = outputNodes.stream().map(a -> (OutputElement) graphElements.get(a)).filter(a -> a instanceof OutputElement).findFirst();
+        ReadOnlyClipImage resultImage = null;
+        if (outputElement.isPresent()) {
+            Optional<ReadOnlyClipImage> output = findOutputForInput(outputElement.get().getInputIndex())
+                    .map(index -> images.get(index))
+                    .map(img -> ClipImage.copyOf(img));
+            resultImage = output.orElse(null);
+        }
 
         images.values()
                 .stream()
@@ -99,21 +97,25 @@ public class EffectGraph {
         return resultImage;
     }
 
-    private List<List<GraphIndex>> precomputeGraph(GraphIndex outputNode, List<GraphIndex> inputNode) {
-        Set<GraphIndex> nodesNeededForRender = findAllConnectedNodesStartingFrom(outputNode);
-
+    private List<List<GraphIndex>> precomputeGraph(List<GraphIndex> outputNodes, List<GraphIndex> inputNode) {
         List<List<GraphIndex>> resultGraphLayers = new ArrayList<>();
-        resultGraphLayers.addAll(List.of(inputNode));
-        while (true) {
-            List<GraphIndex> layer = findNodesWithAllInputsSatisfied(resultGraphLayers, nodesNeededForRender);
 
-            if (layer.isEmpty()) {
-                break;
+        for (var outputNode : outputNodes) {
+            Set<GraphIndex> nodesNeededForRender = findAllConnectedNodesStartingFrom(outputNode);
+
+            if (!inputNode.isEmpty()) {
+                resultGraphLayers.add(inputNode);
             }
+            while (true) {
+                List<GraphIndex> layer = findNodesWithAllInputsSatisfied(resultGraphLayers, nodesNeededForRender);
 
-            resultGraphLayers.add(layer);
+                if (layer.isEmpty()) {
+                    break;
+                }
+
+                resultGraphLayers.add(layer);
+            }
         }
-
         return resultGraphLayers;
     }
 
@@ -215,14 +217,14 @@ public class EffectGraph {
     }
 
     public void autoArrangeUi() {
-        Optional<GraphIndex> optionalOutputNode = graphElements.entrySet().stream().filter(a -> a.getValue() instanceof OutputElement).map(a -> a.getKey()).findFirst();
+        List<GraphIndex> optionalOutputNode = graphElements.entrySet().stream().filter(a -> a.getValue() instanceof GraphNodeOutputMarker).map(a -> a.getKey()).collect(Collectors.toList());
         List<GraphIndex> inputNode = graphElements.entrySet().stream().filter(a -> a.getValue() instanceof InputElement).map(a -> a.getKey()).collect(Collectors.toList());
 
-        if (!optionalOutputNode.isPresent()) {
+        if (optionalOutputNode.isEmpty()) {
             return;
         }
 
-        List<List<GraphIndex>> graphLayers = precomputeGraph(optionalOutputNode.get(), inputNode);
+        List<List<GraphIndex>> graphLayers = precomputeGraph(optionalOutputNode, inputNode);
 
         double startX = -graphLayers.size() / 2.0 * 200.0;
         for (int i = 0; i < graphLayers.size(); ++i) {

@@ -65,3 +65,7 @@ cp libopencvpencil.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvvideostab.so -o libopencvvideostab.so linux/opencvvideostab.cpp `pkg-config --libs opencv4` -lopencv_videostab
 cp libopencvvideostab.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+# Possibly an option needed whether realtime module enabled
+gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libv4l2loopback.so -o libv4l2loopback.so linux/v4l2loopback.cpp `pkg-config --libs opencv4`
+cp libv4l2loopback.so ../tactview-core/src/main/resources/linux-x86-64/.

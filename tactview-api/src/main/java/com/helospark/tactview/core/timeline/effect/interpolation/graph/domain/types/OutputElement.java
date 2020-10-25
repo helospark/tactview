@@ -8,7 +8,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.Gr
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
-public class OutputElement extends GraphElement {
+public class OutputElement extends GraphElement implements GraphNodeOutputMarker {
     ConnectionIndex inputIndex = ConnectionIndex.random();
 
     public OutputElement() {

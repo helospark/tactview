@@ -154,7 +154,7 @@ public class TimelineManagerRenderService {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join();
         }
 
-        ReadOnlyClipImage finalImage = renderVideo(request, renderOrder, clipsToFrames);
+        ReadOnlyClipImage finalImage = request.isNeedVideo() ? renderVideo(request, renderOrder, clipsToFrames) : null;
         AudioFrameResult audioBuffer = renderAudio(renderOrder, audioToFrames);
 
         clipsToFrames.values()

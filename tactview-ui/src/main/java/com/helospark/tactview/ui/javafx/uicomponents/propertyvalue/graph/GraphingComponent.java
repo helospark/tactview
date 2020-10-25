@@ -407,8 +407,11 @@ public class GraphingComponent extends BorderPane {
             return new GraphElementUiInfo("Clip", () -> {
                 messagingService.sendMessage(new OpenClipPropertyPageMessage(((VisualTimelineClipElement) element).getClip().getId()));
             });
+        } else {
+            System.out.println("Error, no type");
+            return new GraphElementUiInfo("UNKNOWN", () -> {
+            });
         }
-        return null;
     }
 
     static class GraphElementUiInfo {
