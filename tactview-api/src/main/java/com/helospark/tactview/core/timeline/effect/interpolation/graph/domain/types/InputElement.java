@@ -23,7 +23,11 @@ public class InputElement extends GraphElement {
 
     @Override
     public Map<ConnectionIndex, ReadOnlyClipImage> render(Map<ConnectionIndex, ReadOnlyClipImage> images, EffectGraphInputRequest request) {
-        return Map.of(outputIndex, ClipImage.copyOf(request.input));
+        if (request.input != null) {
+            return Map.of(outputIndex, ClipImage.copyOf(request.input));
+        } else {
+            return Map.of();
+        }
     }
 
     public ConnectionIndex getOutputIndex() {

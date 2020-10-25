@@ -83,7 +83,10 @@ public class EffectGraph {
         }
 
         OutputElement outputElement = (OutputElement) graphElements.get(outputNode);
-        ReadOnlyClipImage resultImage = outputElement.getResult();
+        Optional<ReadOnlyClipImage> output = findOutputForInput(outputElement.getInputIndex())
+                .map(index -> images.get(index))
+                .map(img -> ClipImage.copyOf(img));
+        ReadOnlyClipImage resultImage = output.orElse(null);
 
         images.values()
                 .stream()
@@ -240,7 +243,6 @@ public class EffectGraph {
     public GraphIndex addProceduralClip(VisualTimelineClip visualTimelineClip) {
         GraphIndex graphIndex = GraphIndex.random();
         graphElements.put(graphIndex, new VisualTimelineClipElement(visualTimelineClip));
-
         return graphIndex;
     }
 
@@ -254,6 +256,30 @@ public class EffectGraph {
         graphElements.put(graphIndex, new StatelessEffectElement(effect));
 
         return graphIndex;
+    }
+
+    public GraphIndex addNode(GraphElement graphElement) {
+        GraphIndex graphIndex = GraphIndex.random();
+        graphElements.put(graphIndex, graphElement);
+
+        return graphIndex;
+    }
+
+    public void removeElementById(GraphIndex graphAddedNode) {
+        GraphElement removedElement = graphElements.remove(graphAddedNode);
+        if (removedElement != null) {
+            removedElement.outputs.keySet().stream()
+                    .forEach(a -> {
+                        connections.remove(a);
+                    });
+            removedElement.inputs.keySet()
+                    .stream()
+                    .forEach(a -> {
+                        for (var value : connections.values()) {
+                            value.remove(a);
+                        }
+                    });
+        }
     }
 
 }

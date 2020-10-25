@@ -6,13 +6,10 @@ import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.Co
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphAcceptType;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
-import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class OutputElement extends GraphElement {
     ConnectionIndex inputIndex = ConnectionIndex.random();
-
-    ReadOnlyClipImage result = null;
 
     public OutputElement() {
         this.inputs.put(inputIndex, new GraphConnectionDescriptor("Result", GraphAcceptType.IMAGE));
@@ -25,10 +22,6 @@ public class OutputElement extends GraphElement {
 
     @Override
     public Map<ConnectionIndex, ReadOnlyClipImage> render(Map<ConnectionIndex, ReadOnlyClipImage> images, EffectGraphInputRequest request) {
-        ReadOnlyClipImage destinationImage = images.get(inputIndex);
-        if (destinationImage != null) {
-            result = ClipImage.copyOf(destinationImage);
-        }
         return Map.of();
     }
 
@@ -36,13 +29,9 @@ public class OutputElement extends GraphElement {
         return inputIndex;
     }
 
-    public ReadOnlyClipImage getResult() {
-        return result;
-    }
-
     @Override
     public String toString() {
-        return "OutputElement [inputIndex=" + inputIndex + ", result=" + result + ", x=" + x + ", y=" + y + ", inputs=" + inputs + ", outputs=" + outputs + "]";
+        return "OutputElement [inputIndex=" + inputIndex + "]";
     }
 
     @Override

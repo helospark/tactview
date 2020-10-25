@@ -122,7 +122,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return id;
     }
 
-    protected final List<ValueProviderDescriptor> getDescriptors() {
+    public final List<ValueProviderDescriptor> getDescriptors() {
         if (valueDescriptors == null) { // threads?
             valueDescriptors = getDescriptorsInternal();
         }

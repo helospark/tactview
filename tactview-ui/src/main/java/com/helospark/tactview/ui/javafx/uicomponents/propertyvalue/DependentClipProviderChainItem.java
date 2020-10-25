@@ -101,7 +101,11 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                 .withUpdateFunction(position -> {
                     String currentId = stringProvider.getValueAt(position);
                     String currentValue = nameToIdRepository.getNameForId(currentId);
-                    textArea.setText(currentValue);
+                    if (currentValue != null) {
+                        textArea.setText(currentValue);
+                    } else {
+                        textArea.setText(currentId);
+                    }
                     renderFrameTo(imageView, currentId, position);
                 })
                 .withVisibleNode(hbox)
@@ -109,7 +113,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
 
-        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+        textArea.setOnKeyReleased(newValue -> {
             KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                     .withDescriptorId(stringProvider.getId())
                     .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())

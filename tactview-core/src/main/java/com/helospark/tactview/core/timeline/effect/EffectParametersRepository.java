@@ -20,6 +20,7 @@ import com.helospark.tactview.core.timeline.EffectAware;
 import com.helospark.tactview.core.timeline.EffectAware.EffectChangedRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
@@ -50,7 +51,6 @@ public class EffectParametersRepository {
     @Slf4j
     private Logger logger;
 
-    private final Map<String, EffectStore> primitiveEffectIdToEffectMap = new ConcurrentHashMap<>();
     private final Map<String, EffectStore> allEffectIdToEffectMap = new ConcurrentHashMap<>();
 
     public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories,
@@ -72,6 +72,10 @@ public class EffectParametersRepository {
         messagingService.register(KeyframeAddedRequest.class, message -> {
             keyframeAdded(message);
         });
+    }
+
+    public Optional<String> findContainingElementId(String keyframeableEffectId) {
+        return Optional.ofNullable(allEffectIdToEffectMap.get(keyframeableEffectId)).map(a -> a.containingElementId);
     }
 
     private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, EffectAware intervalAware, String containingElementId) {
@@ -282,19 +286,23 @@ public class EffectParametersRepository {
     }
 
     public Optional<TimelinePosition> findGlobalPositionForValueProvider(String id) {
+        return findIntervalForValurProvider(id).map(a -> a.getStartPosition());
+    }
+
+    public Optional<TimelineInterval> findIntervalForValurProvider(String id) {
         EffectStore effectStore = allEffectIdToEffectMap.get(id);
 
         if (effectStore != null) {
             Optional<TimelineClip> optionalClip = timelineManagerAccessor.findClipById(effectStore.containingElementId);
             if (optionalClip.isPresent()) {
                 TimelineClip clip = optionalClip.get();
-                return Optional.of(clip.getInterval().getStartPosition());
+                return Optional.of(clip.getInterval());
             }
 
             Optional<StatelessEffect> optionalEffect = timelineManagerAccessor.findEffectById(effectStore.containingElementId);
             if (optionalEffect.isPresent()) {
                 StatelessEffect effect = optionalEffect.get();
-                return Optional.of(effect.getGlobalInterval().getStartPosition());
+                return Optional.of(effect.getGlobalInterval());
             }
         }
 

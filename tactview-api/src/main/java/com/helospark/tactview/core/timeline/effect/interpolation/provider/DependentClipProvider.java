@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.DesSerFactory;
@@ -23,6 +24,11 @@ public class DependentClipProvider extends KeyframeableEffect<String> {
     @Override
     public String getValueAt(TimelinePosition position) {
         return stringInterpolator.valueAt(position);
+    }
+
+    @Override
+    public EffectInterpolator getInterpolator() {
+        return stringInterpolator;
     }
 
     @Override

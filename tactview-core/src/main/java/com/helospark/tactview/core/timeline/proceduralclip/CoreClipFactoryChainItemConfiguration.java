@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradie
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.LinearGradientService;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.service.RadialGradientService;
+import com.helospark.tactview.core.timeline.proceduralclip.graph.GraphProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnEllipseHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.DrawnRectangleHighlightProceduralEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.highlight.HighlightPenProceduralEffect;
@@ -338,6 +339,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new StopWatchTextProceduralClip(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem graphProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
+        return new StandardProceduralClipFactoryChainItem("graph", "Graph",
+                request -> {
+                    return new GraphProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                },
+                (node, loadMetadata) -> {
+                    return new GraphProceduralClip(metadata, node, loadMetadata);
                 });
     }
 }

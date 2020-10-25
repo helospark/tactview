@@ -36,6 +36,8 @@ import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyPage.Builder;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.DetailsGridChain;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.EffectLine;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PropertyValueSetterChain;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.message.OpenClipPropertyPageMessage;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.message.OpenEffectPropertyPageMessage;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
@@ -138,6 +140,8 @@ public class PropertyView {
                         });
                     });
         });
+        messagingService.register(OpenEffectPropertyPageMessage.class, message -> this.showEffectProperties(message.getId()));
+        messagingService.register(OpenClipPropertyPageMessage.class, message -> this.showClipProperties(message.getId()));
     }
 
     private Optional<Consumer<Boolean>> getEffectPropertyPageForId(String containerId, String effectId) {
