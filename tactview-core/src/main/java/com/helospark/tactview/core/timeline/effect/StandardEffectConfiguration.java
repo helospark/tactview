@@ -58,6 +58,7 @@ import com.helospark.tactview.core.timeline.effect.framehold.FrameHoldEffect;
 import com.helospark.tactview.core.timeline.effect.fun.AsciiArtEffect;
 import com.helospark.tactview.core.timeline.effect.gamma.GammaEffect;
 import com.helospark.tactview.core.timeline.effect.glow.LightGlowEffect;
+import com.helospark.tactview.core.timeline.effect.graphing.DefaultGraphArrangementFactory;
 import com.helospark.tactview.core.timeline.effect.graphing.GraphEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect;
 import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenImplementation;
@@ -876,10 +877,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory graphingVideoEffect() {
+    public StandardEffectFactory graphingVideoEffect(DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new GraphEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000))))
-                .withRestoreFactory((node, loadMetadata) -> new GraphEffect(node, loadMetadata))
+                .withFactory(request -> new GraphEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), defaultGraphArrangementFactory))
+                .withRestoreFactory((node, loadMetadata) -> new GraphEffect(node, loadMetadata, defaultGraphArrangementFactory))
                 .withName("Graph")
                 .withSupportedEffectId("graphing")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))

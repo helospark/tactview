@@ -2,6 +2,9 @@ package com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.t
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphAcceptType;
@@ -19,6 +22,12 @@ public class CameraOutputToV4L2LoopbackElement extends GraphElement implements G
     public CameraOutputToV4L2LoopbackElement(OpencvL4V2LoopbackImplementation loopbackImplementation) {
         input = ConnectionIndex.random();
         this.inputs.put(input, new GraphConnectionDescriptor("Input", GraphAcceptType.IMAGE));
+        this.loopbackImplementation = loopbackImplementation;
+    }
+
+    public CameraOutputToV4L2LoopbackElement(JsonNode data, LoadMetadata metadata, OpencvL4V2LoopbackImplementation loopbackImplementation) {
+        super(data, metadata);
+        this.input = new ConnectionIndex(data.get("input").asText());
         this.loopbackImplementation = loopbackImplementation;
     }
 
@@ -42,6 +51,11 @@ public class CameraOutputToV4L2LoopbackElement extends GraphElement implements G
     @Override
     public GraphElement deepClone() {
         return null;
+    }
+
+    @Override
+    protected void serializeInternal(Map<String, Object> result, SaveMetadata saveMetadata) {
+        result.put("input", input.getId());
     }
 
 }

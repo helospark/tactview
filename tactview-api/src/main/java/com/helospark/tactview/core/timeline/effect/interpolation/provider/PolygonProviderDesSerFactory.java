@@ -11,6 +11,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.DesSerFactory;
@@ -19,7 +20,7 @@ import com.helospark.tactview.core.util.SavedContentAddable;
 public class PolygonProviderDesSerFactory implements DesSerFactory<PolygonProvider> {
 
     @Override
-    public void addDataForDeserialize(PolygonProvider instance, Map<String, Object> data) {
+    public void serializeInto(PolygonProvider instance, Map<String, Object> data, SaveMetadata saveMetadata) {
         data.put("defaultValue", instance.defaultValues);
         data.put("values", instance.values);
         data.put("useKeyframes", instance.useKeyframes);

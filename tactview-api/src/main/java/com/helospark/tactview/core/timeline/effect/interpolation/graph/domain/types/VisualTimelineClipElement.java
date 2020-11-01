@@ -5,7 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
@@ -43,6 +47,25 @@ public class VisualTimelineClipElement extends GraphElement {
         this.outputs.put(outputIndex, new GraphConnectionDescriptor("Output", GraphAcceptType.IMAGE));
     }
 
+    public VisualTimelineClipElement(JsonNode data, LoadMetadata metadata, VisualTimelineClip restoredClip) {
+        super(data, metadata);
+        this.outputIndex = new ConnectionIndex(data.get("outputIndex").asText());
+        this.clip = restoredClip;
+
+        JsonNode additionalIndicesNode = data.get("additionalClipInideces");
+        if (additionalIndicesNode != null) {
+            this.additionalClipInideces = metadata.getObjectMapperUsed().convertValue(additionalIndicesNode, new TypeReference<List<ConnectionIndex>>() {
+            });
+        }
+    }
+
+    @Override
+    protected void serializeInternal(Map<String, Object> result, SaveMetadata saveMetadata) {
+        result.put("outputIndex", outputIndex.getId());
+        result.put("clip", clip.generateSavedContent(saveMetadata));
+        result.put("additionalClipIndices", additionalClipInideces);
+    }
+
     @Override
     public Map<ConnectionIndex, ReadOnlyClipImage> render(Map<ConnectionIndex, ReadOnlyClipImage> images, EffectGraphInputRequest request) {
         Map<String, ReadOnlyClipImage> additionalClips = new LinkedHashMap<>();
@@ -59,7 +82,7 @@ public class VisualTimelineClipElement extends GraphElement {
                 .withExpectedWidth(request.expectedWidth)
                 .withExpectedHeight(request.expectedHeight)
                 .withPosition(request.position)
-                .withRelativePosition(request.position)
+                .withRelativePosition(request.relativePosition)
                 .withScale(request.scale)
                 .withUseApproximatePosition(false)
                 .withRequestedClips(additionalClips)

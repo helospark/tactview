@@ -6,20 +6,15 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.AddClipRequest;
-import com.helospark.tactview.core.timeline.ClipFactory;
-import com.helospark.tactview.core.timeline.StatelessVideoEffect;
-import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineInterval;
-import com.helospark.tactview.core.timeline.TimelineLength;
-import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.VisualTimelineClip;
-import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
-import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElementFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElementFactory.GraphCreatorRequest;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.StatelessEffectElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.VisualTimelineClipElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.message.GraphConnectionAddedMessage;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
@@ -29,71 +24,38 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class EffectGraphAccessor {
-    private static final TimelineInterval INTERVAL = new TimelineInterval(TimelinePosition.ofZero(), TimelineLength.ofSeconds(1000000));
-    private List<ClipFactory> clipFactories;
-    private List<EffectFactory> effectFactories;
+    private List<GraphElementFactory> graphElementFactories;
     private MessagingService messagingService;
     private EffectParametersRepository effectParametersRepository;
 
-    public EffectGraphAccessor(List<ClipFactory> clipFactories, List<EffectFactory> effectFactories, MessagingService messagingService, EffectParametersRepository effectParametersRepository) {
-        this.clipFactories = clipFactories;
-        this.effectFactories = effectFactories;
+    public EffectGraphAccessor(List<GraphElementFactory> graphElementFactories, MessagingService messagingService,
+            EffectParametersRepository effectParametersRepository) {
+        this.graphElementFactories = graphElementFactories;
         this.messagingService = messagingService;
         this.effectParametersRepository = effectParametersRepository;
     }
 
-    public GraphIndex addProceduralClip(GraphProvider provider, String proceduralClipId) {
-        AddClipRequest request = AddClipRequest.builder()
-                .withAddClipRequestMetadataKey(Map.of())
-                .withPosition(TimelinePosition.ofZero())
-                .withProceduralClipId(proceduralClipId)
-                .build();
-        VisualTimelineClip clip = (VisualTimelineClip) clipFactories.stream()
-                .filter(a -> a.doesSupport(request))
-                .map(a -> a.createClip(request))
+    public GraphIndex addElementByUri(GraphProvider provider, String uri) {
+        GraphElementFactory graphElementFactory = graphElementFactories.stream()
+                .filter(factory -> factory.doesSupport(uri))
                 .findFirst()
                 .get();
-        clip.setInterval(INTERVAL);
-        messagingService.sendAsyncMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors(), clip));
+        GraphElement createElement = graphElementFactory
+                .createElement(new GraphCreatorRequest(provider, uri));
+
+        // TODO: graph should itself has descriptors, instead of clip & effect, this should be refactored, so GraphElement provides descriptors
+        // and EffectParameterRepository follows GraphElements as well, not just clips and effects
+        if (createElement instanceof VisualTimelineClipElement) {
+            VisualTimelineClipElement e = (VisualTimelineClipElement) createElement;
+            messagingService.sendAsyncMessage(new ClipDescriptorsAdded(e.getClip().getId(), e.getClip().getDescriptors(), e.getClip()));
+        } else if (createElement instanceof StatelessEffectElement) {
+            StatelessEffectElement e = (StatelessEffectElement) createElement;
+            messagingService.sendAsyncMessage(new EffectDescriptorsAdded(e.getEffect().getId(), e.getEffect().getValueProviders(), e.getEffect()));
+        }
         sendKeyframeAddedMessage(provider);
 
-        return provider.getEffectGraph().addProceduralClip(clip);
+        return provider.getEffectGraph().addNode(createElement);
 
-    }
-
-    public GraphIndex addClipFile(GraphProvider provider, String fileName) {
-        AddClipRequest request = AddClipRequest.builder()
-                .withAddClipRequestMetadataKey(Map.of())
-                .withPosition(TimelinePosition.ofZero())
-                .withFilePath(fileName)
-                .build();
-        VisualTimelineClip clip = (VisualTimelineClip) clipFactories.stream()
-                .filter(a -> a.doesSupport(request))
-                .map(a -> a.createClip(request))
-                .findFirst()
-                .get();
-        clip.setInterval(INTERVAL);
-
-        messagingService.sendAsyncMessage(new ClipDescriptorsAdded(clip.getId(), clip.getDescriptors(), clip));
-        sendKeyframeAddedMessage(provider);
-
-        return provider.getEffectGraph().addProceduralClip(clip);
-    }
-
-    public GraphIndex addEffect(GraphProvider provider, String replaceFirst) {
-        CreateEffectRequest request = new CreateEffectRequest(TimelinePosition.ofZero(), replaceFirst, TimelineClipType.IMAGE, INTERVAL);
-        EffectFactory factory = effectFactories
-                .stream()
-                .filter(effectFactory -> effectFactory.doesSupport(request))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No factory for " + request));
-        StatelessVideoEffect result = (StatelessVideoEffect) factory.createEffect(request);
-        result.setFactoryId(factory.getId());
-        result.setParentIntervalAware(() -> effectParametersRepository.findIntervalForValurProvider(provider.getId()).orElse(INTERVAL));
-
-        messagingService.sendAsyncMessage(new EffectDescriptorsAdded(result.getId(), result.getValueProviders(), result));
-        sendKeyframeAddedMessage(provider);
-        return provider.getEffectGraph().addEffect(result);
     }
 
     public GraphIndex addNode(GraphProvider provider, GraphElement graphElement) {

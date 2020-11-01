@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline.effect.graphing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,18 +12,17 @@ import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraph;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphIndex;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.InputElement;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.OutputElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class GraphEffect extends StatelessVideoEffect {
     private GraphProvider effectGraphProvider;
+    private DefaultGraphArrangementFactory defaultGraphArrangementFactory;
 
-    public GraphEffect(TimelineInterval interval) {
+    public GraphEffect(TimelineInterval interval, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
         super(interval);
+        this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
     }
 
     public GraphEffect(GraphEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
@@ -32,22 +30,14 @@ public class GraphEffect extends StatelessVideoEffect {
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
     }
 
-    public GraphEffect(JsonNode node, LoadMetadata loadMetadata) {
+    public GraphEffect(JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
         super(node, loadMetadata);
+        this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
     }
 
     @Override
     protected void initializeValueProviderInternal() {
-        EffectGraph effectGraph = new EffectGraph();
-
-        InputElement inputElement = new InputElement();
-        OutputElement outputElement = new OutputElement();
-
-        effectGraph.getGraphElements().put(GraphIndex.random(), inputElement);
-        effectGraph.getGraphElements().put(GraphIndex.random(), outputElement);
-        effectGraph.getConnections().put(inputElement.getOutputIndex(), new ArrayList<>(List.of(outputElement.getInputIndex())));
-        effectGraph.autoArrangeUi();
-
+        EffectGraph effectGraph = defaultGraphArrangementFactory.createEffectGraphProviderWithInputAndOutput();
         effectGraphProvider = new GraphProvider(effectGraph);
     }
 

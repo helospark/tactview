@@ -1,25 +1,56 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public abstract class GraphElement {
+    private static final TypeReference<Map<ConnectionIndex, GraphConnectionDescriptor>> MAP_TYPE_REFERENCE = new TypeReference<>() {
+    };
+
     public double x, y; // display logic, eventually move to UI module
+
+    private String factoryId;
 
     public Map<ConnectionIndex, GraphConnectionDescriptor> inputs = new LinkedHashMap<>();
     public Map<ConnectionIndex, GraphConnectionDescriptor> outputs = new LinkedHashMap<>();
 
     public abstract Map<ConnectionIndex, ReadOnlyClipImage> render(Map<ConnectionIndex, ReadOnlyClipImage> images, EffectGraphInputRequest request);
 
-    public Map<String, Object> serialize() {
-        return Map.of();
+    public GraphElement() {
     }
+
+    public GraphElement(JsonNode data, LoadMetadata loadMetadata) {
+        this.x = data.get("x").asDouble();
+        this.y = data.get("y").asDouble();
+        this.inputs = loadMetadata.getObjectMapperUsed().convertValue(data.get("inputs"), MAP_TYPE_REFERENCE);
+        this.outputs = loadMetadata.getObjectMapperUsed().convertValue(data.get("outputs"), MAP_TYPE_REFERENCE);
+    }
+
+    public Map<String, Object> serialize(SaveMetadata saveMetadata) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("x", x);
+        result.put("y", y);
+        result.put("inputs", inputs);
+        result.put("outputs", outputs);
+        result.put("factoryId", factoryId);
+
+        serializeInternal(result, saveMetadata);
+
+        return result;
+    }
+
+    protected abstract void serializeInternal(Map<String, Object> result, SaveMetadata saveMetadata);
 
     public double getX() {
         return x;
@@ -37,6 +68,10 @@ public abstract class GraphElement {
         return outputs;
     }
 
+    public void setFactoryId(String factoryId) {
+        this.factoryId = factoryId;
+    }
+
     public abstract GraphElement deepClone();
 
     protected void copyCommonPropertiesTo(GraphElement element) {
@@ -44,6 +79,10 @@ public abstract class GraphElement {
         element.y = this.y;
         element.inputs = this.inputs.entrySet().stream().collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue())); // TODO: new id
         element.outputs = this.outputs.entrySet().stream().collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue()));
+    }
+
+    public String getFactoryId() {
+        return factoryId;
     }
 
 }

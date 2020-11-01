@@ -24,7 +24,6 @@ public class StaticObjectMapper {
     private static ObjectMapper setupObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addSerializer(SavedContentAddable.class, new ItemSerializer());
         module.addKeyDeserializer(TimelinePosition.class, new TimelinePositionMapDeserializer());
         objectMapper.registerModule(module);
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

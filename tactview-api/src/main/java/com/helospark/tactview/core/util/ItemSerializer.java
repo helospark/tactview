@@ -7,11 +7,14 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.helospark.tactview.core.save.SaveMetadata;
 
 public class ItemSerializer extends StdSerializer<SavedContentAddable> {
+    private SaveMetadata saveMetadata;
 
-    public ItemSerializer() {
-        this(null);
+    public ItemSerializer(SaveMetadata saveMetadata) {
+        this((Class<SavedContentAddable>) null);
+        this.saveMetadata = saveMetadata;
     }
 
     public ItemSerializer(Class<SavedContentAddable> t) {
@@ -27,7 +30,7 @@ public class ItemSerializer extends StdSerializer<SavedContentAddable> {
 
             Map<String, Object> innerMap = new LinkedHashMap<>();
             innerMap.put("deserializer", factoryClass.getName());
-            factory.addDataForDeserialize(value, innerMap);
+            factory.serializeInto(value, innerMap, saveMetadata);
 
             gen.writeObject(innerMap);
         } catch (Exception e) {

@@ -4,13 +4,14 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
 
 public class SquareDoubleInterpolatorFactory implements DesSerFactory<SquareDoubleInterpolator> {
 
     @Override
-    public void addDataForDeserialize(SquareDoubleInterpolator instance, Map<String, Object> data) {
+    public void serializeInto(SquareDoubleInterpolator instance, Map<String, Object> data, SaveMetadata saveMetadata) {
         data.put("minValue", instance.minValue);
         data.put("maxValue", instance.maxValue);
         data.put("onTime", instance.onTime);

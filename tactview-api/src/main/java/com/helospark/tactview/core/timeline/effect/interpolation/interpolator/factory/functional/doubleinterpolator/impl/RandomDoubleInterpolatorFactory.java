@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.RepeatableRandom;
@@ -13,7 +14,7 @@ import com.helospark.tactview.core.util.SavedContentAddable;
 public class RandomDoubleInterpolatorFactory implements DesSerFactory<RandomDoubleInterpolator> {
 
     @Override
-    public void addDataForDeserialize(RandomDoubleInterpolator instance, Map<String, Object> data) {
+    public void serializeInto(RandomDoubleInterpolator instance, Map<String, Object> data, SaveMetadata saveMetadata) {
         data.put("repeatableRandom", instance.repeatableRandom);
         data.put("min", instance.min);
         data.put("max", instance.max);

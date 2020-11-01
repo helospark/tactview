@@ -6,6 +6,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -21,8 +24,11 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.deserializer.TimelinePositionMapDeserializer;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.util.ItemSerializer;
+import com.helospark.tactview.core.util.SavedContentAddable;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class CommonEffectTest {
@@ -70,7 +76,7 @@ public class CommonEffectTest {
             }
             if (!(effect instanceof StatelessVideoEffect)
                     || effectFactory.getEffectId().equals("lensdistort")/** trello.201, check why this occasionally fails */
-                    || effectFactory.getEffectId().equals("graphing")) {
+            ) {
                 continue;
             }
 
@@ -79,11 +85,11 @@ public class CommonEffectTest {
             SaveMetadata saveMetadata = new SaveMetadata(false);
 
             Object savedEffect = effect.generateSavedContent(saveMetadata);
-            String saveData = StaticObjectMapper.objectMapper.writeValueAsString(savedEffect);
+            String saveData = createObjectMapper(saveMetadata).writeValueAsString(savedEffect);
 
             JsonNode readData = StaticObjectMapper.objectMapper.readTree(saveData);
 
-            StatelessEffect restoredEffect = effectFactory.restoreEffect(readData, new LoadMetadata("filepath"));
+            StatelessEffect restoredEffect = effectFactory.restoreEffect(readData, new LoadMetadata("filepath", StaticObjectMapper.objectMapper, lightDi));
 
             ReadOnlyClipImage clonedFrame = getFrame((StatelessVideoEffect) restoredEffect, clip);
 
@@ -93,6 +99,17 @@ public class CommonEffectTest {
             freeFrame(clonedFrame);
         }
         lightDi.close();
+    }
+
+    private ObjectMapper createObjectMapper(SaveMetadata saveMetadata) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(SavedContentAddable.class, new ItemSerializer(saveMetadata));
+        module.addKeyDeserializer(TimelinePosition.class, new TimelinePositionMapDeserializer());
+        objectMapper.registerModule(module);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        return objectMapper;
     }
 
     private ReadOnlyClipImage getFrame(StatelessVideoEffect effect, VisualTimelineClip clip) {

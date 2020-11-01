@@ -5,7 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
@@ -38,7 +42,6 @@ public class StatelessEffectElement extends GraphElement {
                 additionalClipInideces.add(connectionIndex);
             }
         }
-
     }
 
     public StatelessEffectElement(ConnectionIndex inputIndex, ConnectionIndex outputIndex, StatelessVideoEffect effect) {
@@ -48,6 +51,27 @@ public class StatelessEffectElement extends GraphElement {
 
         this.inputs.put(inputIndex, new GraphConnectionDescriptor("Input", GraphAcceptType.IMAGE));
         this.outputs.put(outputIndex, new GraphConnectionDescriptor("Output", GraphAcceptType.IMAGE));
+    }
+
+    public StatelessEffectElement(JsonNode data, LoadMetadata metadata, StatelessVideoEffect restoredEffect) {
+        super(data, metadata);
+        this.inputIndex = new ConnectionIndex(data.get("inputIndex").asText());
+        this.outputIndex = new ConnectionIndex(data.get("outputIndex").asText());
+        this.effect = restoredEffect;
+
+        JsonNode additionalIndicesNode = data.get("additionalClipInideces");
+        if (additionalIndicesNode != null) {
+            this.additionalClipInideces = metadata.getObjectMapperUsed().convertValue(additionalIndicesNode, new TypeReference<List<ConnectionIndex>>() {
+            });
+        }
+    }
+
+    @Override
+    protected void serializeInternal(Map<String, Object> result, SaveMetadata saveMetadata) {
+        result.put("inputIndex", inputIndex.getId());
+        result.put("outputIndex", outputIndex.getId());
+        result.put("effect", effect.generateSavedContent(saveMetadata));
+        result.put("additionalClipInideces", additionalClipInideces);
     }
 
     @Override

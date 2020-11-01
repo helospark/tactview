@@ -11,11 +11,10 @@ import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.graphing.DefaultGraphArrangementFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraph;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphIndex;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.OutputElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
@@ -23,9 +22,11 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class GraphProceduralClip extends ProceduralVisualClip {
     private GraphProvider graphProvider;
+    private DefaultGraphArrangementFactory defaultGraphArrangementFactory;
 
-    public GraphProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval) {
+    public GraphProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
         super(visualMediaMetadata, interval);
+        this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
     }
 
     public GraphProceduralClip(GraphProceduralClip singleColorProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
@@ -33,8 +34,9 @@ public class GraphProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(singleColorProceduralClip, this);
     }
 
-    public GraphProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata) {
+    public GraphProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
         super(metadata, node, loadMetadata);
+        this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
     }
 
     @Override
@@ -61,15 +63,18 @@ public class GraphProceduralClip extends ProceduralVisualClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
-        EffectGraph effectGraph = new EffectGraph();
-        effectGraph.getGraphElements().put(GraphIndex.random(), new OutputElement());
-
-        graphProvider = new GraphProvider(effectGraph);
     }
 
     @Override
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+
+        // TODO: this should be in the initialize, but cannot set defaultGraphArrangementFactory before super call in Java :(
+        // if is there to distinguish between load and new init
+        if (graphProvider == null) {
+            EffectGraph effectGraph = defaultGraphArrangementFactory.createEffectGraphProviderWithOutput();
+            graphProvider = new GraphProvider(effectGraph);
+        }
 
         ValueProviderDescriptor graphDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(graphProvider)

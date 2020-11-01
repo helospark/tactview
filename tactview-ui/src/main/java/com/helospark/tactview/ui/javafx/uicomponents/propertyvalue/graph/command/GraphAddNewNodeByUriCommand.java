@@ -21,13 +21,7 @@ public class GraphAddNewNodeByUriCommand implements UiCommand {
 
     @Override
     public void execute() {
-        if (nodeUri.startsWith("clip:")) {
-            graphAddedNode = effectGraphAccessor.addProceduralClip(provider, nodeUri.replaceFirst("clip:", ""));
-        } else if (nodeUri.startsWith("file://")) {
-            graphAddedNode = effectGraphAccessor.addClipFile(provider, nodeUri.replaceFirst("file://", ""));
-        } else if (nodeUri.startsWith("effect:")) {
-            graphAddedNode = effectGraphAccessor.addEffect(provider, nodeUri.replaceFirst("effect:", ""));
-        }
+        graphAddedNode = effectGraphAccessor.addElementByUri(provider, nodeUri);
     }
 
     public GraphIndex getGraphAddedNode() {

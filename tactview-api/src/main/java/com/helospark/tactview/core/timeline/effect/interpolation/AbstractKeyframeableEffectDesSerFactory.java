@@ -4,13 +4,14 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
 
 public abstract class AbstractKeyframeableEffectDesSerFactory<T extends KeyframeableEffect> implements DesSerFactory<T> {
 
     @Override
-    public void addDataForDeserialize(T instance, Map<String, Object> data) {
+    public void serializeInto(T instance, Map<String, Object> data, SaveMetadata saveMetadata) {
         data.put("id", instance.getId());
         addDataForDeserializeInternal(instance, data);
     }

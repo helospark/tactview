@@ -21,6 +21,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphP
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.command.GraphAddConnectionCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.command.GraphAddNewNodeByUriCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.factory.GraphingComponentFactory;
@@ -64,16 +65,15 @@ public class GraphingComponent extends BorderPane {
     Window parent;
 
     private MessagingService messagingService;
-    private UiCommandInterpreterService commandInterpreter;
 
     public GraphingComponent(double width, double height, EffectGraphAccessor effectGraphAccessor, MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories,
-            UiCommandInterpreterService commandInterpreter) {
+            UiCommandInterpreterService commandInterpreter, StylesheetAdderService stylesheetAdderService) {
+        stylesheetAdderService.addStyleSheets(this, "stylesheet.css");
         cameraPositionX = -width / 2.0;
         cameraPositionY = -height / 2.0;
         canvas = new Canvas(width, height);
         graphicsContext = canvas.getGraphicsContext2D();
         this.messagingService = messagingService;
-        this.commandInterpreter = commandInterpreter;
 
         messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
             this.redrawGraphProvider();

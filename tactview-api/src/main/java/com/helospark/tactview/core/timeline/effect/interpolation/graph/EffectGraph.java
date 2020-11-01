@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
-import com.helospark.tactview.core.timeline.StatelessVideoEffect;
-import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
@@ -21,8 +19,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ty
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphNodeOutputMarker;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.InputElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.OutputElement;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.StatelessEffectElement;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.VisualTimelineClipElement;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
@@ -31,6 +27,11 @@ public class EffectGraph {
     private Map<ConnectionIndex, List<ConnectionIndex>> connections = new LinkedHashMap<>();
 
     public EffectGraph() {
+    }
+
+    public EffectGraph(Map<GraphIndex, GraphElement> graphElements, Map<ConnectionIndex, List<ConnectionIndex>> connections) {
+        this.graphElements = graphElements;
+        this.connections = connections;
     }
 
     public Map<GraphIndex, GraphElement> getGraphElements() {
@@ -242,22 +243,9 @@ public class EffectGraph {
 
     }
 
-    public GraphIndex addProceduralClip(VisualTimelineClip visualTimelineClip) {
-        GraphIndex graphIndex = GraphIndex.random();
-        graphElements.put(graphIndex, new VisualTimelineClipElement(visualTimelineClip));
-        return graphIndex;
-    }
-
     @Override
     public String toString() {
         return "EffectGraph [graphElements=" + graphElements + ", connections=" + connections + "]";
-    }
-
-    public GraphIndex addEffect(StatelessVideoEffect effect) {
-        GraphIndex graphIndex = GraphIndex.random();
-        graphElements.put(graphIndex, new StatelessEffectElement(effect));
-
-        return graphIndex;
     }
 
     public GraphIndex addNode(GraphElement graphElement) {

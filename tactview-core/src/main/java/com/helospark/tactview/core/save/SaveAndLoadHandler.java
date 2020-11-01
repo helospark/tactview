@@ -14,8 +14,14 @@ import org.zeroturnaround.zip.ZipUtil;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.deserializer.TimelinePositionMapDeserializer;
+import com.helospark.tactview.core.util.ItemSerializer;
+import com.helospark.tactview.core.util.SavedContentAddable;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 @Component
@@ -44,7 +50,7 @@ public class SaveAndLoadHandler {
             context.getListOfBeans(SaveLoadContributor.class)
                     .forEach(a -> a.generateSavedContent(result, saveMetadata));
 
-            ObjectMapper mapper = StaticObjectMapper.objectMapper;
+            ObjectMapper mapper = createObjectMapper(saveMetadata);
             String saveData = mapper.writeValueAsString(result);
 
             outstream.write(saveData.getBytes());
@@ -85,6 +91,17 @@ public class SaveAndLoadHandler {
         deleteDirectory(rootDirectory);
     }
 
+    private ObjectMapper createObjectMapper(SaveMetadata saveMetadata) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(SavedContentAddable.class, new ItemSerializer(saveMetadata));
+        module.addKeyDeserializer(TimelinePosition.class, new TimelinePositionMapDeserializer());
+        objectMapper.registerModule(module);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        return objectMapper;
+    }
+
     private void deleteDirectory(File rootDirectory) {
         try {
             FileUtils.deleteDirectory(rootDirectory);
@@ -107,7 +124,7 @@ public class SaveAndLoadHandler {
 
             JsonNode tree = mapper.readTree(content);
 
-            LoadMetadata loadMetadata = new LoadMetadata(rootDirectory.getAbsolutePath());
+            LoadMetadata loadMetadata = new LoadMetadata(rootDirectory.getAbsolutePath(), mapper, context);
             context.getListOfBeans(SaveLoadContributor.class)
                     .forEach(a -> a.loadFrom(tree, loadMetadata));
         } catch (Exception e) {

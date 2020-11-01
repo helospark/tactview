@@ -2,6 +2,9 @@ package com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.t
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphAcceptType;
@@ -18,6 +21,16 @@ public class OutputElement extends GraphElement implements GraphNodeOutputMarker
     OutputElement(ConnectionIndex inputIndex) {
         this.inputIndex = inputIndex;
         this.inputs.put(inputIndex, new GraphConnectionDescriptor("Result", GraphAcceptType.IMAGE));
+    }
+
+    public OutputElement(JsonNode data, LoadMetadata metadata) {
+        super(data, metadata);
+        this.inputIndex = new ConnectionIndex(data.get("inputIndex").asText());
+    }
+
+    @Override
+    protected void serializeInternal(Map<String, Object> result, SaveMetadata saveMetadata) {
+        result.put("inputIndex", inputIndex.getId());
     }
 
     @Override

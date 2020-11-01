@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 import com.helospark.tactview.core.util.SavedContentAddable;
@@ -16,7 +17,7 @@ import com.helospark.tactview.core.util.bezier.CubicBezierPoint;
 public class BezierDoubleInterpolatorInterpolatorFactory implements DesSerFactory<BezierDoubleInterpolator> {
 
     @Override
-    public void addDataForDeserialize(BezierDoubleInterpolator instance, Map<String, Object> data) {
+    public void serializeInto(BezierDoubleInterpolator instance, Map<String, Object> data, SaveMetadata saveMetadata) {
         data.put("defaultValue", instance.defaultValue);
         data.put("values", instance.values);
         data.put("useKeyframes", instance.useKeyframes);

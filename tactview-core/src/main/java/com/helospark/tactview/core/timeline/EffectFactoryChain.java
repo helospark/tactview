@@ -48,7 +48,6 @@ public class EffectFactoryChain {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No factory for " + factoryId));
         return factory.restoreEffect(node, loadMetadata);
-
     }
 
 }

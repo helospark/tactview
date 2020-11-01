@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGra
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.factory.GraphingComponentFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.window.SingletonOpenableWindow;
 
@@ -22,13 +23,15 @@ public class GraphingDialog extends SingletonOpenableWindow {
     private MessagingService messagingService;
     private List<GraphingComponentFactory> menuItemFactories;
     private UiCommandInterpreterService commandInterpreter;
+    private StylesheetAdderService stylesheetAdderService;
 
     public GraphingDialog(EffectGraphAccessor effectGraphAccessor, MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories,
-            UiCommandInterpreterService commandInterpreter) {
+            UiCommandInterpreterService commandInterpreter, StylesheetAdderService stylesheetAdderService) {
         this.effectGraphAccessor = effectGraphAccessor;
         this.messagingService = messagingService;
         this.menuItemFactories = menuItemFactories;
         this.commandInterpreter = commandInterpreter;
+        this.stylesheetAdderService = stylesheetAdderService;
     }
 
     @Override
@@ -37,7 +40,7 @@ public class GraphingDialog extends SingletonOpenableWindow {
     }
 
     public void open(GraphProvider graphProvider) {
-        graphingComponent = new GraphingComponent(DEFAULT_WIDTH, DEFAULT_HEIGHT, effectGraphAccessor, messagingService, menuItemFactories, commandInterpreter);
+        graphingComponent = new GraphingComponent(DEFAULT_WIDTH, DEFAULT_HEIGHT, effectGraphAccessor, messagingService, menuItemFactories, commandInterpreter, stylesheetAdderService);
         graphingComponent.setGraphProvider(graphProvider);
         graphingComponent.setCameraPositionX(-DEFAULT_WIDTH / 2);
         graphingComponent.setCameraPositionX(-DEFAULT_HEIGHT / 2);
