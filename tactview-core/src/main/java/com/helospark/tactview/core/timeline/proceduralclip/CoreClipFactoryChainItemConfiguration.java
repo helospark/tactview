@@ -7,6 +7,7 @@ import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.graphing.DefaultGraphArrangementFactory;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraphAccessorMessageSender;
 import com.helospark.tactview.core.timeline.proceduralclip.channelcopy.ChannelCopyProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
@@ -344,13 +345,13 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem graphProceduralClip(DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
+    public StandardProceduralClipFactoryChainItem graphProceduralClip(DefaultGraphArrangementFactory defaultGraphArrangementFactory, EffectGraphAccessorMessageSender accessor) {
         return new StandardProceduralClipFactoryChainItem("graph", "Graph",
                 request -> {
-                    return new GraphProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), defaultGraphArrangementFactory);
+                    return new GraphProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), defaultGraphArrangementFactory, accessor);
                 },
                 (node, loadMetadata) -> {
-                    return new GraphProceduralClip(metadata, node, loadMetadata, defaultGraphArrangementFactory);
+                    return new GraphProceduralClip(metadata, node, loadMetadata, defaultGraphArrangementFactory, accessor);
                 });
     }
 }

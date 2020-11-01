@@ -103,9 +103,9 @@ public class VisualTimelineClipElement extends GraphElement {
     }
 
     @Override
-    public GraphElement deepClone() {
-        VisualTimelineClipElement result = new VisualTimelineClipElement(outputIndex, (VisualTimelineClip) this.clip.cloneClip(CloneRequestMetadata.ofDefault()));
-        copyCommonPropertiesTo(result);
+    public GraphElement deepClone(GraphElementCloneRequest cloneRequest) {
+        VisualTimelineClipElement result = new VisualTimelineClipElement(cloneRequest.remap(outputIndex), (VisualTimelineClip) this.clip.cloneClip(CloneRequestMetadata.ofDefault()));
+        copyCommonPropertiesTo(result, cloneRequest);
         return result;
     }
 }

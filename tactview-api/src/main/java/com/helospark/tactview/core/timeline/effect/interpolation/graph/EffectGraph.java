@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.Ef
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElement.GraphElementCloneRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphNodeOutputMarker;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.InputElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.OutputElement;
@@ -210,9 +211,36 @@ public class EffectGraph {
 
     public EffectGraph deepClone() {
         EffectGraph result = new EffectGraph();
-        result.connections = this.connections; //.entrySet().stream().collect(Collectors.toMap(a -> a.getKey(), a -> new ArrayList<>(a.getValue()))); // TODO
-        result.graphElements = this.graphElements.entrySet().stream()
-                .collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue().deepClone()));
+
+        Map<GraphIndex, GraphIndex> remappedGraphIds = new HashMap<>();
+        Map<ConnectionIndex, ConnectionIndex> remappedConnectionIds = new HashMap<>();
+
+        for (var originalId : this.graphElements.keySet()) {
+            remappedGraphIds.put(originalId, GraphIndex.random());
+        }
+        for (var graphElement : this.graphElements.values()) {
+            for (var inputElement : graphElement.inputs.keySet()) {
+                remappedConnectionIds.put(inputElement, ConnectionIndex.random());
+            }
+            for (var outputElement : graphElement.outputs.keySet()) {
+                remappedConnectionIds.put(outputElement, ConnectionIndex.random());
+            }
+        }
+        Map<ConnectionIndex, List<ConnectionIndex>> newConnections = new HashMap<>();
+        for (var entry : connections.entrySet()) {
+            List<ConnectionIndex> outConnectionIndices = new ArrayList<>(0);
+            for (var outConnection : entry.getValue()) {
+                outConnectionIndices.add(remappedConnectionIds.get(outConnection));
+            }
+            newConnections.put(remappedConnectionIds.get(entry.getKey()), outConnectionIndices);
+        }
+
+        GraphElementCloneRequest cloneRequest = new GraphElementCloneRequest(remappedGraphIds, remappedConnectionIds);
+
+        result.connections = newConnections;
+        result.graphElements = this.graphElements.entrySet()
+                .stream()
+                .collect(Collectors.toMap(a -> remappedGraphIds.get(a.getKey()), a -> a.getValue().deepClone(cloneRequest)));
 
         return result;
     }
@@ -227,7 +255,7 @@ public class EffectGraph {
 
         List<List<GraphIndex>> graphLayers = precomputeGraph(optionalOutputNode, inputNode);
 
-        double startX = -graphLayers.size() / 2.0 * 200.0;
+        double startX = (-graphLayers.size() / 2) * 200.0;
         for (int i = 0; i < graphLayers.size(); ++i) {
             double x = startX + i * 200.0;
 

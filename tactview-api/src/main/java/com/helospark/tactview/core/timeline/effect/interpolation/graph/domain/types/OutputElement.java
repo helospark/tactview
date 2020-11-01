@@ -48,9 +48,9 @@ public class OutputElement extends GraphElement implements GraphNodeOutputMarker
     }
 
     @Override
-    public GraphElement deepClone() {
-        OutputElement result = new OutputElement(inputIndex);
-        copyCommonPropertiesTo(result);
+    public GraphElement deepClone(GraphElementCloneRequest cloneRequest) {
+        OutputElement result = new OutputElement(cloneRequest.remap(inputIndex));
+        copyCommonPropertiesTo(result, cloneRequest);
         return result;
     }
 

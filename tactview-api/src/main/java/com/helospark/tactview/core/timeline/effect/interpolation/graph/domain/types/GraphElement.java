@@ -12,6 +12,7 @@ import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphIndex;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public abstract class GraphElement {
@@ -72,17 +73,35 @@ public abstract class GraphElement {
         this.factoryId = factoryId;
     }
 
-    public abstract GraphElement deepClone();
+    public abstract GraphElement deepClone(GraphElementCloneRequest cloneRequst);
 
-    protected void copyCommonPropertiesTo(GraphElement element) {
+    protected void copyCommonPropertiesTo(GraphElement element, GraphElementCloneRequest cloneRequest) {
         element.x = this.x;
         element.y = this.y;
-        element.inputs = this.inputs.entrySet().stream().collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue())); // TODO: new id
-        element.outputs = this.outputs.entrySet().stream().collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue()));
+        element.inputs = this.inputs.entrySet().stream().collect(Collectors.toMap(a -> cloneRequest.remap(a.getKey()), a -> a.getValue()));
+        element.outputs = this.outputs.entrySet().stream().collect(Collectors.toMap(a -> cloneRequest.remap(a.getKey()), a -> a.getValue()));
     }
 
     public String getFactoryId() {
         return factoryId;
+    }
+
+    public static class GraphElementCloneRequest {
+        Map<GraphIndex, GraphIndex> remappedGraphIds;
+        Map<ConnectionIndex, ConnectionIndex> remappedConnectionIds;
+
+        public GraphElementCloneRequest(Map<GraphIndex, GraphIndex> remappedGraphIds, Map<ConnectionIndex, ConnectionIndex> remappedConnectionIds) {
+            this.remappedGraphIds = remappedGraphIds;
+            this.remappedConnectionIds = remappedConnectionIds;
+        }
+
+        public ConnectionIndex remap(ConnectionIndex index) {
+            return this.remappedConnectionIds.get(index);
+        }
+
+        public GraphIndex remap(GraphIndex index) {
+            return this.remappedGraphIds.get(index);
+        }
     }
 
 }

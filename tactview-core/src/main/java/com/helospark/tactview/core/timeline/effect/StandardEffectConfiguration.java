@@ -64,6 +64,7 @@ import com.helospark.tactview.core.timeline.effect.greenscreen.GreenScreenEffect
 import com.helospark.tactview.core.timeline.effect.greenscreen.opencv.OpenCVGreenScreenImplementation;
 import com.helospark.tactview.core.timeline.effect.histogramequization.HistogramEquizationEffect;
 import com.helospark.tactview.core.timeline.effect.histogramequization.opencv.OpenCVHistogramEquizerImplementation;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraphAccessorMessageSender;
 import com.helospark.tactview.core.timeline.effect.invert.InvertEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.BezierMaskEffect;
 import com.helospark.tactview.core.timeline.effect.layermask.LayerMaskAlphaCalculator;
@@ -877,10 +878,10 @@ public class StandardEffectConfiguration {
     }
 
     @Bean
-    public StandardEffectFactory graphingVideoEffect(DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
+    public StandardEffectFactory graphingVideoEffect(DefaultGraphArrangementFactory defaultGraphArrangementFactory, EffectGraphAccessorMessageSender effectGraphAccessor) {
         return StandardEffectFactory.builder()
-                .withFactory(request -> new GraphEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), defaultGraphArrangementFactory))
-                .withRestoreFactory((node, loadMetadata) -> new GraphEffect(node, loadMetadata, defaultGraphArrangementFactory))
+                .withFactory(request -> new GraphEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(5000)), defaultGraphArrangementFactory, effectGraphAccessor))
+                .withRestoreFactory((node, loadMetadata) -> new GraphEffect(node, loadMetadata, defaultGraphArrangementFactory, effectGraphAccessor))
                 .withName("Graph")
                 .withSupportedEffectId("graphing")
                 .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))

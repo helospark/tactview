@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraph;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraphAccessorMessageSender;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
@@ -19,20 +20,24 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 public class GraphEffect extends StatelessVideoEffect {
     private GraphProvider effectGraphProvider;
     private DefaultGraphArrangementFactory defaultGraphArrangementFactory;
+    private EffectGraphAccessorMessageSender effectGraphAccessor;
 
-    public GraphEffect(TimelineInterval interval, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
+    public GraphEffect(TimelineInterval interval, DefaultGraphArrangementFactory defaultGraphArrangementFactory, EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(interval);
         this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
+        this.effectGraphAccessor = effectGraphAccessor;
     }
 
-    public GraphEffect(GraphEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
+    public GraphEffect(GraphEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata, EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        effectGraphAccessor.sendProviderMessageFor(effectGraphProvider); // this is not a pretty solution, but in the current arch required
     }
 
-    public GraphEffect(JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
+    public GraphEffect(JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory, EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(node, loadMetadata);
         this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
+        this.effectGraphAccessor = effectGraphAccessor;
     }
 
     @Override
@@ -74,7 +79,7 @@ public class GraphEffect extends StatelessVideoEffect {
 
     @Override
     public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
-        return new GraphEffect(this, cloneRequestMetadata);
+        return new GraphEffect(this, cloneRequestMetadata, effectGraphAccessor);
     }
 
 }

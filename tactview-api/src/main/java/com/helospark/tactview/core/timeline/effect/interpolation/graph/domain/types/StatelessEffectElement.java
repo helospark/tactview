@@ -119,9 +119,10 @@ public class StatelessEffectElement extends GraphElement {
     }
 
     @Override
-    public GraphElement deepClone() {
-        StatelessEffectElement result = new StatelessEffectElement(inputIndex, outputIndex, (StatelessVideoEffect) this.effect.cloneEffect(CloneRequestMetadata.ofDefault()));
-        copyCommonPropertiesTo(result);
+    public GraphElement deepClone(GraphElementCloneRequest cloneRequest) {
+        StatelessEffectElement result = new StatelessEffectElement(cloneRequest.remap(inputIndex), cloneRequest.remap(outputIndex),
+                (StatelessVideoEffect) this.effect.cloneEffect(CloneRequestMetadata.ofDefault()));
+        copyCommonPropertiesTo(result, cloneRequest);
         return result;
     }
 }

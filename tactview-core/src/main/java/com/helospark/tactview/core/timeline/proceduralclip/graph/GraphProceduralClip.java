@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.graphing.DefaultGraphArrangementFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraph;
+import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraphAccessorMessageSender;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
@@ -23,20 +24,26 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 public class GraphProceduralClip extends ProceduralVisualClip {
     private GraphProvider graphProvider;
     private DefaultGraphArrangementFactory defaultGraphArrangementFactory;
+    private EffectGraphAccessorMessageSender effectGraphAccessor;
 
-    public GraphProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
+    public GraphProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, DefaultGraphArrangementFactory defaultGraphArrangementFactory,
+            EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(visualMediaMetadata, interval);
         this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
+        this.effectGraphAccessor = effectGraphAccessor;
     }
 
-    public GraphProceduralClip(GraphProceduralClip singleColorProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
+    public GraphProceduralClip(GraphProceduralClip singleColorProceduralClip, CloneRequestMetadata cloneRequestMetadata, EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(singleColorProceduralClip, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(singleColorProceduralClip, this);
+        effectGraphAccessor.sendProviderMessageFor(graphProvider); // this is not a pretty solution, but in the current arch required
     }
 
-    public GraphProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory) {
+    public GraphProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory,
+            EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(metadata, node, loadMetadata);
         this.defaultGraphArrangementFactory = defaultGraphArrangementFactory;
+        this.effectGraphAccessor = effectGraphAccessor;
     }
 
     @Override
@@ -88,7 +95,7 @@ public class GraphProceduralClip extends ProceduralVisualClip {
 
     @Override
     public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
-        return new GraphProceduralClip(this, cloneRequestMetadata);
+        return new GraphProceduralClip(this, cloneRequestMetadata, effectGraphAccessor);
     }
 
 }

@@ -53,9 +53,9 @@ public class InputElement extends GraphElement {
     }
 
     @Override
-    public GraphElement deepClone() {
-        InputElement result = new InputElement(outputIndex);
-        copyCommonPropertiesTo(result);
+    public GraphElement deepClone(GraphElementCloneRequest cloneRequest) {
+        InputElement result = new InputElement(cloneRequest.remap(outputIndex));
+        copyCommonPropertiesTo(result, cloneRequest);
         return result;
     }
 

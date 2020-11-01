@@ -31,6 +31,12 @@ public class CameraOutputToV4L2LoopbackElement extends GraphElement implements G
         this.loopbackImplementation = loopbackImplementation;
     }
 
+    public CameraOutputToV4L2LoopbackElement(OpencvL4V2LoopbackImplementation loopbackImplementation, ConnectionIndex input) {
+        this.input = input;
+        this.inputs.put(input, new GraphConnectionDescriptor("Input", GraphAcceptType.IMAGE));
+        this.loopbackImplementation = loopbackImplementation;
+    }
+
     @Override
     public Map<ConnectionIndex, ReadOnlyClipImage> render(Map<ConnectionIndex, ReadOnlyClipImage> images, EffectGraphInputRequest request) {
         ReadOnlyClipImage image = images.get(input);
@@ -49,8 +55,8 @@ public class CameraOutputToV4L2LoopbackElement extends GraphElement implements G
     }
 
     @Override
-    public GraphElement deepClone() {
-        return null;
+    public GraphElement deepClone(GraphElementCloneRequest cloneRequst) {
+        return new CameraOutputToV4L2LoopbackElement(loopbackImplementation, cloneRequst.remap(this.input));
     }
 
     @Override
