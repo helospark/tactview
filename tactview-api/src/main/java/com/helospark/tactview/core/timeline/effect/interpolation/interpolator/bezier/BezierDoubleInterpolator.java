@@ -115,6 +115,7 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
         BezierDoubleInterpolator result = new BezierDoubleInterpolator(values);
         result.defaultValue = defaultValue;
         result.useKeyframes = useKeyframes;
+        result.initialValues = initialValues;
         return result;
     }
 

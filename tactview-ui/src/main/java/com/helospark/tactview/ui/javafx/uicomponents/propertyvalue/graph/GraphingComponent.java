@@ -21,12 +21,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphP
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.command.GraphAddConnectionCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.command.GraphAddNewNodeByUriCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.factory.GraphingComponentFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.factory.GraphingMenuItemRequest;
-import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.message.OpenClipPropertyPageMessage;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.message.OpenEffectPropertyPageMessage;
 
 import javafx.scene.canvas.Canvas;
@@ -37,12 +37,13 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.transform.Affine;
 import javafx.stage.Window;
 
 public class GraphingComponent extends BorderPane {
     private static final double GRAPH_HEADER_HEIGHT = 20;
-    private static final double GRAPH_HEADER_WIDTH = 100;
+    private static final double GRAPH_HEADER_WIDTH = 150;
     private static final double GRAPH_CONNECTION_POINT_HEIGHT = 20;
     private static final double GRAPH_CONNECTION_POINT_RADIUS = 10;
     private static final double TEXT_HEIGHT_OFFSET = 5;
@@ -51,6 +52,7 @@ public class GraphingComponent extends BorderPane {
     private GraphicsContext graphicsContext;
 
     private GraphProvider graphProvider = null;
+    private NameToIdRepository nameToIdRepository;
 
     private GraphDragTarget graphDragTarget = null;
 
@@ -64,16 +66,14 @@ public class GraphingComponent extends BorderPane {
 
     Window parent;
 
-    private MessagingService messagingService;
-
     public GraphingComponent(double width, double height, EffectGraphAccessor effectGraphAccessor, MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories,
-            UiCommandInterpreterService commandInterpreter, StylesheetAdderService stylesheetAdderService) {
+            UiCommandInterpreterService commandInterpreter, StylesheetAdderService stylesheetAdderService, NameToIdRepository nameToIdRepository) {
         stylesheetAdderService.addStyleSheets(this, "stylesheet.css");
         cameraPositionX = -width / 2.0;
         cameraPositionY = -height / 2.0;
         canvas = new Canvas(width, height);
         graphicsContext = canvas.getGraphicsContext2D();
-        this.messagingService = messagingService;
+        this.nameToIdRepository = nameToIdRepository;
 
         messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
             this.redrawGraphProvider();
@@ -200,7 +200,7 @@ public class GraphingComponent extends BorderPane {
             if (graphDragTarget != null && !graphDragTarget.draggedBefore && graphDragTarget.isDraggingGraph()) {
                 System.out.println("Highlight");
                 GraphInformation graphInformation = graphCoordinateCache.get(graphDragTarget.graphIndex);
-                graphInformation.highlightListener.run();
+                messagingService.sendMessage(new OpenEffectPropertyPageMessage(graphInformation.element.getId()));
             }
 
             graphDragTarget = null;
@@ -349,16 +349,19 @@ public class GraphingComponent extends BorderPane {
         int maxConnections = Math.max(inputList.size(), outputList.size());
         double height = GRAPH_HEADER_HEIGHT + Math.max(inputList.size(), outputList.size()) * GRAPH_CONNECTION_POINT_HEIGHT;
 
-        GraphElementUiInfo elementInfo = getElementInfo(element);
-
         graphicsContext.setStroke(Color.WHITE);
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.strokeRect(x, y, GRAPH_HEADER_WIDTH, height);
         graphicsContext.strokeRect(x, y, GRAPH_HEADER_WIDTH, GRAPH_HEADER_HEIGHT);
         graphicsContext.setFill(Color.GRAY);
-        graphicsContext.fillText(elementInfo.name, x, y + GRAPH_HEADER_HEIGHT - TEXT_HEIGHT_OFFSET);
+        String name = nameToIdRepository.getNameForId(element.getId());
+        if (name == null) {
+            name = element.getId();
+        }
+        graphicsContext.setFont(Font.font(10));
+        graphicsContext.fillText(name, x, y + GRAPH_HEADER_HEIGHT - TEXT_HEIGHT_OFFSET, GRAPH_HEADER_WIDTH);
 
-        graphCoordinateCache.put(graphIndex, new GraphInformation(new GraphCoordinate(x, y, GRAPH_HEADER_WIDTH, height), elementInfo.highlightListener));
+        graphCoordinateCache.put(graphIndex, new GraphInformation(new GraphCoordinate(x, y, GRAPH_HEADER_WIDTH, height), element));
 
         for (int i = 0; i < maxConnections; ++i) {
             double connectionTopY = y + GRAPH_HEADER_HEIGHT + i * GRAPH_CONNECTION_POINT_HEIGHT;
@@ -394,44 +397,35 @@ public class GraphingComponent extends BorderPane {
 
     private GraphElementUiInfo getElementInfo(GraphElement element) {
         if (element instanceof OutputElement) {
-            return new GraphElementUiInfo("Output", () -> {
-            });
+            return new GraphElementUiInfo("Output");
         } else if (element instanceof InputElement) {
-            return new GraphElementUiInfo("Input", () -> {
-            });
+            return new GraphElementUiInfo("Input");
         } else if (element instanceof StatelessEffectElement) {
-            return new GraphElementUiInfo("Effect", () -> {
-                messagingService.sendMessage(new OpenEffectPropertyPageMessage(((StatelessEffectElement) element).getEffect().getId()));
-            });
+            return new GraphElementUiInfo("Effect");
         } else if (element instanceof VisualTimelineClipElement) {
-            return new GraphElementUiInfo("Clip", () -> {
-                messagingService.sendMessage(new OpenClipPropertyPageMessage(((VisualTimelineClipElement) element).getClip().getId()));
-            });
+            return new GraphElementUiInfo("Clip");
         } else {
             System.out.println("Error, no type");
-            return new GraphElementUiInfo("UNKNOWN", () -> {
-            });
+            return new GraphElementUiInfo("UNKNOWN");
         }
     }
 
     static class GraphElementUiInfo {
         String name;
-        Runnable highlightListener;
 
-        public GraphElementUiInfo(String name, Runnable highlightListener) {
+        public GraphElementUiInfo(String name) {
             this.name = name;
-            this.highlightListener = highlightListener;
         }
 
     }
 
     static class GraphInformation {
         GraphCoordinate coordinate;
-        Runnable highlightListener;
+        GraphElement element;
 
-        public GraphInformation(GraphCoordinate coordinate, Runnable highlightListener) {
+        public GraphInformation(GraphCoordinate coordinate, GraphElement element) {
             this.coordinate = coordinate;
-            this.highlightListener = highlightListener;
+            this.element = element;
         }
 
     }

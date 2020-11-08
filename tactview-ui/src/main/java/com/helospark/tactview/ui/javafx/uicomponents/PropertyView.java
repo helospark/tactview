@@ -15,12 +15,11 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.message.AbstractDescriptorsAddedMessage;
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
-import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
-import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
@@ -62,8 +61,7 @@ public class PropertyView {
 
     private VBox propertyWindow;
     private final Map<String, GridPane> details = new HashMap<>();
-    private final Map<String, EffectPropertyPage> effectProperties = new HashMap<>();
-    private final Map<String, EffectPropertyPage> clipProperties = new HashMap<>();
+    private final Map<String, EffectPropertyPage> componentProperties = new HashMap<>();
 
     private final UiMessagingService messagingService;
     private final UiTimelineManager uiTimelineManager;
@@ -111,13 +109,9 @@ public class PropertyView {
             details.put(effectId, grid);
         });
 
-        messagingService.register(EffectDescriptorsAdded.class, message -> Platform.runLater(() -> {
-            EffectPropertyPage asd = createBox(message.getDescriptors(), message.getEffectId());
-            effectProperties.put(message.getEffectId(), asd);
-        }));
-        messagingService.register(ClipDescriptorsAdded.class, message -> Platform.runLater(() -> {
-            EffectPropertyPage asd = createBox(message.getDescriptors(), message.getClipId());
-            clipProperties.put(message.getClipId(), asd);
+        messagingService.register(AbstractDescriptorsAddedMessage.class, message -> Platform.runLater(() -> {
+            EffectPropertyPage asd = createBox(message.getDescriptors(), message.getComponentId());
+            componentProperties.put(message.getComponentId(), asd);
         }));
         messagingService.register(AbstractKeyframeChangedMessage.class, message -> Platform.runLater(() -> {
             updateValuesAtCurrentPosition();
@@ -145,8 +139,8 @@ public class PropertyView {
     }
 
     private Optional<Consumer<Boolean>> getEffectPropertyPageForId(String containerId, String effectId) {
-        return Optional.ofNullable(effectProperties.get(containerId))
-                .or(() -> Optional.ofNullable(clipProperties.get(containerId)))
+        return Optional.ofNullable(componentProperties.get(containerId))
+                .or(() -> Optional.ofNullable(componentProperties.get(containerId)))
                 .map(a -> a.getKeyframeEnabledConsumer().get(effectId));
     }
 
@@ -325,11 +319,15 @@ public class PropertyView {
     }
 
     public void showEffectProperties(String effectId) {
-        showProperties(effectProperties.get(effectId), effectId);
+        showComponentProperties(effectId);
     }
 
     public void showClipProperties(String clipId) {
-        showProperties(clipProperties.get(clipId), clipId);
+        showComponentProperties(clipId);
+    }
+
+    public void showComponentProperties(String componentId) {
+        showProperties(componentProperties.get(componentId), componentId);
     }
 
     private void showProperties(EffectPropertyPage shownEntries2, String id) {

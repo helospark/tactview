@@ -13,6 +13,7 @@ import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphAcceptType;
@@ -103,9 +104,24 @@ public class VisualTimelineClipElement extends GraphElement {
     }
 
     @Override
+    public List<ValueProviderDescriptor> getDescriptors() {
+        List<ValueProviderDescriptor> descriptors = super.getDescriptors();
+
+        descriptors.addAll(this.clip.getDescriptors());
+
+        return descriptors;
+    }
+
+    @Override
     public GraphElement deepClone(GraphElementCloneRequest cloneRequest) {
         VisualTimelineClipElement result = new VisualTimelineClipElement(cloneRequest.remap(outputIndex), (VisualTimelineClip) this.clip.cloneClip(CloneRequestMetadata.ofDefault()));
         copyCommonPropertiesTo(result, cloneRequest);
         return result;
     }
+
+    @Override
+    public String getName() {
+        return this.clip.getClass().getSimpleName();
+    }
+
 }

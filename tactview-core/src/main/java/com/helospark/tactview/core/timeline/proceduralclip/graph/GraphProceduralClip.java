@@ -33,10 +33,9 @@ public class GraphProceduralClip extends ProceduralVisualClip {
         this.effectGraphAccessor = effectGraphAccessor;
     }
 
-    public GraphProceduralClip(GraphProceduralClip singleColorProceduralClip, CloneRequestMetadata cloneRequestMetadata, EffectGraphAccessorMessageSender effectGraphAccessor) {
-        super(singleColorProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(singleColorProceduralClip, this);
-        effectGraphAccessor.sendProviderMessageFor(graphProvider); // this is not a pretty solution, but in the current arch required
+    public GraphProceduralClip(GraphProceduralClip proceuduralClip, CloneRequestMetadata cloneRequestMetadata, EffectGraphAccessorMessageSender effectGraphAccessor) {
+        super(proceuduralClip, cloneRequestMetadata);
+        ReflectionUtil.copyOrCloneFieldFromTo(proceuduralClip, this);
     }
 
     public GraphProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory,
@@ -82,6 +81,9 @@ public class GraphProceduralClip extends ProceduralVisualClip {
             EffectGraph effectGraph = defaultGraphArrangementFactory.createEffectGraphProviderWithOutput();
             graphProvider = new GraphProvider(effectGraph);
         }
+        graphProvider.setContainingIntervalAware(this);
+        graphProvider.setContainingElementId(this.getId());
+        effectGraphAccessor.sendProviderMessageFor(graphProvider); // TODO: this is not a pretty solution, but current arch does not provider better, must think of different way
 
         ValueProviderDescriptor graphDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(graphProvider)

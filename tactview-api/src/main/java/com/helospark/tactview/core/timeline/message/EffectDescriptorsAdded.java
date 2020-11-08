@@ -2,10 +2,11 @@ package com.helospark.tactview.core.timeline.message;
 
 import java.util.List;
 
+import com.helospark.tactview.core.timeline.EffectAware;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
-public class EffectDescriptorsAdded {
+public class EffectDescriptorsAdded implements AbstractDescriptorsAddedMessage {
     private String effectId;
     private List<ValueProviderDescriptor> descriptors;
     private StatelessEffect effect;
@@ -20,6 +21,7 @@ public class EffectDescriptorsAdded {
         return effectId;
     }
 
+    @Override
     public List<ValueProviderDescriptor> getDescriptors() {
         return descriptors;
     }
@@ -33,4 +35,13 @@ public class EffectDescriptorsAdded {
         return "EffectDescriptorsAdded [effectId=" + effectId + ", descriptors=" + descriptors + ", effect=" + effect + "]";
     }
 
+    @Override
+    public String getComponentId() {
+        return getEffectId();
+    }
+
+    @Override
+    public EffectAware getIntervalAware() {
+        return effect;
+    }
 }

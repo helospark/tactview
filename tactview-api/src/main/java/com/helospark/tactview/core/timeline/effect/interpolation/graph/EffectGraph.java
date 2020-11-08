@@ -283,7 +283,7 @@ public class EffectGraph {
         return graphIndex;
     }
 
-    public void removeElementById(GraphIndex graphAddedNode) {
+    public GraphElement removeElementById(GraphIndex graphAddedNode) {
         GraphElement removedElement = graphElements.remove(graphAddedNode);
         if (removedElement != null) {
             removedElement.outputs.keySet().stream()
@@ -298,6 +298,7 @@ public class EffectGraph {
                         }
                     });
         }
+        return removedElement;
     }
 
 }

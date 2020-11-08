@@ -8,11 +8,13 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.StatelessVideoEffect;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.StatelessEffectRequest;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphAcceptType;
@@ -79,31 +81,41 @@ public class StatelessEffectElement extends GraphElement {
 
         ReadOnlyClipImage inputImage = images.get(inputIndex);
 
+        boolean newlyCreatedInput = false;
         if (inputImage == null) {
-            System.out.println("No input image for " + inputIndex);
             inputImage = ClipImage.fromSize(request.expectedWidth, request.expectedHeight);
+            newlyCreatedInput = true;
         }
 
-        Map<String, ReadOnlyClipImage> additionalClips = new LinkedHashMap<>();
-        for (var additionalClipIndex : additionalClipInideces) {
-            ReadOnlyClipImage providedImage = images.get(additionalClipIndex);
-            if (providedImage != null) {
-                additionalClips.put(additionalClipIndex.getId(), providedImage);
+        ReadOnlyClipImage result;
+        if (!effect.isEnabledAt(request.relativePosition)) {
+            Map<String, ReadOnlyClipImage> additionalClips = new LinkedHashMap<>();
+            for (var additionalClipIndex : additionalClipInideces) {
+                ReadOnlyClipImage providedImage = images.get(additionalClipIndex);
+                if (providedImage != null) {
+                    additionalClips.put(additionalClipIndex.getId(), providedImage);
+                }
             }
+
+            StatelessEffectRequest effectRequest = StatelessEffectRequest.builder()
+                    .withCanvasHeight(request.expectedWidth)
+                    .withCanvasHeight(request.expectedHeight)
+                    .withClipPosition(request.position)
+                    .withCurrentFrame(inputImage)
+                    .withEffectChannel(0)
+                    .withEffectPosition(request.position)
+                    .withScale(request.scale)
+                    .withRequestedClips(additionalClips)
+                    .build();
+
+            result = effect.createFrameExternal(effectRequest);
+        } else {
+            result = ClipImage.copyOf(inputImage);
         }
 
-        StatelessEffectRequest effectRequest = StatelessEffectRequest.builder()
-                .withCanvasHeight(request.expectedWidth)
-                .withCanvasHeight(request.expectedHeight)
-                .withClipPosition(request.position)
-                .withCurrentFrame(inputImage)
-                .withEffectChannel(0)
-                .withEffectPosition(request.position)
-                .withScale(request.scale)
-                .withRequestedClips(additionalClips)
-                .build();
-
-        ReadOnlyClipImage result = effect.createFrameExternal(effectRequest);
+        if (newlyCreatedInput) {
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(inputImage.getBuffer());
+        }
 
         return Map.of(outputIndex, result);
     }
@@ -119,10 +131,24 @@ public class StatelessEffectElement extends GraphElement {
     }
 
     @Override
+    public List<ValueProviderDescriptor> getDescriptors() {
+        List<ValueProviderDescriptor> descriptors = super.getDescriptors();
+
+        descriptors.addAll(this.effect.getValueProviders());
+
+        return descriptors;
+    }
+
+    @Override
     public GraphElement deepClone(GraphElementCloneRequest cloneRequest) {
         StatelessEffectElement result = new StatelessEffectElement(cloneRequest.remap(inputIndex), cloneRequest.remap(outputIndex),
                 (StatelessVideoEffect) this.effect.cloneEffect(CloneRequestMetadata.ofDefault()));
         copyCommonPropertiesTo(result, cloneRequest);
         return result;
+    }
+
+    @Override
+    public String getName() {
+        return this.effect.getClass().getSimpleName();
     }
 }

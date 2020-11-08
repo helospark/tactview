@@ -99,4 +99,41 @@ public class CommonFrameTest {
         }
     }
 
+    @Test
+    public void testThatProceduralClipGeneratesTheSameImageAfterCloningSavingAndReloading() throws IOException {
+        List<String> proceduralClipIds = lightDi.getListOfBeans(ProceduralClipFactoryChainItem.class)
+                .stream()
+                .map(a -> a.getProceduralClipId())
+                .collect(Collectors.toList());
+
+        for (var proceduralClipId : proceduralClipIds) {
+            TimelineClip addedClip = fakeUi.dragProceduralClipToFirstChannel(proceduralClipId, TimelinePosition.ofZero());
+            fakeUi.copyClip(addedClip);
+            TimelineClip pastedClip = fakeUi.pasteClipAt(0, TimelinePosition.ofSeconds(30));
+
+            AudioVideoFragment expectedFrame = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(35.0));
+
+            File file = File.createTempFile("procedural_clip_save_and_load_" + proceduralClipId + "_" + System.currentTimeMillis(), ".tvs");
+
+            fakeUi.clickSaveMenuItem()
+                    .selectFile(file);
+
+            fakeUi.deleteClip(addedClip.getId());
+
+            fakeUi.clickLoadMenuItem()
+                    .selectFile(file);
+
+            AudioVideoFragment actualFrame = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(35.0));
+
+            IntegrationTestUtil.assertFrameEquals(actualFrame.getVideoResult(), expectedFrame.getVideoResult(), "Clip is not the same after saving and loading for clip " + proceduralClipId);
+
+            actualFrame.free();
+            expectedFrame.free();
+
+            fakeUi.deleteClip(addedClip.getId());
+            fakeUi.deleteClip(pastedClip.getId());
+            file.delete();
+        }
+    }
+
 }

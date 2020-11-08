@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Autowired;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
@@ -45,6 +46,8 @@ public class FakeUi {
     private SaveAndLoadHandler saveAndLoadHandler;
 
     private TimelinePosition cursorPosition = TimelinePosition.ofZero();
+
+    private TimelineClip clipCopyPasteBoard;
 
     @PostConstruct
     public void init() {
@@ -157,6 +160,20 @@ public class FakeUi {
 
     public FakeImageSequenceChooserDialog clickLoadImageSequence() {
         return new FakeImageSequenceChooserDialog(timelineManagerAccessor);
+    }
+
+    public void copyClip(TimelineClip addedClip) {
+        clipCopyPasteBoard = addedClip;
+    }
+
+    public TimelineClip pasteClipAt(int channelIndex, TimelinePosition position) {
+        TimelineChannel channel = timelineManagerAccessor.getChannels().get(0);
+
+        TimelineClip clonedClip = clipCopyPasteBoard.cloneClip(CloneRequestMetadata.ofDefault());
+        clonedClip.setInterval(clonedClip.getInterval().butMoveStartPostionTo(position));
+        timelineManagerAccessor.addClip(channel, clonedClip);
+
+        return clonedClip;
     }
 
 }

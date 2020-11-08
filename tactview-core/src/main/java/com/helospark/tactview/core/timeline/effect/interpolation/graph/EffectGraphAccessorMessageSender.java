@@ -1,27 +1,20 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.graph;
 
-import java.util.Optional;
-
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineInterval;
-import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElement;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.StatelessEffectElement;
-import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.VisualTimelineClipElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
-import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
-import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
+import com.helospark.tactview.core.timeline.message.GraphComponentDescriptorsAdded;
+import com.helospark.tactview.core.timeline.message.GraphNodeAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class EffectGraphAccessorMessageSender {
     private MessagingService messagingService;
-    private EffectParametersRepository effectParametersRepository;
 
-    public EffectGraphAccessorMessageSender(MessagingService messagingService, EffectParametersRepository effectParametersRepository) {
+    public EffectGraphAccessorMessageSender(MessagingService messagingService) {
         this.messagingService = messagingService;
-        this.effectParametersRepository = effectParametersRepository;
     }
 
     public void sendProviderMessageFor(GraphProvider effectGraphProvider) {
@@ -31,20 +24,13 @@ public class EffectGraphAccessorMessageSender {
     }
 
     public void sendProviderMessages(GraphProvider provider, GraphElement createElement) {
-        // TODO: graph should itself has descriptors, instead of clip & effect, this should be refactored, so GraphElement provides descriptors
-        // and EffectParameterRepository follows GraphElements as well, not just clips and effects
-        if (createElement instanceof VisualTimelineClipElement) {
-            VisualTimelineClipElement e = (VisualTimelineClipElement) createElement;
-            messagingService.sendAsyncMessage(new ClipDescriptorsAdded(e.getClip().getId(), e.getClip().getDescriptors(), e.getClip()));
-        } else if (createElement instanceof StatelessEffectElement) {
-            StatelessEffectElement e = (StatelessEffectElement) createElement;
-            messagingService.sendAsyncMessage(new EffectDescriptorsAdded(e.getEffect().getId(), e.getEffect().getValueProviders(), e.getEffect()));
-        }
+        messagingService.sendMessage(new GraphNodeAddedMessage(createElement, provider.getContainingIntervalAware().getGlobalInterval()));
+        messagingService.sendAsyncMessage(new GraphComponentDescriptorsAdded(createElement.getId(), createElement.getDescriptors(), provider.getContainingIntervalAware()));
     }
 
     public void sendKeyframeAddedMessage(GraphProvider provider) {
-        Optional<TimelineInterval> interval = effectParametersRepository.findIntervalForValurProvider(provider.getId());
-        Optional<String> containingElementId = effectParametersRepository.findContainingElementId(provider.getId());
-        messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(provider.getId(), interval.get(), containingElementId.get()));
+        TimelineInterval interval = provider.getContainingIntervalAware().getGlobalInterval();
+        String containingElementId = provider.getContainingElementId();
+        messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(provider.getId(), interval, containingElementId));
     }
 }

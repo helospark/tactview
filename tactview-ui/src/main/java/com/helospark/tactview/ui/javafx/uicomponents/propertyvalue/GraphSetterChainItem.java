@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphP
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.GraphingComponent;
@@ -32,6 +33,7 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
     private EffectGraphAccessor effectGraphAccessor;
     private MessagingService messagingService;
     private StylesheetAdderService stylesheetAdderService;
+    private NameToIdRepository nameToIdRepository;
 
     private Scene scene;
 
@@ -39,7 +41,7 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
 
     public GraphSetterChainItem(UiCommandInterpreterService commandInterpreter,
             EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, GraphingDialog graphingDialog, EffectGraphAccessor effectGraphAccessor,
-            MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories, StylesheetAdderService stylesheetAdderService) {
+            MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories, StylesheetAdderService stylesheetAdderService, NameToIdRepository nameToIdRepository) {
         super(GraphProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
@@ -49,13 +51,14 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
         this.messagingService = messagingService;
         this.menuItemFactories = menuItemFactories;
         this.stylesheetAdderService = stylesheetAdderService;
+        this.nameToIdRepository = nameToIdRepository;
     }
 
     @Override
     protected EffectLine handle(GraphProvider graphingProvider, ValueProviderDescriptor descriptor) {
         Button button = new Button("Open graph window", new Glyph("FontAwesome", FontAwesome.Glyph.DIAMOND));
 
-        GraphingComponent graphingComponent = new GraphingComponent(250, 100, effectGraphAccessor, messagingService, menuItemFactories, commandInterpreter, stylesheetAdderService);
+        GraphingComponent graphingComponent = new GraphingComponent(250, 100, effectGraphAccessor, messagingService, menuItemFactories, commandInterpreter, stylesheetAdderService, nameToIdRepository);
         graphingComponent.setGraphProvider(graphingProvider);
         graphingComponent.setZoom(0.4);
         graphingComponent.setParent(scene.getWindow());

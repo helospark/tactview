@@ -2,10 +2,11 @@ package com.helospark.tactview.core.timeline.message;
 
 import java.util.List;
 
+import com.helospark.tactview.core.timeline.EffectAware;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 
-public class ClipDescriptorsAdded {
+public class ClipDescriptorsAdded implements AbstractDescriptorsAddedMessage {
     private String clipId;
     private List<ValueProviderDescriptor> descriptors;
     private TimelineClip clip;
@@ -20,6 +21,7 @@ public class ClipDescriptorsAdded {
         return clipId;
     }
 
+    @Override
     public List<ValueProviderDescriptor> getDescriptors() {
         return descriptors;
     }
@@ -33,4 +35,13 @@ public class ClipDescriptorsAdded {
         return "ClipDescriptorsAdded [clipId=" + clipId + ", descriptors=" + descriptors + ", clip=" + clip + "]";
     }
 
+    @Override
+    public String getComponentId() {
+        return getClipId();
+    }
+
+    @Override
+    public EffectAware getIntervalAware() {
+        return clip;
+    }
 }

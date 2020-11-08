@@ -31,7 +31,6 @@ public class GraphEffect extends StatelessVideoEffect {
     public GraphEffect(GraphEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata, EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(cloneFrom, cloneRequestMetadata);
         ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
-        effectGraphAccessor.sendProviderMessageFor(effectGraphProvider); // this is not a pretty solution, but in the current arch required
     }
 
     public GraphEffect(JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory, EffectGraphAccessorMessageSender effectGraphAccessor) {
@@ -73,6 +72,9 @@ public class GraphEffect extends StatelessVideoEffect {
                 .withKeyframeableEffect(effectGraphProvider)
                 .withName("Graph")
                 .build();
+        effectGraphProvider.setContainingIntervalAware(this);
+        effectGraphProvider.setContainingElementId(this.getId());
+        effectGraphAccessor.sendProviderMessageFor(effectGraphProvider); // TODO: this is not a pretty solution, but current arch does not provider better, must think of different way
 
         return List.of(graphProviderDescriptor);
     }

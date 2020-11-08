@@ -32,8 +32,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.fa
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.stringinterpolator.StringInterpolatorFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
+import com.helospark.tactview.core.timeline.message.AbstractDescriptorsAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
-import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
@@ -63,8 +63,8 @@ public class EffectParametersRepository {
 
     @PostConstruct
     public void init() {
-        messagingService.register(EffectDescriptorsAdded.class, message -> {
-            addDescriptorsToRepository(message.getDescriptors(), message.getEffect(), message.getEffect().getId());
+        messagingService.register(AbstractDescriptorsAddedMessage.class, message -> {
+            addDescriptorsToRepository(message.getDescriptors(), message.getIntervalAware(), message.getComponentId());
         });
         messagingService.register(ClipDescriptorsAdded.class, message -> {
             addDescriptorsToRepository(message.getDescriptors(), message.getClip(), message.getClipId());

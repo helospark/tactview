@@ -74,16 +74,15 @@ public class LinearGradientProceduralClip extends ProceduralVisualClip {
 
         startColorProvider = createColorProvider(0.0, 0.0, 0.0);
         endColorProvider = createColorProvider(1.0, 1.0, 1.0);
+
+        PointProvider topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.0), doubleProviderWithDefaultValue(0.0));
+        PointProvider bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(1.0), doubleProviderWithDefaultValue(0.0));
+        lineProvider = new LineProvider(topLeftPointProvider, bottomRightPointProvider);
     }
 
     @Override
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
-
-        PointProvider topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.0), doubleProviderWithDefaultValue(0.0));
-        PointProvider bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(1.0), doubleProviderWithDefaultValue(0.0));
-
-        lineProvider = new LineProvider(topLeftPointProvider, bottomRightPointProvider);
 
         ValueProviderDescriptor startColorDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(startColorProvider)

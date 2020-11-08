@@ -1,14 +1,18 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveMetadata;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.ConnectionIndex;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.EffectGraphInputRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.GraphConnectionDescriptor;
@@ -18,6 +22,8 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 public abstract class GraphElement {
     private static final TypeReference<Map<ConnectionIndex, GraphConnectionDescriptor>> MAP_TYPE_REFERENCE = new TypeReference<>() {
     };
+
+    private String id = UUID.randomUUID().toString();
 
     public double x, y; // display logic, eventually move to UI module
 
@@ -32,6 +38,7 @@ public abstract class GraphElement {
     }
 
     public GraphElement(JsonNode data, LoadMetadata loadMetadata) {
+        this.id = data.get("id").asText();
         this.x = data.get("x").asDouble();
         this.y = data.get("y").asDouble();
         this.inputs = loadMetadata.getObjectMapperUsed().convertValue(data.get("inputs"), MAP_TYPE_REFERENCE);
@@ -45,6 +52,7 @@ public abstract class GraphElement {
         result.put("inputs", inputs);
         result.put("outputs", outputs);
         result.put("factoryId", factoryId);
+        result.put("id", id);
 
         serializeInternal(result, saveMetadata);
 
@@ -80,10 +88,24 @@ public abstract class GraphElement {
         element.y = this.y;
         element.inputs = this.inputs.entrySet().stream().collect(Collectors.toMap(a -> cloneRequest.remap(a.getKey()), a -> a.getValue()));
         element.outputs = this.outputs.entrySet().stream().collect(Collectors.toMap(a -> cloneRequest.remap(a.getKey()), a -> a.getValue()));
+        element.factoryId = this.factoryId;
     }
 
     public String getFactoryId() {
         return factoryId;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    // TODO: UI logic should be in the UI module
+    public String getName() {
+        return this.getClass().getSimpleName();
+    }
+
+    public List<ValueProviderDescriptor> getDescriptors() {
+        return new ArrayList<>(1);
     }
 
     public static class GraphElementCloneRequest {
