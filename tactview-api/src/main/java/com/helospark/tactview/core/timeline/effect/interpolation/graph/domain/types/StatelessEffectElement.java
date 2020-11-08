@@ -88,7 +88,7 @@ public class StatelessEffectElement extends GraphElement {
         }
 
         ReadOnlyClipImage result;
-        if (!effect.isEnabledAt(request.relativePosition)) {
+        if (effect.isEnabledAt(request.relativePosition)) {
             Map<String, ReadOnlyClipImage> additionalClips = new LinkedHashMap<>();
             for (var additionalClipIndex : additionalClipInideces) {
                 ReadOnlyClipImage providedImage = images.get(additionalClipIndex);

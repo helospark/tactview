@@ -26,6 +26,8 @@ public class EffectResizedCommand implements UiCommand {
     private TimelineLength maximumJumpLength;
     private TimelineLength minimumLength;
 
+    private boolean allowResizeToDisplaceOtherEffects;
+
     @Generated("SparkTools")
     private EffectResizedCommand(Builder builder) {
         this.timelineManager = builder.timelineManager;
@@ -38,12 +40,13 @@ public class EffectResizedCommand implements UiCommand {
         this.useSpecialPoints = builder.useSpecialPoints;
         this.maximumJumpLength = builder.maximumJumpLength;
         this.minimumLength = builder.minimumLength;
+        this.allowResizeToDisplaceOtherEffects = builder.allowResizeToDisplaceOtherEffects;
     }
 
     @Override
     public void execute() {
         StatelessEffect effect = timelineManager.findEffectById(effectId).orElseThrow(() -> new IllegalArgumentException("No effect found"));
-        originalInterval = effect.getInterval();
+        originalInterval = effect.getGlobalInterval();
 
         ResizeEffectRequest request = ResizeEffectRequest.builder()
                 .withEffect(effect)
@@ -53,6 +56,7 @@ public class EffectResizedCommand implements UiCommand {
                 .withMoreResizeExpected(moreResizeExpected)
                 .withMaximumJumpLength(maximumJumpLength)
                 .withMinimumLength(minimumLength)
+                .withAllowResizeToDisplaceOtherEffects(allowResizeToDisplaceOtherEffects)
                 .build();
 
         timelineManager.resizeEffect(request);
@@ -68,6 +72,7 @@ public class EffectResizedCommand implements UiCommand {
                 .withLeft(left)
                 .withGlobalPosition(previousPosition)
                 .withUseSpecialPoints(false)
+                .withAllowResizeToDisplaceOtherEffects(allowResizeToDisplaceOtherEffects)
                 .build();
 
         timelineManager.resizeEffect(request);
@@ -102,6 +107,7 @@ public class EffectResizedCommand implements UiCommand {
         private boolean useSpecialPoints;
         private TimelineLength maximumJumpLength;
         private TimelineLength minimumLength;
+        private boolean allowResizeToDisplaceOtherEffects = false;
 
         private Builder() {
         }
@@ -153,6 +159,11 @@ public class EffectResizedCommand implements UiCommand {
 
         public Builder withMinimumLength(TimelineLength minimumLength) {
             this.minimumLength = minimumLength;
+            return this;
+        }
+
+        public Builder withAllowResizeToDisplaceOtherEffects(boolean allowResizeToDisplaceOtherEffects) {
+            this.allowResizeToDisplaceOtherEffects = allowResizeToDisplaceOtherEffects;
             return this;
         }
 

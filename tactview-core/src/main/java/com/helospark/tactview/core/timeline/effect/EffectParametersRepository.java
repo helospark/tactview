@@ -33,7 +33,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.fa
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.core.timeline.message.AbstractDescriptorsAddedMessage;
-import com.helospark.tactview.core.timeline.message.ClipDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
@@ -64,10 +63,7 @@ public class EffectParametersRepository {
     @PostConstruct
     public void init() {
         messagingService.register(AbstractDescriptorsAddedMessage.class, message -> {
-            addDescriptorsToRepository(message.getDescriptors(), message.getIntervalAware(), message.getComponentId());
-        });
-        messagingService.register(ClipDescriptorsAdded.class, message -> {
-            addDescriptorsToRepository(message.getDescriptors(), message.getClip(), message.getClipId());
+            addDescriptorsToRepository(message.getDescriptors(), message.getIntervalAware(), message.getComponentId(), message.getParentId());
         });
         messagingService.register(KeyframeAddedRequest.class, message -> {
             keyframeAdded(message);
@@ -78,17 +74,17 @@ public class EffectParametersRepository {
         return Optional.ofNullable(allEffectIdToEffectMap.get(keyframeableEffectId)).map(a -> a.containingElementId);
     }
 
-    private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, EffectAware intervalAware, String containingElementId) {
+    private void addDescriptorsToRepository(List<ValueProviderDescriptor> list, EffectAware intervalAware, String containingElementId, Optional<String> parentId) {
         list.stream()
                 .forEach(a -> {
-                    allEffectIdToEffectMap.put(a.getKeyframeableEffect().getId(), new EffectStore(a.getKeyframeableEffect(), containingElementId, intervalAware, a));
+                    allEffectIdToEffectMap.put(a.getKeyframeableEffect().getId(), new EffectStore(a.getKeyframeableEffect(), containingElementId, intervalAware, a, parentId));
                 });
 
         list.stream()
                 .map(a -> a.getKeyframeableEffect())
                 .flatMap(a -> getAllKeyframeableEffects(a))
                 .forEach(a -> {
-                    allEffectIdToEffectMap.putIfAbsent(a.getId(), new EffectStore(a, containingElementId, intervalAware));
+                    allEffectIdToEffectMap.putIfAbsent(a.getId(), new EffectStore(a, containingElementId, intervalAware, parentId));
                 });
     }
 
@@ -140,7 +136,10 @@ public class EffectParametersRepository {
             TimelinePosition relativePosition = positionToLocal(message.getGlobalTimelinePosition(), valueToChange);
             valueToChange.effect.keyframeAdded(relativePosition, message.getValue());
             valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
-            messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(message.getDescriptorId(), valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
+            KeyframeSuccesfullyAddedMessage keyframeAddedMessage = new KeyframeSuccesfullyAddedMessage(message.getDescriptorId(), valueToChange.effectAware.getGlobalInterval(),
+                    valueToChange.containingElementId);
+            keyframeAddedMessage.setParentElementId(valueToChange.parentId);
+            messagingService.sendAsyncMessage(keyframeAddedMessage);
         } else {
             System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
         }
@@ -161,7 +160,9 @@ public class EffectParametersRepository {
         EffectStore valueToChange = allEffectIdToEffectMap.get(id);
         valueToChange.effect.removeKeyframeAt(positionToLocal(globalPosition, valueToChange));
         valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
-        messagingService.sendAsyncMessage(new KeyframeSuccesfullyRemovedMessage(id, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
+        KeyframeSuccesfullyRemovedMessage keyframeRemovedMessage = new KeyframeSuccesfullyRemovedMessage(id, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId);
+        keyframeRemovedMessage.setParentId(valueToChange.parentId);
+        messagingService.sendAsyncMessage(keyframeRemovedMessage);
     }
 
     public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
@@ -175,24 +176,27 @@ public class EffectParametersRepository {
         public String containingElementId;
         public EffectAware effectAware;
         public Optional<ValueProviderDescriptor> descriptor;
+        public Optional<String> parentId = Optional.empty();
 
-        public EffectStore(KeyframeableEffect effect, String elementId, EffectAware intervalAware) {
+        public EffectStore(KeyframeableEffect effect, String elementId, EffectAware intervalAware, Optional<String> parentId) {
             this.effect = effect;
             this.containingElementId = elementId;
             this.effectAware = intervalAware;
             this.descriptor = Optional.empty();
+            this.parentId = parentId;
         }
 
-        public EffectStore(KeyframeableEffect effect, String elementId, EffectAware intervalAware, ValueProviderDescriptor descriptor) {
+        public EffectStore(KeyframeableEffect effect, String elementId, EffectAware intervalAware, ValueProviderDescriptor descriptor, Optional<String> parentId) {
             this.effect = effect;
             this.containingElementId = elementId;
             this.effectAware = intervalAware;
             this.descriptor = Optional.ofNullable(descriptor);
+            this.parentId = parentId;
         }
 
         @Override
         public String toString() {
-            return "EffectStore [effect=" + effect + ", containingElementId=" + containingElementId + ", effectAware=" + effectAware + ", descriptor=" + descriptor + "]";
+            return "EffectStore [effect=" + effect + ", containingElementId=" + containingElementId + ", effectAware=" + effectAware + ", descriptor=" + descriptor + ", parentId=" + parentId + "]";
         }
 
     }

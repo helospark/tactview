@@ -30,7 +30,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectAddedListener {
-    private static final int DRAG_PIXEL_DISTANCE = 15;
+    private static final int DRAG_PIXEL_DISTANCE = 20;
     public static final int EFFECTS_OFFSET = 50;
     public static final int EFFECT_HEIGHT = 30;
     private UiMessagingService messagingService;
@@ -151,6 +151,7 @@ public class EffectAddedListener {
                 .withRevertable(true)
                 .withTimelineManager(timelineManagerAccessor)
                 .withUseSpecialPoints(false)
+                .withAllowResizeToDisplaceOtherEffects(true)
                 .build();
 
         TimelinePosition clipRight = clip.getInterval().getEndPosition();
@@ -163,6 +164,7 @@ public class EffectAddedListener {
                 .withRevertable(true)
                 .withTimelineManager(timelineManagerAccessor)
                 .withUseSpecialPoints(false)
+                .withAllowResizeToDisplaceOtherEffects(true)
                 .build();
 
         CompositeCommand compositeCommand = new CompositeCommand(moveLeft, moveRight);

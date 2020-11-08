@@ -568,9 +568,9 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     private TimelineInterval getIntervalWhenResizedTo(IntervalAware clip, boolean left, TimelinePosition newPosition) {
         TimelineInterval interval;
         if (left) {
-            interval = clip.getInterval().butWithStartPosition(newPosition);
+            interval = clip.getGlobalInterval().butWithStartPosition(newPosition);
         } else {
-            interval = clip.getInterval().butWithEndPosition(newPosition);
+            interval = clip.getGlobalInterval().butWithEndPosition(newPosition);
         }
         return interval;
     }
@@ -578,8 +578,11 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     public void resizeEffect(ResizeEffectRequest resizeEffectRequest) {
         StatelessEffect effect = resizeEffectRequest.getEffect();
         boolean left = resizeEffectRequest.isLeft();
+        TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
         TimelinePosition globalPosition = resizeEffectRequest.getGlobalPosition();
         boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
+
+        System.out.println("GP1: " + globalPosition);
 
         TimelineLength minimumSize = resizeEffectRequest.getMinimumLength().orElse(null);
         if (minimumSize != null && getIntervalWhenResizedTo(effect, left, globalPosition).getLength().lessThanOrEqual(minimumSize)) {
@@ -590,8 +593,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             }
         }
 
-        TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
-        TimelineInterval originalInterval = clip.getInterval();
+        TimelineInterval originalInterval = clip.getGlobalInterval();
 
         TimelinePosition newPosition = globalPosition;
 
@@ -618,6 +620,11 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             }
         }
 
+        if (resizeEffectRequest.getAllowResizeToDisplaceOtherEffects()) {
+            Integer effectChannelIndex = clip.getEffectChannelIndex(resizeEffectRequest.getEffect().getId()).get();
+            NonIntersectingIntervalList<StatelessEffect> newChannel = clip.addEffectChannel(effectChannelIndex);
+            newChannel.addInterval(clip.removeEffectById(resizeEffectRequest.getEffect().getId()));
+        }
         boolean success = clip.resizeEffect(effect, left, newPosition);
 
         if (success) {
@@ -631,6 +638,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
                     .build();
             messagingService.sendMessage(clipResizedMessage);
+            optimizeEffectChannels(clip);
         }
     }
 
@@ -861,17 +869,21 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             } else {
                 NonIntersectingIntervalList<StatelessEffect> newChannel = clip.addEffectChannel(newChannelIndex + moveDirection);
                 newChannel.addInterval(effect);
-                for (int i = 0; i < clip.getEffectChannels().size(); ++i) {
-                    if (clip.getEffectChannels().get(i).size() == 0) {
-                        clip.getEffectChannels().remove(i);
-                        --i;
-                    }
-                }
-                for (int i = 0; i < clip.getEffectChannels().size(); ++i) {
-                    for (var newEffect : clip.getEffectChannels().get(i)) {
-                        messagingService.sendAsyncMessage(new EffectChannelChangedMessage(newEffect.getId(), i, newEffect.getInterval()));
-                    }
-                }
+                optimizeEffectChannels(clip);
+            }
+        }
+    }
+
+    private void optimizeEffectChannels(TimelineClip clip) {
+        for (int i = 0; i < clip.getEffectChannels().size(); ++i) {
+            if (clip.getEffectChannels().get(i).size() == 0) {
+                clip.getEffectChannels().remove(i);
+                --i;
+            }
+        }
+        for (int i = 0; i < clip.getEffectChannels().size(); ++i) {
+            for (var newEffect : clip.getEffectChannels().get(i)) {
+                messagingService.sendAsyncMessage(new EffectChannelChangedMessage(newEffect.getId(), i, newEffect.getInterval()));
             }
         }
     }

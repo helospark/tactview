@@ -318,9 +318,12 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
     }
 
     public boolean resizeEffect(StatelessEffect effect, boolean left, TimelinePosition globalPosition) {
+        System.out.println("GP: " + globalPosition);
         synchronized (getFullClipLock()) {
             TimelinePosition localPositon = globalPosition.from(this.interval.getStartPosition());
             NonIntersectingIntervalList<StatelessEffect> channel = findChannelByEffect(effect).orElseThrow(() -> new IllegalArgumentException("No such channel"));
+
+            System.out.println("LP " + localPositon);
 
             TimelineInterval originalInterval = effect.getInterval();
             TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(localPositon) : originalInterval.butWithEndPosition(localPositon);

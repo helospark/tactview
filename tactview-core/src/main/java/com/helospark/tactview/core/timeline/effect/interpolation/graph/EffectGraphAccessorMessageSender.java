@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.graph;
 
+import java.util.Optional;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.domain.types.GraphElement;
@@ -25,12 +27,15 @@ public class EffectGraphAccessorMessageSender {
 
     public void sendProviderMessages(GraphProvider provider, GraphElement createElement) {
         messagingService.sendMessage(new GraphNodeAddedMessage(createElement, provider.getContainingIntervalAware().getGlobalInterval()));
-        messagingService.sendAsyncMessage(new GraphComponentDescriptorsAdded(createElement.getId(), createElement.getDescriptors(), provider.getContainingIntervalAware()));
+        messagingService
+                .sendAsyncMessage(new GraphComponentDescriptorsAdded(createElement.getId(), createElement.getDescriptors(), provider.getContainingIntervalAware(), provider.getContainingElementId()));
     }
 
     public void sendKeyframeAddedMessage(GraphProvider provider) {
         TimelineInterval interval = provider.getContainingIntervalAware().getGlobalInterval();
         String containingElementId = provider.getContainingElementId();
-        messagingService.sendAsyncMessage(new KeyframeSuccesfullyAddedMessage(provider.getId(), interval, containingElementId));
+        KeyframeSuccesfullyAddedMessage keyframeAddedMessage = new KeyframeSuccesfullyAddedMessage(provider.getId(), interval, containingElementId);
+        keyframeAddedMessage.setParentElementId(Optional.ofNullable(provider.getContainingElementId()));
+        messagingService.sendAsyncMessage(keyframeAddedMessage);
     }
 }

@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.message;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
@@ -9,6 +10,7 @@ public class KeyframeSuccesfullyRemovedMessage extends AbstractKeyframeChangedMe
     private final String descriptorId;
     private final TimelineInterval interval;
     private final String containingElementId;
+    private Optional<String> parentId;
 
     public KeyframeSuccesfullyRemovedMessage(String descriptorId, TimelineInterval globalInterval, String containingElementId) {
         this.descriptorId = descriptorId;
@@ -34,6 +36,14 @@ public class KeyframeSuccesfullyRemovedMessage extends AbstractKeyframeChangedMe
     @Override
     public List<TimelineInterval> getAffectedIntervals() {
         return List.of(interval);
+    }
+
+    public Optional<String> getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Optional<String> parentId) {
+        this.parentId = parentId;
     }
 
 }

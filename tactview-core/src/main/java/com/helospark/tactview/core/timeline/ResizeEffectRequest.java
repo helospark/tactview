@@ -12,6 +12,7 @@ public class ResizeEffectRequest {
     private boolean moreResizeExpected;
     private TimelineLength maximumJumpLength;
     private TimelineLength minimumLength;
+    private boolean allowResizeToDisplaceOtherEffects = false;
 
     @Generated("SparkTools")
     private ResizeEffectRequest(Builder builder) {
@@ -22,6 +23,7 @@ public class ResizeEffectRequest {
         this.moreResizeExpected = builder.moreResizeExpected;
         this.maximumJumpLength = builder.maximumJumpLength;
         this.minimumLength = builder.minimumLength;
+        this.allowResizeToDisplaceOtherEffects = builder.allowResizeToDisplaceOtherEffects;
     }
 
     public StatelessEffect getEffect() {
@@ -52,6 +54,10 @@ public class ResizeEffectRequest {
         return maximumJumpLength;
     }
 
+    public boolean getAllowResizeToDisplaceOtherEffects() {
+        return allowResizeToDisplaceOtherEffects;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -66,6 +72,7 @@ public class ResizeEffectRequest {
         private boolean moreResizeExpected;
         private TimelineLength maximumJumpLength;
         private TimelineLength minimumLength;
+        private boolean allowResizeToDisplaceOtherEffects = false;
 
         private Builder() {
         }
@@ -102,6 +109,11 @@ public class ResizeEffectRequest {
 
         public Builder withMinimumLength(TimelineLength minimumLength) {
             this.minimumLength = minimumLength;
+            return this;
+        }
+
+        public Builder withAllowResizeToDisplaceOtherEffects(boolean allowResizeToDisplaceOtherEffects) {
+            this.allowResizeToDisplaceOtherEffects = allowResizeToDisplaceOtherEffects;
             return this;
         }
 

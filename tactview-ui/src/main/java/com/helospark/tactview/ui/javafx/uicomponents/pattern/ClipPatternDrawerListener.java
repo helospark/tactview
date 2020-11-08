@@ -87,6 +87,8 @@ public class ClipPatternDrawerListener {
         messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
             if (clipsToUpdate.containsKey(message.getContainingElementId())) {
                 updateRequests.add(new ClipPatternUpdateRequest(message.getContainingElementId()));
+            } else if (message.getParentElementId().isPresent() && clipsToUpdate.containsKey(message.getParentElementId().get())) {
+                updateRequests.add(new ClipPatternUpdateRequest(message.getParentElementId().get()));
             }
         });
         messagingService.register(RegenerateAllImagePatternsMessage.class, message -> {
