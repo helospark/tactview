@@ -242,7 +242,7 @@ public class JavaFXUiMain extends Application {
         halfImageEffectButton.setSelected(false);
         halfImageEffectButton.setOnAction(e -> {
             playbackPreferenceRepository.setHalfEffect(halfImageEffectButton.isSelected());
-            uiTimelineManager.refresh();
+            uiTimelineManager.refreshDisplay(true);
         });
         halfImageEffectButton.setTooltip(new Tooltip("Apply effects only on left side of preview"));
 

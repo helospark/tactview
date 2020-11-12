@@ -138,7 +138,15 @@ public class UiTimelineManager {
     }
 
     public void refreshDisplay() {
-        displayUpdaterService.updateDisplay(this.getCurrentPosition());
+        refreshDisplay(false);
+    }
+
+    public void refreshDisplay(boolean invalidateCache) {
+        if (invalidateCache) {
+            displayUpdaterService.updateDisplayWithCacheInvalidation(this.getCurrentPosition());
+        } else {
+            displayUpdaterService.updateDisplay(this.getCurrentPosition());
+        }
         notifyConsumers();
 
         // TODO: this is also a consumer, but due to playback it would be doublecalled during playback
