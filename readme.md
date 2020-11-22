@@ -12,6 +12,7 @@ Download the latest binary release for your OS:
   
   - [Linux-x64](https://helospark.com/tactview/download/tactview_linux64_snapshot.tar.xz)
   - [Windows-x64](https://helospark.com/tactview/download/tactview_win64_snapshot.zip)
+  - [OSX](https://helospark.com/tactview/download/tactview_osx_snapshot.dmg)
 
 Or check out all releases: [all releases](https://helospark.com/tactview/download/)
 
@@ -36,10 +37,11 @@ After install you can find Tactview either in your OS's program menu and under /
  - OpenCV
  - Java 15
  - Apache Maven (for building)
- - ImageMagick (on Linux during release used to convert icons)
+ - ImageMagick
 
 
-(On Linux you can install all dependencies with `tactview-native/build_dependencies.sh`)
+On Linux you can install all dependencies with `tactview-native/build_dependencies.sh` + you also need to install Java 15, Maven
+On OSX `tactview-native/build_dependencies_mac.sh` + you also need to install XCode, Java 15, Maven
 
 ### Release build
 

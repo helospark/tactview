@@ -1,5 +1,8 @@
 package com.helospark.tactview.ui.javafx;
 
+import static java.awt.image.BufferedImage.TYPE_INT_BGR;
+
+import java.awt.Taskbar;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -43,11 +49,13 @@ import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
+import com.twelvemonkeys.lang.SystemUtil;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
@@ -135,6 +143,10 @@ public class JavaFXUiMain extends Application {
         styleSheetAdder.addStyleSheets(root, "stylesheet.css");
 
         MenuBar menuBar = lightDi.getBean(MenuProcessor.class).createMenuBar();
+        if (SystemUtils.IS_OS_MAC_OSX) {
+            // https://stackoverflow.com/a/28874063
+            menuBar.useSystemMenuBarProperty().set(true);
+        }
 
         stage.setOnCloseRequest(e -> {
             exitApplication(exitWithSaveService);
@@ -143,6 +155,7 @@ public class JavaFXUiMain extends Application {
         root.setTop(menuBar);
         stage.setScene(scene);
         stage.setTitle("TactView - Video editor");
+
         dirtyRepository.addUiChangeListener(value -> {
             Platform.runLater(() -> {
                 String title = "";
@@ -154,14 +167,16 @@ public class JavaFXUiMain extends Application {
             });
         });
         stage.setMaximized(true);
+        
+        if (SystemUtils.IS_OS_MAC) {
+            SwingFXUtils.toFXImage(new BufferedImage(100, 100, TYPE_INT_BGR), null);
+        }
 
         SplitPane mainContentPane = new SplitPane(); // spacing between child nodes only.
         mainContentPane.setId("content-area");
         mainContentPane.setPrefWidth(scene.getWidth());
         mainContentPane.setPadding(new Insets(1)); // space between vbox border and child nodes column
         mainContentPane.setDividerPositions(0.6);
-
-        System.out.println("$$$$$$$$$$$ Width=" + stage.getWidth() + " " + stage.getHeight());
 
         SplitPane upperPane = new SplitPane();
         upperPane.setId("upper-content-area");
@@ -378,7 +393,12 @@ public class JavaFXUiMain extends Application {
     }
 
     protected void setTactviewIconForStage(Stage stage) {
-        stage.getIcons().add(new Image(getClass().getResource(ICON_PATH).toString()));
+        Image image = new Image(getClass().getResource(ICON_PATH).toString());
+        stage.getIcons().add(image);
+        if (Taskbar.isTaskbarSupported()) {
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+            Taskbar.getTaskbar().setIconImage(bufferedImage);
+        }
     }
 
     private void showSplash(Stage splashStage, ImageView splash) {

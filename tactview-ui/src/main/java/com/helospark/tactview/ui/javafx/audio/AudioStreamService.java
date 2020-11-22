@@ -16,6 +16,7 @@ import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
 public class AudioStreamService {
     private DataLine.Info dataLineInfo;
     private SourceDataLine sourceDataLine = null;
+    private boolean initFailed = false;
 
     @Slf4j
     private Logger logger;
@@ -27,7 +28,7 @@ public class AudioStreamService {
                 + (1000 * data.length / (PlaybackFrameAccessor.BYTES * PlaybackFrameAccessor.CHANNELS * PlaybackFrameAccessor.SAMPLE_RATE)));
 
         if (data.length > 0) {
-            if (sourceDataLine == null) { // TODO: reinit
+            if (sourceDataLine == null && !initFailed) { // TODO: reinit
                 try {
                     logger.info("Initializing sourceDataLine");
                     AudioFormat format = new AudioFormat(PlaybackFrameAccessor.SAMPLE_RATE, PlaybackFrameAccessor.BYTES * 8, PlaybackFrameAccessor.CHANNELS, true, true);
@@ -35,17 +36,26 @@ public class AudioStreamService {
                     sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
                     sourceDataLine.open(format, data.length);
                     sourceDataLine.start();
-                } catch (LineUnavailableException e) {
-                    e.printStackTrace();
+                } catch (LineUnavailableException | IllegalArgumentException e) {
+                    logger.error("Unable to initialize sound, there will be no sound during playback", e);
+                    initFailed = true;
                 }
                 initializedFrameSize = data.length;
             }
 
-            logger.debug("There is still " + (sourceDataLine.getBufferSize() - sourceDataLine.available()) + " bytes in the buffer at " + System.currentTimeMillis());
 
-            int bytesWritten = sourceDataLine.write(data, 0, data.length);
-
-            logger.debug("Bytes written: " + bytesWritten + " " + data.length + " at " + System.currentTimeMillis());
+            if (!initFailed) {
+                logger.debug("There is still " + (sourceDataLine.getBufferSize() - sourceDataLine.available()) + " bytes in the buffer at " + System.currentTimeMillis());
+                int bytesWritten = sourceDataLine.write(data, 0, data.length);
+                logger.debug("Bytes written: " + bytesWritten + " " + data.length + " at " + System.currentTimeMillis());
+            } else {
+                try {
+                    int lengthInMs = (data.length * 1000) / (PlaybackFrameAccessor.CHANNELS * PlaybackFrameAccessor.BYTES * PlaybackFrameAccessor.SAMPLE_RATE);
+                    Thread.sleep(lengthInMs); // Simulate sound played, because frame speed is driven by blocking sound write
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
