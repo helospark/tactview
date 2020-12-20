@@ -33,6 +33,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 @Component
@@ -103,6 +104,7 @@ public class ClipAddedListener {
         nameToIdRepository.generateAndAddNameForIdIfNotPresent(clip.getClass().getSimpleName(), clip.getId());
         Pane parentPane = new Pane();
         Rectangle rectangle = new Rectangle();
+        rectangle.setFill(Color.BLACK);
         double width = timelineState.secondsToPixels(clip.getInterval().getLength());
         rectangle.setWidth(width);
         rectangle.setHeight(50);
@@ -126,6 +128,7 @@ public class ClipAddedListener {
 
         rectangle.setOnDragDetected(e -> {
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
+            db.setDragView(ImageReferenceHolder.TRANSPARENT_5x5);
             double currentX = dragRepository.getInitialX();
 
             /* put a string on dragboard */

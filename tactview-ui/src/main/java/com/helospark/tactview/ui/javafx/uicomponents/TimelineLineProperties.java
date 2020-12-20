@@ -53,4 +53,12 @@ public class TimelineLineProperties {
         this.enabledProperty.set(b);
     }
 
+    public void reset() {
+        startX.set(0);
+        endX.set(0);
+        startY.set(0);
+        endY.set(0);
+        enabledProperty.set(false);
+    }
+
 }

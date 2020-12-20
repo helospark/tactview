@@ -94,8 +94,8 @@ public class EffectAddedListener {
         rectangle.setOnDragDetected(event -> {
             ClipboardContent content = new ClipboardContent();
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
+            db.setDragView(ImageReferenceHolder.TRANSPARENT_5x5);
             double currentX = dragRepository.getInitialX();
-            System.out.println("X is : " + currentX + " ");
             EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
                     event.getX());
             boolean isResizing = isResizing(rectangle, currentX);

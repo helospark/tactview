@@ -105,4 +105,9 @@ public class ZoomableScrollPane extends ScrollPane {
     public DoubleProperty zoomProperty() {
         return target.scaleXProperty();
     }
+
+    public void reset() {
+        scaleValue = 1.0;
+        updateScale();
+    }
 }

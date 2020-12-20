@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.timeline.SecondsAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -34,7 +35,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 @Component
-public class TimelineState {
+public class TimelineState implements ResettableBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(TimelineState.class);
     public static final BigDecimal PIXEL_PER_SECOND = new BigDecimal(10L);
 
@@ -395,6 +396,20 @@ public class TimelineState {
 
     public TimelinePosition getLoopEndTime() {
         return pixelsToSeconds(loopBProperties.getStartX().get());
+    }
+
+    @Override
+    public void resetDefaults() {
+        zoomValue.set(1.0);
+        hscroll.set(0);
+        vscroll.set(0);
+        timelineWidthProperty.set(2000.0);
+        translate.set(0);
+        linePosition.set(0.0);
+        moveSpecialPointLineProperties.reset();
+        loopAProperties.reset();
+        loopBProperties.reset();
+        timeLineScrollPane.reset();
     }
 
 }

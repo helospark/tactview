@@ -104,6 +104,7 @@ public class TimelineDragAndDropHandler {
                 double y = event.getY() + timeline.getLayoutY();
                 dragRepository.onBoxSelectStarted(new Point(x, y));
                 Dragboard db = timeline.startDragAndDrop(TransferMode.ANY);
+                db.setDragView(ImageReferenceHolder.TRANSPARENT_5x5);
                 ClipboardContent content = new ClipboardContent();
                 content.putString("dragging");
                 db.setContent(content);
