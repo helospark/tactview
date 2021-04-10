@@ -71,9 +71,9 @@ public abstract class AbstractRenderService implements RenderService {
 
         AudioVideoFragment frame = timelineManagerRenderService.getFrame(frameRequest);
 
-        if (renderRequest.getUpscale().compareTo(BigDecimal.ONE) > 0.0 ||
+        if (frame.getVideoResult() != null && (renderRequest.getUpscale().compareTo(BigDecimal.ONE) > 0.0 ||
                 frame.getVideoResult().getWidth() != request.expectedWidth || // due to +1 for width/height on odd size
-                frame.getVideoResult().getHeight() != request.expectedHeight) {
+                frame.getVideoResult().getHeight() != request.expectedHeight)) {
             ScaleRequest scaleRequest = ScaleRequest.builder()
                     .withImage(frame.getVideoResult())
                     .withNewWidth(request.expectedWidth)

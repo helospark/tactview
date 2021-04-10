@@ -1,5 +1,8 @@
 package com.helospark.tactview.core.render;
 
+import static com.helospark.tactview.core.render.helper.ExtensionType.AUDIO;
+import static com.helospark.tactview.core.render.helper.ExtensionType.VIDEO;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +37,8 @@ import com.helospark.tactview.core.render.ffmpeg.NativeMap;
 import com.helospark.tactview.core.render.ffmpeg.NativePair;
 import com.helospark.tactview.core.render.ffmpeg.QueryCodecRequest;
 import com.helospark.tactview.core.render.ffmpeg.RenderFFMpegFrame;
+import com.helospark.tactview.core.render.helper.ExtensionType;
+import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.render.helper.IntervalThreadingPartitioner;
 import com.helospark.tactview.core.render.helper.ThreadingAccessorResult;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -53,7 +58,6 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 public class FFmpegBasedRenderService extends AbstractRenderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedRenderService.class);
     private static final Set<String> COMMON_AUDIO_CONTAINERS = Set.of("mp3", "wav", "oga");
-    private static final Set<String> COMMON_VIDEO_CONTAINERS = Set.of("mp4", "ogg", "flv", "webm", "avi", "gif", "wmv");
     private static final String DEFAULT_VALUE = "default";
     private static final String NONE_VALUE = "none";
     private static final int MAX_NUMBER_OF_CODECS = 400;
@@ -85,11 +89,14 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         int bytesPerSample = Integer.parseInt(renderRequest.getOptions().get("audiobytespersample").getValue().toString());
         System.out.println("Audio bytes per sample: " + bytesPerSample);
 
-        String videoCodec = (String) renderRequest.getOptions().get("videocodec").getValue();
-        System.out.println("VideoCodec: " + videoCodec);
-
         String audioCodec = (String) renderRequest.getOptions().get("audiocodec").getValue();
         System.out.println("AudioCodec: " + audioCodec);
+
+        String videoCodec = (String) renderRequest.getOptions().get("videocodec").getValue();
+        if (isAudioContainerForFileName(renderRequest.getFileName(), renderRequest.getSelectedExtensionType())) {
+            videoCodec = NONE_VALUE;
+        }
+        System.out.println("VideoCodec: " + videoCodec);
 
         String videoPixelFormat = (String) renderRequest.getOptions().get("videoPixelFormat").getValue();
         System.out.println("videoPixelFormat: " + videoPixelFormat);
@@ -266,12 +273,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     if (encodeResult < 0) {
                         throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
                     }
-                    renderRequest.getEncodedImageCallback().accept(frame.getVideoResult());
-
-                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getVideoResult().getBuffer());
-                    for (var buffer : frame.getAudioResult().getChannels()) {
-                        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(buffer);
+                    if (needsVideo) {
+                        renderRequest.getEncodedImageCallback().accept(frame.getVideoResult());
                     }
+                    frame.free();
                     if (audioConverted) {
                         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(array[0].audioData);
                     }
@@ -288,6 +293,8 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 throw new RuntimeException(e);
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             FFmpegClearEncoderRequest clearRequest = new FFmpegClearEncoderRequest();
             clearRequest.encoderIndex = encoderIndex;
@@ -409,7 +416,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         OptionProvider<String> videoCodecProvider = OptionProvider.stringOptionBuilder()
                 .withTitle("Video codec")
-                .withIsEnabled(f -> !isAudioContainerForExtension(FilenameUtils.getExtension(f.getFileName())))
+                .withIsEnabled(f -> !isAudioContainerForFileName(f.getFileName(), f.getSelectedExtensionType()))
                 .withDefaultValue(DEFAULT_VALUE)
                 .withValidValues(codecs.videoCodecs)
                 .withShouldTriggerUpdate(true)
@@ -500,18 +507,23 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         return optionsToUpdate;
     }
 
+    private boolean isAudioContainerForFileName(String fileName, HandledExtensionValueElement handledExtensionValueElement) {
+        if (handledExtensionValueElement != null) {
+            return handledExtensionValueElement.extensionType.equals(ExtensionType.AUDIO);
+        }
+        String[] parts = fileName.split("\\.");
+        if (parts.length == 0) {
+            return false;
+        }
+        String extension = parts[parts.length - 1];
+        return isAudioContainerForExtension(extension);
+    }
+
     private boolean isAudioContainerForExtension(String extension) {
         if (extension == null) {
             return false;
         }
         return COMMON_AUDIO_CONTAINERS.contains(extension);
-    }
-
-    private boolean isVideoContainer(String extension) {
-        if (extension == null) {
-            return false;
-        }
-        return COMMON_VIDEO_CONTAINERS.contains(extension);
     }
 
     private ValueListElement createElement(String e) {
@@ -574,18 +586,19 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     }
 
     @Override
-    public List<ValueListElement> handledExtensions() {
+    public List<HandledExtensionValueElement> handledExtensions() {
         return Arrays.asList(
-                new ValueListElement("mp4", "mp4"),
-                new ValueListElement("ogg", "ogg"),
-                new ValueListElement("flv", "flv"),
-                new ValueListElement("webm", "webm"),
-                new ValueListElement("avi", "avi"),
-                new ValueListElement("gif", "gif (animated)"),
-                new ValueListElement("wmv", "wmv"),
-                new ValueListElement("mp3", "mp3 (audio only)"),
-                new ValueListElement("wav", "wav (audio only)"),
-                new ValueListElement("oga", "oga (audio only)"));
+                new HandledExtensionValueElement("mp4", "mp4", VIDEO),
+                new HandledExtensionValueElement("ogg_video", "ogg", "ogg", VIDEO),
+                new HandledExtensionValueElement("flv", "flv", VIDEO),
+                new HandledExtensionValueElement("webm", "webm", VIDEO),
+                new HandledExtensionValueElement("avi", "avi", VIDEO),
+                new HandledExtensionValueElement("gif", "gif (animated)", VIDEO),
+                new HandledExtensionValueElement("wmv", "wmv", VIDEO),
+                new HandledExtensionValueElement("mp3", "mp3 (audio only)", AUDIO),
+                new HandledExtensionValueElement("wav", "wav (audio only)", AUDIO),
+                new HandledExtensionValueElement("oga", "oga (audio only)", AUDIO),
+                new HandledExtensionValueElement("ogg_audio", "ogg", "ogg vorbis (audio only)", AUDIO));
     }
 
 }

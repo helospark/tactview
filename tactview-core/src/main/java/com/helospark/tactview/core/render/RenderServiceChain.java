@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -49,11 +49,11 @@ public class RenderServiceChain {
                 .orElseThrow(() -> new IllegalArgumentException("No renderer supports format " + renderRequest.getFileName()));
     }
 
-    public List<ValueListElement> getCommonHandledExtensions() {
-        List<ValueListElement> elements = renderServiceChainItem.stream()
+    public List<HandledExtensionValueElement> getCommonHandledExtensions() {
+        List<HandledExtensionValueElement> elements = renderServiceChainItem.stream()
                 .flatMap(renderService -> renderService.handledExtensions().stream())
                 .collect(Collectors.toList());
-        List<ValueListElement> reversedList = new ArrayList<>();
+        List<HandledExtensionValueElement> reversedList = new ArrayList<>();
 
         for (int i = elements.size() - 1; i >= 0; --i) {
             reversedList.add(elements.get(i));

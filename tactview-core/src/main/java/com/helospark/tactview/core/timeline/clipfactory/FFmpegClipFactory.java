@@ -39,6 +39,7 @@ public class FFmpegClipFactory implements ClipFactory {
     public boolean doesSupport(AddClipRequest request) {
         return request.containsFile() &&
                 !FileTypeProberUtil.isImageByContentType(request.getFile()) && // FFmpeg handles some image formats as well
+                !FileTypeProberUtil.isAudioByContentType(request.getFile()) && // FFmpeg opens cover images in audio file, example mp3, but it should not create channel
                 hasVideoStream(request.getFile());
     }
 

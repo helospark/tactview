@@ -16,11 +16,12 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.render.helper.ExtensionType;
+import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
 import com.helospark.tactview.core.util.ByteBufferToImageConverter;
@@ -126,8 +127,8 @@ public class AsciiArtRenderService extends AbstractRenderService {
     }
 
     @Override
-    public List<ValueListElement> handledExtensions() {
-        return List.of(new ValueListElement("sh", "sh (ascii art)"));
+    public List<HandledExtensionValueElement> handledExtensions() {
+        return List.of(new HandledExtensionValueElement("sh", "sh (ascii art)", ExtensionType.OTHER));
     }
 
 }

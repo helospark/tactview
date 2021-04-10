@@ -17,4 +17,17 @@ public class FileTypeProberUtil {
             throw new RuntimeException(e);
         }
     }
+
+    public static boolean isAudioByContentType(File file) {
+        try {
+            String contentType = Files.probeContentType(file.toPath());
+            if (contentType == null) {
+                return false;
+            } else {
+                return contentType.contains("audio/");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

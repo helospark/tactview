@@ -753,17 +753,21 @@ extern "C" {
 
         int delayedFrames = 0;
         int responseCode = 0;
-        while (responseCode == 0 && delayedFrames < 200) {
-           std::cout << "Writing delayed video frames " << delayedFrames << std::endl;
-           responseCode = write_video_frame(renderContext.oc, renderContext.video_st, NULL);
-           ++delayedFrames;
+        if (renderContext.have_video) {
+            while (responseCode == 0 && delayedFrames < 200) {
+                std::cout << "Writing delayed video frames " << delayedFrames << std::endl;
+                responseCode = write_video_frame(renderContext.oc, renderContext.video_st, NULL);
+                ++delayedFrames;
+            }
         }
         delayedFrames = 0;
         responseCode = 0;
-        while (responseCode == 0 && delayedFrames < 200) {
-           std::cout << "Writing delayed audio frames " << delayedFrames << std::endl;
-           responseCode = write_audio_frame(renderContext.oc, renderContext.video_st, NULL);
-           ++delayedFrames;
+        if (renderContext.have_audio) {
+            while (responseCode == 0 && delayedFrames < 200) {
+                std::cout << "Writing delayed audio frames " << delayedFrames << std::endl;
+                responseCode = write_audio_frame(renderContext.oc, renderContext.audio_st, NULL);
+                ++delayedFrames;
+            }
         }
         av_write_trailer(renderContext.oc);
 

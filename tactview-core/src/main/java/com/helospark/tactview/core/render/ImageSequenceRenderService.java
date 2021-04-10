@@ -22,10 +22,11 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.render.helper.ExtensionType;
+import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.message.progress.ProgressAdvancedMessage;
@@ -157,10 +158,10 @@ public class ImageSequenceRenderService extends AbstractRenderService {
     }
 
     @Override
-    public List<ValueListElement> handledExtensions() {
+    public List<HandledExtensionValueElement> handledExtensions() {
         return getSupportedFormats()
                 .stream()
-                .map(a -> new ValueListElement(a, a + " (images seq.)"))
+                .map(a -> new HandledExtensionValueElement(a, a + " (images seq.)", ExtensionType.IMAGE_SEQUENCE))
                 .collect(Collectors.toList());
     }
 

@@ -22,10 +22,10 @@ import com.helospark.tactview.core.render.RenderRequest;
 import com.helospark.tactview.core.render.RenderService;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.render.UpdateValueProvidersRequest;
+import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -79,6 +79,7 @@ public class RenderDialog {
     private Map<String, OptionProvider<?>> optionProviders = Map.of();
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private ScaleService scaleService;
+    private RenderServiceChain renderService;
 
     TextField fileNameTextField;
     GridPane rendererOptions;
@@ -97,6 +98,7 @@ public class RenderDialog {
     CheckBox updatePreviewCheckbox;
 
     boolean shouldUpdateVisibility = false;
+    boolean hasDropdownBeenUpdated = false;
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
             StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter,
@@ -105,6 +107,7 @@ public class RenderDialog {
         this.alertDialogFactory = alertDialogFactory;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
         this.scaleService = scaleService;
+        this.renderService = renderService;
 
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
@@ -159,10 +162,14 @@ public class RenderDialog {
         extensionComboBox.valueProperty().addListener((e, oldValue, newValue) -> {
             String currentValue = fileNameTextField.getText();
             int lastDot = currentValue.lastIndexOf('.');
-            if (lastDot == -1) {
-                fileNameTextField.setText(currentValue + "." + newValue.getId());
-            } else {
-                fileNameTextField.setText(currentValue.substring(0, lastDot) + "." + newValue.getId());
+            HandledExtensionValueElement selectedElement = findSelectedExtensionElementById(newValue.getId());
+            if (selectedElement != null) {
+                hasDropdownBeenUpdated = true;
+                if (lastDot == -1) {
+                    fileNameTextField.setText(currentValue + "." + selectedElement.getExtension());
+                } else {
+                    fileNameTextField.setText(currentValue.substring(0, lastDot) + "." + selectedElement.getExtension());
+                }
             }
         });
 
@@ -295,18 +302,21 @@ public class RenderDialog {
         });
 
         fileNameTextField.textProperty().addListener((obj, oldValue, newValue) -> {
-            List<ValueListElement> commonExtensions = renderService.getCommonHandledExtensions();
+            List<HandledExtensionValueElement> commonExtensions = renderService.getCommonHandledExtensions();
 
             int selectedComboIndex = -1;
             for (int i = 0; i < commonExtensions.size(); ++i) {
-                if (commonExtensions.get(i).getId().equals(FilenameUtils.getExtension(newValue))) {
+                if (commonExtensions.get(i).getExtension().equals(FilenameUtils.getExtension(newValue))) {
                     selectedComboIndex = i;
                     break;
                 }
             }
 
-            if (selectedComboIndex != -1) {
+            if (selectedComboIndex != -1 && !hasDropdownBeenUpdated) {
                 extensionComboBox.getSelectionModel().select(selectedComboIndex);
+            }
+            if (!newValue.contains(".")) {
+                hasDropdownBeenUpdated = false;
             }
 
             RenderRequest request = RenderRequest.builder()
@@ -317,6 +327,7 @@ public class RenderDialog {
                     .withStartPosition(new TimelinePosition(DurationFormatter.toSeconds(startPositionTextField.getText())))
                     .withEndPosition(new TimelinePosition(DurationFormatter.toSeconds(endPositionTextField.getText())))
                     .withFileName(fileNameTextField.getText())
+                    .withSelectedExtensionType(findSelectedExtensionElement())
                     .withIsCancelledSupplier(() -> isRenderCancelled)
                     .build();
 
@@ -348,11 +359,13 @@ public class RenderDialog {
     protected RenderRequest getRenderRequest() {
         String fileName = fileNameTextField.getText();
         String extension = FilenameUtils.getExtension(fileName);
-        if (extension.isEmpty()) {
+
+        HandledExtensionValueElement selectedExtensionElement = findSelectedExtensionElement();
+        if (extension.isEmpty() && selectedExtensionElement != null) {
             if (!fileName.endsWith(".")) {
                 fileName += ".";
             }
-            fileName += extensionComboBox.getSelectionModel().getSelectedItem().getId();
+            fileName += selectedExtensionElement.extension;
         }
 
         return RenderRequest.builder()
@@ -367,8 +380,24 @@ public class RenderDialog {
                 .withIsCancelledSupplier(() -> isRenderCancelled)
                 .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
                 .withMetadata(collectMetadata(metadataVBox))
+                .withSelectedExtensionType(selectedExtensionElement)
                 .withEncodedImageCallback(image -> updatePreviewConsumer(image))
                 .build();
+    }
+
+    private HandledExtensionValueElement findSelectedExtensionElement() {
+        String selectedId = extensionComboBox.getSelectionModel().getSelectedItem().getId();
+        return findSelectedExtensionElementById(selectedId);
+    }
+
+    private HandledExtensionValueElement findSelectedExtensionElementById(String selectedId) {
+        List<HandledExtensionValueElement> commonExtensions = renderService.getCommonHandledExtensions();
+        for (int i = 0; i < commonExtensions.size(); ++i) {
+            if (commonExtensions.get(i).getId().equals(selectedId)) {
+                return commonExtensions.get(i);
+            }
+        }
+        return null;
     }
 
     private Map<String, String> collectMetadata(VBox metadataVBox) {
@@ -526,7 +555,7 @@ public class RenderDialog {
         return comboBox;
     }
 
-    public ComboBox<ComboBoxElement> createComboBoxFromValueList(List<ValueListElement> values, String string) {
+    public ComboBox<ComboBoxElement> createComboBoxFromValueList(List<HandledExtensionValueElement> values, String string) {
         ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
         values
                 .stream()

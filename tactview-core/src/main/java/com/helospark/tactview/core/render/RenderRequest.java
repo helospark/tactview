@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
@@ -27,6 +28,7 @@ public class RenderRequest {
     private final Supplier<Boolean> isCancelledSupplier;
     private final Map<String, String> metadata;
     private final Consumer<ReadOnlyClipImage> encodedImageCallback;
+    private final HandledExtensionValueElement selectedExtensionType;
 
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
@@ -42,6 +44,7 @@ public class RenderRequest {
         this.metadata = builder.metadata;
         this.isCancelledSupplier = builder.isCancelledSupplier;
         this.encodedImageCallback = builder.encodedImageCallback;
+        this.selectedExtensionType = builder.selectedExtensionType;
     }
 
     public String getRenderId() {
@@ -96,6 +99,10 @@ public class RenderRequest {
         return encodedImageCallback;
     }
 
+    public HandledExtensionValueElement getSelectedExtensionType() {
+        return selectedExtensionType;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -115,6 +122,7 @@ public class RenderRequest {
         private Supplier<Boolean> isCancelledSupplier;
         private Map<String, String> metadata = Collections.emptyMap();
         private Consumer<ReadOnlyClipImage> encodedImageCallback;
+        private HandledExtensionValueElement selectedExtensionType;
 
         private Builder() {
         }
@@ -176,6 +184,11 @@ public class RenderRequest {
 
         public Builder withEncodedImageCallback(Consumer<ReadOnlyClipImage> encodedImageCallback) {
             this.encodedImageCallback = encodedImageCallback;
+            return this;
+        }
+
+        public Builder withSelectedExtensionType(HandledExtensionValueElement selectedExtensionType) {
+            this.selectedExtensionType = selectedExtensionType;
             return this;
         }
 
