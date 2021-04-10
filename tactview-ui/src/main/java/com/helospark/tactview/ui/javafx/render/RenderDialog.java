@@ -474,14 +474,39 @@ public class RenderDialog {
             Label label = new Label(optionProvider.getTitle());
             rendererOptions.add(label, column * ADDITIONAL_OPTIONS_COLUMNS, row);
 
-            if (optionProvider.getValidValues().isEmpty()) {
+            if (optionProvider.getType().equals(File.class)) {
                 TextField textField = new TextField();
                 textField.getStyleClass().add("render-dialog-option");
                 textField.setText(String.valueOf(optionProvider.getValue()));
                 textField.disableProperty().set(isOptionProviderDisabled(optionProvider, renderRequest));
                 textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
                     Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
-                    // TODO: isValid, etc.
+                    optionProvider.setValue(parsedValue);
+                    updateProvidersAfterUpdate();
+                });
+
+                Button button = new Button("Browse");
+                button.setOnAction(e -> {
+                    FileChooser fc = new FileChooser();
+                    File result = fc.showOpenDialog(stage);
+                    if (result != null) {
+                        textField.setText(result.getAbsolutePath());
+                    }
+                });
+
+                HBox hbox = new HBox();
+                hbox.getChildren().add(textField);
+                hbox.getChildren().add(button);
+
+                rendererOptions.add(hbox, column * ADDITIONAL_OPTIONS_COLUMNS + 1, row, 3, 1);
+                column++;
+            } else if (optionProvider.getValidValues().isEmpty()) {
+                TextField textField = new TextField();
+                textField.getStyleClass().add("render-dialog-option");
+                textField.setText(String.valueOf(optionProvider.getValue()));
+                textField.disableProperty().set(isOptionProviderDisabled(optionProvider, renderRequest));
+                textField.textProperty().addListener((obj2, oldValue2, newValue2) -> {
+                    Object parsedValue = optionProvider.getValueConverter().apply(newValue2);
                     optionProvider.setValue(parsedValue);
                     updateProvidersAfterUpdate();
                 });

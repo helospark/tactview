@@ -3,6 +3,7 @@ package com.helospark.tactview.core.render;
 import static com.helospark.tactview.core.render.helper.ExtensionType.AUDIO;
 import static com.helospark.tactview.core.render.helper.ExtensionType.VIDEO;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.decoder.opencv.ImageMediaLoader;
+import com.helospark.tactview.core.decoder.opencv.ImageMetadataRequest;
+import com.helospark.tactview.core.decoder.opencv.ImageMetadataResponse;
+import com.helospark.tactview.core.decoder.opencv.ImageRequest;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.render.ffmpeg.CodecExtraDataRequest;
 import com.helospark.tactview.core.render.ffmpeg.CodecInformation;
@@ -64,13 +69,16 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     private final FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private final TimelineManagerAccessor timelineManagerAccessor;
     private final IntervalThreadingPartitioner intervalThreadingPartitioner;
+    private ImageMediaLoader coverPhotoLoader;
 
     public FFmpegBasedRenderService(TimelineManagerRenderService timelineManager, FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, MessagingService messagingService,
-            ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository, IntervalThreadingPartitioner intervalThreadingPartitioner) {
+            ScaleService scaleService, TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository, IntervalThreadingPartitioner intervalThreadingPartitioner,
+            ImageMediaLoader coverPhotoLoader) {
         super(timelineManager, messagingService, scaleService, projectRepository);
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
         this.timelineManagerAccessor = timelineManagerAccessor;
         this.intervalThreadingPartitioner = intervalThreadingPartitioner;
+        this.coverPhotoLoader = coverPhotoLoader;
     }
 
     @Override
@@ -121,6 +129,19 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         if (height % 2 == 1) {
             height++;
         }
+
+        ByteBuffer coverPhoto = null;
+        File coverPhotoFile = (File) renderRequest.getOptions().get("coverPhoto").getValue();
+        String initVideoCodec = videoCodec;
+        if (!coverPhotoFile.getName().equals("")) {
+            ImageMetadataResponse metadata = loadMetadata(coverPhotoFile);
+            coverPhoto = loadCoverPhotoImage(coverPhotoFile, metadata);
+
+            width = metadata.width;
+            height = metadata.height;
+            initVideoCodec = DEFAULT_VALUE;
+        }
+
         initNativeRequest.renderWidth = width;
         initNativeRequest.renderHeight = height;
 
@@ -133,7 +154,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.audioBitRate = audioBitRate;
         initNativeRequest.videoBitRate = videoBitRate;
         initNativeRequest.audioSampleRate = audioSampleRate;
-        initNativeRequest.videoCodec = videoCodec;
+        initNativeRequest.videoCodec = initVideoCodec;
         initNativeRequest.audioCodec = audioCodec;
         initNativeRequest.videoPixelFormat = videoPixelFormat;
         initNativeRequest.videoPreset = videoPresetOrNull;
@@ -148,7 +169,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int frameIndex = 0;
 
-        boolean needsVideo = !videoCodec.equals(NONE_VALUE);
+        boolean needsVideo = !videoCodec.equals(NONE_VALUE) && coverPhoto == null;
         boolean needsAudio = !audioCodec.equals(NONE_VALUE);
 
         // Producer consumer pattern below
@@ -249,6 +270,8 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             };
             producerThread.start();
 
+            boolean hasAlreadyEncodedCoverImage = false;
+
             // Encoding must be done in single thread
             while (!producerThread.isFinished || queue.peek() != null) {
                 CompletableFuture<AudioVideoFragment> future = pollQueue(queue);
@@ -257,8 +280,11 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
                     nativeRequest.frame = new RenderFFMpegFrame();
                     RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
-                    if (needsVideo) {
+                    if (frame.getVideoResult() != null) {
                         array[0].imageData = frame.getVideoResult().getBuffer();
+                    } else if (coverPhoto != null && !hasAlreadyEncodedCoverImage) {
+                        array[0].imageData = coverPhoto;
+                        hasAlreadyEncodedCoverImage = true;
                     }
                     boolean audioConverted = false;
                     if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
@@ -273,7 +299,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     if (encodeResult < 0) {
                         throw new RuntimeException("Cannot encode frames, error code " + encodeResult);
                     }
-                    if (needsVideo) {
+                    if (frame.getVideoResult() != null) {
                         renderRequest.getEncodedImageCallback().accept(frame.getVideoResult());
                     }
                     frame.free();
@@ -473,6 +499,23 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 })
                 .build();
 
+        OptionProvider<File> coverPhotoProvider = OptionProvider.fileOptionBuilder()
+                .withTitle("Cover image")
+                .withDefaultValue(new File(""))
+                .withShouldShow(v -> isAudioContainerForFileName(v.getFileName(), v.getSelectedExtensionType()))
+                .withValidationErrorProvider(t -> {
+                    List<String> errors = new ArrayList<>();
+
+                    if (!t.getName().equals("") && t.exists()) {
+                        errors.add("File not found");
+                    } else if (loadMetadata(t) != null) {
+                        errors.add("Not valid image");
+                    }
+
+                    return errors;
+                })
+                .build();
+
         LinkedHashMap<String, OptionProvider<?>> result = new LinkedHashMap<>();
 
         result.put("videocodec", videoCodecProvider);
@@ -489,7 +532,29 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         result.put("preset", presetProviders);
         result.put("threads", numberOfThreadsProvider);
 
+        result.put("coverPhoto", coverPhotoProvider);
+
         return result;
+    }
+
+    private ImageMetadataResponse loadMetadata(File t) {
+        try {
+            ImageMetadataRequest request = new ImageMetadataRequest();
+            request.path = t.getAbsolutePath();
+            return coverPhotoLoader.readMetadata(request);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private ByteBuffer loadCoverPhotoImage(File t, ImageMetadataResponse imageMetadataResponse) {
+        ImageRequest request = new ImageRequest();
+        request.width = imageMetadataResponse.width;
+        request.height = imageMetadataResponse.height;
+        request.path = t.getAbsolutePath();
+        coverPhotoLoader.readImage(request);
+
+        return request.data;
     }
 
     @Override

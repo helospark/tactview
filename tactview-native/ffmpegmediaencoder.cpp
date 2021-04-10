@@ -657,6 +657,7 @@ extern "C" {
         AVPixelFormat videoPixelFormat;
         /* Add the audio and video streams using the default format codecs
          * and initialize the codecs. */
+        std::cout << "############ video " << fmt->video_codec << " " << request->videoCodec << std::endl;
         if (fmt->video_codec != AV_CODEC_ID_NONE && strcmp(request->videoCodec, "none") != 0) {
             if (strcmp(request->videoCodec, "default") != 0) {            
                 fmt->video_codec = avcodec_find_encoder_by_name(request->videoCodec)->id;
@@ -804,7 +805,7 @@ extern "C" {
             }
         
 
-            if (renderContext.encode_video) {
+            if (renderContext.encode_video && request->frame->imageData != NULL) {
               AVFrame *frame = get_video_frame(video_st, request->frame);
               if (frame == NULL) {
                 return -1;

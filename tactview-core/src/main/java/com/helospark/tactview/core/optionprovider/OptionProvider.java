@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.optionprovider;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ public class OptionProvider<T> {
 
     @Generated("SparkTools")
     private OptionProvider(Builder<T> builder) {
+        this.type = builder.type;
         this.title = builder.title;
         this.valueConverter = builder.valueConverter != null ? builder.valueConverter : stringValue -> null;
         this.validationErrorProvider = builder.validationErrorProvider != null ? builder.validationErrorProvider : value -> List.of();
@@ -48,6 +50,10 @@ public class OptionProvider<T> {
 
     public String getTitle() {
         return title;
+    }
+
+    public Class<T> getType() {
+        return type;
     }
 
     public Function<String, T> getValueConverter() {
@@ -83,6 +89,11 @@ public class OptionProvider<T> {
     public static Builder<Integer> integerOptionBuilder() {
         return new Builder<>(Integer.class)
                 .withValueConverter(Integer::valueOf);
+    }
+
+    public static Builder<File> fileOptionBuilder() {
+        return new Builder<>(File.class)
+                .withValueConverter(File::new);
     }
 
     public static Builder<String> stringOptionBuilder() {
