@@ -1,6 +1,12 @@
 package com.helospark.tactview.ui.javafx.tabs.curve.curveeditor;
 
+import java.math.BigDecimal;
+
+import com.helospark.lightdi.annotation.Autowired;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
+
 public abstract class AbstractNoOpCurveEditor implements CurveEditor {
+    private UiTimelineManager uiTimelineManager;
 
     @Override
     public void initializeControl(ControlInitializationRequest request) {
@@ -24,6 +30,7 @@ public abstract class AbstractNoOpCurveEditor implements CurveEditor {
 
     @Override
     public boolean onMouseDragged(CurveEditorMouseRequest mouseEvent) {
+        jumpToPositionOnDrag(mouseEvent, true);
         return false;
     }
 
@@ -40,5 +47,16 @@ public abstract class AbstractNoOpCurveEditor implements CurveEditor {
     @Override
     public boolean onMouseDragEnded(CurveEditorMouseRequest mouseEvent) {
         return false;
+    }
+
+    protected void jumpToPositionOnDrag(CurveEditorMouseRequest mouseEvent, boolean isEmptyPointDragged) {
+        if (isEmptyPointDragged) {
+            uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(mouseEvent.remappedMousePosition.x));
+        }
+    }
+
+    @Autowired
+    public void setUiTimelineManager(UiTimelineManager uiTimelineManager) {
+        this.uiTimelineManager = uiTimelineManager;
     }
 }

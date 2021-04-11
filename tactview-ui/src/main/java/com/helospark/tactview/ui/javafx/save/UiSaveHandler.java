@@ -98,6 +98,7 @@ public class UiSaveHandler {
             File resultFile = new File(resultFilePath);
             lastOpenedDirectoryName = resultFile.getParentFile().getAbsolutePath();
             saveAndLoadHandler.save(createSaveRequest(resultFilePath));
+            dirtyRepository.setDirty(false);
             recentlyAccessedRepository.addNewRecentlySavedElement(resultFile);
         }
     }

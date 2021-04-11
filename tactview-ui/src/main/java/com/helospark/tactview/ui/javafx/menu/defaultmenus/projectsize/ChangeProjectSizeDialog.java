@@ -33,7 +33,7 @@ public class ChangeProjectSizeDialog {
         stage = new Stage();
         stage.setWidth(300);
         stage.setHeight(250);
-        stylesheetAdderService.addStyleSheets(borderPane, "stylesheet.css");
+        stylesheetAdderService.styleDialog(stage, borderPane, "stylesheet.css");
 
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));

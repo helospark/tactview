@@ -13,6 +13,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipToLeftCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipToRightCommand;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -26,11 +27,14 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManagerAccessor;
     private AlertDialogFactory alertDialogFactory;
+    private StylesheetAdderService stylesheetAdderService;
 
-    public MoveToContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManagerAccessor, AlertDialogFactory alertDialogFactory) {
+    public MoveToContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManagerAccessor, AlertDialogFactory alertDialogFactory,
+            StylesheetAdderService stylesheetAdderService) {
         this.commandInterpreter = commandInterpreter;
         this.timelineManagerAccessor = timelineManagerAccessor;
         this.alertDialogFactory = alertDialogFactory;
+        this.stylesheetAdderService = stylesheetAdderService;
     }
 
     @Override
@@ -60,6 +64,7 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
             dialog.setTitle("New position");
             dialog.setHeaderText("Enter new position in seconds:");
             dialog.setContentText("Position:");
+            stylesheetAdderService.addStyleSheets(dialog.getDialogPane(), "stylesheet.css");
 
             Optional<String> result = dialog.showAndWait();
 
@@ -142,6 +147,7 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
             dialog.setTitle("Relative move");
             dialog.setHeaderText("Enter relative move in seconds:");
             dialog.setContentText("Relative move:");
+            stylesheetAdderService.addStyleSheets(dialog.getDialogPane(), "stylesheet.css");
 
             Optional<String> result = dialog.showAndWait();
 

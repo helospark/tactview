@@ -26,7 +26,7 @@ public class AboutDialog {
         stage = new Stage();
         stage.setWidth(500);
         stage.setHeight(400);
-        stylesheetAdderService.addStyleSheets(borderPane, "stylesheet.css");
+        stylesheetAdderService.styleDialog(stage, borderPane, "stylesheet.css");
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);

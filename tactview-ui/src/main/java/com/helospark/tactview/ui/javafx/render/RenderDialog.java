@@ -113,8 +113,8 @@ public class RenderDialog {
         borderPane.getStyleClass().add("dialog-root");
 
         Scene dialog = new Scene(borderPane);
-        stylesheetAdderService.addStyleSheets(borderPane, "stylesheet.css");
         stage = new Stage();
+        stylesheetAdderService.styleDialog(stage, borderPane, "stylesheet.css");
 
         int linePosition = 0;
 

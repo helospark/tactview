@@ -2,7 +2,6 @@ package com.helospark.tactview.ui.javafx;
 
 import static java.awt.image.BufferedImage.TYPE_INT_BGR;
 
-import java.awt.Taskbar;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.SystemUtils;
@@ -49,7 +46,6 @@ import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
-import com.twelvemonkeys.lang.SystemUtil;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
@@ -97,7 +93,6 @@ import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
     private static String[] mainArgs;
-    private static final String ICON_PATH = "/icons/tactview_icon.png";
 
     public static Stage STAGE = null;
 
@@ -130,15 +125,14 @@ public class JavaFXUiMain extends Application {
     public void start(Stage stage) throws IOException {
         DirtyRepository dirtyRepository = lightDi.getBean(DirtyRepository.class);
         ExitWithSaveService exitWithSaveService = lightDi.getBean(ExitWithSaveService.class);
+        StylesheetAdderService styleSheetAdder = lightDi.getBean(StylesheetAdderService.class);
 
-        setTactviewIconForStage(stage);
+        styleSheetAdder.setTactviewIconForStage(stage);
 
         JavaFXUiMain.STAGE = stage;
         NotificationPane notificationPane = new NotificationPane();
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);
-
-        StylesheetAdderService styleSheetAdder = lightDi.getBean(StylesheetAdderService.class);
 
         styleSheetAdder.addStyleSheets(root, "stylesheet.css");
 
@@ -167,7 +161,7 @@ public class JavaFXUiMain extends Application {
             });
         });
         stage.setMaximized(true);
-        
+
         if (SystemUtils.IS_OS_MAC) {
             SwingFXUtils.toFXImage(new BufferedImage(100, 100, TYPE_INT_BGR), null);
         }
@@ -392,15 +386,6 @@ public class JavaFXUiMain extends Application {
         }
     }
 
-    protected void setTactviewIconForStage(Stage stage) {
-        Image image = new Image(getClass().getResource(ICON_PATH).toString());
-        stage.getIcons().add(image);
-        if (Taskbar.isTaskbarSupported()) {
-            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
-            Taskbar.getTaskbar().setIconImage(bufferedImage);
-        }
-    }
-
     private void showSplash(Stage splashStage, ImageView splash) {
         StackPane splashLayout = new StackPane();
         splashLayout.setStyle("-fx-background-color: transparent;");
@@ -454,7 +439,7 @@ public class JavaFXUiMain extends Application {
         Platform.runLater(() -> {
             splashStage = new Stage(StageStyle.DECORATED);
             splashStage.setTitle("Tactview starting...");
-            setTactviewIconForStage(splashStage);
+            StylesheetAdderService.setTactviewIconForStageStatic(splashStage);
 
             splasViewh = new ImageView(new Image(getClass().getResource("/tactview-splash.png").toString()));
 

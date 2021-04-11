@@ -38,7 +38,7 @@ import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipAddedListener {
-    private static final int RESIZE_WIDTH = 15;
+    private static final int RESIZE_WIDTH = 10;
     private UiMessagingService messagingService;
     private TimelineState timelineState;
     private EffectDragAdder effectDragAdder;
@@ -202,7 +202,7 @@ public class ClipAddedListener {
     // When the width is small, decrease the resize width
     private double getDivider(Rectangle rectangle) {
         double divider = 1.0;
-        if (rectangle.getWidth() < 20.0) {
+        if (rectangle.getWidth() * (timelineState.getZoom() / 2.0) < 20.0) {
             divider = 10;
         }
         return divider;

@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.stylesheet;
 
+import java.awt.Taskbar;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
@@ -19,10 +21,14 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.ReloadStylesheetMessage;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Parent;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 
 @Service
 public class StylesheetAdderService {
+    private static final String ICON_PATH = "/icons/tactview_icon.png";
     private FileChangedWatchService fileChangedWatchService;
 
     private UiMessagingService messagingService;
@@ -46,6 +52,19 @@ public class StylesheetAdderService {
             updateStylesheet();
         });
         messagingService.register(WatchedFileChangedMessage.class, message -> updateStylesheet());
+    }
+
+    public void setTactviewIconForStage(Stage stage) {
+        setTactviewIconForStageStatic(stage);
+    }
+
+    public static void setTactviewIconForStageStatic(Stage stage) {
+        Image image = new Image(StylesheetAdderService.class.getResource(ICON_PATH).toString());
+        stage.getIcons().add(image);
+        if (Taskbar.isTaskbarSupported()) {
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+            Taskbar.getTaskbar().setIconImage(bufferedImage);
+        }
     }
 
     private void updateStylesheet() {
@@ -75,6 +94,12 @@ public class StylesheetAdderService {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void styleDialog(Stage stage, Parent parent, String... cssFiles) {
+        addStyleSheets(parent, cssFiles);
+
+        setTactviewIconForStage(stage);
     }
 
     public void addStyleSheets(Parent parent, String... cssFiles) {

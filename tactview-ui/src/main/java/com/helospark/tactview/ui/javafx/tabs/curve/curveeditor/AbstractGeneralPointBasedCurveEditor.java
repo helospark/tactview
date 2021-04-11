@@ -143,12 +143,6 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
         return false;
     }
 
-    protected void jumpToPositionOnDrag(CurveEditorMouseRequest mouseEvent, boolean isEmptyPointDragged) {
-        if (isEmptyPointDragged) {
-            uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(mouseEvent.remappedMousePosition.x));
-        }
-    }
-
     protected abstract void valueModifiedAt(KeyframeSupportingDoubleInterpolator currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue);
 
     protected boolean isClose(KeyframePoint keyframePoint, Point remappedMousePosition) {

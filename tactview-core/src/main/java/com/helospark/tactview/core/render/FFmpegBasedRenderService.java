@@ -502,7 +502,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         OptionProvider<File> coverPhotoProvider = OptionProvider.fileOptionBuilder()
                 .withTitle("Cover image")
                 .withDefaultValue(new File(""))
-                .withShouldShow(v -> isAudioContainerForFileName(v.getFileName(), v.getSelectedExtensionType()))
+                .withShouldShow(v -> isAudioContainerForFileName(v.getFileName(), v.getSelectedExtensionType()) && !v.getFileName().endsWith(".wav"))
                 .withValidationErrorProvider(t -> {
                     List<String> errors = new ArrayList<>();
 

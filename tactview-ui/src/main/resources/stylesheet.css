@@ -3,7 +3,7 @@
 	-fx-text-fill: white;
 }
   
-.timelinerow,#content-area,.dialog-root,.alert {
+.timelinerow,#content-area,.dialog-root,.alert,.dialog-pane {
 	-fx-background-color: #333333;
 	-fx-background: #333333;
 }
