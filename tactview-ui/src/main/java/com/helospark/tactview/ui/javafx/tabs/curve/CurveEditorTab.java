@@ -246,7 +246,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
         currentlyOpenEditor.drawAdditionalUi(drawRequest);
 
         graphics.setStroke(Color.YELLOW);
-        double playheadPosition = ((timelineManager.getCurrentPosition().getSeconds().doubleValue()) * (1.0 / secondsPerPixel)) - scrollValue;
+        double playheadPosition = ((timelineManager.getCurrentPosition().getSeconds().doubleValue() - scrollValue) * (1.0 / secondsPerPixel));
         graphics.strokeLine(playheadPosition, 0, playheadPosition, canvas.getHeight());
     }
 
@@ -359,24 +359,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
         lastMousePosition = currentMousePosition;
         isDragging = e.getEventType().equals(MouseEvent.MOUSE_DRAGGED);
 
-        double remappedX = (currentMousePosition.x - scrollValue) * secondsPerPixel;
-        double mouseY = currentMousePosition.y;
-        if (mouseY < -20) {
-            mouseY = -20;
-        }
-        if (mouseY > canvas.getHeight() + 20) {
-            mouseY = canvas.getHeight() + 20;
-        }
-        double remappedY = minValue + ((1.0 - (mouseY / canvas.getHeight())) * (maxValue - minValue));
-
-        if (absoluteMaxValue.isPresent() && remappedY > absoluteMaxValue.get()) {
-            remappedY = absoluteMaxValue.get();
-        }
-        if (absoluteMinValue.isPresent() && remappedY < absoluteMinValue.get()) {
-            remappedY = absoluteMinValue.get();
-        }
-
-        Point remappedMousePosition = new Point(remappedX, remappedY);
+        Point remappedMousePosition = remapMousePosition(currentMousePosition);
 
         if (currentlyOpenEditor != null) {
             CurveEditorMouseRequest request = CurveEditorMouseRequest.builder()
@@ -400,6 +383,28 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
                 Platform.runLater(() -> updateCanvas());
             }
         }
+    }
+
+    private Point remapMousePosition(Point currentMousePosition) {
+        double remappedX = (currentMousePosition.x - scrollValue) * secondsPerPixel;
+        double mouseY = currentMousePosition.y;
+        if (mouseY < -20) {
+            mouseY = -20;
+        }
+        if (mouseY > canvas.getHeight() + 20) {
+            mouseY = canvas.getHeight() + 20;
+        }
+        double remappedY = minValue + ((1.0 - (mouseY / canvas.getHeight())) * (maxValue - minValue));
+
+        if (absoluteMaxValue.isPresent() && remappedY > absoluteMaxValue.get()) {
+            remappedY = absoluteMaxValue.get();
+        }
+        if (absoluteMinValue.isPresent() && remappedY < absoluteMinValue.get()) {
+            remappedY = absoluteMinValue.get();
+        }
+
+        Point remappedMousePosition = new Point(remappedX, remappedY);
+        return remappedMousePosition;
     }
 
     @Override

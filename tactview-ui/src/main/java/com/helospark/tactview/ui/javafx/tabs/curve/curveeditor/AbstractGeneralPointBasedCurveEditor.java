@@ -3,12 +3,14 @@ package com.helospark.tactview.ui.javafx.tabs.curve.curveeditor;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.helospark.lightdi.annotation.Autowired;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveKeyframeCommand;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -23,6 +25,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
     private final UiCommandInterpreterService commandInterpreter;
     private final EffectParametersRepository effectParametersRepository;
+    private UiTimelineManager uiTimelineManager;
 
     public AbstractGeneralPointBasedCurveEditor(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
         this.commandInterpreter = commandInterpreter;
@@ -33,13 +36,14 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     public boolean onMouseMoved(CurveEditorMouseRequest mouseEvent) {
         int previous = closeIndex;
         closeIndex = getElementIndex(mouseEvent);
+
         return draggedIndex != previous;
     }
 
     @Override
     public boolean onMouseClicked(CurveEditorMouseRequest request) {
+        int elementIndex = getElementIndex(request);
         if (request.event.getButton().equals(MouseButton.SECONDARY)) {
-            int elementIndex = getElementIndex(request);
 
             if (elementIndex != -1) {
                 List<MenuItem> menuItems = contextMenuForElementIndex(elementIndex, request);
@@ -56,8 +60,16 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
                     commandInterpreter.sendWithResult(new RemoveKeyframeCommand(effectParametersRepository, keyframeRemoveRequest));
                 });
 
+                MenuItem jumpHere = new MenuItem("Jump here");
+                jumpHere.setOnAction(e -> {
+                    KeyframePoint element = getKeyframePoints((KeyframeSupportingDoubleInterpolator) request.currentDoubleInterpolator).get(elementIndex);
+
+                    uiTimelineManager.jumpAbsolute(element.timelinePosition.getSeconds());
+                });
+
                 ContextMenu contextMenu = new ContextMenu();
                 contextMenu.getItems().addAll(deleteMenu);
+                contextMenu.getItems().addAll(jumpHere);
                 contextMenu.getItems().addAll(menuItems);
                 contextMenu.show(request.canvas.getScene().getWindow(), request.event.getScreenX(), request.event.getScreenY());
             }
@@ -65,6 +77,9 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
         if (request.event.getButton().equals(MouseButton.PRIMARY) && request.event.getClickCount() == 2) {
             addNewPoint(request.remappedMousePosition, request);
             return true;
+        }
+        if (request.event.getButton().equals(MouseButton.PRIMARY) && request.event.getClickCount() == 1 && request.event.isStillSincePress()) {
+            uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(request.remappedMousePosition.x));
         }
         return false;
     }
@@ -105,6 +120,10 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
     @Override
     public boolean onMouseDragged(CurveEditorMouseRequest mouseEvent) {
+        jumpToPositionOnDrag(mouseEvent, draggedIndex == -1);
+
+        System.out.println(draggedIndex);
+
         if (draggedIndex == -1) {
             return false;
         }
@@ -122,6 +141,12 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
             return true;
         }
         return false;
+    }
+
+    protected void jumpToPositionOnDrag(CurveEditorMouseRequest mouseEvent, boolean isEmptyPointDragged) {
+        if (isEmptyPointDragged) {
+            uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(mouseEvent.remappedMousePosition.x));
+        }
     }
 
     protected abstract void valueModifiedAt(KeyframeSupportingDoubleInterpolator currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue);
@@ -175,5 +200,10 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
         double screenY = request.height - (((point.y - request.minValue) * request.displayScale));
 
         return new Point(screenX, screenY);
+    }
+
+    @Autowired
+    public void setUiTimeline(UiTimelineManager uiTimelineManager) {
+        this.uiTimelineManager = uiTimelineManager;
     }
 }

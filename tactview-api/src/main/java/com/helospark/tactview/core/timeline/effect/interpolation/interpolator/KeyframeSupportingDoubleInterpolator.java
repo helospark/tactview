@@ -94,4 +94,6 @@ public abstract class KeyframeSupportingDoubleInterpolator implements DoubleInte
         }
     }
 
+    public abstract double getDefaultValue();
+
 }

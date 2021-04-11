@@ -162,4 +162,9 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
         this.values = new TreeMap<>(initializationValues);
     }
 
+    @Override
+    public double getDefaultValue() {
+        return defaultValue;
+    }
+
 }

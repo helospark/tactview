@@ -74,4 +74,9 @@ public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
         this.value = initialValue;
     }
 
+    @Override
+    public double getDefaultValue() {
+        return value;
+    }
+
 }

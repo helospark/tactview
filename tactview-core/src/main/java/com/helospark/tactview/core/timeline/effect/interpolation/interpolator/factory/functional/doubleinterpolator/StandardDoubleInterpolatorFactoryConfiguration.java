@@ -65,12 +65,14 @@ public class StandardDoubleInterpolatorFactoryConfiguration {
     public StandardDoubleInterpolatorFactory<?> bezierDoubleInterpolator() {
         return new StandardDoubleInterpolatorFactory<>("bezierDoubleInterpolator", BezierDoubleInterpolator.class, previous -> {
             TreeMap<TimelinePosition, CubicBezierPoint> values = new TreeMap<>();
+            double defaultValue = 0.0;
             if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 for (var entry : previous.getValues().entrySet()) {
                     values.put(entry.getKey(), new CubicBezierPoint((Double) entry.getValue(), new Point(-1, 0), new Point(1, 0)));
                 }
+                defaultValue = ((KeyframeSupportingDoubleInterpolator) previous.getInterpolator()).getDefaultValue();
             }
-            BezierDoubleInterpolator result = new BezierDoubleInterpolator(values);
+            BezierDoubleInterpolator result = new BezierDoubleInterpolator(defaultValue, values);
             if (previous.getInterpolatorClone() instanceof KeyframeSupportingDoubleInterpolator) {
                 result.setUseKeyframes(previous.keyframesEnabled());
             }

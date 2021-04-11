@@ -159,4 +159,9 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
         this.defaultValue = initialDefaultValue;
     }
 
+    @Override
+    public double getDefaultValue() {
+        return defaultValue;
+    }
+
 }

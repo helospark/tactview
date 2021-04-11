@@ -86,6 +86,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
 
     @Override
     public boolean onMouseDragged(CurveEditorMouseRequest mouseEvent) {
+        super.jumpToPositionOnDrag(mouseEvent, dragged == null);
         if (dragged == null) {
             return false;
         }
