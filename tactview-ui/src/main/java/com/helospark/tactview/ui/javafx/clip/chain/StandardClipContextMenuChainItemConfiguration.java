@@ -8,6 +8,7 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.EffectFactoryChain;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
@@ -86,7 +87,7 @@ public class StandardClipContextMenuChainItemConfiguration {
     @Bean
     @Order(0)
     public ClipContextMenuChainItem scaleToFrameMenuItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager, ProjectRepository projectRepository,
-            @Qualifier("scaleEffect") EffectFactory scaleFactory) {
+            @Qualifier("scaleEffect") EffectFactory scaleFactory, EffectFactoryChain effectFactoryChain) {
         return typeSupportingContextMenuItem(VisualTimelineClip.class, request -> {
             MenuItem scaleToImageMenuItem = new MenuItem("Scale to frame");
             scaleToImageMenuItem.setOnAction(e -> {
@@ -95,6 +96,7 @@ public class StandardClipContextMenuChainItemConfiguration {
                         .withProjectRepository(projectRepository)
                         .withScaleEffectFactory(scaleFactory)
                         .withTimelineManager(timelineManager)
+                        .withEffectFactoryChain(effectFactoryChain)
                         .build();
 
                 commandInterpreter.sendWithResult(command);

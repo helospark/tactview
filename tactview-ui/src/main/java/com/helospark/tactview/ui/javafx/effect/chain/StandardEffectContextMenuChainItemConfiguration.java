@@ -10,6 +10,7 @@ import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.MoveEffectToChannelCommand;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.util.ExtendsClipToMaximizeLengthService;
 
 import javafx.scene.control.MenuItem;
 
@@ -66,6 +67,20 @@ public class StandardEffectContextMenuChainItemConfiguration {
             MenuItem deleteClipMenuItem = new MenuItem("Delete");
             deleteClipMenuItem.setOnAction(e -> removeEffectService.removeEffect(request.getEffect().getId()));
             return deleteClipMenuItem;
+        });
+    }
+
+    @Bean
+    @Order(120)
+    public EffectContextMenuChainItem maximizeMenuItem(ExtendsClipToMaximizeLengthService extendsClipToMaximizeLengthService, TimelineManagerAccessor timelineManager) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem maximizeClipMenuItem = new MenuItem("Maximize");
+
+            timelineManager.findClipForEffect(request.getEffect().getId()).ifPresent(clip -> {
+                maximizeClipMenuItem.setOnAction(e -> extendsClipToMaximizeLengthService.extendEffectToClipSize(clip.getId(), request.getEffect()));
+            });
+
+            return maximizeClipMenuItem;
         });
     }
 

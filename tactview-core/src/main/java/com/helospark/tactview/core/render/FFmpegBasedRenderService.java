@@ -488,6 +488,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         OptionProvider<Integer> numberOfThreadsProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Thread number")
                 .withDefaultValue(threads)
+                .withValidValues(createThreadsValidValues())
                 .withValidationErrorProvider(t -> {
                     List<String> errors = new ArrayList<>();
 
@@ -534,6 +535,16 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         result.put("coverPhoto", coverPhotoProvider);
 
+        return result;
+    }
+
+    private List<ValueListElement> createThreadsValidValues() {
+        List<ValueListElement> result = new ArrayList<>();
+        int cores = Runtime.getRuntime().availableProcessors();
+        result.add(createElement("1"));
+        for (int i = 2; i <= cores; ++i) {
+            result.add(createElement(i + ""));
+        }
         return result;
     }
 

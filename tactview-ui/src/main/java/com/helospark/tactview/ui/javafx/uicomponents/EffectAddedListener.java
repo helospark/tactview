@@ -3,20 +3,14 @@ package com.helospark.tactview.ui.javafx.uicomponents;
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.StatelessEffect;
-import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
-import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
-import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
 import com.helospark.tactview.ui.javafx.effect.EffectContextMenuFactory;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.util.ExtendsClipToMaximizeLengthService;
 
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -39,23 +33,20 @@ public class EffectAddedListener {
     private DragRepository dragRepository;
     private NameToIdRepository nameToIdRepository;
     private EffectContextMenuFactory effectContextMenuFactory;
-    private TimelineManagerAccessor timelineManagerAccessor;
-    private UiCommandInterpreterService commandInterpreterService;
+    private ExtendsClipToMaximizeLengthService extendsClipToMaximizeLengthService;
 
     public EffectAddedListener(UiMessagingService messagingService, TimelineState timelineState, SelectedNodeRepository selectedNodeRepository,
             DragRepository dragRepository,
             EffectDragAdder effectDragAdder, NameToIdRepository nameToIdRepository,
             EffectContextMenuFactory effectContextMenuFactory,
-            TimelineManagerAccessor timelineManagerAccessor,
-            UiCommandInterpreterService commandInterpreterService) {
+            ExtendsClipToMaximizeLengthService extendsClipToMaximizeLengthService) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
         this.selectedNodeRepository = selectedNodeRepository;
         this.dragRepository = dragRepository;
         this.nameToIdRepository = nameToIdRepository;
         this.effectContextMenuFactory = effectContextMenuFactory;
-        this.timelineManagerAccessor = timelineManagerAccessor;
-        this.commandInterpreterService = commandInterpreterService;
+        this.extendsClipToMaximizeLengthService = extendsClipToMaximizeLengthService;
     }
 
     @PostConstruct
@@ -87,7 +78,7 @@ public class EffectAddedListener {
                     selectedNodeRepository.setOnlySelectedEffect(rectangle);
                 }
             } else {
-                extendClipToClipSize(effectAddedMessage.getClipId(), effectAddedMessage.getEffect());
+                extendsClipToMaximizeLengthService.extendEffectToClipSize(effectAddedMessage.getClipId(), effectAddedMessage.getEffect());
             }
         });
 
@@ -140,38 +131,6 @@ public class EffectAddedListener {
         return rectangle;
     }
 
-    private void extendClipToClipSize(String clipId, StatelessEffect statelessEffect) {
-        TimelineClip clip = timelineManagerAccessor.findClipById(clipId).get();
-
-        EffectResizedCommand moveLeft = EffectResizedCommand.builder()
-                .withEffectId(statelessEffect.getId())
-                .withLeft(true)
-                .withMoreResizeExpected(false)
-                .withGlobalPosition(clip.getInterval().getStartPosition())
-                .withRevertable(true)
-                .withTimelineManager(timelineManagerAccessor)
-                .withUseSpecialPoints(false)
-                .withAllowResizeToDisplaceOtherEffects(true)
-                .build();
-
-        TimelinePosition clipRight = clip.getInterval().getEndPosition();
-
-        EffectResizedCommand moveRight = EffectResizedCommand.builder()
-                .withEffectId(statelessEffect.getId())
-                .withLeft(false)
-                .withMoreResizeExpected(false)
-                .withGlobalPosition(clipRight)
-                .withRevertable(true)
-                .withTimelineManager(timelineManagerAccessor)
-                .withUseSpecialPoints(false)
-                .withAllowResizeToDisplaceOtherEffects(true)
-                .build();
-
-        CompositeCommand compositeCommand = new CompositeCommand(moveLeft, moveRight);
-
-        commandInterpreterService.sendWithResult(compositeCommand);
-    }
-
     private boolean isResizing(Rectangle rectangle, double currentX) {
         return (isDraggingLeft(rectangle, currentX) ||
                 isDraggingRight(rectangle, currentX));
@@ -191,7 +150,7 @@ public class EffectAddedListener {
     private double getDivider(Rectangle rectangle) {
         double divider = 1.0;
         if (rectangle.getWidth() * (timelineState.getZoom() / 2.0) < 20.0) {
-            divider = 10;
+            divider = 7;
         }
         return divider;
     }

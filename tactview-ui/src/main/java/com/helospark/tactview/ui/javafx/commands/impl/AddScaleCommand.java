@@ -4,6 +4,7 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.EffectFactoryChain;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -22,25 +23,28 @@ public class AddScaleCommand implements UiCommand {
 
     private ScaleEffect addedEffect;
 
+    private EffectFactoryChain effectFactoryChain;
+
     @Generated("SparkTools")
     private AddScaleCommand(Builder builder) {
         this.timelineManager = builder.timelineManager;
         this.scaleEffectFactory = builder.scaleEffectFactory;
         this.projectRepository = builder.projectRepository;
         this.clipId = builder.clipId;
+        this.effectFactoryChain = builder.effectFactoryChain;
     }
 
     @Override
     public void execute() {
         VisualTimelineClip clip = (VisualTimelineClip) timelineManager.findClipById(clipId).orElseThrow();
 
-        CreateEffectRequest request = new CreateEffectRequest(TimelinePosition.ofZero(), scaleEffectFactory.getEffectId(), TimelineClipType.VIDEO, clip.getInterval());
-
         VisualMediaMetadata metadata = clip.getMediaMetadata();
         double scaleX = (double) projectRepository.getWidth() / metadata.getWidth();
         double scaleY = (double) projectRepository.getHeight() / metadata.getHeight();
 
-        addedEffect = (ScaleEffect) scaleEffectFactory.createEffect(request);
+        CreateEffectRequest createEffectRequest = new CreateEffectRequest(TimelinePosition.ofZero(), scaleEffectFactory.getEffectId(), TimelineClipType.VIDEO, clip.getInterval());
+
+        addedEffect = (ScaleEffect) effectFactoryChain.createEffect(createEffectRequest);
         addedEffect.setScale(scaleX, scaleY);
         addedEffect.setInterval(clip.getInterval().butMoveStartPostionTo(TimelinePosition.ofZero())); // due to relative position
 
@@ -63,6 +67,7 @@ public class AddScaleCommand implements UiCommand {
         private EffectFactory scaleEffectFactory;
         private ProjectRepository projectRepository;
         private String clipId;
+        private EffectFactoryChain effectFactoryChain;
 
         private Builder() {
         }
@@ -84,6 +89,11 @@ public class AddScaleCommand implements UiCommand {
 
         public Builder withClipId(String clipId) {
             this.clipId = clipId;
+            return this;
+        }
+
+        public Builder withEffectFactoryChain(EffectFactoryChain effectFactoryChain) {
+            this.effectFactoryChain = effectFactoryChain;
             return this;
         }
 
