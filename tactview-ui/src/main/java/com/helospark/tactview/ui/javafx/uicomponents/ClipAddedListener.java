@@ -169,6 +169,10 @@ public class ClipAddedListener {
             }
         });
 
+        rectangle.setOnMouseReleased(event -> {
+            dragRepository.clearClipDrag();
+        });
+
         rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
             if (selectedNodeRepository.getPrimarySelectedClip().isEmpty()) {
                 selectedNodeRepository.setOnlySelectedClip(parentPane);

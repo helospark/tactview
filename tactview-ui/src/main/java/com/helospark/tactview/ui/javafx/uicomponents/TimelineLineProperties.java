@@ -54,11 +54,19 @@ public class TimelineLineProperties {
     }
 
     public void reset() {
-        startX.set(0);
-        endX.set(0);
-        startY.set(0);
-        endY.set(0);
-        enabledProperty.set(false);
+        setToZero(startX);
+        setToZero(endX);
+        setToZero(startY);
+        setToZero(endY);
+        if (enabledProperty.isBound()) {
+            enabledProperty.set(false);
+        }
+    }
+
+    private void setToZero(SimpleDoubleProperty prop) {
+        if (prop.isBound()) {
+            prop.set(0);
+        }
     }
 
 }
