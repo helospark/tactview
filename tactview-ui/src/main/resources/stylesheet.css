@@ -468,8 +468,15 @@
 
 .size-drop-down {
     -fx-background-color: transparent;
-    -fx-max-width: 70px;
+    -fx-max-width: 65px;
 }
+
+.size-drop-down .arrow-button{
+    -fx-padding: 0 0 0 0;
+    -fx-border-insets: 0 0 0 0;
+    -fx-background-color: transparent;
+}
+
 .size-drop-down > .list-cell {
     -fx-text-overrun: clip;
 }

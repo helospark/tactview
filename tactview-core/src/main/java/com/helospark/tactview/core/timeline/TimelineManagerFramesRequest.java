@@ -13,6 +13,7 @@ public class TimelineManagerFramesRequest {
     private Integer previewWidth;
     private Integer previewHeight;
     private TimelinePosition position;
+    private Optional<TimelineLength> audioLength;
     private Optional<Integer> audioSampleRate;
     private Optional<Integer> audioBytesPerSample;
     private Optional<Integer> numberOfChannels;
@@ -27,6 +28,7 @@ public class TimelineManagerFramesRequest {
         this.previewWidth = builder.previewWidth;
         this.previewHeight = builder.previewHeight;
         this.position = builder.position;
+        this.audioLength = builder.audioLength;
         this.audioSampleRate = builder.audioSampleRate;
         this.audioBytesPerSample = builder.audioBytesPerSample;
         this.numberOfChannels = builder.numberOfChannels;
@@ -76,6 +78,10 @@ public class TimelineManagerFramesRequest {
         return numberOfChannels;
     }
 
+    public Optional<TimelineLength> getAudioLength() {
+        return audioLength;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -91,6 +97,7 @@ public class TimelineManagerFramesRequest {
         private Integer previewWidth;
         private Integer previewHeight;
         private TimelinePosition position;
+        private Optional<TimelineLength> audioLength = Optional.empty();
         private Optional<Integer> audioSampleRate = Optional.empty();
         private Optional<Integer> audioBytesPerSample = Optional.empty();
         private Optional<Integer> numberOfChannels = Optional.empty();
@@ -135,6 +142,11 @@ public class TimelineManagerFramesRequest {
 
         public Builder withPosition(TimelinePosition position) {
             this.position = position;
+            return this;
+        }
+
+        public Builder withAudioLength(Optional<TimelineLength> audioLength) {
+            this.audioLength = audioLength;
             return this;
         }
 

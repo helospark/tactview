@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -195,7 +196,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
 
                 if (debugAudioUpdateEnabled) { // just so it is easier to debug. Will need to think of other solution later
-                    AudioVideoFragment result = playbackController.getSingleAudioFrameAtPosition(currentPosition, false);
+                    AudioVideoFragment result = playbackController.getSingleAudioFrameAtPosition(currentPosition, false, Optional.empty());
                     result.free();
                 }
             } else {

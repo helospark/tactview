@@ -285,6 +285,20 @@ public class JavaFXUiMain extends Application {
 
         ComboBox<String> sizeDropDown = lightDi.getBean(ScaleComboBoxFactory.class).create();
 
+        ComboBox<String> playbackSpeedDropDown = new ComboBox<>();
+        playbackSpeedDropDown.getStyleClass().add("size-drop-down");
+        playbackSpeedDropDown.getItems().add("0.5x");
+        playbackSpeedDropDown.getItems().add("0.75x");
+        playbackSpeedDropDown.getItems().add("1.0x");
+        playbackSpeedDropDown.getItems().add("1.25x");
+        playbackSpeedDropDown.getItems().add("1.5x");
+        playbackSpeedDropDown.getItems().add("2.0x");
+        playbackSpeedDropDown.getSelectionModel().select("1.0x");
+        playbackSpeedDropDown.setTooltip(new Tooltip("Playback speed"));
+        playbackSpeedDropDown.valueProperty().addListener((o, oldValue, newValue2) -> {
+            playbackPreferenceRepository.setPlaybackSpeedMultiplier(new BigDecimal(newValue2.replace("x", "")));
+        });
+
         underVideoBar.getChildren().add(sizeDropDown);
         underVideoBar.getChildren().add(muteButton);
         underVideoBar.getChildren().add(halfImageEffectButton);
@@ -295,6 +309,7 @@ public class JavaFXUiMain extends Application {
         underVideoBar.getChildren().add(stopButton);
         underVideoBar.getChildren().add(jumpForwardOnFrameButton);
         underVideoBar.getChildren().add(jumpForwardButton);
+        underVideoBar.getChildren().add(playbackSpeedDropDown);
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 

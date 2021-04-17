@@ -127,10 +127,12 @@ public class TimelineManagerRenderService {
                         int sampleRateToUse = request.getAudioSampleRate().orElse(projectRepository.getSampleRate());
                         int bytesPerSampleToUse = request.getAudioBytesPerSample().orElse(projectRepository.getBytesPerSample());
                         int numberOfChannels = request.getNumberOfChannels().orElse(projectRepository.getNumberOfChannels());
+                        TimelineLength defaultLength = new TimelineLength(projectRepository.getFrameTime());
+                        TimelineLength length = request.getAudioLength().orElse(defaultLength);
                         AudioRequest audioRequest = AudioRequest.builder()
                                 .withApplyEffects(request.isEffectsEnabled())
                                 .withPosition(request.getPosition())
-                                .withLength(new TimelineLength(projectRepository.getFrameTime()))
+                                .withLength(length)
                                 .withSampleRate(sampleRateToUse)
                                 .withBytesPerSample(bytesPerSampleToUse)
                                 .withNumberOfChannels(numberOfChannels)

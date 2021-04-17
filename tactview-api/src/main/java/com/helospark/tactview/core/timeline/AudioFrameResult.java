@@ -80,6 +80,10 @@ public class AudioFrameResult {
         return b & 0xFF;
     }
 
+    public void setNormalizedSampleAt(int channelIndex, int sampleIndex, float newValue) {
+        setSampleAt(channelIndex, sampleIndex, (int) (newValue * (1 << (bytesPerSample * 8 - 1))));
+    }
+
     public void setSampleAt(int channelIndex, int sampleIndex, int newValue) {
         ByteBuffer channel = channels.get(channelIndex);
         int saturatedValue = saturateIfNeeded(newValue, (long) 1 << (bytesPerSample * 8 - 1));

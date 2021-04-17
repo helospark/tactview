@@ -3,15 +3,20 @@ package com.helospark.tactview.ui.javafx;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService.TimelineDisplayAsyncUpdateRequest;
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
@@ -21,6 +26,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
 
 import javafx.application.Platform;
+import sonic.Sonic;
 
 @Component
 public class UiTimelineManager {
@@ -35,9 +41,11 @@ public class UiTimelineManager {
     private Thread runThread;
     private final Object timelineLock = new Object();
 
+    private Sonic sonic = null;
+
     private final ProjectRepository projectRepository;
     private final TimelineState timelineState;
-    private final PlaybackFrameAccessor playbackController;
+    private final PlaybackFrameAccessor playbackFrameAccessor;
     private final AudioStreamService audioStreamService;
     private DisplayUpdaterService displayUpdaterService;
     private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
@@ -49,7 +57,7 @@ public class UiTimelineManager {
             List<AudioPlayedListener> audioPlayedListeners) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
-        this.playbackController = playbackController;
+        this.playbackFrameAccessor = playbackController;
         this.audioStreamService = audioStreamService;
         this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
         this.javaByteArrayConverter = javaByteArrayConverter;
@@ -84,7 +92,13 @@ public class UiTimelineManager {
                         }
 
                         boolean isMute = uiPlaybackPreferenceRepository.isMute();
-                        AudioVideoFragment audioVideoFragment = playbackController.getSingleAudioFrameAtPosition(currentPosition, isMute);
+                        TimelineLength length = new TimelineLength(projectRepository.getFrameTime());
+                        AudioVideoFragment audioVideoFragment = playbackFrameAccessor.getSingleAudioFrameAtPosition(currentPosition, isMute, Optional.of(length));
+
+                        if (!uiPlaybackPreferenceRepository.getPlaybackSpeedMultiplier().equals(BigDecimal.ONE)) {
+                            AudioFrameResult newResult = changePlaybackRateOfAudio(audioVideoFragment);
+                            audioVideoFragment = audioVideoFragment.butFreeAndReplaceVideoFrame(newResult);
+                        }
 
                         byte[] audioFrame = convertToPlayableFormat(audioVideoFragment);
 
@@ -116,6 +130,52 @@ public class UiTimelineManager {
             }, "playback-thread");
             runThread.start();
         }
+    }
+
+    private AudioFrameResult changePlaybackRateOfAudio(AudioVideoFragment audioVideoFragment) {
+        float tempo = uiPlaybackPreferenceRepository.getPlaybackSpeedMultiplier().floatValue();
+        AudioFrameResult audioResult = audioVideoFragment.getAudioResult();
+        int sampleRate = audioResult.getSamplePerSecond();
+        List<ByteBuffer> channels = audioResult.getChannels();
+        int numberChannels = channels.size();
+        if (sonic == null || sonic.getSampleRate() != audioResult.getSamplePerSecond() || sonic.getNumChannels() != numberChannels) {
+            sonic = new Sonic(sampleRate, numberChannels);
+            sonic.setPitch(1.0f);
+            sonic.setRate(1.0f);
+            sonic.setVolume(1.0f);
+            sonic.setChordPitch(false);
+            sonic.setQuality(0);
+        }
+
+        int samplesInInput = audioResult.getNumberSamples() * numberChannels;
+
+        float[] samples = new float[samplesInInput];
+
+        for (int i = 0; i < audioResult.getNumberSamples(); ++i) {
+            for (int j = 0; j < numberChannels; ++j) {
+                samples[i * numberChannels + j] = audioResult.getNormalizedSampleAt(j, i);
+            }
+        }
+
+        sonic.setSpeed(tempo);
+
+        sonic.writeFloatToStream(samples, audioResult.getNumberSamples());
+
+        int actualOutputSamples = sonic.samplesAvailable();
+        float[] outputSamples = new float[actualOutputSamples * numberChannels];
+        actualOutputSamples = sonic.readFloatFromStream(outputSamples, actualOutputSamples);
+
+        List<ByteBuffer> newChannels = new ArrayList<>();
+        for (int i = 0; i < numberChannels; ++i) {
+            newChannels.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(actualOutputSamples * audioResult.getBytesPerSample()));
+        }
+        AudioFrameResult newResult = new AudioFrameResult(newChannels, audioResult.getSamplePerSecond(), audioResult.getBytesPerSample());
+        for (int i = 0; i < actualOutputSamples; ++i) {
+            for (int j = 0; j < numberChannels; ++j) {
+                newResult.setNormalizedSampleAt(j, i, outputSamples[i * numberChannels + j]);
+            }
+        }
+        return newResult;
     }
 
     private void notifyAudioListeners(AudioVideoFragment audioVideoFragment) {
@@ -150,7 +210,8 @@ public class UiTimelineManager {
         notifyConsumers();
 
         // TODO: this is also a consumer, but due to playback it would be doublecalled during playback
-        AudioVideoFragment audioVideoFragment = playbackController.getSingleAudioFrameAtPosition(currentPosition, false);
+        TimelineLength length = new TimelineLength(projectRepository.getFrameTime());
+        AudioVideoFragment audioVideoFragment = playbackFrameAccessor.getSingleAudioFrameAtPosition(currentPosition, false, Optional.of(length));
         notifyAudioListeners(audioVideoFragment);
         audioVideoFragment.free();
     }

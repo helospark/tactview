@@ -11,6 +11,7 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -96,7 +97,7 @@ public class PlaybackFrameAccessor {
         return javafxImage;
     }
 
-    public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position, boolean isMute) {
+    public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position, boolean isMute, Optional<TimelineLength> length) {
         AudioVideoFragment frame = null;
         if (!isMute) {
             Integer width = uiProjectRepository.getPreviewWidth();
@@ -110,6 +111,7 @@ public class PlaybackFrameAccessor {
                     .withNeedVideo(false)
                     .withAudioBytesPerSample(Optional.of(BYTES))
                     .withAudioSampleRate(Optional.of(SAMPLE_RATE))
+                    .withAudioLength(length)
                     .build();
             frame = timelineManager.getFrame(request);
         }
