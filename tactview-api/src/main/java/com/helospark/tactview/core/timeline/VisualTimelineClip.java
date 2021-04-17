@@ -42,8 +42,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     protected PointProvider translatePointProvider;
     protected DoubleProvider globalClipAlphaProvider;
-    protected BooleanProvider changeClipLengthProvider;
-    protected DoubleProvider timeScaleProvider;
     protected BooleanProvider enabledProvider;
     protected BooleanProvider reverseTimeProvider;
     protected ValueListProvider<AlignmentValueListElement> verticallyCenteredProvider;
@@ -52,8 +50,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected VisualMediaSource backingSource;
     protected ValueListProvider<BlendModeValueListElement> blendModeProvider;
 
-    protected TimelineInterval cachedInterval = null;
-    protected BigDecimal lengthCache = null;
 
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
@@ -175,6 +171,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     @Override
     protected void initializeValueProvider() {
+        super.initializeValueProvider();
         DoubleProvider translateXProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new BezierDoubleInterpolator(0.0));
         DoubleProvider translateYProvider = new DoubleProvider(SizeFunction.IMAGE_SIZE, new BezierDoubleInterpolator(0.0));
         translateXProvider.setScaleDependent();
@@ -186,8 +183,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
         blendModeProvider = new ValueListProvider<>(createBlendModes(), new StepStringInterpolator("normal"));
         horizontallyCenteredProvider = new ValueListProvider<>(createHorizontalAlignments(), new StepStringInterpolator("left"));
         verticallyCenteredProvider = new ValueListProvider<>(createVerticalAlignments(), new StepStringInterpolator("top"));
-        timeScaleProvider = new DoubleProvider(0, 5, new MultiKeyframeBasedDoubleInterpolator(1.0));
-        changeClipLengthProvider = new BooleanProvider(new ConstantInterpolator(1.0));
         reverseTimeProvider = new BooleanProvider(new ConstantInterpolator(0.0));
     }
 
@@ -207,7 +202,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     @Override
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
-        List<ValueProviderDescriptor> result = new ArrayList<>();
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
         ValueProviderDescriptor translateDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translatePointProvider)
@@ -242,30 +237,19 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withName("Blend mode")
                 .withGroup("common")
                 .build();
-        ValueProviderDescriptor timeScaleProviderDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(timeScaleProvider)
-                .withName("clip speed")
-                .withGroup("speed")
-                .build();
-        ValueProviderDescriptor changeClipLengthProviderDescriptor = ValueProviderDescriptor.builder()
-                .withKeyframeableEffect(changeClipLengthProvider)
-                .withName("change clip length")
-                .withGroup("speed")
-                .build();
+
         ValueProviderDescriptor reverseTimeProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(reverseTimeProvider)
                 .withName("Reverse clip")
                 .withGroup("speed")
                 .build();
 
-        result.add(translateDescriptor);
-        result.add(centerHorizontallyDescriptor);
-        result.add(centerVerticallyDescriptor);
-        result.add(globalClipAlphaDescriptor);
-        result.add(enabledDescriptor);
-        result.add(blendModeDescriptor);
-        result.add(timeScaleProviderDescriptor);
-        result.add(changeClipLengthProviderDescriptor);
+        result.add(0, translateDescriptor);
+        result.add(1, centerHorizontallyDescriptor);
+        result.add(2, centerVerticallyDescriptor);
+        result.add(3, globalClipAlphaDescriptor);
+        result.add(4, enabledDescriptor);
+        result.add(5, blendModeDescriptor);
         result.add(reverseTimeProviderDescriptor);
 
         return result;
@@ -305,28 +289,4 @@ public abstract class VisualTimelineClip extends TimelineClip {
         }
     }
 
-    @Override
-    public TimelineInterval getInterval() {
-        Boolean changeClipLength = changeClipLengthProvider.getValueAt(TimelinePosition.ofZero());
-        if (changeClipLength) {
-            TimelineInterval originalInterval = this.interval;
-            TimelinePosition originalStartPosition = originalInterval.getStartPosition();
-            if (lengthCache == null || !this.interval.equals(cachedInterval)) {
-                lengthCache = timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), originalInterval.getLength(), new BigDecimal("10000"));
-                cachedInterval = originalInterval;
-            }
-            return new TimelineInterval(originalStartPosition, new TimelineLength(lengthCache));
-        } else {
-            return this.interval;
-        }
-    }
-
-    @Override
-    public void effectChanged(EffectChangedRequest request) {
-        super.effectChanged(request);
-        if (request.id.equals(timeScaleProvider.getId())) {
-            lengthCache = null;
-            //                    ((PercentAwareMultiKeyframeBasedDoubleInterpolator) timeScaleProvider.getInterpolator()).resizeTo(getInterval().getLength());
-        }
-    }
 }

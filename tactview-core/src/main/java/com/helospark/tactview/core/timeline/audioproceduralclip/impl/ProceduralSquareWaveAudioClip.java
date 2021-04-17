@@ -101,6 +101,7 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
 
     @Override
     protected void initializeValueProvider() {
+        super.initializeValueProvider();
         onTimeProvider = new DoubleProvider(1.0 / 20000.0, 1.0 / 20.0, new ConstantInterpolator(1.0 / 700.0));
         offTimeProvider = new DoubleProvider(1.0 / 20000.0, 1.0 / 20.0, new ConstantInterpolator(1.0 / 700.0));
         amplitudeProvider = new DoubleProvider(0.0, 1.0, new ConstantInterpolator(1.0));
@@ -108,6 +109,7 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
 
     @Override
     protected List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
         ValueProviderDescriptor onTimeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(onTimeProvider)
                 .withName("On time")
@@ -116,7 +118,9 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
                 .withKeyframeableEffect(offTimeProvider)
                 .withName("Off time")
                 .build();
-        return List.of(onTimeDescriptor, offTimeDescriptor);
+        result.add(onTimeDescriptor);
+        result.add(offTimeDescriptor);
+        return result;
     }
 
 }

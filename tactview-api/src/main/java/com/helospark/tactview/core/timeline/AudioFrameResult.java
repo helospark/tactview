@@ -173,4 +173,8 @@ public class AudioFrameResult {
         return new AudioFrameResult(newChannels, this.getSamplePerSecond(), this.getBytesPerSample());
     }
 
+    public void free() {
+        GlobalMemoryManagerAccessor.memoryManager.returnBuffers(channels);
+    }
+
 }

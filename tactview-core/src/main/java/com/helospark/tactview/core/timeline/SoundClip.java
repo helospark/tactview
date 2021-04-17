@@ -80,12 +80,12 @@ public class SoundClip extends AudibleTimelineClip {
 
     @Override
     protected void initializeValueProvider() {
-
+        super.initializeValueProvider();
     }
 
     @Override
     protected List<ValueProviderDescriptor> getDescriptorsInternal() {
-        return List.of();
+        return super.getDescriptorsInternal();
     }
 
 }

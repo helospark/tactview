@@ -17,6 +17,10 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class TimelineClip implements EffectAware, IntervalAware, IntervalSettable {
@@ -32,6 +36,12 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     protected List<ValueProviderDescriptor> valueDescriptors; // TODO: fill
 
+    protected DoubleProvider timeScaleProvider;
+    protected BooleanProvider changeClipLengthProvider;
+    
+    protected TimelineInterval cachedInterval = null;
+    protected BigDecimal lengthCache = null;
+    
     public TimelineClip(TimelineInterval interval, TimelineClipType type) {
         this.id = UUID.randomUUID().toString();
         this.interval = interval;
@@ -111,7 +121,18 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     @Override
     public TimelineInterval getInterval() {
-        return interval;
+        Boolean changeClipLength = changeClipLengthProvider.getValueAt(TimelinePosition.ofZero());
+        if (changeClipLength) {
+            TimelineInterval originalInterval = this.interval;
+            TimelinePosition originalStartPosition = originalInterval.getStartPosition();
+            if (lengthCache == null || !this.interval.equals(cachedInterval)) {
+                lengthCache = timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), originalInterval.getLength(), new BigDecimal("10000"));
+                cachedInterval = originalInterval;
+            }
+            return new TimelineInterval(originalStartPosition, new TimelineLength(lengthCache));
+        } else {
+            return this.interval;
+        }
     }
 
     public TimelineClipType getType() {
@@ -129,9 +150,31 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return valueDescriptors;
     }
 
-    protected abstract void initializeValueProvider();
+    protected void initializeValueProvider() {
+        timeScaleProvider = new DoubleProvider(0, 5, new MultiKeyframeBasedDoubleInterpolator(1.0));
+        changeClipLengthProvider = new BooleanProvider(new ConstantInterpolator(1.0));
+    }
 
-    protected abstract List<ValueProviderDescriptor> getDescriptorsInternal();
+
+    protected List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> descritors = new ArrayList<>();
+        
+        ValueProviderDescriptor timeScaleProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(timeScaleProvider)
+                .withName("clip speed")
+                .withGroup("speed")
+                .build();
+        ValueProviderDescriptor changeClipLengthProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(changeClipLengthProvider)
+                .withName("change clip length")
+                .withGroup("speed")
+                .build();
+        
+        descritors.add(timeScaleProviderDescriptor);
+        descritors.add(changeClipLengthProviderDescriptor);
+        
+        return descritors;
+    }
 
     @Override
     public void setInterval(TimelineInterval newInterval) {
@@ -383,7 +426,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return effectChannels.stream()
                 .flatMap(a -> a.computeIntersectingIntervals(inInterval).stream());
     }
-
+    
     public boolean isEnabled(TimelinePosition position) {
         return true;
     }
@@ -420,5 +463,14 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     public void preDestroy() {
     }
+    
+    @Override
+    public void effectChanged(EffectChangedRequest request) {
+        if (request.id.equals(timeScaleProvider.getId())) {
+            lengthCache = null;
+            //                    ((PercentAwareMultiKeyframeBasedDoubleInterpolator) timeScaleProvider.getInterpolator()).resizeTo(getInterval().getLength());
+        }
+    }
+
 
 }
