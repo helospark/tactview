@@ -45,7 +45,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
         bytesPerSample = 4;
         numberOfChannels = 2;
         fps = BigDecimal.valueOf(24);
-        frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
+        frameTime = BigDecimal.ONE.divide(fps, 100, RoundingMode.HALF_UP);
     }
 
     public void initializeVideo(int width, int height, BigDecimal fps) {
@@ -53,7 +53,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
         this.width = width;
         this.height = height;
         this.fps = fps;
-        this.frameTime = BigDecimal.ONE.divide(fps, 20, RoundingMode.HALF_UP);
+        this.frameTime = BigDecimal.ONE.divide(fps, 100, RoundingMode.HALF_UP);
     }
 
     public void initializeAudio(int samleRate, int bytesPerSample, int numberOfChannels) {
