@@ -140,7 +140,7 @@ public class UiTimelineManager {
         int numberChannels = channels.size();
         if (sonic == null || sonic.getSampleRate() != audioResult.getSamplePerSecond() || sonic.getNumChannels() != numberChannels) {
             sonic = new Sonic(sampleRate, numberChannels);
-            sonic.setPitch(2.0f);
+            sonic.setPitch(1.0f);
             sonic.setRate(1.0f);
             sonic.setVolume(1.0f);
             sonic.setChordPitch(false);
