@@ -8,6 +8,8 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.ui.javafx.ProjectInitializer;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
+import com.helospark.tactview.ui.javafx.menu.DynamicallyGeneratedParentMenuContribution;
+import com.helospark.tactview.ui.javafx.menu.MenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SeparatorMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.importMenu.clip.ImportClipFileChooser;
@@ -52,13 +54,24 @@ public class DefaultFileMenuItemConfiguration {
 
     @Bean
     @Order(12)
-    public List<SelectableMenuContribution> recentFiles(RecentlyAccessedRepository recentlySavedRepository, UiLoadHandler loadHandler) {
-        return recentlySavedRepository.getRecentlySavedElements()
-                .stream()
-                .map(a -> new DefaultMenuContribution(List.of(FILE_ROOT, LOAD_RECENT_MENU_ITEM, a.getAbsolutePath()), event -> {
-                    loadHandler.loadFile(a);
-                }))
-                .collect(Collectors.toList());
+    public DynamicallyGeneratedParentMenuContribution recentFiles(RecentlyAccessedRepository recentlySavedRepository, UiLoadHandler loadHandler) {
+        return new DynamicallyGeneratedParentMenuContribution() {
+
+            @Override
+            public List<String> getPath() {
+                return List.of(FILE_ROOT, LOAD_RECENT_MENU_ITEM);
+            }
+
+            @Override
+            public List<MenuContribution> getChildren() {
+                return recentlySavedRepository.getRecentlySavedElements()
+                        .stream()
+                        .map(a -> new DefaultMenuContribution(List.of(a.getAbsolutePath()), event -> {
+                            loadHandler.loadFile(a);
+                        }))
+                        .collect(Collectors.toList());
+            }
+        };
     }
 
     @Bean
