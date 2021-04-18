@@ -1,7 +1,5 @@
 package com.helospark.tactview.core.timeline;
 
-import javax.annotation.Generated;
-
 public class AudioRequest {
     private TimelinePosition position;
     private TimelineLength length;
@@ -10,7 +8,6 @@ public class AudioRequest {
     private int numberOfChannels;
     private boolean applyEffects;
 
-    @Generated("SparkTools")
     private AudioRequest(Builder builder) {
         this.position = builder.position;
         this.length = builder.length;
@@ -44,12 +41,14 @@ public class AudioRequest {
         return numberOfChannels;
     }
 
-    @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
     }
 
-    @Generated("SparkTools")
+    public static Builder builderFrom(AudioRequest audioRequest) {
+        return new Builder(audioRequest);
+    }
+
     public static final class Builder {
         private TimelinePosition position;
         private TimelineLength length;
@@ -57,8 +56,16 @@ public class AudioRequest {
         private int bytesPerSample;
         private int numberOfChannels;
         private boolean applyEffects;
-
         private Builder() {
+        }
+
+        private Builder(AudioRequest audioRequest) {
+            this.position = audioRequest.position;
+            this.length = audioRequest.length;
+            this.sampleRate = audioRequest.sampleRate;
+            this.bytesPerSample = audioRequest.bytesPerSample;
+            this.numberOfChannels = audioRequest.numberOfChannels;
+            this.applyEffects = audioRequest.applyEffects;
         }
 
         public Builder withPosition(TimelinePosition position) {

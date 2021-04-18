@@ -15,4 +15,8 @@ public interface SingleThreadedRenderable {
 
     }
 
+    public default boolean isSequentialRenderEnabled() {
+        return true;
+    }
+
 }

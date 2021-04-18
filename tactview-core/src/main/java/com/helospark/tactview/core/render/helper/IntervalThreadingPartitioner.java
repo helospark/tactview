@@ -28,6 +28,7 @@ public class IntervalThreadingPartitioner {
                 .flatMap(a -> a.getAllClips().stream())
                 .filter(a -> a.getGlobalInterval().intersects(intervalOfInterest))
                 .filter(a -> a instanceof SingleThreadedRenderable)
+                .filter(a -> ((SingleThreadedRenderable) a).isSequentialRenderEnabled())
                 .collect(Collectors.toList());
 
         allSingleThreadedClips.stream()
@@ -39,6 +40,7 @@ public class IntervalThreadingPartitioner {
                 .flatMap(a -> a.getEffects().stream())
                 .filter(a -> a.getGlobalInterval().intersects(intervalOfInterest))
                 .filter(a -> a instanceof SingleThreadedRenderable)
+                .filter(a -> ((SingleThreadedRenderable) a).isSequentialRenderEnabled())
                 .collect(Collectors.toList());
 
         allSingleThreadedEffects.stream()
