@@ -479,6 +479,7 @@
 
 .size-drop-down > .list-cell {
     -fx-text-overrun: clip;
+    -fx-alignment: top-right;
 }
 
 <!-- plugins dialog -->

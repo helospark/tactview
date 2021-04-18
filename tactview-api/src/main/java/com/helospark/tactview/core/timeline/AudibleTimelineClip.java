@@ -40,6 +40,7 @@ public abstract class AudibleTimelineClip extends TimelineClip implements Single
     public AudibleTimelineClip(AudibleTimelineClip soundClip, CloneRequestMetadata cloneRequestMetadata) {
         super(soundClip, cloneRequestMetadata);
         this.mediaMetadata = soundClip.mediaMetadata;
+        this.pitchShiftProvider = soundClip.pitchShiftProvider.deepClone();
     }
 
     @Override
