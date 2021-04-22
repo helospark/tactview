@@ -8,16 +8,18 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Generated;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
@@ -41,7 +43,6 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private final ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(NUMBER_OF_CACHE_JOBS_TO_RUN);
     private final Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
     private volatile long currentPositionLastRendered = -1;
-    private volatile boolean running = true;
 
     private final PlaybackFrameAccessor playbackController;
     private final UiProjectRepository uiProjectRepostiory;
@@ -49,6 +50,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private final GlobalDirtyClipManager globalDirtyClipManager;
     private final List<DisplayUpdatedListener> displayUpdateListeners;
     private final MessagingService messagingService;
+    private final ScheduledExecutorService scheduledExecutorService;
 
     private final boolean debugAudioUpdateEnabled;
 
@@ -68,7 +70,8 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     public DisplayUpdaterService(PlaybackFrameAccessor playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
-            @Value("${debug.display-audio-updater.enabled}") boolean debugAudioUpdateEnabled) {
+            @Value("${debug.display-audio-updater.enabled}") boolean debugAudioUpdateEnabled,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
         this.playbackController = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
@@ -76,6 +79,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         this.displayUpdateListeners = displayUpdateListeners;
         this.messagingService = messagingService;
         this.debugAudioUpdateEnabled = debugAudioUpdateEnabled;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @PostConstruct
@@ -91,28 +95,18 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     @Override
     public void postProcess(Scene scene) {
-        Thread thread = new Thread(() -> {
-            while (running) {
-                try {
-                    Thread.sleep(200);
-                    TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
-                    long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
-                    if (currentPostionLastModified > currentPositionLastRendered) {
-                        updateCurrentPositionWithInvalidatedCache();
-                        logger.debug("Current position changed, updating {}", currentPosition);
-                    }
-                } catch (Exception e) {
-                    logger.warn("Unable to check dirty state of display", e);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            try {
+                TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
+                long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
+                if (currentPostionLastModified > currentPositionLastRendered) {
+                    updateCurrentPositionWithInvalidatedCache();
+                    logger.debug("Current position changed, updating {}", currentPosition);
                 }
+            } catch (Exception e) {
+                logger.warn("Unable to check dirty state of display", e);
             }
-        }, "display-updater-thread");
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    @PreDestroy
-    public void destroy() {
-        running = false;
+        }, 200, 200, TimeUnit.MILLISECONDS);
     }
 
     // TODO: something is really not right here

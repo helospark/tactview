@@ -12,16 +12,17 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
-import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -31,18 +32,20 @@ public class MediaCache {
     private Set<CacheRemoveDomain> accessTimeOrderedList = new ConcurrentSkipListSet<>();
     private MemoryManager memoryManager;
     private MessagingService messagingService;
+    private ScheduledExecutorService executorService;
 
     @Slf4j
     private Logger logger;
 
     private volatile long approximateSize = 0;
     private volatile long maximumSizeHint;
-    private volatile boolean running = true;
 
-    public MediaCache(MemoryManager memoryManager, @Value("${mediacache.max.size}") Long maximumSize, MessagingService messagingService) {
+    public MediaCache(MemoryManager memoryManager, @Value("${mediacache.max.size}") Long maximumSize, MessagingService messagingService,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService) {
         this.memoryManager = memoryManager;
         this.maximumSizeHint = maximumSize;
         this.messagingService = messagingService;
+        this.executorService = executorService;
     }
 
     @PostConstruct
@@ -51,21 +54,17 @@ public class MediaCache {
             doImmediateCleanup(0);
         });
 
-        new Thread(() -> {
+        executorService.scheduleWithFixedDelay(() -> {
             try {
-                while (running) {
-                    ThreadSleep.sleep(1000);
-                    if (approximateSize >= maximumSizeHint * 0.8) {
-                        doImmediateCleanup((int) (maximumSizeHint * 0.5));
-                    } else {
-                        logger.debug("Mediacache is within size limits, fill ratio {}", (double) approximateSize / maximumSizeHint);
-                    }
+                if (approximateSize >= maximumSizeHint * 0.8) {
+                    doImmediateCleanup((int) (maximumSizeHint * 0.5));
+                } else {
+                    logger.debug("Mediacache is within size limits, fill ratio {}", (double) approximateSize / maximumSizeHint);
                 }
             } catch (Exception e) {
                 logger.warn("Error while cleaning mediacache", e);
             }
-
-        }, "cache-cleaner-thread").start();
+        }, 1000, 1000, TimeUnit.MILLISECONDS);
 
     }
 
@@ -92,11 +91,6 @@ public class MediaCache {
                 accessTimeOrderedList.remove(firstElement);
             }
         }
-    }
-
-    @PreDestroy
-    public void destroy() {
-        running = false;
     }
 
     public void cacheMedia(String key, MediaHashValue value) {

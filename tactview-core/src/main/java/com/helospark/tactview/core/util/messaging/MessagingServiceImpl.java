@@ -6,9 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.Logger;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.util.logger.Slf4j;
 
@@ -17,8 +19,13 @@ public class MessagingServiceImpl implements MessagingService {
     @Slf4j
     private Logger logger;
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(1);
+    private ExecutorService executorService;
     private Map<Class<?>, Queue<MessageListener<?>>> messageListeners = new ConcurrentHashMap<>();
+
+    public MessagingServiceImpl() {
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("async-messaging-thread-%d").build();
+        executorService = Executors.newFixedThreadPool(1, namedThreadFactory);
+    }
 
     @Override
     public <T> void register(Class<T> messageType, MessageListener<T> listener) {

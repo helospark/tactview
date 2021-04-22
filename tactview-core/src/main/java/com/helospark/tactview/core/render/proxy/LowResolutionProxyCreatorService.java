@@ -6,9 +6,9 @@ import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.ffmpeg.FFmpegBasedMediaDecoderDecorator;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -31,17 +31,19 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 // TODO: consider configurable image sequence
 @Component
 public class LowResolutionProxyCreatorService {
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService;
     private FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder;
     private FFmpegBasedMediaDecoderDecorator mediaDecoder;
     private MessagingService messagingService;
 
     private String path = System.getProperty("java.io.tmpdir");
 
-    public LowResolutionProxyCreatorService(FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, FFmpegBasedMediaDecoderDecorator mediaDecoder, MessagingService messagingService) {
+    public LowResolutionProxyCreatorService(FFmpegBasedMediaEncoder ffmpegBasedMediaEncoder, FFmpegBasedMediaDecoderDecorator mediaDecoder, MessagingService messagingService,
+            @Qualifier("longRunningTaskExecutorService") ExecutorService executorService) {
         this.ffmpegBasedMediaEncoder = ffmpegBasedMediaEncoder;
         this.mediaDecoder = mediaDecoder;
         this.messagingService = messagingService;
+        this.executorService = executorService;
     }
 
     public void createLowResolutionProxy(VideoClip clip, int proxyWidth, int proxyHeight) {

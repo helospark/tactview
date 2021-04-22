@@ -2,12 +2,9 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class DirtyIntervalList {
     private NonIntersectingIntervalList<IntervalContainer> knownIntervals = new NonIntersectingIntervalList<>();
-    private ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     public long positionLastModified(TimelinePosition position) {
         return knownIntervals.getElementWithIntervalContainingPoint(position)
@@ -16,14 +13,13 @@ public class DirtyIntervalList {
     }
 
     public void dirtyInterval(TimelineInterval interval) {
-        executorService.execute(() -> {
+        synchronized (knownIntervals) {
             List<IntervalContainer> intersections = knownIntervals.computeIntersectingIntervals(interval);
             knownIntervals.removeAll(intersections);
             TimelineInterval mergedInterval = mergeIntervals(interval, intersections);
             IntervalContainer newInterval = new IntervalContainer(mergedInterval, System.currentTimeMillis());
             knownIntervals.addInterval(newInterval);
-        });
-
+        }
     }
 
     private TimelineInterval mergeIntervals(TimelineInterval interval, List<IntervalContainer> intervalsToReaddForStartPosition) {

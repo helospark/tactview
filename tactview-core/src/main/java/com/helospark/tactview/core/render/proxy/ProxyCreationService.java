@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -39,7 +40,7 @@ public class ProxyCreationService {
     private static final int NUMBER_OF_FRAMES_TO_READ_FROM_FILE_PER_CALL = 5;
     private static final int NUMBER_OF_PRODUCER_THREADS = Runtime.getRuntime().availableProcessors() - 1;
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService;
 
     private ContinuousImageQueryFFmpegService imageGetterService;
     private ByteBufferToImageConverter byteBufferToImageConverter;
@@ -51,12 +52,14 @@ public class ProxyCreationService {
     private LinkedBlockingQueue<FFmpegFrameWithFrameNumber> queue = new LinkedBlockingQueue<>(WRITE_FRAME_BUFFER_SIZE);
 
     public ProxyCreationService(ContinuousImageQueryFFmpegService imageGetterService, ByteBufferToImageConverter byteBufferToImageConverter,
-            ImageSequenceClipFactory imageSequenceClipFactory, ImageSequenceDecoderDecorator imageSequenceDecoderDecorator, MessagingService messagingService) {
+            ImageSequenceClipFactory imageSequenceClipFactory, ImageSequenceDecoderDecorator imageSequenceDecoderDecorator, MessagingService messagingService,
+            @Qualifier("longRunningTaskExecutorService") ExecutorService executorService) {
         this.imageGetterService = imageGetterService;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
         this.imageSequenceClipFactory = imageSequenceClipFactory;
         this.imageSequenceDecoderDecorator = imageSequenceDecoderDecorator;
         this.messagingService = messagingService;
+        this.executorService = executorService;
     }
 
     public void createProxy(VideoClip clip, int width, int height) {

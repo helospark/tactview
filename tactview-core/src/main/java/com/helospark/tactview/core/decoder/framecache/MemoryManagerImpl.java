@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -21,9 +23,9 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.DebugImageRenderer;
-import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -39,38 +41,36 @@ public class MemoryManagerImpl implements MemoryManager {
     private boolean debug;
 
     private MessagingService messagingService;
+    private ScheduledExecutorService executorService;
 
     private Unsafe unsafe;
 
     private AtomicLong currentSize = new AtomicLong(0);
-    private boolean running = true;
 
     private boolean firstOutOfMemoryError = true;
 
-    public MemoryManagerImpl(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug, MessagingService messagingService) {
+    public MemoryManagerImpl(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug, MessagingService messagingService,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService) {
         this.maximumSizeHint = maximumSizeHint;
         this.unsafe = getUnsafe();
         this.debug = debug;
         this.messagingService = messagingService;
+        this.executorService = executorService;
     }
 
     @PostConstruct
     public void init() {
-        new Thread(() -> {
-            while (running) {
-                try {
-                    ThreadSleep.sleep(1000);
+        executorService.scheduleWithFixedDelay(() -> {
+            try {
+                cleanupOfOldBuffers(120000L);
 
-                    cleanupOfOldBuffers(120000L);
-
-                    if (currentSize.get() >= maximumSizeHint * 0.8) {
-                        doForcefulCleanup(maximumSizeHint * 0.6);
-                    }
-                } catch (Exception e) {
-                    logger.error("Error while cleaning buffer", e);
+                if (currentSize.get() >= maximumSizeHint * 0.8) {
+                    doForcefulCleanup(maximumSizeHint * 0.6);
                 }
+            } catch (Exception e) {
+                logger.error("Error while cleaning buffer", e);
             }
-        }, "memory-cleaner-thread").start();
+        }, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
     private void doForcefulCleanup(double target) {
@@ -150,7 +150,6 @@ public class MemoryManagerImpl implements MemoryManager {
                 logger.warn("Buffer {} never removed, allocated at {}", entry.getKey().capacity(), entry.getValue());
             }
         }
-        running = false;
     }
 
     @Override

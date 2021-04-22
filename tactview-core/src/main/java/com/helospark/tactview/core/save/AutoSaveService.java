@@ -4,15 +4,17 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.ConditionalOnProperty;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -22,6 +24,7 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 public class AutoSaveService {
     private SaveAndLoadHandler saveAndLoadHandler;
     private DirtyRepository dirtyRepository;
+    private ScheduledExecutorService executorService;
 
     private File autosaveFileSaveDirectory;
     private Integer interval;
@@ -29,27 +32,26 @@ public class AutoSaveService {
     @Slf4j
     private Logger logger;
 
-    private volatile boolean running = true;
     private volatile long lastDirtySave = 0;
 
     public AutoSaveService(SaveAndLoadHandler saveAndLoadHandler, @Value("${autosave.directory}") File temporaryFileSaveDirectory,
-            @Value("${autosave.intervalSeconds}") Integer interval, @Value("${autosave.numberOfFilesToKeep}") Integer numberOfFilesToKeep, DirtyRepository dirtyRepository) {
+            @Value("${autosave.intervalSeconds}") Integer interval, @Value("${autosave.numberOfFilesToKeep}") Integer numberOfFilesToKeep, DirtyRepository dirtyRepository,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.autosaveFileSaveDirectory = temporaryFileSaveDirectory;
         this.interval = interval;
         this.dirtyRepository = dirtyRepository;
         this.numberOfFilesToKeep = numberOfFilesToKeep;
+        this.executorService = executorService;
     }
 
     @PostConstruct
     public void init() {
         autosaveFileSaveDirectory.mkdirs();
-        new Thread(() -> {
-            while (running) {
-                doAutosave();
-                cleanupOldAutosaves();
-            }
-        }, "autosave-thread").start();
+        executorService.scheduleWithFixedDelay(() -> {
+            doAutosave();
+            cleanupOldAutosaves();
+        }, interval, interval, TimeUnit.SECONDS);
     }
 
     private void cleanupOldAutosaves() {
@@ -70,8 +72,6 @@ public class AutoSaveService {
 
     protected void doAutosave() {
         try {
-            Thread.sleep(interval * 1000);
-
             long dirtyTime = dirtyRepository.getDirtyStatusChange();
             if (dirtyRepository.isDirty() && dirtyTime != lastDirtySave) {
                 LocalDateTime localDateTime = LocalDateTime.now();
@@ -92,11 +92,6 @@ public class AutoSaveService {
         } catch (Exception e) {
             logger.warn("Error while performing autosaving", e);
         }
-    }
-
-    @PreDestroy
-    public void destroy() {
-        this.running = false;
     }
 
 }
