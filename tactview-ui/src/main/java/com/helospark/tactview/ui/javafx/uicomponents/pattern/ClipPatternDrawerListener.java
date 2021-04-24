@@ -28,12 +28,8 @@ import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.Regenerate
 import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
-import javafx.application.Platform;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Rectangle;
 
 @Component
 public class ClipPatternDrawerListener {
@@ -47,6 +43,7 @@ public class ClipPatternDrawerListener {
     private TimelineState timelineState;
     private TimelineManagerAccessor timelineManager;
     private SoundRmsRepository soundRmsRepository;
+    private TimelinePatternRepository timelinePatternRepository;
     @Slf4j
     private Logger logger;
 
@@ -54,13 +51,15 @@ public class ClipPatternDrawerListener {
     private double lastAudioRmsUpdate;
 
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
-            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager, SoundRmsRepository soundRmsRepository) {
+            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager, SoundRmsRepository soundRmsRepository,
+            TimelinePatternRepository timelinePatternRepository) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
         this.timelineState = timelineState;
         this.audioImagePatternService = audioImagePatternService;
         this.timelineManager = timelineManager;
         this.soundRmsRepository = soundRmsRepository;
+        this.timelinePatternRepository = timelinePatternRepository;
 
         lastAudioRmsUpdate = soundRmsRepository.getMaxRms();
     }
@@ -152,22 +151,21 @@ public class ClipPatternDrawerListener {
 
             double pixelWidth = timelineState.secondsToPixels(timelineManager.findClipById(request.clipId).map(cl -> cl.getInterval().getLength()).get());
             int width = (int) (pixelWidth * zoom);
-            Rectangle rectangle = (Rectangle) clip.getChildren().get(0);
 
             TimelineClip clipToUpdate = clipsToUpdateDomain.videoClip;
-            Paint image;
-            //            if (width <= 16000) {
+            Image image = null;
             if (clipToUpdate instanceof VisualTimelineClip) {
                 VisualTimelineClip videoClip = (VisualTimelineClip) clipToUpdate;
-                image = new ImagePattern(timelineImagePatternService.createTimelinePattern(videoClip, width));
+                image = timelineImagePatternService.createTimelinePattern(videoClip, width);
             } else if (clipToUpdate instanceof AudibleTimelineClip) {
                 AudibleTimelineClip audibleTimelineClip = (AudibleTimelineClip) clipToUpdate;
-                image = new ImagePattern(audioImagePatternService.createAudioImagePattern(audibleTimelineClip, width));
-            } else {
-                image = new Color(0, 0, 0, 1.0);
+                image = audioImagePatternService.createAudioImagePattern(audibleTimelineClip, width);
             }
 
-            Platform.runLater(() -> rectangle.setFill(image));
+            if (image != null) {
+                timelinePatternRepository.savePatternForClip(request.clipId, image);
+            }
+
             clipsToUpdate.put(request.clipId, clipsToUpdateDomain.butWithZoomLevel(zoom));
         }
     }

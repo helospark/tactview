@@ -144,7 +144,7 @@ public class ChannelAddedListener {
         timelineRow.getStyleClass().add("timeline-clips");
         timeline.getChildren().add(timelineRow);
 
-        timelineTitle.prefHeightProperty().bind(timelineRow.heightProperty().add(12));
+        //        timelineTitle.prefHeightProperty().bind(timelineRow.heightProperty().add(12));
 
         channelContextMenuAppender.addContextMenu(timelineTitle, message.getChannelId());
         channelContextMenuAppender.addContextMenu(timeline, message.getChannelId());

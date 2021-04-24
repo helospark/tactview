@@ -26,14 +26,15 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
+import com.helospark.tactview.ui.javafx.uicomponents.pattern.TimelinePatternRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
@@ -62,6 +63,8 @@ public class UiTimeline {
     private UiTimelineManager uiTimelineManager;
     private LinkClipRepository linkClipRepository;
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
+    private MessagingService messagingService;
+    private TimelinePatternRepository timelinePatternRepository;
 
     private Line positionIndicatorLine;
 
@@ -74,16 +77,21 @@ public class UiTimeline {
 
     private VBox timelineBoxes;
 
+    private Canvas canvas;
+    private TimelineCanvas timelineCanvasDrawer;
+
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
             TimelineManagerAccessor timelineManager, UiTimelineManager uiTimelineManager,
-            LinkClipRepository linkClipRepository, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter) {
+            LinkClipRepository linkClipRepository, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, TimelinePatternRepository timelinePatternRepository) {
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
         this.uiTimelineManager = uiTimelineManager;
         this.linkClipRepository = linkClipRepository;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
+        this.timelinePatternRepository = timelinePatternRepository;
+        this.messagingService = messagingService;
     }
 
     public BorderPane createTimeline(VBox lower, BorderPane root) {
@@ -97,7 +105,6 @@ public class UiTimeline {
         borderPane.setTop(timelineTopRow);
 
         GridPane gridPane = new GridPane();
-
         Group zoomGroup = new Group();
         timeLineScrollPane = new ZoomableScrollPane(zoomGroup, timelineState, uiTimelineManager);
         timelineState.setTimeLineScrollPane(timeLineScrollPane);
@@ -178,16 +185,16 @@ public class UiTimeline {
         timelineLabelsTopHbox.getChildren().add(timelineTitlesSpacingPane);
         timelineLabelsTopHbox.getChildren().add(timelineTimeLabelsScrollPane);
 
-        timelineTopRow.getChildren().add(timelineLabelsTopHbox);
-
-        timeLineScrollPane.hvalueProperty().addListener((o, oldValue, newValue) -> {
-            Bounds viewportBounds = timeLineScrollPane.getViewportBounds();
-            Bounds contentBounds = timeLineScrollPane.getContent().getBoundsInLocal();
-
-            double hRel = timeLineScrollPane.getHvalue() / timeLineScrollPane.getHmax();
-            double translate = Math.max(0, (contentBounds.getWidth() - viewportBounds.getWidth()) * hRel);
-            timelineState.setTranslate(translate);
-        });
+        //        timelineTopRow.getChildren().add(timelineLabelsTopHbox);
+        //
+        //        timeLineScrollPane.hvalueProperty().addListener((o, oldValue, newValue) -> {
+        //            Bounds viewportBounds = timeLineScrollPane.getViewportBounds();
+        //            Bounds contentBounds = timeLineScrollPane.getContent().getBoundsInLocal();
+        //
+        //            double hRel = timeLineScrollPane.getHvalue() / timeLineScrollPane.getHmax();
+        //            double translate = Math.max(0, (contentBounds.getWidth() - viewportBounds.getWidth()) * hRel);
+        //            timelineState.setTranslate(translate);
+        //        });
 
         timelineTimeLabelsScrollPane.addEventFilter(MouseEvent.ANY, e -> {
             if (e.isPrimaryButtonDown()) {
@@ -200,11 +207,8 @@ public class UiTimeline {
         timeLineScrollPane.prefHeightProperty().bind(borderPane.heightProperty());
         timeLineScrollPane.prefWidthProperty().bind(root.widthProperty());
 
-        gridPane.add(timelineTitlesPane, 0, 0);
-        gridPane.add(timeLineScrollPane, 1, 0);
-        //        gridPane.setPrefHeight(500);
-
-        borderPane.setCenter(gridPane);
+        timelineCanvasDrawer = new TimelineCanvas(timelineTitlesPane, timelineState, timelineManager, messagingService, timelinePatternRepository);
+        borderPane.setCenter(timelineCanvasDrawer.getResultPane());
 
         return borderPane;
     }
