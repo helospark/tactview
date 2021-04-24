@@ -13,7 +13,6 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -23,15 +22,10 @@ import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSiz
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
-import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
-import javafx.scene.Cursor;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -111,7 +105,7 @@ public class ClipAddedListener {
         parentPane.layoutXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
         parentPane.setUserData(clipAddedMessage.getClipId());
         rectangle.getStyleClass().add("clip-rectangle");
-        effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
+        //        effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
 
         parentPane.getStyleClass().add("timeline-clip");
         rectangle.setOnMouseClicked(event -> {
@@ -125,53 +119,6 @@ public class ClipAddedListener {
             }
         });
         parentPane.getChildren().add(rectangle);
-
-        rectangle.setOnDragDetected(e -> {
-            Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
-            db.setDragView(ImageReferenceHolder.TRANSPARENT_5x5);
-            double currentX = dragRepository.getInitialX();
-
-            /* put a string on dragboard */
-            ClipboardContent content = new ClipboardContent();
-
-            timelineState.findClipById(clipAddedMessage.getClipId()).ifPresent(clip2 -> {
-                double xPosition = clip2.getLayoutX();
-                TimelinePosition position = timelineState.pixelsToSeconds(xPosition);
-                String channelId = (String) timelineState.findChannelForClip(clip2).get().getUserData();
-                ClipDragInformation clipDragInformation = new ClipDragInformation(parentPane, position, clipAddedMessage.getClipId(), channelId, currentX);
-                if (isResizing(clipAddedMessage, rectangle, currentX)) {
-                    DragRepository.DragDirection direction = isDraggingLeft(rectangle, currentX) ? DragRepository.DragDirection.LEFT : DragRepository.DragDirection.RIGHT;
-                    dragRepository.onClipResizing(clipDragInformation, direction);
-                } else {
-                    dragRepository.onClipDragged(clipDragInformation);
-                }
-                content.putString("moveclip");
-            });
-
-            db.setContent(content);
-        });
-
-        rectangle.setOnMousePressed(event -> {
-            double currentX = event.getX();
-
-            if (event.isPrimaryButtonDown() && dragRepository.getInitialX() == -1) {
-                dragRepository.setInitialX(currentX); // this hack is needed because by dragDetect event, cursor could have moved a few pixels
-            }
-
-        });
-
-        rectangle.setOnMouseMoved(event -> {
-            double currentX = event.getX();
-            if (isResizing(clipAddedMessage, rectangle, currentX)) {
-                rectangle.setCursor(Cursor.H_RESIZE);
-            } else {
-                rectangle.setCursor(Cursor.HAND);
-            }
-        });
-
-        rectangle.setOnMouseReleased(event -> {
-            dragRepository.clearClipDrag();
-        });
 
         rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
             if (selectedNodeRepository.getPrimarySelectedClip().isEmpty()) {

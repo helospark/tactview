@@ -26,6 +26,7 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
+import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.TimelineCanvas;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.TimelinePatternRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
@@ -34,7 +35,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
@@ -65,6 +65,7 @@ public class UiTimeline {
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private MessagingService messagingService;
     private TimelinePatternRepository timelinePatternRepository;
+    private TimelineCanvas timelineCanvas;
 
     private Line positionIndicatorLine;
 
@@ -77,13 +78,11 @@ public class UiTimeline {
 
     private VBox timelineBoxes;
 
-    private Canvas canvas;
-    private TimelineCanvas timelineCanvasDrawer;
-
     public UiTimeline(MessagingService messagingService,
             TimelineState timelineState, UiCommandInterpreterService commandInterpreter,
             TimelineManagerAccessor timelineManager, UiTimelineManager uiTimelineManager,
-            LinkClipRepository linkClipRepository, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, TimelinePatternRepository timelinePatternRepository) {
+            LinkClipRepository linkClipRepository, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, TimelinePatternRepository timelinePatternRepository,
+            TimelineCanvas timelineCanvas) {
         this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
@@ -92,6 +91,7 @@ public class UiTimeline {
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
         this.timelinePatternRepository = timelinePatternRepository;
         this.messagingService = messagingService;
+        this.timelineCanvas = timelineCanvas;
     }
 
     public BorderPane createTimeline(VBox lower, BorderPane root) {
@@ -207,8 +207,7 @@ public class UiTimeline {
         timeLineScrollPane.prefHeightProperty().bind(borderPane.heightProperty());
         timeLineScrollPane.prefWidthProperty().bind(root.widthProperty());
 
-        timelineCanvasDrawer = new TimelineCanvas(timelineTitlesPane, timelineState, timelineManager, messagingService, timelinePatternRepository);
-        borderPane.setCenter(timelineCanvasDrawer.getResultPane());
+        borderPane.setCenter(timelineCanvas.create(timelineTitlesPane));
 
         return borderPane;
     }

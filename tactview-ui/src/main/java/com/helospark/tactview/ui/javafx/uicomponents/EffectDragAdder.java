@@ -8,7 +8,6 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddEffectCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ChangeClipForEffectCommand;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 
-import javafx.scene.Node;
 import javafx.scene.input.Dragboard;
 
 @Component
@@ -25,22 +24,20 @@ public class EffectDragAdder {
         this.dragRepository = dragRepository;
     }
 
-    public void addEffectDragOnClip(Node clipPane, String clipId) {
-        clipPane.setOnDragEntered(event -> {
-            Dragboard db = event.getDragboard();
-            if (db != null && db.getString() != null && db.getString().startsWith("effect:") && !draggingEffect()) {
-                TimelinePosition position = timelineState.pixelsToSeconds(event.getX());
-                AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
-                commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
-                    dragRepository.onEffectDragged(new EffectDragInformation(clipPane, clipId, result.getAddedEffectId(), position, 0));
-                });
-            } else if (draggingEffectWithoutResize()) {
-                EffectDragInformation dragInformation = dragRepository.currentEffectDragInformation();
-                TimelinePosition position = timelineState.pixelsToSeconds(event.getX() - dragInformation.getAnchorPointX());
-                ChangeClipForEffectCommand command = new ChangeClipForEffectCommand(timelineManager, dragInformation.getEffectId(), clipId, position);
-                commandInterpreter.sendWithResult(command);
-            }
-        });
+    public boolean addEffectDragOnClip(String clipId, TimelinePosition position, Dragboard db) {
+        if (db != null && db.getString() != null && db.getString().startsWith("effect:") && !draggingEffect()) {
+            AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
+            commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
+                //                    dragRepository.onEffectDragged(new EffectDragInformation(clipPane, clipId, result.getAddedEffectId(), position, 0));
+            });
+            return true;
+        } else if (draggingEffectWithoutResize()) {
+            EffectDragInformation dragInformation = dragRepository.currentEffectDragInformation();
+            ChangeClipForEffectCommand command = new ChangeClipForEffectCommand(timelineManager, dragInformation.getEffectId(), clipId, position);
+            commandInterpreter.sendWithResult(command);
+            return true;
+        }
+        return false;
 
     }
 

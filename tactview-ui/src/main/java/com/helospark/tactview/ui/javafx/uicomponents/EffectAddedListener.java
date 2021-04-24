@@ -87,7 +87,7 @@ public class EffectAddedListener {
             Dragboard db = rectangle.startDragAndDrop(TransferMode.ANY);
             db.setDragView(ImageReferenceHolder.TRANSPARENT_5x5);
             double currentX = dragRepository.getInitialX();
-            EffectDragInformation dragInformation = new EffectDragInformation(rectangle, effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
+            EffectDragInformation dragInformation = new EffectDragInformation(effectAddedMessage.getClipId(), effectAddedMessage.getEffectId(), effectAddedMessage.getPosition(),
                     event.getX());
             boolean isResizing = isResizing(rectangle, currentX);
             //            System.out.println("isResizing=" + isResizing + " " + currentX + " " + rectangle);
@@ -107,7 +107,7 @@ public class EffectAddedListener {
             double currentX = event.getX();
 
             if (event.isPrimaryButtonDown() && dragRepository.getInitialX() == -1) {
-                dragRepository.setInitialX(currentX); // this hack is needed because by dragDetect event, cursor could have moved a few pixels
+                //                dragRepository.setInitialX(currentX); // this hack is needed because by dragDetect event, cursor could have moved a few pixels
             }
 
         });
