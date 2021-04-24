@@ -1,17 +1,15 @@
 package com.helospark.tactview.ui.javafx.repository.selection;
 
-import javafx.scene.Node;
-
 public class EffectSelectionChangedMessage {
-    private Node effect;
+    private String effect;
     private ChangeType type;
 
-    public EffectSelectionChangedMessage(Node item, ChangeType type) {
+    public EffectSelectionChangedMessage(String item, ChangeType type) {
         this.effect = item;
         this.type = type;
     }
 
-    public Node getEffect() {
+    public String getEffect() {
         return effect;
     }
 

@@ -15,12 +15,10 @@ import com.helospark.tactview.ui.javafx.repository.selection.ChangeType;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
 import com.helospark.tactview.ui.javafx.repository.selection.EffectSelectionChangedMessage;
 
-import javafx.scene.Node;
-
 @Component
 public class SelectedNodeRepository implements CleanableMode {
-    private List<Node> selectedClips = new ArrayList<>();
-    private List<Node> selectedEffects = new ArrayList<>();
+    private List<String> selectedClips = new ArrayList<>();
+    private List<String> selectedEffects = new ArrayList<>();
 
     private MessagingService messagingService;
 
@@ -28,17 +26,16 @@ public class SelectedNodeRepository implements CleanableMode {
         this.messagingService = messagingService;
     }
 
-    public Optional<Node> getPrimarySelectedClip() {
+    public Optional<String> getPrimarySelectedClip() {
         return selectedClips.stream()
                 .findFirst();
     }
 
     public Optional<String> getPrimarySelectedClipId() {
-        return getPrimarySelectedClip()
-                .map(node -> (String) node.getUserData());
+        return getPrimarySelectedClip();
     }
 
-    public Optional<Node> getPrimarySelectedEffect() {
+    public Optional<String> getPrimarySelectedEffect() {
         return selectedEffects.stream()
                 .findFirst();
     }
@@ -48,7 +45,7 @@ public class SelectedNodeRepository implements CleanableMode {
         clearEffectSelections();
     }
 
-    public void setOnlySelectedClip(Node clip) {
+    public void setOnlySelectedClip(String clip) {
         clearClipSelections();
         clearEffectSelections();
         this.selectedClips.add(clip);
@@ -57,17 +54,17 @@ public class SelectedNodeRepository implements CleanableMode {
 
     private void clearClipSelections() {
         while (!selectedClips.isEmpty()) {
-            Node item = selectedClips.get(0);
+            String item = selectedClips.get(0);
             removeClipSelection(item);
         }
     }
 
-    private void removeClipSelection(Node item) {
+    private void removeClipSelection(String item) {
         selectedClips.remove(item);
         messagingService.sendMessage(new ClipSelectionChangedMessage(item, ALL_SELECTION_REMOVED));
     }
 
-    public void setOnlySelectedEffect(Node clip) {
+    public void setOnlySelectedEffect(String clip) {
         clearClipSelections();
         clearEffectSelections();
         this.selectedEffects.add(clip);
@@ -76,17 +73,17 @@ public class SelectedNodeRepository implements CleanableMode {
 
     private void clearEffectSelections() {
         while (!selectedEffects.isEmpty()) {
-            Node item = selectedEffects.get(0);
+            String item = selectedEffects.get(0);
             removeEffect(item);
         }
     }
 
-    private void removeEffect(Node item) {
+    private void removeEffect(String item) {
         selectedEffects.remove(item);
         messagingService.sendMessage(new EffectSelectionChangedMessage(item, ALL_SELECTION_REMOVED));
     }
 
-    public void addSelectedClip(Node clip) {
+    public void addSelectedClip(String clip) {
         this.selectedClips.add(clip);
         ChangeType type = PRIMARY_SELECTION_ADDED;
         if (selectedClips.size() > 1) {
@@ -95,7 +92,7 @@ public class SelectedNodeRepository implements CleanableMode {
         messagingService.sendMessage(new ClipSelectionChangedMessage(clip, type));
     }
 
-    public void addSelectedEffect(Node clip) {
+    public void addSelectedEffect(String clip) {
         this.selectedEffects.add(clip);
         ChangeType type = PRIMARY_SELECTION_ADDED;
         if (selectedClips.size() > 1) {
@@ -106,13 +103,11 @@ public class SelectedNodeRepository implements CleanableMode {
 
     public List<String> getSelectedClipIds() {
         return this.selectedClips.stream()
-                .map(node -> (String) node.getUserData())
                 .collect(Collectors.toList());
     }
 
     public List<String> getSelectedEffectIds() {
         return this.selectedEffects.stream()
-                .map(node -> (String) node.getUserData())
                 .collect(Collectors.toList());
     }
 

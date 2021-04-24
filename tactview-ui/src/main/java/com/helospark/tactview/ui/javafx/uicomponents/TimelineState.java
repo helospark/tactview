@@ -68,6 +68,8 @@ public class TimelineState implements ResettableBean {
     private Map<String, ObservableList<Pane>> channelToClips = new HashMap<>();
     private Map<String, ObservableList<Node>> clipsToEffects = new HashMap<>();
 
+    private TimelinePosition playbackPosition = TimelinePosition.ofZero();
+
     public TimelineState(
             MessagingService messagingService) {
         this.messagingService = messagingService;
@@ -219,6 +221,7 @@ public class TimelineState implements ResettableBean {
     public void setLinePosition(TimelinePosition position) {
         double pixels = secondsToPixels(position);
         linePosition.set(pixels);
+        this.playbackPosition = position;
         notifySubscribers();
     }
 
@@ -448,6 +451,10 @@ public class TimelineState implements ResettableBean {
         }
         vscroll.set(normalizedScroll);
         notifySubscribers();
+    }
+
+    public TimelinePosition getPlaybackPosition() {
+        return playbackPosition;
     }
 
 }

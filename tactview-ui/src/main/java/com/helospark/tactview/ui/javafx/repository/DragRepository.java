@@ -97,6 +97,10 @@ public class DragRepository implements CleanableMode {
         return selectionBoxInformation != null;
     }
 
+    public boolean isDraggingAnything() {
+        return (getClipDragInformation() != null || currentEffectDragInformation() != null);
+    }
+
     public SelectionBoxInformation getSelectionBoxInformation() {
         return selectionBoxInformation;
     }

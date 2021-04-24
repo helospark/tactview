@@ -1,17 +1,15 @@
 package com.helospark.tactview.ui.javafx.repository.selection;
 
-import javafx.scene.Node;
-
 public class ClipSelectionChangedMessage {
-    private Node clip;
+    private String clip;
     private ChangeType type;
 
-    public ClipSelectionChangedMessage(Node item, ChangeType type) {
+    public ClipSelectionChangedMessage(String item, ChangeType type) {
         this.clip = item;
         this.type = type;
     }
 
-    public Node getClip() {
+    public String getClip() {
         return clip;
     }
 
@@ -21,7 +19,7 @@ public class ClipSelectionChangedMessage {
 
     @Override
     public String toString() {
-        return "ClipSelectionChangedMessage [clip=" + clip.getUserData() + ", type=" + type + "]";
+        return "ClipSelectionChangedMessage [clip=" + clip + ", type=" + type + "]";
     }
 
 }

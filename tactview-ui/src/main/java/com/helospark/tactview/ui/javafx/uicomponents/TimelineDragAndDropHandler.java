@@ -152,9 +152,9 @@ public class TimelineDragAndDropHandler {
     }
 
     private void updateSelectedNodes(Rectangle selectionRectangle) {
-        timelineState.getAllClips()
-                .filter(a -> selectionRectangle.intersects(getBoundsWithIncludeParent(a)))
-                .forEach(a -> selectedNodeRepository.addSelectedClip(a));
+        //        timelineState.getAllClips()
+        //                .filter(a -> selectionRectangle.intersects(getBoundsWithIncludeParent(a)))
+        //                .forEach(a -> selectedNodeRepository.addSelectedClip(a));
         //        timelineState.getAllEffects()
         //                .filter(a -> selectionRectangle.getBoundsInParent().intersects(getBoundsWithIncludeParentParent(a)))
         //                .forEach(a -> selectedNodeRepository.addSelectedEffect(a));
@@ -295,10 +295,15 @@ public class TimelineDragAndDropHandler {
 
     public void resizeEffect(TimelinePosition position, boolean revertable) {
         EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
+        DragDirection dragDirection = dragRepository.getDragDirection();
+
+        if (draggedEffect == null || dragDirection == null) {
+            return;
+        }
 
         EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
-                .withLeft(dragRepository.getDragDirection().equals(DragDirection.LEFT))
+                .withLeft(dragDirection.equals(DragDirection.LEFT))
                 .withMoreResizeExpected(!revertable)
                 .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))

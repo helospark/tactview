@@ -8,8 +8,6 @@ import javax.annotation.PostConstruct;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.repository.selection.ChangeType;
-import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
-import com.helospark.tactview.ui.javafx.repository.selection.EffectSelectionChangedMessage;
 
 import javafx.scene.Node;
 
@@ -32,28 +30,28 @@ public class SelectionChangedListener {
 
     @PostConstruct
     public void init() {
-        messagingService.register(EffectSelectionChangedMessage.class, message -> {
-            ChangeType type = message.getType();
-            Node node = message.getEffect();
-            process(type, node);
-        });
-        messagingService.register(EffectSelectionChangedMessage.class, message -> {
-            ChangeType type = message.getType();
-            if (type.equals(ChangeType.PRIMARY_SELECTION_ADDED)) {
-                propertyView.showEffectProperties((String) message.getEffect().getUserData());
-            }
-        });
-        messagingService.register(ClipSelectionChangedMessage.class, message -> {
-            ChangeType type = message.getType();
-            Node node = message.getClip();
-            process(type, node);
-        });
-        messagingService.register(ClipSelectionChangedMessage.class, message -> {
-            ChangeType type = message.getType();
-            if (type.equals(ChangeType.PRIMARY_SELECTION_ADDED)) {
-                propertyView.showClipProperties((String) message.getClip().getUserData());
-            }
-        });
+        //        messagingService.register(EffectSelectionChangedMessage.class, message -> {
+        //            ChangeType type = message.getType();
+        //            Node node = message.getEffect();
+        //            process(type, node);
+        //        });
+        //        messagingService.register(EffectSelectionChangedMessage.class, message -> {
+        //            ChangeType type = message.getType();
+        //            if (type.equals(ChangeType.PRIMARY_SELECTION_ADDED)) {
+        //                propertyView.showEffectProperties((String) message.getEffect().getUserData());
+        //            }
+        //        });
+        //        messagingService.register(ClipSelectionChangedMessage.class, message -> {
+        //            ChangeType type = message.getType();
+        //            Node node = message.getClip();
+        //            process(type, node);
+        //        });
+        //        messagingService.register(ClipSelectionChangedMessage.class, message -> {
+        //            ChangeType type = message.getType();
+        //            if (type.equals(ChangeType.PRIMARY_SELECTION_ADDED)) {
+        //                propertyView.showClipProperties((String) message.getClip().getUserData());
+        //            }
+        //        });
     }
 
     private void process(ChangeType type, Node node) {

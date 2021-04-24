@@ -31,7 +31,7 @@ public class ClipCutService {
     }
 
     public void cutSelectedClipAtCurrentTimestamp() {
-        Optional<String> primaryClip = selectedNodeRepository.getPrimarySelectedClip().map(a -> (String) a.getUserData());
+        Optional<String> primaryClip = selectedNodeRepository.getPrimarySelectedClip();
         primaryClip.ifPresent(clipId -> {
             cutClip(clipId, true);
         });

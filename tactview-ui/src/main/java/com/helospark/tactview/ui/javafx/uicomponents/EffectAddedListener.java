@@ -70,17 +70,17 @@ public class EffectAddedListener {
         rectangle.setUserData(effectAddedMessage.getEffectId());
         rectangle.getStyleClass().add("timeline-effect");
 
-        rectangle.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 1) {
-                if (event.isControlDown()) {
-                    selectedNodeRepository.addSelectedEffect(rectangle);
-                } else {
-                    selectedNodeRepository.setOnlySelectedEffect(rectangle);
-                }
-            } else {
-                extendsClipToMaximizeLengthService.extendEffectToClipSize(effectAddedMessage.getClipId(), effectAddedMessage.getEffect());
-            }
-        });
+        //        rectangle.setOnMouseClicked(event -> {
+        //            if (event.getClickCount() == 1) {
+        //                if (event.isControlDown()) {
+        //                    selectedNodeRepository.addSelectedEffect(rectangle);
+        //                } else {
+        //                    selectedNodeRepository.setOnlySelectedEffect(rectangle);
+        //                }
+        //            } else {
+        //                extendsClipToMaximizeLengthService.extendEffectToClipSize(effectAddedMessage.getClipId(), effectAddedMessage.getEffect());
+        //            }
+        //        });
 
         rectangle.setOnDragDetected(event -> {
             ClipboardContent content = new ClipboardContent();

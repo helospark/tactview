@@ -1,7 +1,6 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -23,9 +22,6 @@ import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
-import javafx.scene.control.ContextMenu;
-import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -108,28 +104,28 @@ public class ClipAddedListener {
         //        effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
 
         parentPane.getStyleClass().add("timeline-clip");
-        rectangle.setOnMouseClicked(event -> {
-            if (!selectedNodeRepository.getSelectedClipIds().isEmpty() && !event.getButton().equals(MouseButton.PRIMARY)) {
-                return;
-            }
-            if (event.isControlDown()) {
-                selectedNodeRepository.addSelectedClip(parentPane);
-            } else {
-                selectedNodeRepository.setOnlySelectedClip(parentPane);
-            }
-        });
+        //        rectangle.setOnMouseClicked(event -> {
+        //            if (!selectedNodeRepository.getSelectedClipIds().isEmpty() && !event.getButton().equals(MouseButton.PRIMARY)) {
+        //                return;
+        //            }
+        //            if (event.isControlDown()) {
+        //                selectedNodeRepository.addSelectedClip(parentPane);
+        //            } else {
+        //                selectedNodeRepository.setOnlySelectedClip(parentPane);
+        //            }
+        //        });
         parentPane.getChildren().add(rectangle);
 
-        rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
-            if (selectedNodeRepository.getPrimarySelectedClip().isEmpty()) {
-                selectedNodeRepository.setOnlySelectedClip(parentPane);
-            }
-            Optional<ContextMenu> contextMenu = clipContextMenuFactory.createContextMenuForSelectedClips();
-            if (contextMenu.isPresent()) {
-                contextMenu.get().show(rectangle.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-                event.consume();
-            }
-        });
+        //        rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
+        //            if (selectedNodeRepository.getPrimarySelectedClip().isEmpty()) {
+        //                selectedNodeRepository.setOnlySelectedClip(parentPane);
+        //            }
+        //            Optional<ContextMenu> contextMenu = clipContextMenuFactory.createContextMenuForSelectedClips();
+        //            if (contextMenu.isPresent()) {
+        //                contextMenu.get().show(rectangle.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+        //                event.consume();
+        //            }
+        //        });
 
         return parentPane;
     }
