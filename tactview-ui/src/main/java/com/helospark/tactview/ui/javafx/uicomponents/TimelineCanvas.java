@@ -62,6 +62,13 @@ public class TimelineCanvas {
         });
 
         this.rightBar = new ScrollBar();
+        rightBar.setMin(0);
+        rightBar.setMax(100.0);
+        rightBar.setUnitIncrement(100);
+        rightBar.setBlockIncrement(100);
+        rightBar.setVisibleAmount(100);
+        rightBar.setValue(0.0);
+
         rightBar.getStyleClass().add("timeline-right-scroll-bar");
         rightBar.setOrientation(Orientation.VERTICAL);
         this.canvas = new Canvas(600, 200);
@@ -97,7 +104,14 @@ public class TimelineCanvas {
         canvas.setOnScroll(e -> {
             if (e.isControlDown()) {
                 onScroll(e.getDeltaY(), new Point2D(e.getX(), e.getY()));
+            } else {
+                rightBar.setValue(rightBar.getValue() + e.getDeltaY() * 20.0);
             }
+        });
+
+        rightBar.valueProperty().addListener(e -> {
+            double normalizedScroll = rightBar.getValue() / rightBar.getMax();
+            timelineState.setNormalizedVScroll(normalizedScroll);
         });
 
     }
@@ -158,7 +172,13 @@ public class TimelineCanvas {
         bottomBar.setMax(timelineWidth);
 
         clearCanvas();
-        drawTimelineTitles();
+
+        double scrolledY = timelineState.getVscroll().get();
+        double fullHeight = rightBar.getMax() - canvas.getHeight() - CHANNEL_PADDING;
+        double visibleAreaStartY = fullHeight * scrolledY;
+        if (visibleAreaStartY < 0) {
+            visibleAreaStartY = 0;
+        }
 
         double channelStartY = TIMELINE_TIMESCALE_HEIGHT + CHANNEL_PADDING;
 
@@ -168,25 +188,27 @@ public class TimelineCanvas {
 
             double clipHeight = calculateHeight(currentChannel);
 
-            for (var clip : clips) {
-                TimelineInterval interval = clip.getGlobalInterval();
+            if ((channelStartY + clipHeight) >= visibleAreaStartY && (channelStartY + clipHeight + CHANNEL_PADDING) < visibleAreaStartY + canvas.getHeight()) {
+                for (var clip : clips) {
+                    TimelineInterval interval = clip.getGlobalInterval();
 
-                double clipX = timelineState.secondsToPixelsWidthZoomAndTranslate(interval.getStartPosition());
-                double clipEndX = timelineState.secondsToPixelsWidthZoomAndTranslate(interval.getEndPosition());
+                    double clipX = timelineState.secondsToPixelsWidthZoomAndTranslate(interval.getStartPosition());
+                    double clipEndX = timelineState.secondsToPixelsWidthZoomAndTranslate(interval.getEndPosition());
 
-                Optional<Image> pattern = timelinePatternRepository.getPatternForClipId(clip.getId());
-                double clipWidth = clipEndX - clipX;
-                double clipY = channelStartY;
-                if (pattern.isPresent()) {
-                    graphics.drawImage(pattern.get(), clipX, clipY, clipWidth, clipHeight);
-                } else {
-                    graphics.setFill(Color.AQUA);
-                    graphics.fillRect(clipX, clipY, clipWidth, clipHeight);
+                    Optional<Image> pattern = timelinePatternRepository.getPatternForClipId(clip.getId());
+                    double clipWidth = clipEndX - clipX;
+                    double clipY = channelStartY - visibleAreaStartY;
+                    if (pattern.isPresent()) {
+                        graphics.drawImage(pattern.get(), clipX, clipY, clipWidth, clipHeight);
+                    } else {
+                        graphics.setFill(Color.AQUA);
+                        graphics.fillRect(clipX, clipY, clipWidth, clipHeight);
+                    }
                 }
-            }
 
-            graphics.setStroke(Color.GRAY);
-            graphics.strokeLine(0, channelStartY + clipHeight + CHANNEL_PADDING, canvas.getWidth(), channelStartY + clipHeight + CHANNEL_PADDING);
+                graphics.setStroke(Color.GRAY);
+                graphics.strokeLine(0, channelStartY + clipHeight + CHANNEL_PADDING - visibleAreaStartY, canvas.getWidth(), channelStartY + clipHeight + CHANNEL_PADDING - visibleAreaStartY);
+            }
 
             double rowHeight = clipHeight + CHANNEL_PADDING * 2;
             channelStartY += rowHeight;
@@ -196,6 +218,9 @@ public class TimelineCanvas {
             channelTitleVBox.setMaxHeight(rowHeight);
             channelTitleVBox.setPrefHeight(rowHeight);
         }
+
+        rightBar.setMax(channelStartY);
+        drawTimelineTitles();
         drawPlaybackLine();
 
     }

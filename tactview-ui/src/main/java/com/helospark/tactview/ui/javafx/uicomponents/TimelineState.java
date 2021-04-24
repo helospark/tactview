@@ -439,4 +439,15 @@ public class TimelineState implements ResettableBean {
         onChangeSubscribers.add(r);
     }
 
+    public void setNormalizedVScroll(double normalizedScroll) {
+        if (normalizedScroll < 0) {
+            normalizedScroll = 0.0;
+        }
+        if (normalizedScroll > 1.0) {
+            normalizedScroll = 1.0;
+        }
+        vscroll.set(normalizedScroll);
+        notifySubscribers();
+    }
+
 }
