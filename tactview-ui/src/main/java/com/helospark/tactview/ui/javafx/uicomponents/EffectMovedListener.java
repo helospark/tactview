@@ -35,7 +35,7 @@ public class EffectMovedListener {
                         if (message.getSpecialPositionUsed().isPresent() && message.isMoreMoveExpected()) {
                             drawSpecialPositionLine(message);
                         } else {
-                            timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
+                            timelineState.disableSpecialPointLineProperties();
                         }
                     });
         });

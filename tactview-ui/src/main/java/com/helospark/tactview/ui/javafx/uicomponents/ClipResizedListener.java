@@ -42,7 +42,7 @@ public class ClipResizedListener {
                         if (message.getSpecialPointUsed().isPresent() && message.isMoreResizeExpected()) {
                             drawSpecialPositionLine(message);
                         } else {
-                            timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
+                            timelineState.disableSpecialPointLineProperties();
                         }
 
                         TimelineClip clip = timelineManagerAccessor.findClipById(message.getClipId()).get();

@@ -36,7 +36,7 @@ public class ClipMovedMessageListener {
         if (message.getSpecialPositionUsed().isPresent() && message.isMoreMoveExpected()) {
             drawSpecialPositionLine(message);
         } else {
-            timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
+            timelineState.disableSpecialPointLineProperties();
         }
         double leftPosition = timelineState.secondsToPixels(message.getAffectedIntervals().get(0).getEndPosition());
         double currentWidth = timelineState.getTimelineWidthProperty().get();

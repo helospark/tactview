@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -19,6 +20,8 @@ import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.timeline.SecondsAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChange;
+import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChangeType;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -41,7 +44,7 @@ public class TimelineState implements ResettableBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(TimelineState.class);
     public static final BigDecimal PIXEL_PER_SECOND = new BigDecimal(10L);
 
-    private List<Runnable> onChangeSubscribers = new ArrayList<>();
+    private List<Consumer<UiTimelineChange>> onChangeSubscribers = new ArrayList<>();
 
     private ObservableIntegerValue horizontalScrollPosition = new SimpleIntegerProperty(0);
     private Map<String, Runnable> idToRemoveRunnable = new HashMap<>();
@@ -174,7 +177,8 @@ public class TimelineState implements ResettableBean {
         ObservableList<Node> effects = FXCollections.observableArrayList();
         Bindings.bindContentBidirectional(effects, createClip.getChildren());
         clipsToEffects.put(clipId, effects);
-        notifySubscribers();
+
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public Optional<Pane> findClipById(String clipId) {
@@ -195,7 +199,8 @@ public class TimelineState implements ResettableBean {
             Pane actualClip = clipToRemove.get();
             Pane parent = (Pane) actualClip.getParent();
             parent.getChildren().remove(actualClip);
-            notifySubscribers();
+
+            notifySubscribers(UiTimelineChangeType.OTHER);
         }
     }
 
@@ -205,7 +210,7 @@ public class TimelineState implements ResettableBean {
             Node actualClip = effectToRemove.get();
             Pane parent = (Pane) actualClip.getParent();
             parent.getChildren().remove(actualClip);
-            notifySubscribers();
+            notifySubscribers(UiTimelineChangeType.OTHER);
         }
         return effectToRemove;
     }
@@ -222,7 +227,8 @@ public class TimelineState implements ResettableBean {
         double pixels = secondsToPixels(position);
         linePosition.set(pixels);
         this.playbackPosition = position;
-        notifySubscribers();
+
+        notifySubscribers(UiTimelineChangeType.TIMELINE_POSITION);
     }
 
     public void addChannel(Integer index, String channelId, HBox timeline, VBox timelineTitle) {
@@ -232,7 +238,8 @@ public class TimelineState implements ResettableBean {
         ObservableList<Pane> newList = FXCollections.observableArrayList();
         Bindings.bindContentBidirectional((ObservableList<Node>) (Object) newList, ((Pane) timeline.getChildren().get(0)).getChildren());
         channelToClips.put(channelId, newList);
-        notifySubscribers();
+
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public void removeChannel(String channelId) {
@@ -242,7 +249,7 @@ public class TimelineState implements ResettableBean {
             channelHeaders.remove(channelIndex.get().intValue());
         }
         channelToClips.remove(channelId);
-        notifySubscribers();
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public Optional<HBox> findChannelForClip(Pane group) {
@@ -272,7 +279,7 @@ public class TimelineState implements ResettableBean {
     public void addEffectToClip(String clipId, Node createEffect) {
         ObservableList<Node> effectList = clipsToEffects.get(clipId);
         effectList.add(createEffect);
-        notifySubscribers();
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public void changeChannelFor(Pane clip, String newChannelId) {
@@ -283,24 +290,39 @@ public class TimelineState implements ResettableBean {
             // newChannel.getChildren().add(clip);
             channelToClips.get(originalChannel.getUserData()).remove(clip);
             channelToClips.get(newChannelId).add(clip);
-            notifySubscribers();
+            notifySubscribers(UiTimelineChangeType.OTHER);
         }
+    }
+
+    public void enableSpecialPointLineProperties(TimelinePosition lineStartX, String endChannel, String startChannel) {
+        moveSpecialPointLineProperties.setEnabled(true);
+        moveSpecialPointLineProperties.setPosition(lineStartX);
+
+        moveSpecialPointLineProperties.setStartChannel(startChannel);
+        moveSpecialPointLineProperties.setEndChannel(endChannel);
+
+        notifySubscribers(UiTimelineChangeType.SPECIAL_LINE_POSITION);
     }
 
     public TimelineLineProperties getMoveSpecialPointLineProperties() {
         return moveSpecialPointLineProperties;
     }
 
+    public void disableSpecialPointLineProperties() {
+        moveSpecialPointLineProperties.setEnabled(false);
+        notifySubscribers(UiTimelineChangeType.SPECIAL_LINE_POSITION);
+    }
+
     public void setZoom(double zoom) {
         LOGGER.debug("zoom:" + zoom);
         this.zoomValue.set(zoom);
-        notifySubscribers();
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public void setTranslate(double newTranslate) {
         LOGGER.debug("translate:" + newTranslate);
         this.translate.set(newTranslate);
-        notifySubscribers();
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public ObservableList<Node> getChannelTitlesAsNodes() {
@@ -359,7 +381,7 @@ public class TimelineState implements ResettableBean {
         double newScroll = hscroll.get() + scrollStrength;
         if (newScroll >= 0 && newScroll < 1.0) {
             hscroll.set(newScroll);
-            notifySubscribers();
+            notifySubscribers(UiTimelineChangeType.OTHER);
         }
     }
 
@@ -371,7 +393,7 @@ public class TimelineState implements ResettableBean {
         double newScroll = vscroll.get() + scrollStrength;
         if (newScroll >= 0 && newScroll < 1.0) {
             vscroll.set(newScroll);
-            notifySubscribers();
+            notifySubscribers(UiTimelineChangeType.OTHER);
         }
     }
 
@@ -394,7 +416,7 @@ public class TimelineState implements ResettableBean {
 
             Pane originalHeader = channelHeaders.remove(originalIndex);
             channelHeaders.add(newIndex, originalHeader);
-            notifySubscribers();
+            notifySubscribers(UiTimelineChangeType.OTHER);
         });
     }
 
@@ -407,15 +429,18 @@ public class TimelineState implements ResettableBean {
     }
 
     public boolean loopingEnabled() {
-        return loopAProperties.getEnabledProperty().get() && loopBProperties.getEnabledProperty().get();
+        return false;
+        //        return loopAProperties.getEnabledProperty().get() && loopBProperties.getEnabledProperty().get();
     }
 
     public TimelinePosition getLoopStartTime() {
-        return pixelsToSeconds(loopAProperties.getStartX().get());
+        return null;
+        //        return pixelsToSeconds(loopAProperties.getStartX().get());
     }
 
     public TimelinePosition getLoopEndTime() {
-        return pixelsToSeconds(loopBProperties.getStartX().get());
+        return null;
+        //        return pixelsToSeconds(loopBProperties.getStartX().get());
     }
 
     @Override
@@ -429,16 +454,17 @@ public class TimelineState implements ResettableBean {
         moveSpecialPointLineProperties.reset();
         loopAProperties.reset();
         loopBProperties.reset();
-        notifySubscribers();
+        notifySubscribers(UiTimelineChangeType.OTHER);
         //        timeLineScrollPane.reset();
     }
 
-    private void notifySubscribers() {
+    private void notifySubscribers(UiTimelineChangeType type) {
+        UiTimelineChange change = new UiTimelineChange(type);
         onChangeSubscribers.stream()
-                .forEach(a -> a.run());
+                .forEach(a -> a.accept(change));
     }
 
-    public void subscribe(Runnable r) {
+    public void subscribe(Consumer<UiTimelineChange> r) {
         onChangeSubscribers.add(r);
     }
 
@@ -450,7 +476,8 @@ public class TimelineState implements ResettableBean {
             normalizedScroll = 1.0;
         }
         vscroll.set(normalizedScroll);
-        notifySubscribers();
+
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public TimelinePosition getPlaybackPosition() {

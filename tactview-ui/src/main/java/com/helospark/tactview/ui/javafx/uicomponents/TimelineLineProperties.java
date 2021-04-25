@@ -1,72 +1,47 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class TimelineLineProperties {
-    private SimpleDoubleProperty startX = new SimpleDoubleProperty(0);
-    private SimpleDoubleProperty startY = new SimpleDoubleProperty(0);
+    private boolean enabled;
+    private String startChannel;
+    private String endChannel;
+    private TimelinePosition position;
 
-    private SimpleDoubleProperty endX = new SimpleDoubleProperty(0);
-    private SimpleDoubleProperty endY = new SimpleDoubleProperty(0);
-
-    private BooleanProperty enabledProperty = new SimpleBooleanProperty(false);
-
-    public SimpleDoubleProperty getStartX() {
-        return startX;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setStartX(double startX) {
-        this.startX.set(startX);
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public SimpleDoubleProperty getStartY() {
-        return startY;
+    public String getStartChannel() {
+        return startChannel;
     }
 
-    public void setStartY(double startY) {
-        this.startY.set(startY);
+    public void setStartChannel(String startChannel) {
+        this.startChannel = startChannel;
     }
 
-    public SimpleDoubleProperty getEndX() {
-        return endX;
+    public String getEndChannel() {
+        return endChannel;
     }
 
-    public void setEndX(double endX) {
-        this.endX.set(endX);
+    public void setEndChannel(String endChannel) {
+        this.endChannel = endChannel;
     }
 
-    public SimpleDoubleProperty getEndY() {
-        return endY;
+    public TimelinePosition getPosition() {
+        return position;
     }
 
-    public void setEndY(double endY) {
-        this.endY.set(endY);
-    }
-
-    public BooleanProperty getEnabledProperty() {
-        return enabledProperty;
-    }
-
-    public void setEnabledProperty(boolean b) {
-        this.enabledProperty.set(b);
+    public void setPosition(TimelinePosition position) {
+        this.position = position;
     }
 
     public void reset() {
-        setToZero(startX);
-        setToZero(endX);
-        setToZero(startY);
-        setToZero(endY);
-        if (enabledProperty.isBound()) {
-            enabledProperty.set(false);
-        }
-    }
-
-    private void setToZero(SimpleDoubleProperty prop) {
-        if (prop.isBound()) {
-            prop.set(0);
-        }
+        enabled = false;
     }
 
 }

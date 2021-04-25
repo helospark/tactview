@@ -120,7 +120,7 @@ public class TimelineDragAndDropHandler {
                 //                uiTimeline.selectionBoxEnded();
                 //                dragRepository.onBoxSelectEnded();
             }
-            timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
+            timelineState.disableSpecialPointLineProperties();
             dragRepository.clearEffectDrag();
             dragRepository.clearClipDrag();
         });

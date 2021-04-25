@@ -37,7 +37,7 @@ public class EffectResizedListener {
                         if (message.getSpecialPositionUsed().isPresent() && message.isMoreResizeExpected()) {
                             specialPointLineDrawer.drawSpecialPointLineForEffect(message.getSpecialPositionUsed().get(), message.getClipId());
                         } else {
-                            timelineState.getMoveSpecialPointLineProperties().setEnabledProperty(false);
+                            timelineState.disableSpecialPointLineProperties();
                         }
                     });
         });

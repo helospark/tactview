@@ -119,9 +119,9 @@ public class UiTimeline {
         selectionBox = createSelectionBox();
         zoomGroup.getChildren().add(selectionBox);
 
-        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getMoveSpecialPointLineProperties(), "special-position-line"));
-        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getLoopALineProperties(), "loop-a-line"));
-        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getLoopBLineProperties(), "loop-b-line"));
+        //        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getMoveSpecialPointLineProperties(), "special-position-line"));
+        //        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getLoopALineProperties(), "loop-a-line"));
+        //        zoomGroup.getChildren().add(createSpecialPositionLine(timelineState.getLoopBLineProperties(), "loop-b-line"));
 
         Bindings.bindContentBidirectional(timelineState.getChannelsAsNodes(), timelineBoxes.getChildren());
 
@@ -251,8 +251,8 @@ public class UiTimeline {
         Button addAMarkerButton = new Button("A", new Glyph("FontAwesome", FontAwesome.Glyph.RETWEET));
         addAMarkerButton.setTooltip(new Tooltip("Loop start time"));
         addAMarkerButton.setOnAction(event -> {
-            if (timelineState.getLoopBLineProperties().getEnabledProperty().get() && timelineState.getLoopEndTime().isLessOrEqualToThan(uiTimelineManager.getCurrentPosition())) {
-                timelineState.getLoopBLineProperties().setEnabledProperty(false);
+            if (timelineState.getLoopBLineProperties().isEnabled() && timelineState.getLoopEndTime().isLessOrEqualToThan(uiTimelineManager.getCurrentPosition())) {
+                timelineState.getLoopBLineProperties().setEnabled(false);
             }
             setLinePosition(timelineState.getLoopALineProperties());
         });
@@ -260,8 +260,8 @@ public class UiTimeline {
         Button addBMarkerButton = new Button("B", new Glyph("FontAwesome", FontAwesome.Glyph.RETWEET));
         addBMarkerButton.setTooltip(new Tooltip("Loop end time"));
         addBMarkerButton.setOnMouseClicked(event -> {
-            if (timelineState.getLoopALineProperties().getEnabledProperty().get() && timelineState.getLoopStartTime().isGreaterOrEqualToThan(uiTimelineManager.getCurrentPosition())) {
-                timelineState.getLoopALineProperties().setEnabledProperty(false);
+            if (timelineState.getLoopALineProperties().isEnabled() && timelineState.getLoopStartTime().isGreaterOrEqualToThan(uiTimelineManager.getCurrentPosition())) {
+                timelineState.getLoopALineProperties().setEnabled(false);
             }
             setLinePosition(timelineState.getLoopBLineProperties());
         });
@@ -270,25 +270,25 @@ public class UiTimeline {
         eraserMarkerButton.setTooltip(new Tooltip("Erase loop markers"));
         eraserMarkerButton.disableProperty().set(true);
         eraserMarkerButton.setOnMouseClicked(event -> {
-            timelineState.getLoopBLineProperties().setEnabledProperty(false);
-            timelineState.getLoopALineProperties().setEnabledProperty(false);
+            timelineState.getLoopBLineProperties().setEnabled(false);
+            timelineState.getLoopALineProperties().setEnabled(false);
         });
-        timelineState.getLoopALineProperties().getEnabledProperty().addListener((a, oldV, newV) -> {
-            if (newV) {
-                addAMarkerButton.getStyleClass().add(LOOP_BUTTON_ENABLED_CLASS);
-            } else {
-                addAMarkerButton.getStyleClass().remove(LOOP_BUTTON_ENABLED_CLASS);
-            }
-            eraserMarkerButton.disableProperty().set(!enableClearLoopButton());
-        });
-        timelineState.getLoopBLineProperties().getEnabledProperty().addListener((a, oldV, newV) -> {
-            if (newV) {
-                addBMarkerButton.getStyleClass().add(LOOP_BUTTON_ENABLED_CLASS);
-            } else {
-                addBMarkerButton.getStyleClass().remove(LOOP_BUTTON_ENABLED_CLASS);
-            }
-            eraserMarkerButton.disableProperty().set(!enableClearLoopButton());
-        });
+        //        timelineState.getLoopALineProperties().getEnabledProperty().addListener((a, oldV, newV) -> {
+        //            if (newV) {
+        //                addAMarkerButton.getStyleClass().add(LOOP_BUTTON_ENABLED_CLASS);
+        //            } else {
+        //                addAMarkerButton.getStyleClass().remove(LOOP_BUTTON_ENABLED_CLASS);
+        //            }
+        //            eraserMarkerButton.disableProperty().set(!enableClearLoopButton());
+        //        });
+        //        timelineState.getLoopBLineProperties().getEnabledProperty().addListener((a, oldV, newV) -> {
+        //            if (newV) {
+        //                addBMarkerButton.getStyleClass().add(LOOP_BUTTON_ENABLED_CLASS);
+        //            } else {
+        //                addBMarkerButton.getStyleClass().remove(LOOP_BUTTON_ENABLED_CLASS);
+        //            }
+        //            eraserMarkerButton.disableProperty().set(!enableClearLoopButton());
+        //        });
 
         HBox titleBarTop = new HBox();
         titleBarTop.getStyleClass().add("timeline-title-bar");
@@ -297,36 +297,36 @@ public class UiTimeline {
         return titleBarTop;
     }
 
-    protected boolean enableClearLoopButton() {
-        return timelineState.getLoopALineProperties().getEnabledProperty().get() || timelineState.getLoopALineProperties().getEnabledProperty().get();
-    }
-
+    //
+    //    protected boolean enableClearLoopButton() {
+    //        return timelineState.getLoopALineProperties().getEnabledProperty().get() || timelineState.getLoopALineProperties().getEnabledProperty().get();
+    //    }
+    //
     protected void setLinePosition(TimelineLineProperties aProperties) {
-        aProperties.getStartX().set(timelineState.secondsToPixels(uiTimelineManager.getCurrentPosition()));
-        aProperties.getEndX().set(timelineState.secondsToPixels(uiTimelineManager.getCurrentPosition()));
-        aProperties.getStartY().set(0);
-        aProperties.getEndY().bind(timelineBoxes.heightProperty());
-        aProperties.setEnabledProperty(true);
+        aProperties.setPosition(uiTimelineManager.getCurrentPosition());
+        aProperties.setStartChannel("");
+        aProperties.setEndChannel("");
+        aProperties.setEnabled(true);
     }
-
-    protected void copyLinePosition(TimelineLineProperties fromProperties, TimelineLineProperties toProperties) {
-        toProperties.getStartX().set(fromProperties.getStartX().get());
-        toProperties.getEndX().set(fromProperties.getEndX().get());
-        toProperties.getStartY().set(fromProperties.getStartX().get());
-        toProperties.getEndY().set(fromProperties.getEndY().get());
-        toProperties.setEnabledProperty(fromProperties.getEnabledProperty().get());
-    }
-
-    protected Line createSpecialPositionLine(TimelineLineProperties properties, String classId) {
-        Line specialPositionLine = new Line();
-        specialPositionLine.layoutXProperty().bind(properties.getStartX());
-        specialPositionLine.startYProperty().bind(properties.getStartY());
-        specialPositionLine.visibleProperty().bind(properties.getEnabledProperty());
-        specialPositionLine.endYProperty().bind(properties.getEndY());
-        specialPositionLine.setId(classId);
-        specialPositionLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
-        return specialPositionLine;
-    }
+    //
+    //    protected void copyLinePosition(TimelineLineProperties fromProperties, TimelineLineProperties toProperties) {
+    //        toProperties.getStartX().set(fromProperties.getStartX().get());
+    //        toProperties.getEndX().set(fromProperties.getEndX().get());
+    //        toProperties.getStartY().set(fromProperties.getStartX().get());
+    //        toProperties.getEndY().set(fromProperties.getEndY().get());
+    //        toProperties.setEnabled(fromProperties.getEnabledProperty().get());
+    //    }
+    //
+    //    protected Line createSpecialPositionLine(TimelineLineProperties properties, String classId) {
+    //        Line specialPositionLine = new Line();
+    //        specialPositionLine.layoutXProperty().bind(properties.getStartX());
+    //        specialPositionLine.startYProperty().bind(properties.getStartY());
+    //        specialPositionLine.visibleProperty().bind(properties.getEnabledProperty());
+    //        specialPositionLine.endYProperty().bind(properties.getEndY());
+    //        specialPositionLine.setId(classId);
+    //        specialPositionLine.scaleXProperty().bind(new SimpleDoubleProperty(1.0).divide(timelineState.getZoomValue()));
+    //        return specialPositionLine;
+    //    }
 
     protected Line createCurrentPositionLine(VBox timelineBoxes) {
         Line positionIndicatorLine = new Line();
