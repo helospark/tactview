@@ -276,15 +276,15 @@ public class UiTimelineManager {
             List<TimelinePosition> result = new ArrayList<>();
             TimelinePosition position = currentPosition;
 
-            if (timelineState.loopingEnabled() && position.isLessThan(timelineState.getLoopStartTime())) {
-                position = timelineState.getLoopStartTime();
+            if (timelineState.loopingEnabled() && position.isLessThan(timelineState.getLoopALineProperties().get())) {
+                position = timelineState.getLoopALineProperties().get();
             }
 
             while (result.size() < number) {
                 position = position.add(increment);
 
-                if (timelineState.loopingEnabled() && position.isGreaterThan(timelineState.getLoopEndTime())) {
-                    position = timelineState.getLoopStartTime();
+                if (timelineState.loopingEnabled() && position.isGreaterThan(timelineState.getLoopBLineProperties().get())) {
+                    position = timelineState.getLoopALineProperties().get();
                 }
 
                 if (startingFrame % modulo == 0) {

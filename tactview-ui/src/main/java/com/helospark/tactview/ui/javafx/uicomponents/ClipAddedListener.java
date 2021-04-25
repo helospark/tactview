@@ -22,10 +22,6 @@ import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-
 @Component
 public class ClipAddedListener {
     private static final int RESIZE_WIDTH = 10;
@@ -66,7 +62,6 @@ public class ClipAddedListener {
         TimelineClip clip = message.getClip();
         initializeProjectOnFirstVideoClipAdded(clip);
 
-        timelineState.addClipForChannel(message.getChannelId(), message.getClipId(), createClip(message));
         logger.debug("Clip {} added successfuly", message.getClipId());
     }
 
@@ -87,72 +82,6 @@ public class ClipAddedListener {
             int numberOfChannels = audioClip.getMediaMetadata().getChannels();
             projectRepository.initializeAudio(sampleRate, bytesPerSample, numberOfChannels);
         }
-    }
-
-    public Pane createClip(ClipAddedMessage clipAddedMessage) {
-        TimelineClip clip = clipAddedMessage.getClip();
-        nameToIdRepository.generateAndAddNameForIdIfNotPresent(clip.getClass().getSimpleName(), clip.getId());
-        Pane parentPane = new Pane();
-        Rectangle rectangle = new Rectangle();
-        rectangle.setFill(Color.BLACK);
-        double width = timelineState.secondsToPixels(clip.getInterval().getLength());
-        rectangle.setWidth(width);
-        rectangle.setHeight(50);
-        parentPane.layoutXProperty().set(timelineState.secondsToPixels(clipAddedMessage.getPosition()));
-        parentPane.setUserData(clipAddedMessage.getClipId());
-        rectangle.getStyleClass().add("clip-rectangle");
-        //        effectDragAdder.addEffectDragOnClip(parentPane, clip.getId());
-
-        parentPane.getStyleClass().add("timeline-clip");
-        //        rectangle.setOnMouseClicked(event -> {
-        //            if (!selectedNodeRepository.getSelectedClipIds().isEmpty() && !event.getButton().equals(MouseButton.PRIMARY)) {
-        //                return;
-        //            }
-        //            if (event.isControlDown()) {
-        //                selectedNodeRepository.addSelectedClip(parentPane);
-        //            } else {
-        //                selectedNodeRepository.setOnlySelectedClip(parentPane);
-        //            }
-        //        });
-        parentPane.getChildren().add(rectangle);
-
-        //        rectangle.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
-        //            if (selectedNodeRepository.getPrimarySelectedClip().isEmpty()) {
-        //                selectedNodeRepository.setOnlySelectedClip(parentPane);
-        //            }
-        //            Optional<ContextMenu> contextMenu = clipContextMenuFactory.createContextMenuForSelectedClips();
-        //            if (contextMenu.isPresent()) {
-        //                contextMenu.get().show(rectangle.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-        //                event.consume();
-        //            }
-        //        });
-
-        return parentPane;
-    }
-
-    private boolean isResizing(ClipAddedMessage clipAddedMessage, Rectangle rectangle, double currentX) {
-        return (isDraggingLeft(rectangle, currentX) ||
-                isDraggingRight(rectangle, currentX)) &&
-                clipAddedMessage.isResizable();
-    }
-
-    private boolean isDraggingLeft(Rectangle rectangle, double currentX) {
-        double divider = getDivider(rectangle);
-        return currentX - rectangle.getLayoutX() < RESIZE_WIDTH / timelineState.getZoom() / divider;
-    }
-
-    private boolean isDraggingRight(Rectangle rectangle, double currentX) {
-        double divider = getDivider(rectangle);
-        return rectangle.getLayoutX() + rectangle.getWidth() - currentX < RESIZE_WIDTH / timelineState.getZoom() / divider;
-    }
-
-    // When the width is small, decrease the resize width
-    private double getDivider(Rectangle rectangle) {
-        double divider = 1.0;
-        if (rectangle.getWidth() * (timelineState.getZoom() / 2.0) < 20.0) {
-            divider = 10;
-        }
-        return divider;
     }
 
 }

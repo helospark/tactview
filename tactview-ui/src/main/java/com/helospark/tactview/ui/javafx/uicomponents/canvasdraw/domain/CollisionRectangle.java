@@ -21,4 +21,17 @@ public class CollisionRectangle {
         double rightDistance = Math.abs(x - (topLeftX + width));
         return Math.min(leftDistance, rightDistance);
     }
+
+    public boolean intersects(CollisionRectangle other) {
+        boolean notIntersecting = (topLeftX > (other.topLeftX + other.width) || (topLeftY > (other.topLeftY + other.height))
+                || (topLeftX + width < other.topLeftX) || (topLeftY + height < other.topLeftY));
+
+        return !notIntersecting;
+    }
+
+    @Override
+    public String toString() {
+        return "CollisionRectangle [topLeftX=" + topLeftX + ", topLeftY=" + topLeftY + ", width=" + width + ", height=" + height + "]";
+    }
+
 }

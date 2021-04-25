@@ -58,17 +58,13 @@
     -fx-background-color: #222222;
 }
 
-.scroll-bar:horizontal, .scroll-bar:vertical{
-    -fx-background-color:transparent;
-}
-
-.scroll-bar:horizontal, .scroll-bar:vertical{
-    -fx-background-color:transparent;
+.scroll-bar:horizontal, .scroll-bar:vertical {
+    -fx-background-color: #222;
 }
 
 .scroll-bar:horizontal .thumb,
 .scroll-bar:vertical .thumb {
-    -fx-background-color: #555;
+    -fx-background-color: #363636;
     -fx-background-radius: 5em;
 }
 
@@ -154,7 +150,7 @@
 .timeline-titles-pane {
     -fx-pref-width: 151px;
     -fx-min-width: 151px;
-    -fx-padding: 20px 0 0 0;
+    -fx-padding: 25px 0 0 0;
 }
 
 #video-status-bar {

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.StatelessEffect;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
@@ -22,11 +23,6 @@ import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
-
-import javafx.application.Platform;
-import javafx.scene.paint.ImagePattern;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Rectangle;
 
 @Component
 public class EffectPatternDrawerListener {
@@ -37,14 +33,16 @@ public class EffectPatternDrawerListener {
     private MessagingService messagingService;
     private TimelineEffectPatternService timelineEffectPatternService;
     private TimelineState timelineState;
+    private TimelineManagerAccessor timelineManagerAccessor;
     @Slf4j
     private Logger logger;
 
     public EffectPatternDrawerListener(MessagingService messagingService,
-            TimelineState timelineState, TimelineEffectPatternService timelineEffectPatternService) {
+            TimelineState timelineState, TimelineEffectPatternService timelineEffectPatternService, TimelineManagerAccessor timelineManagerAccessor) {
         this.messagingService = messagingService;
         this.timelineEffectPatternService = timelineEffectPatternService;
         this.timelineState = timelineState;
+        this.timelineManagerAccessor = timelineManagerAccessor;
     }
 
     @PostConstruct
@@ -100,16 +98,9 @@ public class EffectPatternDrawerListener {
     }
 
     private void updatePattern(EffectPatternUpdateRequest request) {
-        Rectangle rectangle = (Rectangle) timelineState.findEffectById(request.effectId).orElseThrow();
         EffectPatternUpdateDomain clipsToUpdateDomain = effectToUpdate.get(request.effectId);
         double zoom = timelineState.getZoom();
 
-        int width = (int) (rectangle.getWidth() * zoom);
-        StatelessEffect clipToUpdate = clipsToUpdateDomain.effect;
-
-        Paint image = new ImagePattern(timelineEffectPatternService.createImagePatternFor(clipToUpdate, width, zoom));
-
-        Platform.runLater(() -> rectangle.setFill(image));
         effectToUpdate.put(request.effectId, clipsToUpdateDomain.butWithZoomLevel(zoom));
     }
 

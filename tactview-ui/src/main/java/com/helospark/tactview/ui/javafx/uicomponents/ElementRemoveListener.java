@@ -34,12 +34,10 @@ public class ElementRemoveListener {
 
     private void removeClip(String elementId) {
         nameToIdRepository.removeId(elementId);
-        timelineState.removeClip(elementId);
         logger.debug("Clip {} successfuly removed", elementId);
     }
 
     private void removeEffect(String effectId) {
         nameToIdRepository.removeId(effectId);
-        timelineState.removeEffect(effectId);
     }
 }

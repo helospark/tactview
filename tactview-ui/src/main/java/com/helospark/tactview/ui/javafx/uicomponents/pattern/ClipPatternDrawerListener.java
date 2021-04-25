@@ -29,7 +29,6 @@ import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.scene.image.Image;
-import javafx.scene.layout.Pane;
 
 @Component
 public class ClipPatternDrawerListener {
@@ -145,7 +144,6 @@ public class ClipPatternDrawerListener {
 
     private void updatePattern(ClipPatternUpdateRequest request) {
         if (patternDrawingEnabled) {
-            Pane clip = timelineState.findClipById(request.clipId).orElseThrow();
             ClipPatternUpdateDomain clipsToUpdateDomain = clipsToUpdate.get(request.clipId);
             double zoom = timelineState.getZoom();
 

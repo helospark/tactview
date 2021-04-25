@@ -17,12 +17,17 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
+import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
 import com.helospark.tactview.core.timeline.message.ClipResizedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
+import com.helospark.tactview.core.timeline.message.EffectChannelChangedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
+import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
+import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -68,7 +73,7 @@ import javafx.scene.text.TextAlignment;
 
 @Component
 public class TimelineCanvas {
-    public static final double TIMELINE_TIMESCALE_HEIGHT = 20;
+    public static final double TIMELINE_TIMESCALE_HEIGHT = 25;
     private static final double CHANNEL_PADDING = 4;
     private static final double MIN_CHANNEL_HEIGHT = 50;
     private static final double EFFECT_HEIGHT = 25;
@@ -93,6 +98,7 @@ public class TimelineCanvas {
     private ScrollBar bottomBar;
 
     private boolean isLoadingInprogress = false;
+    private CollisionRectangle selectionBox = null;
 
     private List<TimelineUiCacheElement> cachedVisibleElements = new ArrayList<>();
     private Image previouslyCachedImage = null;
@@ -136,6 +142,21 @@ public class TimelineCanvas {
         messagingService.register(EffectResizedMessage.class, message -> {
             redrawClipIfVisible(message.getClipId());
         });
+        messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
+            redraw(true);
+        });
+        messagingService.register(EffectChannelChangedMessage.class, message -> {
+            redraw(true);
+        });
+        messagingService.register(EffectMovedToDifferentClipMessage.class, message -> {
+            redraw(true);
+        });
+        messagingService.register(ClipRemovedMessage.class, message -> {
+            redraw(true);
+        });
+        messagingService.register(EffectRemovedMessage.class, message -> {
+            redraw(true);
+        });
     }
 
     private void redrawClipIfVisible(String clipId) {
@@ -167,7 +188,7 @@ public class TimelineCanvas {
         rightBar.setMax(100.0);
         rightBar.setUnitIncrement(100);
         rightBar.setBlockIncrement(100);
-        rightBar.setVisibleAmount(100);
+        rightBar.setVisibleAmount(200);
         rightBar.setValue(0.0);
 
         rightBar.getStyleClass().add("timeline-right-scroll-bar");
@@ -226,6 +247,7 @@ public class TimelineCanvas {
             if (!event.isPrimaryButtonDown()) {
                 dragRepository.clean();
                 timelineState.getMoveSpecialPointLineProperties().setEnabled(false);
+                selectionBox = null;
             }
         });
 
@@ -238,6 +260,9 @@ public class TimelineCanvas {
                 onElementClick(event, currentX, optionalElement);
             } else if (event.getY() < TIMELINE_TIMESCALE_HEIGHT) {
                 uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(position));
+            } else {
+                double positionY = event.getY() + calculateScrolledY();
+                selectionBox = new CollisionRectangle(currentX, positionY, 0, 0);
             }
 
         });
@@ -248,9 +273,26 @@ public class TimelineCanvas {
             boolean isPrimaryButtonDown = event.isPrimaryButtonDown();
 
             if (isPrimaryButtonDown) {
-                onDrag(x, y, false);
+                if (selectionBox != null) {
+
+                    double positionX = mapCanvasPixelToTime(event.getX());
+                    double canvasY = event.getY();
+                    if (canvasY < TIMELINE_TIMESCALE_HEIGHT) {
+                        canvasY = TIMELINE_TIMESCALE_HEIGHT;
+                    }
+                    double positionY = canvasY + calculateScrolledY();
+
+                    selectionBox.width = (positionX - selectionBox.topLeftX);
+                    selectionBox.height = (positionY - selectionBox.topLeftY);
+
+                    recalculateSelectionModel();
+
+                    redraw(true);
+                } else {
+                    onDrag(x, y, false);
+                }
             }
-            if (y < TIMELINE_TIMESCALE_HEIGHT && !dragRepository.isDraggingAnything()) {
+            if (y < TIMELINE_TIMESCALE_HEIGHT && !dragRepository.isDraggingAnything() && selectionBox == null) {
                 uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(mapCanvasPixelToTime(x)));
             }
         });
@@ -258,12 +300,15 @@ public class TimelineCanvas {
         canvas.setOnMouseReleased(event -> {
             onDrag(event.getX(), event.getY(), true);
             dragRepository.clean();
+            selectionBox = null;
+            redraw(false);
         });
 
         canvas.setOnDragDropped(event -> {
-            System.out.println("Drag done");
             onDrag(event.getX(), event.getY(), true);
             dragRepository.clean();
+            selectionBox = null;
+            redraw(false);
         });
 
         canvas.setOnDragOver(event -> {
@@ -331,6 +376,28 @@ public class TimelineCanvas {
         return resultPane;
     }
 
+    private void recalculateSelectionModel() {
+        if (selectionBox != null) {
+            List<TimelineUiCacheElement> selectedElements = new ArrayList<>();
+            CollisionRectangle rectangleInCanvasSpace = getSelectionRectangleInCanvasSpace(selectionBox);
+            for (var element : cachedVisibleElements) {
+                CollisionRectangle rectangle = element.rectangle;
+                if (rectangle.intersects(rectangleInCanvasSpace)) {
+                    selectedElements.add(element);
+                }
+            }
+
+            selectedNodeRepository.clearAllSelectedItems();
+            for (var element : selectedElements) {
+                if (element.elementType.equals(TimelineUiCacheType.CLIP)) {
+                    selectedNodeRepository.addSelectedClip(element.elementId);
+                } else if (element.elementType.equals(TimelineUiCacheType.EFFECT)) {
+                    selectedNodeRepository.addSelectedEffect(element.elementId);
+                }
+            }
+        }
+    }
+
     private void onElementClick(MouseEvent event, double currentX, Optional<TimelineUiCacheElement> optionalElement) {
         TimelineUiCacheElement element = optionalElement.get();
         boolean isResizing = isResizing(element, event.getX());
@@ -383,13 +450,11 @@ public class TimelineCanvas {
                 try {
                     AddClipsCommand result = commandInterpreter.synchronousSend(new AddClipsCommand(addClipRequest, timelineAccessor));
                     String addedClipId = result.getAddedClipId();
-                    System.out.println("Clip added " + addedClipId);
-                    timelineState.findClipById(addedClipId).orElseThrow(() -> new RuntimeException("Not found"));
                     ClipDragInformation clipDragInformation = new ClipDragInformation(result.getRequestedPosition(), addedClipId, channelId, 0);
                     dragRepository.onClipDragged(clipDragInformation);
                     db.clear();
                 } catch (Exception e1) {
-                    System.out.println("Error while adding clip " + e1);
+                    e1.printStackTrace();
                 } finally {
                     isLoadingInprogress = false;
                 }
@@ -579,7 +644,6 @@ public class TimelineCanvas {
     }
 
     public void redrawInternal(boolean fullRedraw) {
-        cachedVisibleElements.clear();
 
         graphics.setLineWidth(1.0);
 
@@ -589,9 +653,7 @@ public class TimelineCanvas {
 
         clearCanvas();
 
-        double scrolledY = timelineState.getVscroll().get();
-        double fullHeight = rightBar.getMax() - canvas.getHeight() - CHANNEL_PADDING;
-        double visibleAreaStartY = fullHeight * scrolledY;
+        double visibleAreaStartY = calculateScrolledY();
         if (visibleAreaStartY < 0) {
             visibleAreaStartY = 0;
         }
@@ -599,6 +661,7 @@ public class TimelineCanvas {
         double channelStartY = TIMELINE_TIMESCALE_HEIGHT + CHANNEL_PADDING;
 
         if (fullRedraw || previouslyCachedImage == null) {
+            List<TimelineUiCacheElement> newCachedElements = new ArrayList<>();
 
             for (int i = 0; i < timelineAccessor.getChannels().size(); ++i) {
                 TimelineChannel currentChannel = timelineAccessor.getChannels().get(i);
@@ -639,7 +702,7 @@ public class TimelineCanvas {
                             graphics.fillRoundRect(clipX, clipY, clipWidth, MIN_CHANNEL_HEIGHT, 4, 4);
                         }
 
-                        cachedVisibleElements.add(new TimelineUiCacheElement(clip.getId(), TimelineUiCacheType.CLIP, new CollisionRectangle(clipX, clipY, clipWidth, MIN_CHANNEL_HEIGHT)));
+                        newCachedElements.add(new TimelineUiCacheElement(clip.getId(), TimelineUiCacheType.CLIP, new CollisionRectangle(clipX, clipY, clipWidth, MIN_CHANNEL_HEIGHT)));
 
                         for (int j = 0; j < clip.getEffectChannels().size(); ++j) {
                             for (var effect : clip.getEffectChannels().get(j)) {
@@ -647,8 +710,20 @@ public class TimelineCanvas {
                                 double effectX = timelineState.secondsToPixelsWidthZoomAndTranslate(effect.getGlobalInterval().getStartPosition());
                                 double effectEndX = timelineState.secondsToPixelsWidthZoomAndTranslate(effect.getGlobalInterval().getEndPosition());
                                 double effectY = clipY + MIN_CHANNEL_HEIGHT + EFFECT_HEIGHT * j;
+
+                                if (effectEndX > clipEndX) {
+                                    effectEndX = clipEndX;
+                                }
+                                if (effectX < clipX) {
+                                    effectX = clipX;
+                                }
+
                                 double effectWidth = effectEndX - effectX;
                                 double effectHeight = EFFECT_HEIGHT;
+
+                                if (effectWidth < 0) {
+                                    continue;
+                                }
 
                                 boolean isPrimarySelectedEffect = (selectedNodeRepository.getPrimarySelectedEffect().map(a -> a.equals(effect.getId())).orElse(false));
                                 boolean isSecondarySelectedEffect = (selectedNodeRepository.getSelectedEffectIds()
@@ -670,7 +745,7 @@ public class TimelineCanvas {
                                 graphics.fillRoundRect(effectX, effectY, effectWidth, effectHeight, 4, 4);
                                 //                            graphics.strokeText(effect.getId(), effectX, effectY, effectWidth);
 
-                                cachedVisibleElements.add(new TimelineUiCacheElement(effect.getId(), TimelineUiCacheType.EFFECT, new CollisionRectangle(effectX, effectY, effectWidth, effectHeight)));
+                                newCachedElements.add(new TimelineUiCacheElement(effect.getId(), TimelineUiCacheType.EFFECT, new CollisionRectangle(effectX, effectY, effectWidth, effectHeight)));
                             }
                         }
                     }
@@ -692,12 +767,68 @@ public class TimelineCanvas {
             drawTimelineTitles();
 
             previouslyCachedImage = canvas.snapshot(new SnapshotParameters(), null);
+            cachedVisibleElements = newCachedElements;
         } else {
             graphics.drawImage(previouslyCachedImage, 0, 0);
         }
 
+        drawSelectionBox();
+        drawLoopingLines();
         drawPlaybackLine();
         drawSpecialPositionLine(visibleAreaStartY);
+    }
+
+    private void drawSelectionBox() {
+        CollisionRectangle selection = selectionBox;
+
+        if (selection != null) {
+            CollisionRectangle rectangleInCanvasSpace = getSelectionRectangleInCanvasSpace(selection);
+
+            graphics.setFill(new Color(0, 1, 1, 0.6));
+            graphics.fillRect(rectangleInCanvasSpace.topLeftX, rectangleInCanvasSpace.topLeftY, rectangleInCanvasSpace.width, rectangleInCanvasSpace.height);
+        }
+    }
+
+    private CollisionRectangle getSelectionRectangleInCanvasSpace(CollisionRectangle selection) {
+        double screenX = timelineState.secondsToPixelsWidthZoomAndTranslate(TimelinePosition.ofSeconds(selection.topLeftX));
+        double screenY = selection.topLeftY - calculateScrolledY();
+        double screenW = timelineState.secondsToPixelsWithZoom(TimelinePosition.ofSeconds(selection.width));
+        double screenH = selection.height;
+
+        if (screenW < 0.0) {
+            screenX += screenW;
+            screenW *= -1.0;
+        }
+        if (screenH < 0.0) {
+            screenY += screenH;
+            screenH *= -1.0;
+        }
+        return new CollisionRectangle(screenX, screenY, screenW, screenH);
+    }
+
+    private double calculateScrolledY() {
+        double scrolledY = timelineState.getVscroll().get();
+        double fullHeight = rightBar.getMax() - canvas.getHeight() - CHANNEL_PADDING;
+        double visibleAreaStartY = fullHeight * scrolledY;
+        return visibleAreaStartY;
+    }
+
+    private void drawLoopingLines() {
+        Optional<TimelinePosition> loopAProperties = timelineState.getLoopALineProperties();
+        Optional<TimelinePosition> loopBProperties = timelineState.getLoopBLineProperties();
+        if (loopAProperties.isPresent()) {
+            drawVerticalLineAtPosition(loopAProperties.get(), Color.GREEN);
+        }
+        if (loopBProperties.isPresent()) {
+            drawVerticalLineAtPosition(loopBProperties.get(), Color.GREEN);
+        }
+    }
+
+    private void drawVerticalLineAtPosition(TimelinePosition seconds, Color color) {
+        int position = timelineState.secondsToPixelsWidthZoomAndTranslate(seconds);
+        graphics.setStroke(color);
+        graphics.setLineWidth(1.0);
+        graphics.strokeLine(position, 0, position, canvas.getHeight());
     }
 
     private void drawSpecialPositionLine(double visibleAreaStartY) {
@@ -728,9 +859,9 @@ public class TimelineCanvas {
     }
 
     private void drawTimelineTitles() {
-        graphics.setFill(Color.BEIGE);
+        graphics.setFill(new Color(0x33 / 255.0, 0x33 / 255.0, 0x33 / 255.0, 1.0));
         graphics.fillRect(0, 0, canvas.getWidth(), TIMELINE_TIMESCALE_HEIGHT);
-        graphics.setStroke(Color.BLACK);
+        graphics.setStroke(Color.WHITE);
         graphics.setLineWidth(1.0);
 
         double left = mapCanvasPixelToTime(0);
@@ -758,26 +889,29 @@ public class TimelineCanvas {
         }
         if (numberOfMinutes < 300) {
             appliedLabels = numberOfMinutes < 20 && !appliedLabels;
-            drawLines(left, right, 10, 1 / 60.0, 2.5, appliedLabels);
+            drawLines(left, right, 12, 1 / 60.0, 2.5, appliedLabels);
         }
         if (numberOfTenMinutes < 300) {
             appliedLabels = numberOfTenMinutes < 20 && !appliedLabels;
-            drawLines(left, right, 12, 1 / 600.0, 2.5, appliedLabels);
+            drawLines(left, right, 14, 1 / 600.0, 2.5, appliedLabels);
         }
         if (numberOfHours < 300) {
             appliedLabels = numberOfHours < 20 && !appliedLabels;
             drawLines(left, right, 14, 1.0 / 3600.0, 3, appliedLabels);
         }
+        graphics.setLineWidth(1.0);
+        graphics.setStroke(new Color(0x66 / 255.0, 0x66 / 255.0, 0x66 / 255.0, 0.9));
+        graphics.strokeLine(0, TIMELINE_TIMESCALE_HEIGHT + 1, canvas.getWidth(), TIMELINE_TIMESCALE_HEIGHT + 1);
     }
 
     public void drawLabel(TimelinePosition seconds, boolean writeMilliseconds) {
         String text = formatSeconds(seconds.getSeconds().doubleValue(), writeMilliseconds);
         graphics.setTextAlign(TextAlignment.CENTER);
         graphics.setTextBaseline(VPos.CENTER);
-        graphics.setLineWidth(1.0);
+        graphics.setLineWidth(0.5);
         graphics.setFont(new Font(8.0));
         double x = timelineState.secondsToPixelsWidthZoomAndTranslate(seconds);
-        graphics.strokeText(text, x, 6);
+        graphics.strokeText(text, x, 8);
     }
 
     private String formatSeconds(double secondsInput, boolean writeMilliseconds) {
@@ -796,11 +930,11 @@ public class TimelineCanvas {
     private void drawLines(double left, double right, double height, double divider, double width, boolean drawLabels) {
         int value = (int) (left * divider);
         int newRight = (int) (Math.ceil(right * divider));
-        graphics.setLineWidth(width);
 
         while (value <= newRight) {
             TimelinePosition seconds = TimelinePosition.ofSeconds(value / divider);
             double pos = timelineState.secondsToPixelsWidthZoomAndTranslate(seconds);
+            graphics.setLineWidth(width);
             graphics.strokeLine(pos, TIMELINE_TIMESCALE_HEIGHT - height, pos, TIMELINE_TIMESCALE_HEIGHT);
             value += 1;
             if (drawLabels) {
@@ -827,7 +961,7 @@ public class TimelineCanvas {
     }
 
     private void clearCanvas() {
-        graphics.setFill(Color.BLACK);
+        graphics.setFill(new Color(0x33 / 255.0, 0x33 / 255.0, 0x33 / 255.0, 1.0));
         graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 

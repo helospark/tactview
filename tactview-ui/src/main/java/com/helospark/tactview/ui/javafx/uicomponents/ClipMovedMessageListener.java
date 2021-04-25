@@ -8,8 +8,6 @@ import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.util.SpecialPointLineDrawer;
 
-import javafx.scene.layout.Pane;
-
 @Component
 public class ClipMovedMessageListener {
     private UiMessagingService messagingService;
@@ -25,27 +23,15 @@ public class ClipMovedMessageListener {
     @PostConstruct
     public void init() {
         messagingService.register(ClipMovedMessage.class, message -> {
-            timelineState.findClipById(message.getClipId())
-                    .ifPresent(group -> move(message, group));
+            move(message);
         });
     }
 
-    private void move(ClipMovedMessage message, Pane group) {
-        group.setLayoutX(timelineState.secondsToPixels(message.getNewPosition()));
-        timelineState.changeChannelFor(group, message.getChannelId());
+    private void move(ClipMovedMessage message) {
         if (message.getSpecialPositionUsed().isPresent() && message.isMoreMoveExpected()) {
             drawSpecialPositionLine(message);
         } else {
             timelineState.disableSpecialPointLineProperties();
-        }
-        double leftPosition = timelineState.secondsToPixels(message.getAffectedIntervals().get(0).getEndPosition());
-        double currentWidth = timelineState.getTimelineWidthProperty().get();
-        if (currentWidth - leftPosition < 100) {
-            double newPosition = currentWidth + 50;
-            if (leftPosition > currentWidth) {
-                newPosition = leftPosition + 50;
-            }
-            timelineState.getTimelineWidthProperty().set(newPosition);
         }
     }
 

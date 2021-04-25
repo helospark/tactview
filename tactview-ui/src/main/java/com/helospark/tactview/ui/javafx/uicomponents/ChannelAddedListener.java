@@ -24,7 +24,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 @Component
@@ -57,12 +56,6 @@ public class ChannelAddedListener {
         String generatedName = nameToIdRepository.generateAndAddNameForIdIfNotPresent("channel", message.getChannelId());
 
         System.out.println("Generated channel " + generatedName);
-
-        HBox timeline = new HBox();
-        timeline.setMinHeight(60);
-        timeline.getStyleClass().add("timelinerow");
-        timeline.setPrefWidth(2000);
-        timeline.setMinWidth(2000);
 
         VBox timelineTitle = new VBox();
         TextField timelineTitleChannelNameLabel = new TextField(generatedName);
@@ -138,19 +131,8 @@ public class ChannelAddedListener {
         timelineTitle.setMinWidth(150);
         timelineTitle.getStyleClass().add("timeline-title");
 
-        Pane timelineRow = new Pane();
-        timelineRow.minWidth(2000);
-        timelineRow.minHeight(60);
-        timelineRow.getStyleClass().add("timeline-clips");
-        timeline.getChildren().add(timelineRow);
-
-        //        timelineTitle.prefHeightProperty().bind(timelineRow.heightProperty().add(12));
-
         channelContextMenuAppender.addContextMenu(timelineTitle, message.getChannelId());
-        channelContextMenuAppender.addContextMenu(timeline, message.getChannelId());
 
-        timelineDragAndDropHandler.addDragAndDrop(timeline, timelineRow, message.getChannelId());
-
-        timelineState.addChannel(message.getIndex(), message.getChannelId(), timeline, timelineTitle);
+        timelineState.addChannelHeader(message.getChannelId(), timelineTitle);
     }
 }
