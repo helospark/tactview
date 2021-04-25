@@ -185,6 +185,11 @@ public class TimelineState implements ResettableBean {
         return timelineWidthProperty;
     }
 
+    public void setTimelineWidthProperty(double newWidth) {
+        timelineWidthProperty.set(newWidth);
+        notifySubscribers(UiTimelineChangeType.OTHER);
+    }
+
     public ZoomableScrollPane getTimeLineScrollPane() {
         return timeLineScrollPane;
     }
