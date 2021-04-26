@@ -36,6 +36,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 @Component
 public class DisplayUpdaterService implements ScenePostProcessor {
@@ -209,6 +210,8 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 int width = uiProjectRepostiory.getPreviewWidth();
                 int height = uiProjectRepostiory.getPreviewHeight();
                 GraphicsContext gc = canvas.getGraphicsContext2D();
+                gc.setFill(Color.BLACK);
+                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
                 Image image = actualAudioVideoFragment.getImage();
                 gc.drawImage(image, 0, 0, width, height);
 

@@ -85,7 +85,6 @@ public class UiTimelineManager {
                 try {
                     int frame = 0;
                     while (isPlaying) {
-                        System.out.println("Playing frame " + frame);
                         TimelinePosition nextFrame = this.expectedNextFrames(1).get(0);
                         synchronized (timelineLock) {
                             currentPosition = nextFrame;

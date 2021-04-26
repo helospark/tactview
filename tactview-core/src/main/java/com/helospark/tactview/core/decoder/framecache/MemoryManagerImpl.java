@@ -253,17 +253,9 @@ public class MemoryManagerImpl implements MemoryManager {
     }
 
     private void clearBuffer(ByteBuffer buffer) {
-        //        try {
-        //            // is it actually faster? TODO measure
-        //            long address = (long) buffer.getClass().getMethod("address").invoke(buffer); //damn module system
-        //            unsafe.setMemory(address, buffer.capacity(), (byte) 0);
-        //        } catch (Throwable e) {
-        //        logger.warn("Unable to clear bytebuffer the efficient way", e);
-        //        buffer.position(0);
         for (int i = 0; i < buffer.capacity(); ++i) {
             buffer.put(i, (byte) 0);
         }
-        //        }
     }
 
     static class BufferInformation implements Comparable<BufferInformation> {

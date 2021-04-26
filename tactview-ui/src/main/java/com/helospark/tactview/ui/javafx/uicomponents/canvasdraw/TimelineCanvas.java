@@ -5,10 +5,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.NonIntersectingIntervalList;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -46,6 +50,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineDragAndDropHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineLineProperties;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
+import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.CanvasRedrawRequest;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.CollisionRectangle;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChangeType;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.TimelinePatternChangedMessage;
@@ -96,6 +101,7 @@ public class TimelineCanvas {
     private ClipContextMenuFactory clipContextMenuFactory;
     private EffectContextMenuFactory effectContextMenuFactory;
     private NameToIdRepository nameToIdRepository;
+    private ScheduledExecutorService scheduledExecutorService;
 
     private BorderPane resultPane;
     private ScrollBar rightBar;
@@ -107,11 +113,13 @@ public class TimelineCanvas {
     private List<TimelineUiCacheElement> cachedVisibleElements = new ArrayList<>();
     private Image previouslyCachedImage = null;
 
+    private volatile AtomicReference<CanvasRedrawRequest> redrawRequest = new AtomicReference<>(null); // cache requests to avoid duplicate redraws
+
     public TimelineCanvas(TimelineState timelineState, TimelineManagerAccessor timelineAccessor, MessagingService messagingService,
             TimelinePatternRepository timelinePatternRepository, DragRepository dragRepository, TimelineDragAndDropHandler timelineDragAndDropHandler,
             SelectedNodeRepository selectedNodeRepository, UiCommandInterpreterService commandInterpreter, EffectDragAdder effectDragAdder,
             UiTimelineManager uiTimelineManager, PropertyView propertyView, ClipContextMenuFactory clipContextMenuFactory, EffectContextMenuFactory effectContextMenuFactory,
-            NameToIdRepository nameToIdRepository) {
+            NameToIdRepository nameToIdRepository, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
         this.timelineAccessor = timelineAccessor;
         this.timelineState = timelineState;
         this.timelinePatternRepository = timelinePatternRepository;
@@ -126,6 +134,7 @@ public class TimelineCanvas {
         this.clipContextMenuFactory = clipContextMenuFactory;
         this.effectContextMenuFactory = effectContextMenuFactory;
         this.nameToIdRepository = nameToIdRepository;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @PostConstruct
@@ -166,6 +175,15 @@ public class TimelineCanvas {
         messagingService.register(ClipSelectionChangedMessage.class, message -> {
             redraw(true);
         });
+
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            var oldValue = redrawRequest.getAndSet(null);
+
+            if (oldValue != null) {
+                Platform.runLater(() -> redrawInternal(oldValue.fullRedraw));
+            }
+
+        }, 0, 40, TimeUnit.MILLISECONDS);
     }
 
     private void redrawClipIfVisible(String clipId) {
@@ -696,10 +714,13 @@ public class TimelineCanvas {
     }
 
     public void redraw(boolean fullRedraw) {
-        Platform.runLater(() -> redrawInternal(fullRedraw));
+        boolean newState = fullRedraw || Optional.ofNullable(redrawRequest.get()).map(a -> a.fullRedraw).orElse(false);
+        redrawRequest.set(new CanvasRedrawRequest(newState));
     }
 
     public void redrawInternal(boolean fullRedraw) {
+
+        System.out.println("Fill redraw: " + fullRedraw + " " + System.currentTimeMillis());
 
         graphics.setLineWidth(1.0);
 
