@@ -74,7 +74,7 @@ std::string getCommandLine(const char* logFile, const char* startFileName) {
 
 //  std::cout << classpathString << " " << nativesString << std::endl;
 
-  std::string commandLine = "DYLD_LIBRARY_PATH=" + nativesString + " java-runtime/bin/java -classpath " + classpathString + " -Djdk.gtk.version=2 -Dprism.order=sw -Xmx8g application.HackyMain -Dtactview.plugindirectory=\"" + homedir + "\" \"" + startFileName + "\" >> " + logFile + " 2>&1";
+  std::string commandLine = "DYLD_LIBRARY_PATH=" + nativesString + " java-runtime/bin/java -classpath " + classpathString + " -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=\"" + homedir + "\" \"" + startFileName + "\" >> " + logFile + " 2>&1";
   std::cout << commandLine << std::endl;
 
   return commandLine;
@@ -101,7 +101,6 @@ int main(int argc, char** argv) {
     std::string commandLine = getCommandLine(logFile.c_str(), startFileName);
 
     // -Djdk.gtk.version=2 -> https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8211302
-    // -Dprism.order=sw -> Avoid exception due to too wide texture (occures in com.sun.prism.es2.ES2Texture "Requested texture dimensions...")
     statusCode = system(commandLine.c_str());
     statusCode = statusCode >> 8;
     std::cout << "Tactview returned " << statusCode << std::endl;
