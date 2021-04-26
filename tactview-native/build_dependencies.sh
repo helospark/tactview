@@ -75,7 +75,7 @@ echo "Downloading FFmpeg"
 # 4.3 onward has an issue with SSSE3, therefore cannot be used until that is fixed:
 # https://trac.ffmpeg.org/ticket/8747
 # fire.webm test fails with that and crashes when no scaling applied
-FFMPEG_VERSION=4.2.2
+FFMPEG_VERSION=4.4
 
 if [ ! -e ffmpeg-$FFMPEG_VERSION.tar.gz ]; then
   wget "http://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz"
@@ -92,7 +92,7 @@ if [ "$RELEASE_BUILD" = false ]; then
   additional_ffmpeg_arguments="--enable-debug --disable-stripping"
 fi
 
-./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwavpack --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom $additional_ffmpeg_arguments
+./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom $additional_ffmpeg_arguments
 # Enabled debugging: --enable-debug --disable-stripping
 # --enable-libmfx - Intel HW accelerated encoding/decoding, could be useful
 # --enable-libopenjpeg - decode jpeg

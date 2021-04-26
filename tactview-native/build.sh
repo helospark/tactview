@@ -9,6 +9,10 @@ fi
 mkdir -p ../tactview-core/src/main/resources/linux-x86-64
 rm -r ../tactview-core/src/main/resources/linux-x86-64/*
 
+gcc -shared -fPIC -Wl,-soname,libmemoryoperations.so -o libmemoryoperations.so memoryoperations.cpp
+cp libmemoryoperations.so ../tactview-core/src/main/resources/linux-x86-64/.
+
+
 gcc `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvsharpen.so -o libopencvsharpen.so opencvsharpen.cpp `pkg-config --libs opencv4`
 cp libopencvsharpen.so ../tactview-core/src/main/resources/linux-x86-64/.
 

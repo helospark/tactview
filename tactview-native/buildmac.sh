@@ -1,6 +1,9 @@
 mkdir -p ../tactview-core/src/main/resources/darwin
 rm -r ../tactview-core/src/main/resources/darwin/*
 
+g++ -std=c++11 -shared -fPIC -Wl,-install_name,libmemoryoperations.dylib -o libmemoryoperations.dylib memoryoperations.cpp
+cp libmemoryoperations.so ../tactview-core/src/main/resources/linux-x86-64/.
+
 g++ -std=c++11 -I/usr/local/Cellar/opencv/4.5.0_4/include/opencv4/ -shared -fPIC -Wl,-install_name,libopencvsharpen.dylib -o libopencvsharpen.dylib opencvsharpen.cpp -lopencv_core -lopencv_imgproc
 cp libopencvsharpen.dylib ../tactview-core/src/main/resources/darwin/.
 

@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
+import com.helospark.tactview.core.decoder.framecache.impl.MemoryOperationsImpl;
 import com.helospark.tactview.core.util.DebugImageRenderer;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -42,6 +43,7 @@ public class MemoryManagerImpl implements MemoryManager {
 
     private MessagingService messagingService;
     private ScheduledExecutorService executorService;
+    private MemoryOperationsImpl memoryOperationsImpl;
 
     private Unsafe unsafe;
 
@@ -50,12 +52,13 @@ public class MemoryManagerImpl implements MemoryManager {
     private boolean firstOutOfMemoryError = true;
 
     public MemoryManagerImpl(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug, MessagingService messagingService,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService) {
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService, MemoryOperationsImpl memoryOperationsImpl) {
         this.maximumSizeHint = maximumSizeHint;
         this.unsafe = getUnsafe();
         this.debug = debug;
         this.messagingService = messagingService;
         this.executorService = executorService;
+        this.memoryOperationsImpl = memoryOperationsImpl;
     }
 
     @PostConstruct
@@ -125,7 +128,7 @@ public class MemoryManagerImpl implements MemoryManager {
         currentSize.addAndGet(-capacity);
         logger.debug("Buffer removed with size {} current size {}", capacity, currentSize.get());
         try {
-            unsafe.invokeCleaner(buffer);
+            memoryOperationsImpl.free(buffer);
         } catch (Throwable t) {
             logger.warn("Unable to clean bytebuffer", t);
             // It's OK, GC will take care of it, when it runs
@@ -178,13 +181,13 @@ public class MemoryManagerImpl implements MemoryManager {
             currentSize.addAndGet(bytes);
             ByteBuffer resultBuffer;
             try {
-                resultBuffer = ByteBuffer.allocateDirect(bytes);
+                resultBuffer = memoryOperationsImpl.allocateDirect(bytes).getByteBuffer(0, bytes);
             } catch (OutOfMemoryError e) {
                 logger.warn("No more memory left, trying to free some", e);
                 messagingService.sendMessage(new MemoryPressureMessage());
                 doForcefulCleanup(maximumSizeHint * 0.3);
                 try {
-                    resultBuffer = ByteBuffer.allocateDirect(bytes);
+                    resultBuffer = memoryOperationsImpl.allocateDirect(bytes).getByteBuffer(0, bytes);
                 } catch (OutOfMemoryError e2) {
                     if (firstOutOfMemoryError) {
                         DebugImageRenderer.writeToString(debugTrace);
