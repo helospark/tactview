@@ -105,4 +105,8 @@ public class TimelineInterval {
         return true;
     }
 
+    public static TimelineInterval fromDoubles(double visibleStartPosition, double visibleEndPosition) {
+        return new TimelineInterval(TimelinePosition.ofSeconds(visibleStartPosition), TimelinePosition.ofSeconds(visibleEndPosition));
+    }
+
 }

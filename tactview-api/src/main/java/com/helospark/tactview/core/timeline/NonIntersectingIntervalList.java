@@ -75,6 +75,11 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         }
     }
 
+    public T removeIndex(int index) {
+        T result = intervalAwares.remove(index);
+        return result;
+    }
+
     public Stream<T> stream() {
         return StreamSupport.stream(spliterator(), false);
     }

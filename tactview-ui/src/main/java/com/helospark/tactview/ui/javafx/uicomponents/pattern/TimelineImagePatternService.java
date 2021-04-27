@@ -5,14 +5,11 @@ import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
-import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -47,32 +44,25 @@ public class TimelineImagePatternService {
         this.frameExtender = frameExtender;
     }
 
-    public Image createTimelinePattern(VisualTimelineClip videoClip, int timelineWidth) {
-        return doIt(videoClip, timelineWidth);
-    }
-
-    private Image doIt(VisualTimelineClip videoClip, int timelineWidth) {
+    public Image createTimelinePattern(VisualTimelineClip videoClip, int expectedWidth, double visibleStartPosition, double visibleEndPosition) {
         VisualMediaMetadata metadata = videoClip.getMediaMetadata();
         int scaledFrameWidth = (int) ((double) metadata.getWidth() / metadata.getHeight() * PREVIEW_HEIGHT);
         int scaledFrameHeight = PREVIEW_HEIGHT;
 
-        TimelineInterval interval = videoClip.getInterval();
+        int numberOfFrames = (int) Math.ceil((double) (expectedWidth + BLACK_FILM_TAPE_LINE_WIDTH) / scaledFrameWidth);
 
-        int numberOfFrames = (int) Math.ceil((double) (timelineWidth + BLACK_FILM_TAPE_LINE_WIDTH) / scaledFrameWidth);
+        double timejump = (visibleEndPosition - visibleStartPosition) / numberOfFrames;
 
-        BigDecimal timejump = interval.getLength()
-                .getSeconds()
-                .divide(BigDecimal.valueOf(numberOfFrames), 2, RoundingMode.HALF_UP);
-
-        BufferedImage result = new BufferedImage(timelineWidth, RECTANGLE_HEIGHT, TYPE_INT_RGB);
+        BufferedImage result = new BufferedImage(expectedWidth, RECTANGLE_HEIGHT, TYPE_INT_RGB);
         Graphics graphics = result.getGraphics();
 
         graphics.setColor(Color.BLACK);
-        graphics.fillRect(0, 0, timelineWidth, FILM_TAPE_SIZE);
+        graphics.fillRect(0, 0, expectedWidth, FILM_TAPE_SIZE);
 
         boolean isDynamicallyGenerated = videoClip instanceof ProceduralVisualClip;
-        for (int i = 0; i < numberOfFrames; ++i) {
-            TimelinePosition position = new TimelinePosition(timejump.multiply(BigDecimal.valueOf(i)));
+        int index = 0;
+        for (double seconds = visibleStartPosition; seconds < visibleEndPosition; seconds += timejump, ++index) {
+            TimelinePosition position = TimelinePosition.ofSeconds(seconds);
             int width = isDynamicallyGenerated ? uiProjectRepository.getPreviewWidth() : videoClip.getMediaMetadata().getWidth();
             int height = isDynamicallyGenerated ? uiProjectRepository.getPreviewHeight() : videoClip.getMediaMetadata().getHeight();
             GetFrameRequest frameRequest = GetFrameRequest.builder()
@@ -101,16 +91,16 @@ public class TimelineImagePatternService {
                 java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(expandedFrame.getBuffer());
-                graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
+                graphics.drawImage(img, index * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
             } else {
                 BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
                 java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
-                graphics.drawImage(img, i * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
+                graphics.drawImage(img, index * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
             }
         }
 
-        dragFilmEffect(timelineWidth, graphics);
+        dragFilmEffect(expectedWidth, graphics);
 
         return byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
     }

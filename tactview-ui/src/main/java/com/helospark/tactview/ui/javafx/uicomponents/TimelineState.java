@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.timeline.SecondsAware;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChange;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChangeType;
@@ -36,13 +37,13 @@ public class TimelineState implements ResettableBean {
     private SimpleDoubleProperty zoomValue = new SimpleDoubleProperty(1.0);
     private SimpleDoubleProperty translate = new SimpleDoubleProperty(0);
 
+    private TimelineLength timelineLength = TimelineLength.ofZero();
+
     private SimpleDoubleProperty linePosition = new SimpleDoubleProperty(0.0);
     private TimelineLineProperties moveSpecialPointLineProperties = new TimelineLineProperties();
 
     private TimelinePosition loopAProperties = null;
     private TimelinePosition loopBProperties = null;
-
-    private ZoomableScrollPane timeLineScrollPane;
 
     private ObservableList<Pane> channelHeaders = FXCollections.observableArrayList();
 
@@ -92,6 +93,14 @@ public class TimelineState implements ResettableBean {
 
     public ObservableDoubleValue getTranslate() {
         return translate;
+    }
+
+    public double getTranslateDouble() {
+        return this.pixelsToSecondsWithZoom(translate.get()).getSeconds().doubleValue();
+    }
+
+    public double getTimelineLengthDouble() {
+        return timelineLength.getSeconds().doubleValue();
     }
 
     public SimpleDoubleProperty getReadOnlyLinePosition() {
@@ -178,14 +187,6 @@ public class TimelineState implements ResettableBean {
                 .divide(PIXEL_PER_SECOND, 10, RoundingMode.HALF_UP);
 
         return new TimelinePosition(position);
-    }
-
-    public ZoomableScrollPane getTimeLineScrollPane() {
-        return timeLineScrollPane;
-    }
-
-    public void setTimeLineScrollPane(ZoomableScrollPane timeLineScrollPane) {
-        this.timeLineScrollPane = timeLineScrollPane;
     }
 
     public void horizontalScroll(double scrollStrength) {
@@ -291,4 +292,11 @@ public class TimelineState implements ResettableBean {
         }
     }
 
+    public void setVisibleLength(TimelineLength timelineLength) {
+        this.timelineLength = timelineLength;
+    }
+
+    public TimelineLength getTimelineLength() {
+        return timelineLength;
+    }
 }

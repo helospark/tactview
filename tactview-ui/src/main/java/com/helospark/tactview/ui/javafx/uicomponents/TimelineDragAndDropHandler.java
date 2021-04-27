@@ -10,7 +10,6 @@ import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -21,19 +20,10 @@ import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
-import com.helospark.tactview.ui.javafx.repository.SelectionBoxInformation;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 
-import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
-import javafx.scene.Node;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.Rectangle;
 
 @Component
 public class TimelineDragAndDropHandler {
@@ -62,151 +52,6 @@ public class TimelineDragAndDropHandler {
         this.selectedNodeRepository = selectedNodeRepository;
         this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
         this.uiTimelineManager = uiTimelineManager;
-    }
-
-    public void addDragAndDrop(Node timeline, Pane timelineRow, String channelId) {
-
-        timeline.addEventFilter(MouseEvent.DRAG_DETECTED, event -> {
-            if (dragRepository.currentlyDraggedClip() == null && dragRepository.currentEffectDragInformation() == null &&
-                    !(event.getTarget() instanceof Rectangle)) {
-                double x = event.getX();
-                double y = event.getY() + timeline.getLayoutY();
-                dragRepository.onBoxSelectStarted(new Point(x, y));
-                Dragboard db = timeline.startDragAndDrop(TransferMode.ANY);
-                db.setDragView(ImageReferenceHolder.TRANSPARENT_5x5);
-                ClipboardContent content = new ClipboardContent();
-                content.putString("dragging");
-                db.setContent(content);
-                event.consume();
-            }
-        });
-
-        timeline.setOnDragOver(event -> {
-            double x = event.getX() * timelineState.getZoom();
-            double y = event.getY() + timeline.getLayoutY();
-
-            if (dragRepository.currentlyDraggedClip() != null) {
-                event.acceptTransferModes(TransferMode.MOVE);
-                if (dragRepository.isResizing()) {
-                    //                    resizeClip(event, false);
-                } else {
-                    //                    moveClip(event, channelId, false);
-                }
-            } else if (dragRepository.currentEffectDragInformation() != null) {
-                if (dragRepository.isResizing()) {
-                    //                    resizeEffect(event, false);
-                } else {
-                    //                    moveEffect(event, false);
-                }
-                event.acceptTransferModes(TransferMode.LINK);
-            } else if (dragRepository.isBoxSelectInProgress()) {
-                SelectionBoxInformation selectionBox = dragRepository.getSelectionBoxInformation();
-                //                uiTimeline.updateSelectionBox(selectionBox.startPoint, new Point(x, y));
-                //                updateSelectedNodes(uiTimeline.getSelectionRectangle());
-            }
-
-            ZoomableScrollPane pane = timelineState.getTimeLineScrollPane();
-
-            Bounds paneBounds = pane.getViewportBounds();
-
-            scrollRightWhenNeeded(x, paneBounds);
-            scrollLeftWhenNeeded(x, paneBounds);
-            scrollDownWhenNeeded(y, paneBounds);
-            scrollUpWhenNeeded(y, paneBounds);
-        });
-
-        timeline.setOnDragDone(event -> {
-            if (dragRepository.isBoxSelectInProgress()) {
-                //                uiTimeline.selectionBoxEnded();
-                //                dragRepository.onBoxSelectEnded();
-            }
-            timelineState.disableSpecialPointLineProperties();
-            dragRepository.clearEffectDrag();
-            dragRepository.clearClipDrag();
-        });
-
-        timeline.setOnDragDropped(event -> {
-            if (dragRepository.currentlyDraggedClip() != null) {
-                if (dragRepository.isResizing()) {
-                    //                    resizeClip(event, true);
-                } else {
-                    //                    moveClip(event, channelId, true);
-                }
-                dragRepository.clearClipDrag();
-                event.consume();
-            } else if (dragRepository.currentEffectDragInformation() != null) {
-                if (dragRepository.isResizing()) {
-                    //                    resizeEffect(event, true);
-                } else {
-                    //                    moveEffect(event, true);
-                }
-                dragRepository.clearEffectDrag();
-                event.consume();
-            } else if (dragRepository.isBoxSelectInProgress()) {
-                //                uiTimeline.selectionBoxEnded();
-            }
-            event.setDropCompleted(true);
-            event.getDragboard().clear();
-        });
-
-    }
-
-    private void updateSelectedNodes(Rectangle selectionRectangle) {
-        //        timelineState.getAllClips()
-        //                .filter(a -> selectionRectangle.intersects(getBoundsWithIncludeParent(a)))
-        //                .forEach(a -> selectedNodeRepository.addSelectedClip(a));
-        //        timelineState.getAllEffects()
-        //                .filter(a -> selectionRectangle.getBoundsInParent().intersects(getBoundsWithIncludeParentParent(a)))
-        //                .forEach(a -> selectedNodeRepository.addSelectedEffect(a));
-    }
-
-    private Bounds getBoundsWithIncludeParent(Node selectionRectangle) {
-        Bounds inParent = selectionRectangle.getBoundsInParent();
-        return new BoundingBox(inParent.getMinX(), selectionRectangle.getParent().getParent().getLayoutY() + inParent.getMinY(), inParent.getWidth(), inParent.getHeight());
-    }
-
-    private void scrollRightWhenNeeded(double x, Bounds paneBounds) {
-        double rightX = -1.0 * paneBounds.getMinX() + paneBounds.getWidth();
-
-        double distance = (rightX - x);
-
-        if (distance < 50) {
-            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01 * (1.0 / timelineState.getZoom());
-            timelineState.horizontalScroll(scrollStrength);
-        }
-    }
-
-    private void scrollLeftWhenNeeded(double x, Bounds paneBounds) {
-        double leftX = -1.0 * paneBounds.getMinX();
-
-        double distance = (x - leftX);
-
-        if (distance < 50) {
-            double scrollStrength = (1.0 - (distance / 50.0)) * 0.01 * (1.0 / timelineState.getZoom());
-            timelineState.horizontalScroll(-scrollStrength);
-        }
-    }
-
-    private void scrollUpWhenNeeded(double y, Bounds paneBounds) {
-        double topY = -1.0 * paneBounds.getMinY();
-
-        double distance = (y - topY);
-
-        if (distance < 30) {
-            double scrollStrength = (1.0 - (distance / 30.0)) * 0.01;
-            timelineState.verticalScroll(-scrollStrength);
-        }
-    }
-
-    private void scrollDownWhenNeeded(double y, Bounds paneBounds) {
-        double bottomY = -1.0 * paneBounds.getMinY() + paneBounds.getHeight();
-
-        double distance = (bottomY - y);
-
-        if (distance < 30) {
-            double scrollStrength = (1.0 - (distance / 30.0)) * 0.01;
-            timelineState.verticalScroll(scrollStrength);
-        }
     }
 
     public AddClipRequest addClipRequest(String channelId, List<File> dbFiles, String dbString, double currentX) {

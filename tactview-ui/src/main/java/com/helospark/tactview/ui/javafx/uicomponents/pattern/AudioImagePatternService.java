@@ -16,7 +16,6 @@ import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioRequest;
-import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
@@ -42,7 +41,7 @@ public class AudioImagePatternService {
         this.audioRmsCalculator = audioRmsCalculator;
     }
 
-    public Image createAudioImagePattern(AudibleTimelineClip audibleTimelineClip, int width) {
+    public Image createAudioImagePattern(AudibleTimelineClip audibleTimelineClip, int width, double visibleStartPosition, double visibleEndPosition) {
         int scaledFrameWidth = width;
         int scaledFrameHeight = RECTANGLE_HEIGHT;
         int numberOfChannels = projectRepository.getNumberOfChannels();
@@ -54,8 +53,7 @@ public class AudioImagePatternService {
             lastPointPerChannel.add(new MutableInteger((i + 1) * channelHeight));
         }
 
-        TimelineInterval interval = audibleTimelineClip.getInterval();
-        BigDecimal lengthInSeconds = interval.getLength().getSeconds();
+        BigDecimal lengthInSeconds = BigDecimal.valueOf(visibleEndPosition - visibleStartPosition);
         BigDecimal secondsPerPixel = lengthInSeconds.divide(BigDecimal.valueOf(width), 10, RoundingMode.HALF_UP);
 
         int numberOfSamplesToCollect = lengthInSeconds
@@ -81,7 +79,7 @@ public class AudioImagePatternService {
         for (int i = 0; i < numberOfSamplesToCollect; ++i) {
             AudioRequest frameRequest = AudioRequest.builder()
                     .withApplyEffects(false)
-                    .withPosition(audibleTimelineClip.getInterval().getStartPosition().add(timeJump.multiply(BigDecimal.valueOf(i))))
+                    .withPosition(audibleTimelineClip.getInterval().getStartPosition().add(BigDecimal.valueOf(visibleStartPosition)).add(timeJump.multiply(BigDecimal.valueOf(i))))
                     .withLength(TimelineLength.ofMillis(1))
                     .withSampleRate(projectRepository.getSampleRate())
                     .withBytesPerSample(projectRepository.getBytesPerSample())

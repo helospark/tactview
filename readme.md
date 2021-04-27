@@ -57,4 +57,4 @@ You will find the created releases in `release` folder under. The created zip ca
  - Get all native dependencies, on Linux you can do that by running `tactview-native/build_dependencies.sh` as root
  - You need to build all native code by running `build.bat (Windows)`, `build.sh (Linux)`, `buildmac.sh (Mac)` script in `tactview_native`. You need to do this every time you modify native code (which should be rare). 
  - You can import `tactview-parent` into your IDE as a Maven project.
- - Run `HackyMain` class as Java application with these arguments `-Djdk.gtk.version=2  -Xmx4g -Dprism.order=sw  -Dtactview.profile=development`
+ - Run `HackyMain` class as Java application with these arguments `-Djdk.gtk.version=2  -Xmx4g -Dtactview.profile=development`
