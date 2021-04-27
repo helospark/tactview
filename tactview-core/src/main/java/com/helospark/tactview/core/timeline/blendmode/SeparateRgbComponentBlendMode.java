@@ -15,7 +15,7 @@ public abstract class SeparateRgbComponentBlendMode implements BlendModeStrategy
         resultOut[3] = topLayer[3];
     }
 
-    private int computeSeparateComponent(int top, int bottom, int alpha) {
+    protected int computeSeparateComponent(int top, int bottom, int alpha) {
         double alphaNormalized = alpha / 255.0;
         double topNormalized = top / 255.0;
         double bottomNormalized = bottom / 255.0;

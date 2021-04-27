@@ -25,15 +25,18 @@ public class ClipAddedListener {
     private ProjectRepository projectRepository;
     private ProjectSizeInitializer projectSizeInitializer;
     private NameToIdRepository nameToIdRepository;
+    private TimelineState timelineState;
 
     @Slf4j
     private Logger logger;
 
-    public ClipAddedListener(UiMessagingService messagingService, ProjectRepository projectRepository, ProjectSizeInitializer projectSizeInitializer, NameToIdRepository nameToIdRepository) {
+    public ClipAddedListener(UiMessagingService messagingService, ProjectRepository projectRepository, ProjectSizeInitializer projectSizeInitializer, NameToIdRepository nameToIdRepository,
+            TimelineState timelineState) {
         this.messagingService = messagingService;
         this.projectRepository = projectRepository;
         this.projectSizeInitializer = projectSizeInitializer;
         this.nameToIdRepository = nameToIdRepository;
+        this.timelineState = timelineState;
     }
 
     @PostConstruct

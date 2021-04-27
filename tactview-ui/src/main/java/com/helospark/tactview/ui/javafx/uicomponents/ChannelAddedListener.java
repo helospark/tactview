@@ -30,17 +30,17 @@ import javafx.scene.layout.VBox;
 public class ChannelAddedListener {
     private UiMessagingService messagingService;
     private TimelineState timelineState;
-    private TimelineDragAndDropHandler timelineDragAndDropHandler;
+    private TimelineManagerAccessor timelineManagerAccessor;
     private NameToIdRepository nameToIdRepository;
     private UiCommandInterpreterService commandInterpreterService;
     private TimelineManagerAccessor timelineManager;
     private ChannelContextMenuAppender channelContextMenuAppender;
 
-    public ChannelAddedListener(UiMessagingService messagingService, TimelineState timelineState, TimelineDragAndDropHandler timelineDragAndDropHandler, NameToIdRepository nameToIdRepository,
+    public ChannelAddedListener(UiMessagingService messagingService, TimelineState timelineState, TimelineManagerAccessor timelineManagerAccessor, NameToIdRepository nameToIdRepository,
             UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager, ChannelContextMenuAppender channelContextMenuAppender) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
-        this.timelineDragAndDropHandler = timelineDragAndDropHandler;
+        this.timelineManagerAccessor = timelineManagerAccessor;
         this.nameToIdRepository = nameToIdRepository;
         this.commandInterpreterService = commandInterpreterService;
         this.timelineManager = timelineManager;

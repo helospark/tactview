@@ -14,29 +14,30 @@ public class AlphaBlitServiceImpl implements AlphaBlitService {
         this.independentPixelOperation = independentPixelOperation;
     }
 
+    // Expensive method, during preview & render uses 30% of all CPU
+    // TODO: optimize this. Also create a HW accelerated version.
+    // Consider native JNA implementation as well
     @Override
     public void alphaBlitFrame(ClipImage result, ReadOnlyClipImage clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
-        independentPixelOperation.executePixelTransformation(width, height, (j, i) -> {
+
+        independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             int[] forground = new int[4];
             int[] blendedForground = new int[4];
             int[] background = new int[4];
-            int[] resultPixel = new int[4];
 
-            result.getPixelComponents(background, j, i);
-            clipFrameResult.getPixelComponents(forground, j, i);
+            result.getPixelComponents(background, x, y);
+            clipFrameResult.getPixelComponents(forground, x, y);
 
             forground[3] = (int) (forground[3] * globalAlpha);
 
             blendMode.computeColor(forground, background, blendedForground);
 
-            double backgroundAlpha = background[3] / 255.0;
-            double foregroundAlpha = blendedForground[3] / 255.0;
-            resultPixel[0] = blendedForground[0];
-            resultPixel[1] = blendedForground[1];
-            resultPixel[2] = blendedForground[2];
-            resultPixel[3] = (int) ((foregroundAlpha + backgroundAlpha * (1.0 - foregroundAlpha)) * 255.0);
-
-            result.setPixel(resultPixel, j, i);
+            if (blendedForground[3] != 255) {
+                double backgroundAlpha = background[3] / 255.0;
+                double foregroundAlpha = blendedForground[3] / 255.0;
+                blendedForground[3] = (int) ((foregroundAlpha + backgroundAlpha * (1.0 - foregroundAlpha)) * 255.0);
+            }
+            result.setPixel(blendedForground, x, y);
         });
 
     }

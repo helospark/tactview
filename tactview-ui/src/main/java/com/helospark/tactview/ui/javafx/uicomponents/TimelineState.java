@@ -33,7 +33,6 @@ public class TimelineState implements ResettableBean {
 
     private SimpleDoubleProperty hscroll = new SimpleDoubleProperty(0);
     private SimpleDoubleProperty vscroll = new SimpleDoubleProperty(0);
-    private SimpleDoubleProperty timelineWidthProperty = new SimpleDoubleProperty(2000.0);
     private SimpleDoubleProperty zoomValue = new SimpleDoubleProperty(1.0);
     private SimpleDoubleProperty translate = new SimpleDoubleProperty(0);
 
@@ -181,15 +180,6 @@ public class TimelineState implements ResettableBean {
         return new TimelinePosition(position);
     }
 
-    public SimpleDoubleProperty getTimelineWidthProperty() {
-        return timelineWidthProperty;
-    }
-
-    public void setTimelineWidthProperty(double newWidth) {
-        timelineWidthProperty.set(newWidth);
-        notifySubscribers(UiTimelineChangeType.OTHER);
-    }
-
     public ZoomableScrollPane getTimeLineScrollPane() {
         return timeLineScrollPane;
     }
@@ -245,7 +235,6 @@ public class TimelineState implements ResettableBean {
         zoomValue.set(1.0);
         hscroll.set(0);
         vscroll.set(0);
-        timelineWidthProperty.set(2000.0);
         translate.set(0);
         linePosition.set(0.0);
         moveSpecialPointLineProperties.reset();
@@ -283,6 +272,7 @@ public class TimelineState implements ResettableBean {
 
     public void addChannelHeader(String channelId, VBox timelineTitle) {
         channelHeaders.add(timelineTitle);
+        timelineTitle.setUserData(channelId);
     }
 
     public void moveChannel(int originalIndex, int newIndex) {
@@ -291,11 +281,14 @@ public class TimelineState implements ResettableBean {
         notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
-    public void removeChannel(Optional<Integer> index) {
-        index.ifPresent(originalIndex -> {
-            channelHeaders.remove((int) originalIndex);
-            notifySubscribers(UiTimelineChangeType.OTHER);
-        });
+    public void removeChannel(String channelId) {
+        for (int i = 0; i < channelHeaders.size(); ++i) {
+            if (channelHeaders.get(i).getUserData().equals(channelId)) {
+                channelHeaders.remove(i);
+                notifySubscribers(UiTimelineChangeType.OTHER);
+                break;
+            }
+        }
     }
 
 }
