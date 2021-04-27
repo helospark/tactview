@@ -10,6 +10,7 @@ import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.effect.transition.ExternalStatelessVideoTransitionEffectRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.util.MathUtil;
 
 @Component
 public class FrameBufferMerger {
@@ -24,6 +25,12 @@ public class FrameBufferMerger {
     public ReadOnlyClipImage alphaMergeFrames(List<RenderFrameData> frames, TimelineManagerFramesRequest request) {
         int width = request.getPreviewWidth();
         int height = request.getPreviewHeight();
+
+        if (frames.size() == 1 && frames.get(0).videoTransition.isEmpty() && frames.get(0).blendModeStrategy.getId().equals("normal") && MathUtil.fuzzyEquals(frames.get(0).globalAlpha, 1.0)) {
+            // Special case for common scenario: single layer video footage that does not need alpha compositing
+            return ClipImage.copyOf(frames.get(0).clipFrameResult);
+        }
+
         if (frames.size() > 0) {
             ClipImage output = new ClipImage(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4), width, height);
 
