@@ -25,6 +25,11 @@ public class GraphProvider extends KeyframeableEffect<EffectGraph> {
         this.effectGraph = value;
     }
 
+    @Override
+    public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
+        // TODO!
+    }
+
     public EffectGraph getEffectGraph() {
         return effectGraph;
     }
@@ -63,6 +68,11 @@ public class GraphProvider extends KeyframeableEffect<EffectGraph> {
 
     public void setContainingElementId(String containingElementId) {
         this.containingElementId = containingElementId;
+    }
+
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        // TODO!
     }
 
 }

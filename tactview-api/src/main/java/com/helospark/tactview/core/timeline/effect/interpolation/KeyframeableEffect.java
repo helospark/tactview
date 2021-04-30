@@ -21,17 +21,9 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
         return id;
     }
 
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, T value) {
+    public abstract void keyframeAdded(TimelinePosition globalTimelinePosition, T value);
 
-    }
-
-    public void interpolatorChanged(EffectInterpolator newInterpolator) {
-
-    }
-
-    public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
-
-    }
+    public abstract void removeKeyframeAt(TimelinePosition globalTimelinePosition);
 
     public abstract boolean isPrimitive();
 
@@ -73,7 +65,7 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
     }
 
     public void setInterpolator(Object previousInterpolator) {
-
+        throw new IllegalStateException("Interpolator change is not supported");
     }
 
     @Override
@@ -83,9 +75,7 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
         return false;
     }
 
-    public void setUseKeyframes(boolean useKeyframes) {
-
-    }
+    public abstract void setUseKeyframes(boolean useKeyframes);
 
     public boolean keyframesEnabled() {
         return false;

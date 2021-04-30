@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class RectangleProvider extends CompositeKeyframeableEffect {
+public class RectangleProvider extends CompositeKeyframeableEffect<Rectangle> {
     List<PointProvider> pointProviders;
     SizeFunction sizeFunction;
 
@@ -28,17 +28,24 @@ public class RectangleProvider extends CompositeKeyframeableEffect {
     }
 
     @Override
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, Rectangle value) {
+        for (int i = 0; i < 4; ++i) {
+            pointProviders.get(i).keyframeAdded(globalTimelinePosition, value.points.get(i));
+        }
+    }
+
+    @Override
     public boolean isPrimitive() {
         return false;
     }
 
     @Override
-    public List<KeyframeableEffect> getChildren() {
-        return (List<KeyframeableEffect>) (Object) pointProviders;
+    public List<KeyframeableEffect<?>> getChildren() {
+        return (List<KeyframeableEffect<?>>) (Object) pointProviders;
     }
 
     @Override
-    public KeyframeableEffect deepClone() {
+    public KeyframeableEffect<Rectangle> deepClone() {
         List<PointProvider> clonedList = pointProviders.stream()
                 .map(a -> a.deepClone())
                 .collect(Collectors.toList());
@@ -46,7 +53,7 @@ public class RectangleProvider extends CompositeKeyframeableEffect {
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<Rectangle>>> generateSerializableContent() {
         return RectangleProviderFactory.class;
     }
 

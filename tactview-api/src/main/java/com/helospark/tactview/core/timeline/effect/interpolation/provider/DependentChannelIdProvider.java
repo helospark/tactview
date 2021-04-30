@@ -55,4 +55,9 @@ public class DependentChannelIdProvider extends KeyframeableEffect<String> {
         return DependentChannelIdProviderFactory.class;
     }
 
+    @Override
+    public void setUseKeyframes(boolean useKeyframes) {
+        stringInterpolator.setUseKeyframes(useKeyframes);
+    }
+
 }

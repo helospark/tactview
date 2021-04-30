@@ -9,7 +9,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRange;
 import com.helospark.tactview.core.util.DesSerFactory;
 
-public class DoubleRangeProvider extends CompositeKeyframeableEffect {
+public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange> {
     DoubleProvider lowEndProvider;
     DoubleProvider highEndProvider;
 
@@ -36,7 +36,7 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect {
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<DoubleRange>>> generateSerializableContent() {
         return DoubleRangeProviderFactory.class;
     }
 
@@ -46,17 +46,23 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect {
     }
 
     @Override
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, DoubleRange value) {
+        lowEndProvider.keyframeAdded(globalTimelinePosition, value.lowEnd);
+        highEndProvider.keyframeAdded(globalTimelinePosition, value.highEnd);
+    }
+
+    @Override
     public boolean isPrimitive() {
         return false;
     }
 
     @Override
-    public KeyframeableEffect deepClone() {
+    public KeyframeableEffect<DoubleRange> deepClone() {
         return new DoubleRangeProvider(lowEndProvider.deepClone(), highEndProvider.deepClone());
     }
 
     @Override
-    public List<KeyframeableEffect> getChildren() {
+    public List<KeyframeableEffect<?>> getChildren() {
         return Arrays.asList(lowEndProvider, highEndProvider);
     }
 
