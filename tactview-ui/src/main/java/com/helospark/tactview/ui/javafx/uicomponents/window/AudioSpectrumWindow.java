@@ -20,8 +20,10 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.CheckBox;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -38,6 +40,7 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
     private FastFourierTransformer fastFourierTransformer = new FastFourierTransformer(DftNormalization.UNITARY);
 
     private Canvas canvas;
+    private CheckBox logCheckbox;
 
     private AudioFrameResult previousAudioFrame;
 
@@ -47,6 +50,7 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
         if (!isWindowOpen) {
             return;
         }
+
         AudioFrameResult audioFragment = previousAudioFrame;
 
         updateCanvasWithAudioFragment(audioFragment);
@@ -58,7 +62,7 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
 
         Complex[] fftResult = fastFourierTransformer.transform(transformData, TransformType.FORWARD);
 
-        double frequencyPerBucket = (double) audioFragment.getSamplePerSecond() / audioFragment.getNumberSamples();
+        double frequencyPerBucket = (double) audioFragment.getSamplePerSecond() / transformData.length;
         double[] fftMagnitudes = convertMagnitudes(fftResult, frequencyPerBucket);
 
         double xScaler = canvas.getWidth() / fftMagnitudes.length;
@@ -82,7 +86,13 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
                 }
                 avg /= AVG_SIZE;
 
-                double height = MathUtil.clamp(avg * yScaler, 0, canvas.getHeight() - LABEL_HEIGHT);
+                double height = 0.0;
+
+                if (logCheckbox.isSelected()) {
+                    height = MathUtil.clamp(20 * Math.log10(avg) + 100, 0, canvas.getHeight() - LABEL_HEIGHT) * 1;
+                } else {
+                    height = MathUtil.clamp(avg * yScaler, 0, canvas.getHeight() - LABEL_HEIGHT) * 1;
+                }
                 double newX = MathUtil.clamp(i * xScaler, 0, canvas.getWidth());
 
                 graphics.fillRect(newX, canvas.getHeight() - LABEL_HEIGHT - height, xScaler * AVG_SIZE, height);
@@ -158,10 +168,19 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
     protected Scene createScene() {
         BorderPane borderPane = new BorderPane();
 
-        canvas = new Canvas(DEFAULT_WIDTH, DEFAULT_HEIGHT + LABEL_HEIGHT);
+        canvas = new Canvas(DEFAULT_WIDTH, DEFAULT_HEIGHT + LABEL_HEIGHT - 19); // TODO: 19 = topBox.getHeight()
         canvas.widthProperty().bind(borderPane.widthProperty());
 
+        VBox topBox = new VBox();
+        logCheckbox = new CheckBox("Logarithmic");
+        logCheckbox.selectedProperty().addListener(e -> {
+            updateCanvasWithAudioFragment(previousAudioFrame);
+        });
+
+        topBox.getChildren().add(logCheckbox);
+
         borderPane.setCenter(canvas);
+        borderPane.setTop(topBox);
 
         return new Scene(borderPane, DEFAULT_WIDTH, DEFAULT_HEIGHT + LABEL_HEIGHT);
     }

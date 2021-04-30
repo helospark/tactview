@@ -167,6 +167,7 @@ public class AudioFrameResult {
                 .stream()
                 .map(channelBuffer -> {
                     ByteBuffer heapBuffer = ByteBuffer.allocate(channelBuffer.capacity());
+                    heapBuffer.order(channelBuffer.order());
                     for (int i = 0; i < channelBuffer.capacity(); ++i) {
                         heapBuffer.put(i, channelBuffer.get(i));
                     }
