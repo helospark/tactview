@@ -23,7 +23,6 @@ import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllImagePatternsMessage;
-import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.scene.image.Image;
@@ -46,7 +45,7 @@ public class ClipPatternDrawerListener {
     private boolean patternDrawingEnabled = true;
 
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
-            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager, SoundRmsRepository soundRmsRepository,
+            TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager,
             TimelinePatternRepository timelinePatternRepository, TimelineManagerAccessor timelineAccessor) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
@@ -83,7 +82,7 @@ public class ClipPatternDrawerListener {
 
                     for (var channel : timelineAccessor.getChannels()) {
                         for (var clip : channel.getAllClips()) {
-                            if (blacklistedClips.containsKey(clip)) {
+                            if (blacklistedClips.containsKey(clip.getId())) {
                                 continue;
                             }
 
