@@ -1,9 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -50,7 +48,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
     protected VisualMediaSource backingSource;
     protected ValueListProvider<BlendModeValueListElement> blendModeProvider;
 
-
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
         this.mediaMetadata = mediaMetadata;
@@ -91,21 +88,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     protected TimelinePosition calculatePositionToRender(GetFrameRequest request) {
-        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-
         boolean reverse = reverseTimeProvider.getValueAt(TimelinePosition.ofZero());
 
-        if (reverse) {
-            TimelinePosition endPosition = interval.getLength().toPosition().add(renderOffset);
-            TimelinePosition unscaledPosition = endPosition.subtract(relativePosition);
-            BigDecimal integrated = timeScaleProvider.integrate(unscaledPosition, endPosition);
-            return endPosition.subtract(new TimelinePosition(integrated));
-        } else {
-            TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
-            BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
-            return renderOffset.toPosition().add(integrated);
-        }
+        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
 
+        return calculatePositionInClipSpaceTo(relativePosition, reverse);
     }
 
     protected ReadOnlyClipImage applyEffects(TimelinePosition relativePosition, ReadOnlyClipImage frameResult, GetFrameRequest frameRequest) {

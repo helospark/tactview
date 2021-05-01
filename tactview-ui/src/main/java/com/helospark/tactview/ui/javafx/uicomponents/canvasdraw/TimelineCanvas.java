@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.timeline.AddClipRequest;
@@ -54,6 +57,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineDragAndDropHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineLineProperties;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.CanvasRedrawRequest;
+import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.ChannelHeightResponse;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.CollisionRectangle;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChangeType;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.PatternIntervalAware;
@@ -84,6 +88,8 @@ import javafx.scene.text.TextAlignment;
 
 @Component
 public class TimelineCanvas {
+    public static final Logger LOGGER = LoggerFactory.getLogger(TimelineCanvas.class);
+
     public static final double DRAG_SCROLL_THRESHOLD = 25;
     public static final double TIMELINE_TIMESCALE_HEIGHT = 25;
     private static final double CHANNEL_PADDING = 4;
@@ -588,19 +594,6 @@ public class TimelineCanvas {
         return Optional.empty();
     }
 
-    static class ChannelHeightResponse {
-        double top;
-        double bottom;
-        TimelineChannel channel;
-
-        public ChannelHeightResponse(double top, double bottom, TimelineChannel channel) {
-            this.top = top;
-            this.bottom = bottom;
-            this.channel = channel;
-        }
-
-    }
-
     public List<ChannelHeightResponse> getChannelsHeights() {
         List<ChannelHeightResponse> result = new ArrayList<>();
         double channelStartY = TIMELINE_TIMESCALE_HEIGHT + CHANNEL_PADDING;
@@ -727,8 +720,7 @@ public class TimelineCanvas {
     }
 
     public void redrawInternal(boolean fullRedraw) {
-
-        System.out.println("Fill redraw: " + fullRedraw + " " + System.currentTimeMillis());
+        LOGGER.trace("Canvas redraw requested, fullRedraw={}, time={}", fullRedraw, System.currentTimeMillis());
 
         graphics.setLineWidth(1.0);
         timelineState.setVisibleLength(TimelineLength.ofSeconds(mapCanvasPixelToTime(canvas.getWidth())));

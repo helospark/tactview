@@ -57,27 +57,23 @@ public abstract class AudibleTimelineClip extends TimelineClip implements Single
 
         boolean hasTempoChange = hasSonicPostProcessingChange();
 
-        if (hasTempoChange) {
-            TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
-            BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
-            TimelinePosition startPosition = renderOffset.toPosition().add(integrated);
-            TimelineLength newLength = audioRequest.getLength().multiply(BigDecimal.valueOf(timeScaleProvider.getValueAt(audioRequest.getPosition())));
+        TimelinePosition startPosition = super.calculatePositionInClipSpaceTo(relativePosition, false);
+        TimelineLength newLength = audioRequest.getLength().multiply(BigDecimal.valueOf(timeScaleProvider.getValueAt(audioRequest.getPosition())));
 
-            audioRequest = AudioRequest.builderFrom(audioRequest)
-                    .withPosition(startPosition)
-                    .withLength(newLength)
-                    .build();
-        }
+        AudioRequest newAudioRequest = AudioRequest.builderFrom(audioRequest)
+                .withPosition(startPosition)
+                .withLength(newLength)
+                .build();
 
-        AudioFrameResult result = requestAudioFrameInternal(audioRequest);
+        AudioFrameResult result = requestAudioFrameInternal(newAudioRequest);
 
         if (hasTempoChange) {
-            var newResult = applyTempoChange(result, audioRequest);
+            var newResult = applyTempoChange(result, newAudioRequest);
             result.free();
             result = newResult;
         }
 
-        return applyEffects(relativePosition, result, audioRequest.isApplyEffects());
+        return applyEffects(relativePosition, result, newAudioRequest.isApplyEffects());
     }
 
     private boolean hasSonicPostProcessingChange() {

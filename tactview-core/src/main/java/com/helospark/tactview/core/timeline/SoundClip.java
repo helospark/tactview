@@ -43,7 +43,7 @@ public class SoundClip extends AudibleTimelineClip {
         AudioMediaDataRequest request = AudioMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withMetadata(mediaMetadata)
-                .withStart(audioRequest.getPosition().from(interval.getStartPosition()).add(renderOffset))
+                .withStart(audioRequest.getPosition())
                 .withExpectedBytesPerSample(audioRequest.getBytesPerSample())
                 .withExpectedSampleRate(audioRequest.getSampleRate())
                 .withExpectedChannels(audioRequest.getNumberOfChannels())

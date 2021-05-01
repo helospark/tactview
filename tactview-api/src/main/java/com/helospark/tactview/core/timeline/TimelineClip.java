@@ -318,9 +318,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     public abstract TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata);
 
-    protected void changeRenderStartPosition(TimelinePosition localPosition, TimelinePosition globalTimelinePosition, TimelineLength originalRenderOffset) {
+    protected void changeRenderStartPosition(TimelinePosition localPosition, TimelinePosition startPosition, TimelinePosition globalTimelinePosition, TimelineLength originalRenderOffset) {
         this.renderOffset = localPosition.add(originalRenderOffset).toLength();
-        TimelineInterval newInterval = this.interval.butWithStartPosition(globalTimelinePosition);
+        TimelineInterval newInterval = new TimelineInterval(globalTimelinePosition, this.interval.getEndPosition()).butMoveStartPostionTo(startPosition);
 
         this.setInterval(newInterval);
 
@@ -335,13 +335,19 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
     }
 
     public List<TimelineClip> createCutClipParts(TimelinePosition globalTimelinePosition) {
-        TimelinePosition localPosition = globalTimelinePosition.from(this.interval.getStartPosition());
+        TimelinePosition relativePosition = globalTimelinePosition.from(this.interval.getStartPosition());
+
+        TimelinePosition integratedASd = new TimelinePosition(timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), renderOffset, new BigDecimal("100000")));
+
+        BigDecimal integrated = timeScaleProvider.integrate(integratedASd, relativePosition);
+        TimelinePosition localPosition = renderOffset.toPosition().add(integrated);
+
         TimelineClip clipOne = this.cloneClip(CloneRequestMetadata.ofDefault());
         TimelineClip clipTwo = this.cloneClip(CloneRequestMetadata.ofDefault());
 
-        clipOne.changeRenderEndPosition(globalTimelinePosition);
-        // getEndPosition() should be globalTimelinePosition, however due to timescale interpolation, we might have lost some resolution, so let's just use endPosition of first clip
-        clipTwo.changeRenderStartPosition(localPosition, clipOne.getInterval().getEndPosition(), renderOffset);
+        TimelinePosition remappedGlobalTimelinePosition = localPosition.add(clipOne.getInterval().getStartPosition());
+        clipOne.changeRenderEndPosition(remappedGlobalTimelinePosition);
+        clipTwo.changeRenderStartPosition(localPosition, clipOne.getInterval().getEndPosition(), remappedGlobalTimelinePosition, renderOffset);
 
         handleEffect(localPosition, clipOne, false);
         handleEffect(TimelinePosition.ofZero(), clipTwo, true);
@@ -480,6 +486,19 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     public String getTimeScaleProviderId() {
         return timeScaleProvider.getId();
+    }
+
+    protected TimelinePosition calculatePositionInClipSpaceTo(TimelinePosition relativePosition, boolean reverse) {
+        if (reverse) {
+            TimelinePosition endPosition = interval.getLength().toPosition().add(renderOffset);
+            TimelinePosition unscaledPosition = endPosition.subtract(relativePosition);
+            BigDecimal integrated = timeScaleProvider.integrate(unscaledPosition, endPosition);
+            return endPosition.subtract(new TimelinePosition(integrated));
+        } else {
+            TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
+            BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
+            return renderOffset.toPosition().add(integrated);
+        }
     }
 
 }

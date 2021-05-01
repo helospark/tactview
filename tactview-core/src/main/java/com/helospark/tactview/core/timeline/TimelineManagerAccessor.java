@@ -138,7 +138,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
                 channelToAddResourceTo.addResource(clip);
             } else {
-                throw new IllegalArgumentException("Cannot add clip");
+                List<TimelineInterval> intersectingIntervals = channelToAddResourceTo.getAllClips()
+                        .computeIntersectingIntervals(clip.getInterval())
+                        .stream()
+                        .map(a -> a.getInterval())
+                        .collect(Collectors.toList());
+                throw new IllegalArgumentException("Cannot add clip with interval {} " + clip.getInterval() + " because it intesects with " + intersectingIntervals);
             }
         }
         sendClipAndEffectMessages(channelToAddResourceTo, clip);
