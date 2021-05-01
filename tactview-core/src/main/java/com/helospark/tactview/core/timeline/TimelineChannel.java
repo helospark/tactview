@@ -319,4 +319,15 @@ public class TimelineChannel {
         return new TimelineChannel(this, metadata);
     }
 
+    public boolean areIntervalsIntersecting() {
+        synchronized (fullChannelLock) {
+            for (int i = 0; i < clips.size() - 1; ++i) {
+                if (clips.get(i).getInterval().intersects(clips.get(i + 1).getInterval())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
 }

@@ -85,9 +85,8 @@ public abstract class KeyframeSupportingDoubleInterpolator implements DoubleInte
 
     @Override
     public BigDecimal integrateUntil(TimelinePosition start, TimelineLength untilValue, BigDecimal max) {
-        if (!isUsingKeyframes()) {
-            BigDecimal constantValue = BigDecimal.valueOf(valueAt(start));
-
+        BigDecimal constantValue = BigDecimal.valueOf(valueAt(start));
+        if (!isUsingKeyframes() && constantValue.compareTo(BigDecimal.valueOf(0.01)) > 0) {
             return untilValue.getSeconds().subtract(start.getSeconds()).divide(constantValue, 10, RoundingMode.HALF_UP);
         } else {
             return DoubleInterpolator.super.integrateUntil(start, untilValue, max);

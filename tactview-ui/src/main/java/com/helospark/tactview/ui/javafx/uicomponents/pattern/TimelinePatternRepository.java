@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.NonIntersectingIntervalList;
 import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 import javafx.scene.image.Image;
@@ -26,7 +27,7 @@ public class TimelinePatternRepository {
         this.messagingService = messagingService;
     }
 
-    public void addAllAndRemoveOldEntriesNotVisible(String clipId, List<Pair<Image, TimelineInterval>> generatedPatterns, double zoom, TimelineInterval visibleInterval) {
+    public void addAllAndRemoveOldEntriesNotVisible(String clipId, List<Pair<Image, TimelineInterval>> generatedPatterns, double zoom, TimelineInterval visibleInterval, TimelineLength clipLength) {
         NonIntersectingIntervalList<PatternIntervalAware> list = repository.get(clipId);
 
         if (generatedPatterns.isEmpty()) {
@@ -42,7 +43,7 @@ public class TimelinePatternRepository {
             if (!intersectingElements.isEmpty()) {
                 list.removeAll(intersectingElements);
             }
-            list.addInterval(new PatternIntervalAware(pair.getLeft(), pair.getRight(), zoom));
+            list.addInterval(new PatternIntervalAware(pair.getLeft(), pair.getRight(), zoom, clipLength));
         }
 
         if (list.size() > MAX_ALLOWED_ENTRIES_PER_CLIP) {
@@ -67,7 +68,7 @@ public class TimelinePatternRepository {
         }
     }
 
-    public boolean hasFullyOverlappingClipWithSimilarZoomLevel(String clipId, TimelineInterval interval, double zoom) {
+    public boolean hasFullyOverlappingClipWithSimilarZoomLevel(String clipId, TimelineInterval interval, double zoom, TimelineLength clipLength) {
         NonIntersectingIntervalList<PatternIntervalAware> list = repository.get(clipId);
 
         if (list == null) {
@@ -83,7 +84,7 @@ public class TimelinePatternRepository {
         for (var intersection : intersectingClips) {
             if (intersection.getInterval().getStartPosition().isLessThanOrEqualTo(interval.getStartPosition())
                     && intersection.getInterval().getEndPosition().isGreaterOrEqualToThan(interval.getEndPosition())) {
-                if (Math.abs(zoom - intersection.zoom) < 0.1) {
+                if (Math.abs(zoom - intersection.zoom) < 0.1 && intersection.getLength().isEquals(clipLength)) {
                     return true;
                 }
             }

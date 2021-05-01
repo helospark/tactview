@@ -875,17 +875,19 @@ public class TimelineCanvas {
     }
 
     private void drawClip(TimelineInterval visibleInterval, TimelineClip clip, double xOffset, double clipY) {
-        List<PatternIntervalAware> pattern = timelinePatternRepository.getPatternForClipId(clip.getId(), visibleInterval.butAddOffset(clip.getInterval().getStartPosition().negate()));
+        TimelinePosition clipIntervalStartPosition = clip.getInterval().getStartPosition();
+        List<PatternIntervalAware> pattern = timelinePatternRepository.getPatternForClipId(clip.getId(), visibleInterval.butAddOffset(clipIntervalStartPosition.negate()));
+        TimelinePosition clipEndPosition = clip.getInterval().getEndPosition();
 
-        double clipStartPosition = timelineState.secondsToPixelsWidthZoomAndTranslate(clip.getInterval().getStartPosition());
+        double clipStartPosition = timelineState.secondsToPixelsWidthZoomAndTranslate(clipIntervalStartPosition);
 
         if (pattern.size() == 0) {
-            double segmentStartPosition = timelineState.secondsToPixelsWidthZoomAndTranslate(clip.getInterval().getStartPosition());
-            double segmentEndPosition = timelineState.secondsToPixelsWidthZoomAndTranslate(clip.getInterval().getEndPosition());
+            double segmentStartPosition = timelineState.secondsToPixelsWidthZoomAndTranslate(clipIntervalStartPosition);
+            double segmentEndPosition = timelineState.secondsToPixelsWidthZoomAndTranslate(clipEndPosition);
 
             double segmentWidth = (segmentEndPosition - segmentStartPosition);
 
-            if (segmentWidth > 0.5) {
+            if (segmentWidth > 0.01) {
                 graphics.setFill(Color.BLACK);
                 graphics.fillRect(segmentStartPosition, clipY, segmentWidth, MIN_CHANNEL_HEIGHT);
             }
@@ -895,31 +897,49 @@ public class TimelineCanvas {
         double clipImageStartPosition = timelineState.secondsToPixelsWidthZoomAndTranslate(pattern.get(0).getInterval().getStartPosition());
         double widthOfFirstSegment = clipImageStartPosition - clipStartPosition;
 
-        if (widthOfFirstSegment >= 0.5) {
+        if (widthOfFirstSegment >= 0.01) {
             graphics.setFill(Color.BLACK);
             graphics.fillRect(clipStartPosition, clipY, widthOfFirstSegment, MIN_CHANNEL_HEIGHT);
         }
 
         for (int i = 0; i < pattern.size(); ++i) {
             PatternIntervalAware data = pattern.get(i);
-            double imageStartX = timelineState.secondsToPixelsWidthZoomAndTranslate(data.interval.getStartPosition().add(clip.getInterval().getStartPosition()));
-            double width = timelineState.secondsToPixelsWithZoom(data.getInterval().getLength());
-            graphics.drawImage(data.image, imageStartX, clipY, width, MIN_CHANNEL_HEIGHT);
+            double imageStartX = timelineState.secondsToPixelsWidthZoomAndTranslate(data.interval.getStartPosition().add(clipIntervalStartPosition));
 
-            double nextSegmentEnd;
-            if (i == pattern.size() - 1) {
-                nextSegmentEnd = timelineState.secondsToPixelsWidthZoomAndTranslate(clip.getInterval().getEndPosition());
-            } else {
-                nextSegmentEnd = timelineState.secondsToPixelsWidthZoomAndTranslate(pattern.get(i + 1).getInterval().getStartPosition().add(clip.getInterval().getStartPosition()));
+            TimelineLength length = data.getInterval().getLength();
+            if (data.interval.getEndPosition().compareTo(clipEndPosition) > 0) {
+                length = clipEndPosition.subtract(data.interval.getStartPosition()).toLength();
             }
-            double nextSegmentStartX = imageStartX + width;
-            double nextSegmentWidth = (nextSegmentEnd - nextSegmentStartX);
 
-            if (nextSegmentWidth >= 0.5) {
-                graphics.setFill(Color.BLACK);
-                graphics.fillRect(nextSegmentStartX, clipY, nextSegmentWidth, MIN_CHANNEL_HEIGHT);
+            if (length.compareTo(TimelineLength.ofZero()) > 0) {
+                double width = timelineState.secondsToPixelsWithZoom(length);
+
+                graphics.drawImage(data.image, imageStartX, clipY, width, MIN_CHANNEL_HEIGHT);
+
+                double nextSegmentEnd;
+                TimelinePosition nextEndPosition = null;
+                if (i == pattern.size() - 1) {
+                    nextEndPosition = clipEndPosition;
+                } else {
+                    TimelinePosition nextIntervalStartPosition = pattern.get(i + 1).getInterval().getStartPosition();
+                    nextEndPosition = nextIntervalStartPosition.add(clipIntervalStartPosition);
+                }
+
+                if (nextEndPosition.compareTo(clipEndPosition) > 0) {
+                    nextEndPosition = clipEndPosition;
+                }
+
+                nextSegmentEnd = timelineState.secondsToPixelsWidthZoomAndTranslate(nextEndPosition);
+                double nextSegmentStartX = imageStartX + width;
+                double nextSegmentWidth = (nextSegmentEnd - nextSegmentStartX);
+
+                if (nextSegmentWidth >= 0.01) {
+                    graphics.setFill(Color.BLACK);
+                    graphics.fillRect(nextSegmentStartX, clipY, nextSegmentWidth, MIN_CHANNEL_HEIGHT);
+                }
             }
         }
+
     }
 
     private void drawSelectionBox() {

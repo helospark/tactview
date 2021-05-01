@@ -24,6 +24,7 @@ import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelMovedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
@@ -74,6 +75,42 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     @PostConstruct
     public void postConstruct() {
         longProcessRequestor.setTimelineManagerAccessor(this);
+
+        messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
+            createNewChannelWhenClipLengthChangeCausesIntersectingClips(message);
+        });
+    }
+
+    private void createNewChannelWhenClipLengthChangeCausesIntersectingClips(AbstractKeyframeChangedMessage message) {
+        TimelineClip affectedClip = null;
+        TimelineChannel affectedChannel = null;
+        for (var channel : getChannels()) {
+            for (var clip : channel.getAllClips()) {
+                if (message.getDescriptorId().equals(clip.getTimeScaleProviderId())) {
+                    affectedClip = clip;
+                    affectedChannel = channel;
+                    break;
+                }
+                if (affectedClip != null) {
+                    break;
+                }
+            }
+        }
+        if (affectedClip != null && affectedChannel.areIntervalsIntersecting()) {
+            Integer channelIndex = findChannelIndex(affectedChannel.getId()).get();
+            TimelineChannel newChannel = createChannel(channelIndex);
+
+            MoveClipRequest moveClipRequest = MoveClipRequest.builder()
+                    .withAdditionalClipIds(List.of())
+                    .withClipId(affectedClip.getId())
+                    .withEnableJumpingToSpecialPosition(false)
+                    .withMoreMoveExpected(false)
+                    .withNewChannelId(newChannel.getId())
+                    .withNewPosition(affectedClip.getInterval().getStartPosition())
+                    .build();
+
+            moveClip(moveClipRequest);
+        }
     }
 
     public TimelineClip addClip(AddClipRequest request) {
@@ -239,7 +276,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip " + clipId));
 
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
-        TimelineInterval originalInterval = clipToMove.getGlobalInterval();
+        TimelineInterval originalInterval = clipToMove.getInterval();
 
         Set<String> linkedClipIds = fillWithAllTransitiveLinkedClips(moveClipRequest);
 
@@ -316,8 +353,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                                 TimelineChannel originalMovedChannel = timelineChannelsState.channels.get(originalIndex);
                                 TimelineChannel newMovedChannel = timelineChannelsState.channels.get(currentIndex);
 
-                                TimelineInterval clipCurrentInterval = clip.getInterval();
-                                TimelineInterval clipNewPosition = clipCurrentInterval.butAddOffset(relativeMove);
+                                TimelineInterval clipCurrentInterval = clip.getUnmodifiedInterval();
+                                TimelineInterval clipNewPosition = clip.getUnmodifiedInterval().butAddOffset(relativeMove);
 
                                 originalMovedChannel.removeClip(clip.getId());
                                 clip.setInterval(clipNewPosition);
@@ -351,7 +388,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     for (int i = 0; i < linkedClips.size(); ++i) {
                         TimelineClip clip = linkedClips.get(i);
                         TimelineChannel channel = channelForClip.get(i);
-                        TimelineInterval clipCurrentInterval = clip.getInterval();
+                        TimelineInterval clipCurrentInterval = clip.getUnmodifiedInterval();
                         TimelinePosition clipNewPosition = clipCurrentInterval.getStartPosition().add(relativeMove);
                         clip.setInterval(new TimelineInterval(clipNewPosition, clipCurrentInterval.getLength()));
                         channel.addResource(clip);

@@ -138,6 +138,10 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         }
     }
 
+    public TimelineInterval getUnmodifiedInterval() {
+        return this.interval;
+    }
+
     public TimelineClipType getType() {
         return type;
     }
@@ -472,6 +476,10 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
             lengthCache = null;
             //                    ((PercentAwareMultiKeyframeBasedDoubleInterpolator) timeScaleProvider.getInterpolator()).resizeTo(getInterval().getLength());
         }
+    }
+
+    public String getTimeScaleProviderId() {
+        return timeScaleProvider.getId();
     }
 
 }
