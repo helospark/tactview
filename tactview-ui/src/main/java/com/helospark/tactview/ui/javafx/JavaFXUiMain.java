@@ -28,6 +28,7 @@ import com.helospark.tactview.core.plugin.PluginMainClassProviders;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
+import com.helospark.tactview.ui.javafx.aware.MainWindowStageAware;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
@@ -130,6 +131,10 @@ public class JavaFXUiMain extends Application {
         styleSheetAdder.setTactviewIconForStage(stage);
 
         JavaFXUiMain.STAGE = stage;
+
+        lightDi.getListOfBeans(MainWindowStageAware.class)
+                .forEach(listener -> listener.setMainWindowStage(stage));
+
         NotificationPane notificationPane = new NotificationPane();
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);
