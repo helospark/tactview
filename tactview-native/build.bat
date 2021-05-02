@@ -5,7 +5,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary
 del /S *.obj
 del /S *.dll
 
-for /r %%i in (*.cpp) do (
+for %%i in (*.cpp) do (
 	set inputFile="%%~ni.cpp"
 	set objFile="%%~ni.obj"
 	set dllFile="%%~ni.dll"
@@ -19,6 +19,6 @@ if not exist "../tactview-core/src/main/resources/win32-x86-64" mkdir "../tactvi
 
 for /R %%f in (*.dll) do copy %%f "../tactview-core/src/main/resources/win32-x86-64"
 
-"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX64\x64\CL.exe" /c /Zi /nologo windows/startup_win.cpp
+"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX64\x64\CL.exe" /EHsc /Fostartup_win.obj /c /Zi /nologo windows/startup_win.cpp
 rc.exe tactview.rc
 "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX64\x64\link.exe" /ERRORREPORT:PROMPT /OUT:"startup.exe" /NOLOGO /MACHINE:X64 /subsystem:windows /entry:mainCRTStartup startup_win.obj tactview.res
