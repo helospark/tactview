@@ -28,7 +28,7 @@ public class StandardClipContextMenuChainItemConfiguration {
     @Order(95)
     public ClipContextMenuChainItem cutCurrentClip(ClipCutService clipCutService) {
         return alwaysSupportedContextMenuItem(request -> {
-            MenuItem copyClip = new MenuItem("Cut clip");
+            MenuItem copyClip = new MenuItem("Cut this clip & linked");
             copyClip.setOnAction(e -> clipCutService.cutClip(request.getPrimaryClip().getId(), true));
             return copyClip;
         });

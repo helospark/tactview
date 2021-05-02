@@ -906,11 +906,13 @@ public class TimelineCanvas {
 
         for (int i = 0; i < pattern.size(); ++i) {
             PatternIntervalAware data = pattern.get(i);
-            double imageStartX = timelineState.secondsToPixelsWidthZoomAndTranslate(data.interval.getStartPosition().add(clipIntervalStartPosition));
+            TimelinePosition imageStartPosition = data.interval.getStartPosition().add(clipIntervalStartPosition);
+            double imageStartX = timelineState.secondsToPixelsWidthZoomAndTranslate(imageStartPosition);
 
             TimelineLength length = data.getInterval().getLength();
-            if (data.interval.getEndPosition().compareTo(clipEndPosition) > 0) {
-                length = clipEndPosition.subtract(data.interval.getStartPosition()).toLength();
+            TimelinePosition imageEndPosition = clipIntervalStartPosition.add(data.interval.getEndPosition());
+            if (imageEndPosition.compareTo(clipEndPosition) > 0) {
+                length = clipEndPosition.subtract(imageStartPosition).toLength();
             }
 
             if (length.compareTo(TimelineLength.ofZero()) > 0) {
@@ -1123,7 +1125,7 @@ public class TimelineCanvas {
     }
 
     private double calculateHeight(TimelineChannel currentChannel) {
-        NonIntersectingIntervalList<TimelineClip> clips = currentChannel.getAllClips();
+        NonIntersectingIntervalList<TimelineClip> clips = currentChannel.getAllClips().shallowCopy();
         double size = MIN_CHANNEL_HEIGHT;
         for (var clip : clips) {
             double currentClipHeight = MIN_CHANNEL_HEIGHT + clip.getEffects().size() * EFFECT_HEIGHT;

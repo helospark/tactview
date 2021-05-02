@@ -50,14 +50,9 @@ public class DraggableIconFactory {
         Tooltip.install(vbox, tooltip);
 
         vbox.setOnDragDetected(event -> {
-            /* drag was detected, start drag-and-drop gesture */
-            System.out.println("onDragDetected");
-
-            /* allow any transfer mode */
             Dragboard db = vbox.startDragAndDrop(TransferMode.ANY);
             db.setDragView(image.getImage());
 
-            /* put a string on dragboard */
             ClipboardContent content = new ClipboardContent();
             content.putString(effectId);
             db.setContent(content);

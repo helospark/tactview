@@ -121,4 +121,10 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         return "NonIntersectingIntervalList [intervalAwares=" + intervalAwares + "]";
     }
 
+    public NonIntersectingIntervalList<T> shallowCopy() {
+        NonIntersectingIntervalList<T> result = new NonIntersectingIntervalList<>();
+        result.intervalAwares.addAll(intervalAwares);
+        return result;
+    }
+
 }

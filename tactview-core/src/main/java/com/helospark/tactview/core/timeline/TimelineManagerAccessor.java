@@ -571,7 +571,6 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         List<StatelessEffect> effectsToResize = clip.getEffects()
                 .stream()
                 .filter(effect -> {
-                    System.out.println("Interval: " + effect.getGlobalInterval() + " " + clip.getInterval());
                     return effect.getGlobalInterval().getLength().isEquals(clip.getInterval().getLength());
                 })
                 .collect(Collectors.toList());
@@ -591,8 +590,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             effectsToResize.stream()
                     .forEach(effect -> {
                         TimelineInterval originalEffectInterval = effect.getInterval();
-                        boolean asd = clip.resizeEffect(effect, false, clip.getInterval().getEndPosition());
-                        System.out.println("Effect resize " + asd);
+                        clip.resizeEffect(effect, false, clip.getInterval().getEndPosition());
                         EffectResizedMessage effectResizedMessage = EffectResizedMessage.builder()
                                 .withClipId(clip.getId())
                                 .withEffectId(effect.getId())
@@ -623,8 +621,6 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
         TimelinePosition globalPosition = resizeEffectRequest.getGlobalPosition();
         boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
-
-        System.out.println("GP1: " + globalPosition);
 
         TimelineLength minimumSize = resizeEffectRequest.getMinimumLength().orElse(null);
         if (minimumSize != null && getIntervalWhenResizedTo(effect, left, globalPosition).getLength().lessThanOrEqual(minimumSize)) {
@@ -763,27 +759,20 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             BigDecimal startDistance = additionalPosition.distanceFrom(position);
             BigDecimal endDistance = additionalPosition.distanceFrom(endPosition);
 
-            System.out.println("Distance   ----    " + startDistance + " " + endDistance);
-
             if (startDistance.compareTo(endDistance) < 0) {
-                System.out.println("Startdistance is less");
                 if (startDistance.compareTo(inRadius.getSeconds()) < 0) {
                     for (TimelineChannel channel : getChannels()) {
                         set.add(new ClosesIntervalChannel(new TimelineLength(startDistance), channel.getId(), additionalPosition, additionalPosition));
                     }
                 }
             } else {
-                System.out.println("Endistance is less");
                 if (endDistance.compareTo(inRadius.getSeconds()) < 0) {
-                    System.out.println("Endistance is less - 2   " + clipLength);
                     for (TimelineChannel channel : getChannels()) {
                         set.add(new ClosesIntervalChannel(new TimelineLength(endDistance), channel.getId(), additionalPosition.subtract(clipLength), additionalPosition));
                     }
                 }
             }
         }
-
-        System.out.println(set);
 
         return set;
     }
