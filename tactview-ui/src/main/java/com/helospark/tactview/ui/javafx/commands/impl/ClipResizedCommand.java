@@ -4,7 +4,6 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.ResizeClipRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
-import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -17,7 +16,7 @@ public class ClipResizedCommand implements UiCommand {
     private TimelinePosition position;
     private boolean left;
 
-    private TimelineInterval originalInterval;
+    private TimelinePosition originalPosition;
 
     private boolean revertable;
 
@@ -32,7 +31,7 @@ public class ClipResizedCommand implements UiCommand {
         this.clipId = builder.clipId;
         this.position = builder.position;
         this.left = builder.left;
-        this.originalInterval = builder.originalInterval;
+        this.originalPosition = builder.originalPosition;
         this.revertable = builder.revertable;
         this.useSpecialPoints = builder.useSpecialPoints;
         this.maximumJumpLength = builder.maximumJumpLength;
@@ -43,7 +42,6 @@ public class ClipResizedCommand implements UiCommand {
     @Override
     public void execute() {
         TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No clip found"));
-        originalInterval = clip.getInterval();
 
         ResizeClipRequest request = ResizeClipRequest.builder()
                 .withClip(clip)
@@ -61,7 +59,7 @@ public class ClipResizedCommand implements UiCommand {
     @Override
     public void revert() {
         TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No clip found"));
-        TimelinePosition previousPosition = (left ? originalInterval.getStartPosition() : originalInterval.getEndPosition());
+        TimelinePosition previousPosition = originalPosition;
 
         ResizeClipRequest request = ResizeClipRequest.builder()
                 .withClip(clip)
@@ -80,7 +78,7 @@ public class ClipResizedCommand implements UiCommand {
 
     @Override
     public String toString() {
-        return "ClipResizedCommand [timelineManager=" + timelineManager + ", clipId=" + clipId + ", position=" + position + ", left=" + left + ", originalInterval=" + originalInterval
+        return "ClipResizedCommand [timelineManager=" + timelineManager + ", clipId=" + clipId + ", position=" + position + ", left=" + left + ", originalPosition=" + originalPosition
                 + ", revertable=" + revertable + ", useSpecialPoints=" + useSpecialPoints + ", moreResizeExpected=" + moreResizeExpected + ", maximumJumpLength=" + maximumJumpLength + ", minimumSize="
                 + minimumSize + "]";
     }
@@ -96,7 +94,7 @@ public class ClipResizedCommand implements UiCommand {
         private String clipId;
         private TimelinePosition position;
         private boolean left;
-        private TimelineInterval originalInterval;
+        private TimelinePosition originalPosition;
         private boolean revertable;
         private boolean useSpecialPoints;
         private boolean moreResizeExpected;
@@ -126,8 +124,8 @@ public class ClipResizedCommand implements UiCommand {
             return this;
         }
 
-        public Builder withOriginalInterval(TimelineInterval originalInterval) {
-            this.originalInterval = originalInterval;
+        public Builder withOriginalPosition(TimelinePosition originalPosition) {
+            this.originalPosition = originalPosition;
             return this;
         }
 

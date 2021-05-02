@@ -66,7 +66,7 @@ public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem 
                             .withClipId(clipToResize.getId())
                             .withLeft(false)
                             .withMoreResizeExpected(false)
-                            .withOriginalInterval(clipToResize.getInterval())
+                            .withOriginalPosition(clipToResize.getInterval().getEndPosition())
                             .withPosition(newRightPosition)
                             .withRevertable(true)
                             .withTimelineManager(timelineManager)

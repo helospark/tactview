@@ -172,7 +172,8 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
         return result;
     }
 
-    public void updateDoubleValueAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
+    @Override
+    public void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
         CubicBezierPoint previousValue = values.remove(timelinePosition);
         CubicBezierPoint newPoint = new CubicBezierPoint(newValue, previousValue.controlPointIn, previousValue.controlPointOut);
         values.put(newTime, newPoint);

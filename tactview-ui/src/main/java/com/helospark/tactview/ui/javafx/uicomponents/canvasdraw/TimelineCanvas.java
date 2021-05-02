@@ -343,7 +343,9 @@ public class TimelineCanvas {
         });
 
         canvas.setOnMouseReleased(event -> {
-            onDrag(event.getX(), event.getY(), true);
+            if (!event.isStillSincePress()) {
+                onDrag(event.getX(), event.getY(), true);
+            }
             dragRepository.clean();
             selectionBox = null;
             redraw(false);
@@ -492,19 +494,27 @@ public class TimelineCanvas {
             TimelineClip clip = timelineAccessor.findClipById(element.elementId).get();
             String channelId = timelineAccessor.findChannelForClipId(element.elementId).get().getId();
             double clipPositionAsDouble = clip.getGlobalInterval().getStartPosition().getSeconds().doubleValue();
-            ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), element.elementId, channelId, currentX - clipPositionAsDouble);
             if (isResizing) {
-                dragRepository.onClipResizing(clipDragInformation, isResizingLeft(element, event.getX()) ? DragDirection.LEFT : DragDirection.RIGHT);
+                boolean resizingLeft = isResizingLeft(element, event.getX());
+                TimelinePosition originalPosition = resizingLeft ? clip.getGlobalInterval().getStartPosition() : clip.getGlobalInterval().getEndPosition();
+                ClipDragInformation clipDragInformation = new ClipDragInformation(originalPosition, element.elementId, channelId, currentX - clipPositionAsDouble);
+                dragRepository.onClipResizing(clipDragInformation, resizingLeft ? DragDirection.LEFT : DragDirection.RIGHT);
             } else {
+                ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), element.elementId, channelId, currentX - clipPositionAsDouble);
                 dragRepository.onClipDragged(clipDragInformation);
             }
         } else {
             TimelineClip clip = timelineAccessor.findClipForEffect(element.elementId).get();
             StatelessEffect effect = timelineAccessor.findEffectById(element.elementId).get();
-            EffectDragInformation effectDragInformation = new EffectDragInformation(clip.getId(), effect.getId(), effect.getGlobalInterval().getStartPosition(), currentX);
             if (isResizing) {
-                dragRepository.onEffectResized(effectDragInformation, isResizingLeft(element, event.getX()) ? DragDirection.LEFT : DragDirection.RIGHT);
+                boolean resizingLeft = isResizingLeft(element, event.getX());
+                TimelinePosition originalPosition = resizingLeft ? effect.getGlobalInterval().getStartPosition() : effect.getGlobalInterval().getEndPosition();
+                EffectDragInformation effectDragInformation = new EffectDragInformation(clip.getId(), effect.getId(), originalPosition, currentX);
+                dragRepository.onEffectResized(effectDragInformation, resizingLeft ? DragDirection.LEFT : DragDirection.RIGHT);
             } else {
+                TimelinePosition originalPosition = effect.getGlobalInterval().getStartPosition();
+                double clipStartSecondDouble = effect.getGlobalInterval().getStartPosition().getSeconds().doubleValue();
+                EffectDragInformation effectDragInformation = new EffectDragInformation(clip.getId(), effect.getId(), originalPosition, currentX - clipStartSecondDouble);
                 dragRepository.onEffectDragged(effectDragInformation);
             }
 

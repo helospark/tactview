@@ -80,24 +80,26 @@ public class TimelineDragAndDropHandler {
         if (currentlyDraggedEffect != null) {
             String clipId = currentlyDraggedEffect.getClipId();
 
-            if (position.isGreaterThan(TimelinePosition.ofZero())) {
-                ClipMovedCommand command = ClipMovedCommand.builder()
-                        .withIsRevertable(revertable)
-                        .withClipId(clipId)
-                        .withAdditionalClipIds(selectedNodeRepository.getSelectedClipIds())
-                        .withNewPosition(position)
-                        .withPreviousPosition(currentlyDraggedEffect.getOriginalPosition())
-                        .withOriginalChannelId(currentlyDraggedEffect.getOriginalChannelId())
-                        .withNewChannelId(channelId)
-                        .withTimelineManager(timelineManager)
-                        .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
-                        .withMoreMoveExpected(!revertable)
-                        .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
-                        .withAdditionalPositions(List.of(uiTimelineManager.getCurrentPosition()))
-                        .build();
-
-                commandInterpreter.sendWithResult(command).join();
+            if (position.isLessThan(TimelinePosition.ofZero())) {
+                position = TimelinePosition.ofZero();
             }
+
+            ClipMovedCommand command = ClipMovedCommand.builder()
+                    .withIsRevertable(revertable)
+                    .withClipId(clipId)
+                    .withAdditionalClipIds(selectedNodeRepository.getSelectedClipIds())
+                    .withNewPosition(position)
+                    .withPreviousPosition(currentlyDraggedEffect.getOriginalPosition())
+                    .withOriginalChannelId(currentlyDraggedEffect.getOriginalChannelId())
+                    .withNewChannelId(channelId)
+                    .withTimelineManager(timelineManager)
+                    .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
+                    .withMoreMoveExpected(!revertable)
+                    .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
+                    .withAdditionalPositions(List.of(uiTimelineManager.getCurrentPosition()))
+                    .build();
+
+            commandInterpreter.sendWithResult(command).join();
         }
     }
 
@@ -110,6 +112,7 @@ public class TimelineDragAndDropHandler {
                     .withClipId(clipId)
                     .withLeft(dragRepository.getDragDirection().equals(DragRepository.DragDirection.LEFT))
                     .withPosition(position)
+                    .withOriginalPosition(currentlyDraggedEffect.getOriginalPosition())
                     .withRevertable(revertable)
                     .withTimelineManager(timelineManager)
                     .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
@@ -153,6 +156,7 @@ public class TimelineDragAndDropHandler {
                 .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                 .withGlobalPosition(position)
+                .withOriginalPosition(draggedEffect.getOriginalPosition())
                 .withRevertable(revertable)
                 .withTimelineManager(timelineManager)
                 .withMinimumLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MINIMUM_EFFECT_SIZE).getSeconds()))

@@ -44,7 +44,7 @@ public class BooleanPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withDescriptor(descriptor)
                 .build();
 
-        checkbox.selectedProperty().addListener((a, b, c) -> {
+        checkbox.setOnAction(event -> {
             KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                     .withDescriptorId(booleanProvider.getId())
                     .withGlobalTimelinePosition(timelineManager.getCurrentPosition())

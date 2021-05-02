@@ -37,6 +37,8 @@ public abstract class KeyframeSupportingDoubleInterpolator implements DoubleInte
 
     public abstract void setDefaultValue(double defaultValue);
 
+    public abstract void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue);
+
     @Override
     public BigDecimal integrate(TimelinePosition from, TimelinePosition to) {
         if (!isUsingKeyframes()) {

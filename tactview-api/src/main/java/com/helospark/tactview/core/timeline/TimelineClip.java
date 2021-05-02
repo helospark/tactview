@@ -337,9 +337,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
     public List<TimelineClip> createCutClipParts(TimelinePosition globalTimelinePosition) {
         TimelinePosition relativePosition = globalTimelinePosition.from(this.interval.getStartPosition());
 
-        TimelinePosition integratedASd = new TimelinePosition(timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), renderOffset, new BigDecimal("100000")));
+        TimelinePosition integratedStartPosition = new TimelinePosition(timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), renderOffset, new BigDecimal("100000")));
 
-        BigDecimal integrated = timeScaleProvider.integrate(integratedASd, relativePosition);
+        BigDecimal integrated = timeScaleProvider.integrate(integratedStartPosition, relativePosition);
         TimelinePosition localPosition = renderOffset.toPosition().add(integrated);
 
         TimelineClip clipOne = this.cloneClip(CloneRequestMetadata.ofDefault());

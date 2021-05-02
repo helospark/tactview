@@ -6,11 +6,16 @@ import java.util.List;
 import com.helospark.lightdi.annotation.Autowired;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
+import com.helospark.tactview.core.timeline.message.ModifyKeyframeRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ModifyKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveKeyframeCommand;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -85,9 +90,16 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     }
 
     protected void addNewPoint(Point remappedMousePosition, CurveEditorMouseRequest request) {
-        // TODO: commandInterpreter
         TimelinePosition offset = effectParametersRepository.findGlobalPositionForValueProvider(request.currentProvider.getId()).get();
-        ((KeyframeSupportingDoubleInterpolator) request.currentDoubleInterpolator).valueAdded(new TimelinePosition(remappedMousePosition.x).subtract(offset), remappedMousePosition.y);
+
+        KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
+                .withDescriptorId(request.currentProvider.getId())
+                .withGlobalTimelinePosition(new TimelinePosition(remappedMousePosition.x).subtract(offset))
+                .withRevertable(true)
+                .withValue(remappedMousePosition.y)
+                .build();
+
+        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeAddedRequest));
     }
 
     protected abstract List<MenuItem> contextMenuForElementIndex(int elementIndex, CurveEditorMouseRequest request);
@@ -122,12 +134,14 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     public boolean onMouseDragged(CurveEditorMouseRequest mouseEvent) {
         jumpToPositionOnDrag(mouseEvent, draggedIndex == -1);
 
-        System.out.println(draggedIndex);
-
         if (draggedIndex == -1) {
             return false;
         }
 
+        return handleDrag(mouseEvent, false);
+    }
+
+    private boolean handleDrag(CurveEditorMouseRequest mouseEvent, boolean revertable) {
         KeyframeSupportingDoubleInterpolator effect = (KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator;
 
         List<KeyframePoint> keyframePoints = getKeyframePoints(effect);
@@ -137,13 +151,34 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
         if (pointToModify != null) {
             TimelinePosition newTime = pointToModify.timelinePosition.add(new BigDecimal(mouseEvent.mouseDelta.x));
             double newValue = mouseEvent.remappedMousePosition.y;
-            valueModifiedAt((KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator, pointToModify.timelinePosition, newTime, newValue);
+            valueModifiedAt(mouseEvent.currentProvider, pointToModify.timelinePosition, newTime, newValue, revertable);
+            draggedIndex = getElementIndex(mouseEvent);
+            closeIndex = draggedIndex;
             return true;
         }
         return false;
     }
 
-    protected abstract void valueModifiedAt(KeyframeSupportingDoubleInterpolator currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue);
+    @Override
+    public boolean onMouseDragEnded(CurveEditorMouseRequest mouseEvent) {
+        if (draggedIndex != -1) {
+            return handleDrag(mouseEvent, true);
+        }
+        return true;
+    }
+
+    protected void valueModifiedAt(KeyframeableEffect<?> currentProvider, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue, boolean revertable) {
+        ModifyKeyframeRequest keyframeModifiedRequest = ModifyKeyframeRequest.builder()
+                .withDescriptorId(currentProvider.getId())
+                .withOriginalTimelinePosition(timelinePosition)
+                .withNewTimelinePosition(newTime)
+                .withRevertable(revertable)
+                .withValue(newValue)
+                .build();
+
+        ModifyKeyframeForPropertyCommand command = new ModifyKeyframeForPropertyCommand(effectParametersRepository, keyframeModifiedRequest);
+        commandInterpreter.synchronousSend(command);
+    }
 
     protected boolean isClose(KeyframePoint keyframePoint, Point remappedMousePosition) {
         Point newPoint = new Point(keyframePoint.timelinePosition.getSeconds().doubleValue(), keyframePoint.value);
