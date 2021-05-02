@@ -361,8 +361,9 @@ public class TimelineCanvas {
         canvas.setOnDragOver(event -> {
             Dragboard db = event.getDragboard();
 
-            if (db.hasString()) {
-                if (db.getString().startsWith("clip:") || (db.getFiles() != null && !db.getFiles().isEmpty())) {
+            boolean hasFile = db.getFiles() != null && !db.getFiles().isEmpty();
+			if (db.hasString() || hasFile) {
+                if (hasFile || db.getString().startsWith("clip:")) {
                     onClipDraggedToCanvas(event, db);
                 } else if (db.getString().startsWith("effect:")) {
                     onEffectDraggedToCanvas(event, db);

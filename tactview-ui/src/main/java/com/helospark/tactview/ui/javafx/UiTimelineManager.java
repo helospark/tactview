@@ -124,6 +124,7 @@ public class UiTimelineManager {
                 } catch (Throwable e) {
                     e.printStackTrace();
                 } finally {
+                    audioStreamService.clearBuffer();
                     isPlaying = false;
                 }
             }, "playback-thread");

@@ -125,7 +125,7 @@ int execute(std::string commandLine) {
 	return (int)returnCode;
 }
 
-int main(int args, char** argv) {
+int main(int argc, char** argv) {
   int statusCode = 0;
   do {
     const char* startupFile = "";
