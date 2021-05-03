@@ -12,7 +12,7 @@ You need to setup environment first, run script in tactview_native/ folder:
 
     sudo ./build_dependencies.sh
 
-** WARN: this will override FFmpeg and OpenCV in your machine and install lots of other native libraries **
+**WARN: this will override FFmpeg and OpenCV in your machine and install lots of other native libraries**
 
 This should install all dependencies (however this script runs rarely it may happen that some dependency conflicts are created). You only need to run this once or when native library changes.
 
@@ -25,7 +25,7 @@ You need to setup environment first, run script in tactview_native/ folder:
 
     sudo ./build_dependencies_mac.sh
 
-** WARN: this will override FFmpeg and OpenCV in your machine and install lots of other native libraries **
+**WARN: this will override FFmpeg and OpenCV in your machine and install lots of other native libraries**
 
 This should install all dependencies (however this script runs rarely it may happen that some dependency conflicts are created). You only need to run this once or when native library changes.
 

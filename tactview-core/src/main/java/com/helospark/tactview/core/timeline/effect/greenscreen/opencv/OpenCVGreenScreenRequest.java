@@ -12,9 +12,27 @@ public class OpenCVGreenScreenRequest extends Structure implements Structure.ByR
     public int width;
     public int height;
 
+    public int hueMin, hueMax;
+    public int saturationMin, saturationMax;
+    public int valueMin, valueMax;
+
+    public int spillRemovalEnabled;
+    public int spillDeltaHue;
+    public int spillSaturationThreshold;
+    public int spillValueThreshold;
+
+    public int enableEdgeBlur;
+    public int edgeBlurRadius;
+
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("output", "input", "width", "height");
+        return Arrays.asList("output", "input", "width", "height",
+                "hueMin", "hueMax",
+                "saturationMin", "saturationMax",
+                "valueMin", "valueMax",
+                "spillRemovalEnabled",
+                "spillDeltaHue", "spillSaturationThreshold", "spillValueThreshold",
+                "enableEdgeBlur", "edgeBlurRadius");
     }
 
 }

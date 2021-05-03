@@ -30,10 +30,10 @@ After install you can find Tactview either in your OS's program menu and under /
 
 ## Development
 
-See setting up [Development environment](docs/getting-started/development-environment.md)
+See [setting up development environment](docs/getting-started/development-environment.md)
 
 ## Release
 
-See setting up [Release process](docs/getting-started/release-process.md)
+See [release process](docs/getting-started/release-process.md)
 
 
