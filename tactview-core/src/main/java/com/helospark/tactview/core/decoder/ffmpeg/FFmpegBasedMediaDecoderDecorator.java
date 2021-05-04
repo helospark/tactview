@@ -4,8 +4,11 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -36,6 +39,8 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MessagingService messagingService;
+
+    private Map<String, StreamData> streamDataCache = new HashMap<>();
 
     public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService) {
         this.implementation = implementation;
@@ -209,22 +214,71 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         ffmpegRequest.path = filePath;
         ffmpegRequest.useApproximatePosition = request.useApproximatePosition() ? 1 : 0;
 
-        ffmpegRequest.startMicroseconds = frameToTimestamp(startFrame, ((VideoMetadata) request.getMetadata()).getFps())
-                .getSeconds()
-                .multiply(BigDecimal.valueOf(1000000L))
-                .longValue();
+        String hashKey = createHashKey(filePath, request);
+        StreamData ftCache = streamDataCache.get(hashKey);
+
+        if (ftCache == null) {
+            ftCache = new StreamData();
+            streamDataCache.put(hashKey, ftCache);
+        }
+        ffmpegRequest.disableSeeking = (ftCache.lastReadFrame == startFrame - 1) ? 1 : 0;
+
+        FrameTimeCacheElement closestElement = null;
+
+        for (var element : ftCache.frameToMicrosecondCache) {
+            if (closestElement == null || element.frame < startFrame && (startFrame - element.frame < (startFrame - closestElement.frame))) {
+                closestElement = element;
+            }
+        }
+
+        if (closestElement != null) {
+            int frameDiff = startFrame - closestElement.frame;
+            ffmpegRequest.startMicroseconds = closestElement.timeInMicroseconds + frameToTimestamp(frameDiff, ((VideoMetadata) request.getMetadata()).getFps())
+                    .getSeconds()
+                    .multiply(BigDecimal.valueOf(1000000L))
+                    .longValue();
+        } else {
+            ffmpegRequest.startMicroseconds = frameToTimestamp(startFrame, ((VideoMetadata) request.getMetadata()).getFps())
+                    .getSeconds()
+                    .multiply(BigDecimal.valueOf(1000000L))
+                    .longValue();
+        }
 
         ByteBuffer[] buffers = new ByteBuffer[numberOfFrames];
         ffmpegRequest.frames = new FFMpegFrame();
-        System.out.println("Requesting frames " + numberOfFrames);
+        System.out.println("Requesting frames " + numberOfFrames + " with disableSeeking=" + ffmpegRequest.disableSeeking);
         FFMpegFrame[] array = (FFMpegFrame[]) ffmpegRequest.frames.toArray(numberOfFrames);
         for (int i = 0; i < numberOfFrames; ++i) {
             array[i].data = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(ffmpegRequest.width * ffmpegRequest.height * 4);
             buffers[i] = array[i].data;
         }
 
-                implementation.readFrames(ffmpegRequest);
+        implementation.readFrames(ffmpegRequest);
+
+        if (!request.useApproximatePosition()) {
+            int lastReadFrame = startFrame + numberOfFrames - 1;
+            ftCache.frameToMicrosecondCache.add(new FrameTimeCacheElement(lastReadFrame, ffmpegRequest.endTimeInMilliseconds));
+            ftCache.lastReadFrame = lastReadFrame;
+
+            clearOldEntriesFromFrameCache(startFrame, ftCache.frameToMicrosecondCache, closestElement);
+        }
+
         return buffers;
+    }
+
+    private void clearOldEntriesFromFrameCache(int startFrame, List<FrameTimeCacheElement> ftCache, FrameTimeCacheElement closestElement) {
+        while (ftCache.size() > 5) {
+            FrameTimeCacheElement furthestElement = null;
+            int furthestElementDistance = 0;
+            for (var element : ftCache) {
+                int distance = Math.abs(startFrame - element.frame);
+                if (closestElement == null || distance > furthestElementDistance) {
+                    furthestElement = element;
+                    furthestElementDistance = distance;
+                }
+            }
+            ftCache.remove(furthestElement);
+        }
     }
 
     private TimelineLength frameToTimestamp(int startFrame, double fps) {
@@ -234,6 +288,23 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private void copyToResult(ByteBuffer result, ByteBuffer fromBuffer) {
         for (int i = 0; i < result.capacity(); ++i) {
             result.put(i, fromBuffer.get(i));
+        }
+
+    }
+
+    static class StreamData {
+        int lastReadFrame = Integer.MIN_VALUE;
+        List<FrameTimeCacheElement> frameToMicrosecondCache = new ArrayList<>();
+
+    }
+
+    static class FrameTimeCacheElement {
+        int frame;
+        long timeInMicroseconds;
+
+        public FrameTimeCacheElement(int frame, long timeInMicroseconds) {
+            this.frame = frame;
+            this.timeInMicroseconds = timeInMicroseconds;
         }
 
     }

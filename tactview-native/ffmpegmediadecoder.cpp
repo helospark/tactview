@@ -51,6 +51,7 @@ extern "C" {
         int64_t lastPts = -1;
         std::set<DecodedPackage, PtsComparator> decodedPackages;
         int width, height;
+        AVRational framerate;
     };
 
 
@@ -81,6 +82,19 @@ extern "C" {
         int bitRate;
         long long lengthInMicroseconds;
     };
+
+    AVRational findFramerate(AVStream* st) {
+        AVRational framerate;
+        if (st->avg_frame_rate.den == 0)
+        {
+            framerate = st->r_frame_rate;
+        }
+        else
+        {
+            framerate = st->avg_frame_rate;
+        }
+        return framerate;
+    }
 
     EXPORTED MediaMetadata readMediaMetadata(const char* path)
     {
@@ -155,16 +169,7 @@ extern "C" {
         mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
         mediaMetadata.bitRate = st->codec->bit_rate;
 
-        AVRational framerate;
-
-        if (st->avg_frame_rate.den == 0)
-        {
-            framerate = st->r_frame_rate;
-        }
-        else
-        {
-            framerate = st->avg_frame_rate;
-        }
+        AVRational framerate = findFramerate(st);
 
         mediaMetadata.fps = framerate.num / (double)framerate.den;
 
@@ -194,9 +199,11 @@ extern "C" {
         int height;
         int numberOfFrames;
         int useApproximatePosition;
+        int disableSeeking;
         long long startMicroseconds;
         char* path;
         FFMpegFrame* frames;
+        long long endTimeInMilliseconds;
     } FFmpegImageRequest;
 
     int decodedMinPts(DecodeStructure* decodeStructure)
@@ -313,8 +320,8 @@ extern "C" {
                     decodedPackage.pFrame = pFrameRGB;
 
                     element->decodedPackages.insert(decodedPackage);
+                    element->lastPts = packet.dts;
                 }
-                element->lastPts = packet.pts;
                // std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
             }
             // Free the packet that was allocated by av_read_frame
@@ -368,11 +375,15 @@ extern "C" {
         int64_t minimumTimeRequiredToSeek = 2 * 1000000 * (AV_TIME_BASE / 1000000); // Seek if distance is more than 2 seconds
         seek_target = av_rescale_q(seek_target, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
         minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
-        int64_t seek_distance = seek_target - decodedMinPts(decodeStructure);
+        int64_t currentPts = decodedMinPts(decodeStructure);
+        int64_t seek_distance = seek_target - currentPts;
 
-        std::cout << "Seeking info " << request->startMicroseconds << " current_position=" << decodeStructure->lastPts << " expected=" << seek_target << " distance=" << seek_distance << std::endl;
-        int FRAME_TIME = 1; // rounding imprecision???
-        if (seek_distance > minimumTimeRequiredToSeek || seek_distance < -FRAME_TIME)
+        int frameTime = (double)decodeStructure->framerate.den / decodeStructure->framerate.num * AV_TIME_BASE;
+        int FRAME_TIME = av_rescale_q(frameTime, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
+        
+        std::cout << "Seeking info " << request->startMicroseconds << " current_position=" << currentPts << " expected=" << seek_target << " distance=" << seek_distance << " " << FRAME_TIME << " disabledSeeking=" << request->disableSeeking << std::endl;
+        
+        if (!request->disableSeeking && (seek_distance > minimumTimeRequiredToSeek || seek_distance < -(FRAME_TIME / 1.5)))
         {
             std::cout << "Seeking required" << std::endl;
             av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
@@ -413,6 +424,7 @@ extern "C" {
         else
         {
             fillQueue(decodeStructure);
+            long long lastTime = 0;
             while (i < request->numberOfFrames && decodeStructure->decodedPackages.size() > 0)
             {
                 DecodedPackage element = *(decodeStructure->decodedPackages.begin());
@@ -425,11 +437,15 @@ extern "C" {
                 }
                 else
                 {
+                    lastTime = av_rescale_q(element.timestamp, pFormatCtx->streams[videoStream]->time_base, AV_TIME_BASE_Q);
+                    std::cout << "Using package " << element.timestamp << " " << element.pFrame->pts << " " << ((av_rescale_q(element.timestamp, pFormatCtx->streams[videoStream]->time_base, AV_TIME_BASE_Q)) / (double)AV_TIME_BASE) << " us" << std::endl;
+                    
                     copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
                     ++i;
                 }
                 freeFrame(element.pFrame);
             }
+            request->endTimeInMilliseconds = lastTime;
         }
         std::cout << "Queue size: " << decodeStructure->decodedPackages.size() << std::endl;
 
@@ -528,6 +544,7 @@ extern "C" {
         element->sws_ctx = sws_ctx;
         element->width = request->width;
         element->height = request->height;
+        element->framerate = findFramerate(pFormatCtx->streams[videoStream]);
 
         std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
 
