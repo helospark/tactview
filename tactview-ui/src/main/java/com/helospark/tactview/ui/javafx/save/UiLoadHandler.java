@@ -41,6 +41,7 @@ public class UiLoadHandler {
     public void loadFile(File file) {
         saveAndLoadHandler.load(new LoadRequest(file.getAbsolutePath()));
         recentlyAccessedRepository.addNewRecentlySavedElement(file);
+        currentProjectSavedFileRepository.setCurrentSavedFile(file.getAbsolutePath());
     }
 
     public void loadAutosaved() {

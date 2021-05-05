@@ -30,20 +30,22 @@ public class ExitWithSaveService {
         this.alertDialogFactory = alertDialogFactory;
     }
 
-    public void optionallySaveAndThenRun(Runnable exitRunnable) {
+    public boolean optionallySaveAndThenRun(Runnable exitRunnable) {
         if (!showSaveDialog) {
             exitRunnable.run();
+            return true;
         } else {
             boolean isDirty = dirtyRepository.isDirty();
             if (isDirty) {
-                openSaveOrCancelDialogAndRun(exitRunnable);
+                return openSaveOrCancelDialogAndRun(exitRunnable);
             } else {
                 exitRunnable.run();
+                return true;
             }
         }
     }
 
-    private void openSaveOrCancelDialogAndRun(Runnable exitRunnable) {
+    private boolean openSaveOrCancelDialogAndRun(Runnable exitRunnable) {
         ButtonType saveAndExitButton = new ButtonType("save and close");
         ButtonType exitWithoutSaveButton = new ButtonType("close without save");
         ButtonType cancelButton = new ButtonType("cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -57,14 +59,16 @@ public class ExitWithSaveService {
             boolean saveSuccess = uiSaveHandler.save();
             if (saveSuccess) {
                 exitRunnable.run();
+                return true;
             } else {
                 logger.warn("Unable to save, refusing to exiting");
-                return;
+                return false;
             }
         } else if (result == exitWithoutSaveButton) {
             exitRunnable.run();
+            return true;
         } else { // cancel
-            return;
+            return false;
         }
     }
 

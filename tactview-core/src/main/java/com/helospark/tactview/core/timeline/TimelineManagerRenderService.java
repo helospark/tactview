@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -157,7 +158,7 @@ public class TimelineManagerRenderService {
         }
 
         ReadOnlyClipImage finalImage = request.isNeedVideo() ? renderVideo(request, renderOrder, clipsToFrames) : null;
-        AudioFrameResult audioBuffer = renderAudio(renderOrder, audioToFrames);
+        AudioFrameResult audioBuffer = renderAudio(renderOrder, audioToFrames, request);
 
         clipsToFrames.values()
                 .stream()
@@ -212,7 +213,7 @@ public class TimelineManagerRenderService {
         return frameExtender.expandFrame(frameExtendRequest);
     }
 
-    private AudioFrameResult renderAudio(List<String> renderOrder, Map<String, AudioFrameResult> audioToFrames) {
+    private AudioFrameResult renderAudio(List<String> renderOrder, Map<String, AudioFrameResult> audioToFrames, TimelineManagerFramesRequest request) {
         List<AudioFrameResult> audioFrames = renderOrder.stream()
                 .filter(clipId -> {
                     TimelineChannel channelContainingCurrentClip = timelineManagerAccessor.findChannelForClipId(clipId).get();
@@ -222,8 +223,25 @@ public class TimelineManagerRenderService {
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
 
-        AudioFrameResult audioBuffer = audioBufferMerger.mergeBuffers(audioFrames);
-        return audioBuffer;
+        audioFrames.add(0, generateSilence(request));
+
+        return audioBufferMerger.mergeBuffers(audioFrames);
+    }
+
+    private AudioFrameResult generateSilence(TimelineManagerFramesRequest request) {
+        int sampleRateToUse = request.getAudioSampleRate().orElse(projectRepository.getSampleRate());
+        int bytesPerSampleToUse = request.getAudioBytesPerSample().orElse(projectRepository.getBytesPerSample());
+        int numberOfChannels = request.getNumberOfChannels().orElse(projectRepository.getNumberOfChannels());
+        TimelineLength defaultLength = new TimelineLength(projectRepository.getFrameTime());
+        TimelineLength length = request.getAudioLength().orElse(defaultLength);
+        int numberOfSamples = length.getSeconds().multiply(BigDecimal.valueOf(sampleRateToUse)).intValue();
+
+        List<ByteBuffer> silenceBuffers = new ArrayList<>(numberOfChannels);
+        for (int i = 0; i < numberOfChannels; ++i) {
+            ByteBuffer silenceBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(numberOfSamples * bytesPerSampleToUse);
+            silenceBuffers.add(silenceBuffer);
+        }
+        return new AudioFrameResult(silenceBuffers, sampleRateToUse, bytesPerSampleToUse);
     }
 
     private ReadOnlyClipImage renderVideo(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> clipsToFrames) {

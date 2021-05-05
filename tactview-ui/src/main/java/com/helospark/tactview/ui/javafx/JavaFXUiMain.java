@@ -90,6 +90,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
@@ -148,7 +149,7 @@ public class JavaFXUiMain extends Application {
         }
 
         stage.setOnCloseRequest(e -> {
-            exitApplication(exitWithSaveService);
+            exitApplication(exitWithSaveService, e);
         });
 
         root.setTop(menuBar);
@@ -434,12 +435,15 @@ public class JavaFXUiMain extends Application {
         return outerPane;
     }
 
-    private void exitApplication(ExitWithSaveService exitWithSaveService) {
-        exitWithSaveService.optionallySaveAndThenRun(() -> {
+    private void exitApplication(ExitWithSaveService exitWithSaveService, WindowEvent event) {
+        boolean exitPerformed = exitWithSaveService.optionallySaveAndThenRun(() -> {
             Platform.exit();
             lightDi.close();
             System.exit(0);
         });
+        if (!exitPerformed) {
+            event.consume();
+        }
     }
 
     private static Consumer<Boolean> onClassChange(Node element) {

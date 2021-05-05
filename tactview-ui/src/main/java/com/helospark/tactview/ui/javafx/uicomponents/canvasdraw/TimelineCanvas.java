@@ -299,10 +299,10 @@ public class TimelineCanvas {
             double currentX = position;
             Optional<TimelineUiCacheElement> optionalElement = findElementAt(event.getX(), event.getY());
 
-            if (event.isPrimaryButtonDown() && dragRepository.getInitialX() == -1 && optionalElement.isPresent()) {
-                onElementClick(event, currentX, optionalElement);
-            } else if (event.getY() < TIMELINE_TIMESCALE_HEIGHT) {
+            if (event.getY() < TIMELINE_TIMESCALE_HEIGHT) {
                 uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(position));
+            } else if (event.isPrimaryButtonDown() && dragRepository.getInitialX() == -1 && optionalElement.isPresent()) {
+                onElementClick(event, currentX, optionalElement);
             } else {
                 double positionY = event.getY() + calculateScrolledY();
                 selectionBox = new CollisionRectangle(currentX, positionY, 0, 0);
@@ -362,7 +362,7 @@ public class TimelineCanvas {
             Dragboard db = event.getDragboard();
 
             boolean hasFile = db.getFiles() != null && !db.getFiles().isEmpty();
-			if (db.hasString() || hasFile) {
+            if (db.hasString() || hasFile) {
                 if (hasFile || db.getString().startsWith("clip:")) {
                     onClipDraggedToCanvas(event, db);
                 } else if (db.getString().startsWith("effect:")) {
@@ -435,7 +435,7 @@ public class TimelineCanvas {
             }
             rightBar.setValue(currentYValue);
         }
-        if (y <= TIMELINE_TIMESCALE_HEIGHT + DRAG_SCROLL_THRESHOLD) {
+        if (y <= TIMELINE_TIMESCALE_HEIGHT + DRAG_SCROLL_THRESHOLD && y > DRAG_SCROLL_THRESHOLD) {
             double scaler = ((TIMELINE_TIMESCALE_HEIGHT + DRAG_SCROLL_THRESHOLD) - y) * 0.1;
             currentYValue -= 10 * scaler;
             if (currentYValue < 0) {

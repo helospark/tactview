@@ -84,7 +84,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         ByteBuffer frame = requestFrame(frameRequest);
         ClipImage frameResult = new ClipImage(frame, width, height);
 
-        return applyEffects(rateAdjustedPosition, frameResult, request);
+        return applyEffects(rateAdjustedPosition.subtract(renderOffset), frameResult, request);
     }
 
     protected TimelinePosition calculatePositionToRender(GetFrameRequest request) {
@@ -105,7 +105,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                     break;
                 }
 
-                if (effect.isEnabledAt(frameRequest.getRelativePosition())) {
+                if (effect.isEnabledAt(relativePosition)) {
                     StatelessEffectRequest request = StatelessEffectRequest.builder()
                             .withClipPosition(relativePosition)
                             .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))

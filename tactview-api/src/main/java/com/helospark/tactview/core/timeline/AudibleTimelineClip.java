@@ -73,7 +73,7 @@ public abstract class AudibleTimelineClip extends TimelineClip implements Single
             result = newResult;
         }
 
-        return applyEffects(relativePosition, result, newAudioRequest.isApplyEffects());
+        return applyEffects(startPosition.subtract(renderOffset), result, newAudioRequest.isApplyEffects());
     }
 
     private boolean hasSonicPostProcessingChange() {

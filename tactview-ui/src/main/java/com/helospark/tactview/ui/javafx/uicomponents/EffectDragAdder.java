@@ -13,13 +13,11 @@ import javafx.scene.input.Dragboard;
 @Component
 public class EffectDragAdder {
     private TimelineManagerAccessor timelineManager;
-    private TimelineState timelineState;
     private UiCommandInterpreterService commandInterpreter;
     private DragRepository dragRepository;
 
-    public EffectDragAdder(TimelineManagerAccessor timelineManager, TimelineState timelineState, UiCommandInterpreterService commandInterpreter, DragRepository dragRepository) {
+    public EffectDragAdder(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreter, DragRepository dragRepository) {
         this.timelineManager = timelineManager;
-        this.timelineState = timelineState;
         this.commandInterpreter = commandInterpreter;
         this.dragRepository = dragRepository;
     }
@@ -28,7 +26,7 @@ public class EffectDragAdder {
         if (db != null && db.getString() != null && db.getString().startsWith("effect:") && !draggingEffect()) {
             AddEffectCommand addEffectCommand = new AddEffectCommand(clipId, extractEffectId(db.getString()), position, timelineManager);
             commandInterpreter.sendWithResult(addEffectCommand).thenAccept(result -> {
-                //                    dragRepository.onEffectDragged(new EffectDragInformation(clipPane, clipId, result.getAddedEffectId(), position, 0));
+                dragRepository.onEffectDragged(new EffectDragInformation(clipId, result.getAddedEffectId(), position, 0));
             });
             return true;
         } else if (draggingEffectWithoutResize()) {
