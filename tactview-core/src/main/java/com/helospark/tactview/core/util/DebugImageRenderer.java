@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
+import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 /**
@@ -69,6 +70,30 @@ public class DebugImageRenderer {
         File outputfile = new File(filename);
         try (var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputfile)))) {
             writer.write(data.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeAudioDataToString(AudioFrameResult frame) {
+        String filename = "/tmp/debug_" + System.currentTimeMillis() + ".txt";
+        File outputfile = new File(filename);
+        try (var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputfile)))) {
+            for (int c = 0; c < frame.getChannels().size(); ++c) {
+                for (int i = 0; i < frame.getNumberSamples(); ++i) {
+                    int sample = frame.getSampleAt(c, i);
+                    writer.append(sample + " ");
+                }
+                writer.append("\n");
+            }
+
+            writer.append("\n\n\n");
+            for (int c = 0; c < frame.getChannels().size(); ++c) {
+                for (int i = 0; i < frame.getChannels().get(c).capacity(); ++i) {
+                    writer.append(AudioFrameResult.unsignedByteToInt(frame.getChannels().get(c).get(i)) + " ");
+                }
+                writer.append("\n");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

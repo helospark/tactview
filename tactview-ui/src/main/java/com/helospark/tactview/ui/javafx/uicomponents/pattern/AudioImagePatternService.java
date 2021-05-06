@@ -85,6 +85,7 @@ public class AudioImagePatternService {
                 double centerPoint = (j + 1) * channelHeight - maxHeight;
                 int startPointY = (int) (centerPoint + Math.abs(sampleData.min) * maxHeight);
                 int endPointY = (int) (centerPoint - Math.abs(sampleData.max) * maxHeight);
+
                 graphics.setColor(new Color(0, 255, 0, 200));
                 graphics.setStroke(new BasicStroke(NUMBER_OF_PIXELS_FOR_SAMPLE));
                 graphics.drawLine((i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, startPointY, (i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, endPointY);

@@ -251,7 +251,8 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         while ((returnStatusCode=av_read_frame(format, &packet)) >= 0 && running) {
             if(packet.stream_index==stream_index) {
                 int gotFrame;
-                if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
+                int readBytes = avcodec_decode_audio4(codec, frame, &gotFrame, &packet);
+                if (readBytes < 0) {
                     std::cout << "Cannot decode package" << std::endl;
                     break;
                 }
@@ -266,16 +267,17 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 //std::cout << "Got frame" << std::endl;
 
                 AVFrame* frameToUse = frame;
+                int actualNumberOfOutputSamples = frame->nb_samples;
                 if (needsResampling) {
 
                   int resampledCount = (int)ceil(frame->nb_samples * ((double)request->sampleRate / codec->sample_rate));
 
-                //  std::cout << "Allocating " << resampledCount << std::endl;
+                  //std::cout << "Allocating " << resampledCount << std::endl;
 
                   tmp_frame = alloc_audio_frame(sampleFormat, outputChannelLayout,
                                        request->sampleRate, resampledCount);
 
-                  swr_convert(swrContext,
+                  actualNumberOfOutputSamples = swr_convert(swrContext,
                                 ( uint8_t **)tmp_frame->data, tmp_frame->nb_samples,
                                 (const uint8_t **)frame->data, frame->nb_samples);
 
@@ -283,10 +285,10 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 }
 
                 if (isPlanar) {
-                  //  std::cout << "Before copy planar: " << " " << frame->nb_samples << " " <<  frameToUse->nb_samples << " " << sampleSize << std::endl;
+                    //std::cout << "Before copy planar: " << readBytes << " " << request->sampleRate << " " << codec->sample_rate << " " << frame->nb_samples << " " <<  frameToUse->nb_samples << " " << sampleSize << std::endl;
                     int actuallyWrittenSamples = 0;
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
-                        for (int i = 0; i < frameToUse->nb_samples; ++i) {
+                        for (int i = 0; i < actualNumberOfOutputSamples; ++i) {
                             for (int k = 0; k < sampleSize; ++k) {
                                 int toUpdate = totalNumberOfSamplesRead + i * sampleSize + k;
                                 if (toUpdate >= request->bufferSize) {

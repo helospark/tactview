@@ -28,9 +28,9 @@ public class AudioStreamService {
                 + (1000 * data.length / (PlaybackFrameAccessor.BYTES * PlaybackFrameAccessor.CHANNELS * PlaybackFrameAccessor.SAMPLE_RATE)));
 
         if (data.length > 0) {
-            if (sourceDataLine == null && !initFailed) { // TODO: reinit
+            if ((sourceDataLine == null && !initFailed) || data.length > initializedFrameSize) { // TODO: reinit
                 try {
-                    logger.info("Initializing sourceDataLine");
+                    logger.info("Initializing sourceDataLine with bufferSize={}", data.length);
                     AudioFormat format = new AudioFormat(PlaybackFrameAccessor.SAMPLE_RATE, PlaybackFrameAccessor.BYTES * 8, PlaybackFrameAccessor.CHANNELS, true, true);
                     dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
                     sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
@@ -42,7 +42,6 @@ public class AudioStreamService {
                 }
                 initializedFrameSize = data.length;
             }
-
 
             if (!initFailed) {
                 logger.debug("There is still " + (sourceDataLine.getBufferSize() - sourceDataLine.available()) + " bytes in the buffer at " + System.currentTimeMillis());

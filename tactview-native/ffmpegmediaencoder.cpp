@@ -438,6 +438,7 @@ extern "C" {
                 std::cout << "[ERROR] Error while converting " << ret << std::endl;
                 return ret;
             }
+            std::cout << "Encoded " << ret << " expected " << dst_nb_samples << " | " << ost->samples_count << std::endl;
             frame = ost->frame;
 
 			AVRational scale;
@@ -445,7 +446,7 @@ extern "C" {
 			scale.den = c->sample_rate;
 
             frame->pts = av_rescale_q(ost->samples_count, scale, c->time_base);
-            ost->samples_count += dst_nb_samples;
+            ost->samples_count += ret;
         }
 
         ret = avcodec_encode_audio2(c, &pkt, frame, &got_packet);
