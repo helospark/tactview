@@ -48,8 +48,6 @@ import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
-import com.helospark.tactview.ui.javafx.uicomponents.ChannelAddedListener;
-import com.helospark.tactview.ui.javafx.uicomponents.ChannelMovedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragAdder;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragInformation;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
@@ -180,12 +178,6 @@ public class TimelineCanvas {
             redraw(true);
         });
         messagingService.register(EffectRemovedMessage.class, message -> {
-            redraw(true);
-        });
-        messagingService.register(ChannelAddedListener.class, message -> {
-            redraw(true);
-        });
-        messagingService.register(ChannelMovedListener.class, message -> {
             redraw(true);
         });
         messagingService.register(ClipSelectionChangedMessage.class, message -> {

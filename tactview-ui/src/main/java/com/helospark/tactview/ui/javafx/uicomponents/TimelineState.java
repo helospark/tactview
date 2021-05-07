@@ -49,6 +49,10 @@ public class TimelineState implements ResettableBean {
 
     private TimelinePosition playbackPosition = TimelinePosition.ofZero();
 
+    public TimelineState() {
+        vscroll.addListener(e -> notifySubscribers(UiTimelineChangeType.OTHER));
+    }
+
     public TimelinePosition pixelsToSeconds(double xCoordinate) {
         BigDecimal position = new BigDecimal(xCoordinate)
                 .divide(PIXEL_PER_SECOND, 10, RoundingMode.HALF_UP);
@@ -271,9 +275,10 @@ public class TimelineState implements ResettableBean {
         return playbackPosition;
     }
 
-    public void addChannelHeader(String channelId, VBox timelineTitle) {
-        channelHeaders.add(timelineTitle);
+    public void addChannelHeader(String channelId, VBox timelineTitle, int index) {
+        channelHeaders.add(index, timelineTitle);
         timelineTitle.setUserData(channelId);
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public void moveChannel(int originalIndex, int newIndex) {

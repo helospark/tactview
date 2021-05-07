@@ -14,6 +14,8 @@
 #include <opencv2/opencv_modules.hpp>
 #include <opencv2/videostab/frame_source.hpp>
 
+#include "../common.h"
+
 
 #define arg(name) cmd.get<string>(name)
 #define argb(name) cmd.get<bool>(name)
@@ -74,7 +76,7 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
 
 
     void addFrame(Mat frame) {
-           // std::cout << "Stabilize frame " << frameCount_ << std::endl;
+           // DEBUG("Stabilize frame " << frameCount_);
             if (frameCount_ > 0)
             {
                 //imwrite("/tmp/frame_bad_" + std::to_string(frameCount_) + ".png", frame);
@@ -136,11 +138,11 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
         Mat getStabilizedFrame(Mat inputFrame, int frameIndex) {
             Mat result = stabilizeFrameCustom(inputFrame, frameIndex);
 
-            //std::cout << "Iteration done " << frameIndex << std::endl;
-            //std::cout << result.size() << std::endl;
+            //DEBUG("Iteration done " << frameIndex);
+            //DEBUG(result.size());
 
             Mat result2 = postProcessFrame(result);
-            std::cout << result2.size() << std::endl;
+            DEBUG(result2.size());
 
 
 
@@ -166,7 +168,7 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
 
         Mat stabilizeFrameCustom(Mat frame, int index)
         {
-            std::cout << "Custom stabilizing " << index << std::endl;
+            DEBUG("Custom stabilizing " << index);
             Mat result = Mat();
             Mat stabilizationMotion = estimateStabilizationMotionCustom(index);
             if (doCorrectionForInclusion_)
@@ -187,7 +189,7 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
 
 
             if (motionEstimator_->motionModel() != MM_HOMOGRAPHY) {
-                std::cout << frameSize_ << " " << preprocessedFrame.size() << " " << stabilizationMotion(Rect(0,0,3,2)) << std::endl;
+                DEBUG(frameSize_ << " " << preprocessedFrame.size() << " " << stabilizationMotion(Rect(0,0,3,2)));
                 warpAffine(
                         preprocessedFrame, result,
                         stabilizationMotion(Rect(0,0,3,2)), frameSize_, INTER_LINEAR, borderMode_);
@@ -367,7 +369,7 @@ bool isFileExist(const char *fileName)
 extern "C" {
   EXPORTED int initializeStabilizer(StabilizationInitRequest* request)
   {
-      std::cout << "prepare to initialize video stabilizer " << request->width << " " << request->height << " " << request->motionFile << " " << request->motion2File << " " << request->radius << std::endl;
+      DEBUG("prepare to initialize video stabilizer " << request->width << " " << request->height << " " << request->motionFile << " " << request->motion2File << " " << request->radius);
       
       StabilizationContext* newContext = new StabilizationContext();
 
@@ -612,7 +614,7 @@ extern "C" {
         context->twoPassStabilizer->postPass();
         context->twoPassStabilizer->resetBeforePass();
       } catch (const std::out_of_range& oor) {
-          std::cout << index << " is not found in stabilizationContext" << std::endl;
+          DEBUG(index << " is not found in stabilizationContext");
       }
   }
 
@@ -620,7 +622,7 @@ extern "C" {
   EXPORTED void createStabilizedFrame(StabilizeFrameRequest* request) {
      try {
           StabilizationContext* context = contexts.at(request->index);
-          std::cout << "stabilize frame index " << request->frameIndex << std::endl;
+          DEBUG("stabilize frame index " << request->frameIndex);
           Mat inputFrame(request->height, request->width, CV_8UC4, (void*)request->input);
           Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
 
@@ -634,7 +636,7 @@ extern "C" {
 
           cv::resize(stabilizedFrame, outputMat, cv::Size(request->width, request->height));
     } catch (const std::out_of_range& oor) {
-          std::cout << request->index << " is not found in stabilizationContext" << std::endl;
+          DEBUG(request->index << " is not found in stabilizationContext");
     }
   }
 
@@ -646,7 +648,7 @@ extern "C" {
           cv::cvtColor(frame, rgb, cv::COLOR_RGBA2BGR, 3);
           context->twoPassStabilizer->addFrame(rgb);
     } catch (const std::out_of_range& oor) {
-          std::cout << frameRequest->index << " is not found in stabilizationContext" << std::endl;
+          DEBUG(frameRequest->index << " is not found in stabilizationContext");
     }
   }
 
@@ -654,7 +656,7 @@ extern "C" {
     try {
       contexts.erase(index);
     } catch (const std::out_of_range& oor) {
-          std::cout << std::to_string(index) << " is not found in stabilizationContext" << std::endl;
+          DEBUG(std::to_string(index) << " is not found in stabilizationContext");
     }
   }
 
@@ -703,7 +705,7 @@ int main(int argc, char** args) {
     int nframes = 0;
 
     // for each stabilized frame
-    std::cout << "Before while" << std::endl;
+    DEBUG("Before while");
 
 
     VideoCapture cap2("/home/black/shaky.mp4");
@@ -716,7 +718,7 @@ int main(int argc, char** args) {
         if (inputFrame.empty())
           break;
 
-        std::cout << "Frame " << nframes << std::endl;
+        DEBUG("Frame " << nframes);
 
         Mat rgba;
         cv::cvtColor(inputFrame, rgba, cv::COLOR_BGR2BGRA, 4);
@@ -730,7 +732,7 @@ int main(int argc, char** args) {
         createStabilizedFrame(sfr);
 
         Mat outputMat(sfr->height, sfr->width, CV_8UC4, (void*)sfr->output);
-        std::cout << "Have stabilized frame " << outputMat.size() << std::endl;
+        DEBUG("Have stabilized frame " << outputMat.size());
 
         // init writer (once) and save stabilized frame
             if (!writer.isOpened())
@@ -738,7 +740,7 @@ int main(int argc, char** args) {
                             30, cv::Size(width, height));
             Mat rgb;
             cv::cvtColor(outputMat, rgb, cv::COLOR_BGRA2BGR, 3);
-            std::cout << "Writing frame " << rgb.type() << " " << inputFrame.type() << std::endl;
+            DEBUG("Writing frame " << rgb.type() << " " << inputFrame.type());
             writer << rgb;
         nframes++;
         delete[] sfr->output;

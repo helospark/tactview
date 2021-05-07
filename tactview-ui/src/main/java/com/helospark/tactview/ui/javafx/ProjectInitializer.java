@@ -29,6 +29,10 @@ public class ProjectInitializer {
     }
 
     public void clearAndInitialize() {
+        diContext.getListOfBeans(ResettableBean.class)
+                .stream()
+                .forEach(bean -> bean.resetDefaults());
+
         timelineManager.getChannels()
                 .stream()
                 .forEach(channel -> timelineManager.removeChannel(channel.getId()));
@@ -38,10 +42,6 @@ public class ProjectInitializer {
         }
 
         dirtyRepository.setDirty(false);
-
-        diContext.getListOfBeans(ResettableBean.class)
-                .stream()
-                .forEach(bean -> bean.resetDefaults());
 
         uiTimelineManager.jumpAbsolute(BigDecimal.ZERO);
 

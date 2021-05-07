@@ -31,4 +31,9 @@ public class CreateChannelCommand implements UiCommand {
         return channelId;
     }
 
+    @Override
+    public String toString() {
+        return "CreateChannelCommand [timelineManager=" + timelineManager + ", index=" + index + ", channelId=" + channelId + "]";
+    }
+
 }

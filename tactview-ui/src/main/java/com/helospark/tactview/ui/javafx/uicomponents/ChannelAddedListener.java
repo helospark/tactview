@@ -6,6 +6,8 @@ import javax.annotation.PostConstruct;
 
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
@@ -28,19 +30,18 @@ import javafx.scene.layout.VBox;
 
 @Component
 public class ChannelAddedListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelAddedListener.class);
     private UiMessagingService messagingService;
     private TimelineState timelineState;
-    private TimelineManagerAccessor timelineManagerAccessor;
     private NameToIdRepository nameToIdRepository;
     private UiCommandInterpreterService commandInterpreterService;
     private TimelineManagerAccessor timelineManager;
     private ChannelContextMenuAppender channelContextMenuAppender;
 
-    public ChannelAddedListener(UiMessagingService messagingService, TimelineState timelineState, TimelineManagerAccessor timelineManagerAccessor, NameToIdRepository nameToIdRepository,
+    public ChannelAddedListener(UiMessagingService messagingService, TimelineState timelineState, NameToIdRepository nameToIdRepository,
             UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager, ChannelContextMenuAppender channelContextMenuAppender) {
         this.messagingService = messagingService;
         this.timelineState = timelineState;
-        this.timelineManagerAccessor = timelineManagerAccessor;
         this.nameToIdRepository = nameToIdRepository;
         this.commandInterpreterService = commandInterpreterService;
         this.timelineManager = timelineManager;
@@ -55,7 +56,7 @@ public class ChannelAddedListener {
     private void addChannel(ChannelAddedMessage message) {
         String generatedName = nameToIdRepository.generateAndAddNameForIdIfNotPresent("channel", message.getChannelId());
 
-        System.out.println("Generated channel " + generatedName);
+        LOGGER.debug("Generated channel " + generatedName);
 
         VBox timelineTitle = new VBox();
         TextField timelineTitleChannelNameLabel = new TextField(generatedName);
@@ -133,6 +134,6 @@ public class ChannelAddedListener {
 
         channelContextMenuAppender.addContextMenu(timelineTitle, message.getChannelId());
 
-        timelineState.addChannelHeader(message.getChannelId(), timelineTitle);
+        timelineState.addChannelHeader(message.getChannelId(), timelineTitle, message.getIndex());
     }
 }

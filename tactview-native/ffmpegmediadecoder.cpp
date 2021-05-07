@@ -122,7 +122,7 @@ extern "C" {
 
         pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
 
-        std::cout << "[INFO] Codec ID for decoding " << pCodecCtxOrig->codec_id << std::endl;
+        DEBUG("Codec ID for decoding " << pCodecCtxOrig->codec_id);
 
         pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
         if(pCodec==NULL)
@@ -168,7 +168,7 @@ extern "C" {
 
         mediaMetadata.fps = framerate.num / (double)framerate.den;
 
-        std::cout << "Length 1=" << mediaMetadata.lengthInMicroseconds << "2=" << (st->duration / (AV_TIME_BASE / 1000000)) << std::endl;
+        DEBUG("File length=" << mediaMetadata.lengthInMicroseconds << " in timebase=" << (st->duration / (AV_TIME_BASE / 1000000)));
 
 
         av_frame_free(&pFrameRGB);
@@ -225,7 +225,7 @@ extern "C" {
 
     void freeFrame(AVFrame* frame)
     {
-        // std::cout << "Preparing to free " << frame << " " << frame->opaque << std::endl;
+        // DEBUG("Preparing to free " << frame << " " << frame->opaque);
         av_free(frame->opaque);
         av_frame_free(&frame);
     }
@@ -234,11 +234,11 @@ extern "C" {
 
     void emptyQueue(DecodeStructure* decodeStructure)
     {
-        //std::cout << "Emptying queue" << std::endl;
+        //DEBUG("Emptying queue");
         while (decodeStructure->decodedPackages.size() > 0)
         {
             DecodedPackage element = *(decodeStructure->decodedPackages.begin());
-            //std::cout << "Clearing element " << element << std::endl;
+            //DEBUG("Clearing element " << element);
             decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
 
             freeFrame(element.pFrame);
@@ -299,10 +299,10 @@ extern "C" {
                     /** // debug for https://trello.com/c/otpORnEy/445-black-bar-on-the-right-if-width-is-not-divisable-by-8-ex-854px-width-there-is-6px-black-bar
                     if (pCodecCtx->width >= 850) {
                         for (int id = 850; id < 854; ++id) {
-                            std::cout << "Unexpected color: " << (int)(*(pFrame->data[0] + id + 0)) << " " << 
+                            DEBUG("Unexpected color: " << (int)(*(pFrame->data[0] + id + 0)) << " " << 
                                 (int)(*(pFrame->data[0] + id + 1)) << " " << 
                                 (int)(*(pFrame->data[0] + id + 2)) << " " << 
-                                (int)(*(pFrame->data[0] + id + 3)) << " " << std::endl;
+                                (int)(*(pFrame->data[0] + id + 3)) << " ");
                         }
                     } */
 
@@ -315,12 +315,12 @@ extern "C" {
                     element->decodedPackages.insert(decodedPackage);
                 }
                 element->lastPts = packet.pts;
-               // std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
+               // DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
             }
             // Free the packet that was allocated by av_read_frame
             av_free_packet(&packet);
         }
-        //std::cout << "Set filled: " << element->decodedPackages << std::endl;
+        //DEBUG("Set filled: " << element->decodedPackages);
     }
 
     EXPORTED void readFrames(FFmpegImageRequest* request)
@@ -338,7 +338,7 @@ extern "C" {
         }
         else
         {
-            std::cout << "Found Element" <<  elementIterator->first << std::endl;
+            DEBUG("Found Element" <<  elementIterator->first);
             decodeStructure = elementIterator->second;
         }
 
@@ -370,18 +370,18 @@ extern "C" {
         minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
         int64_t seek_distance = seek_target - decodedMinPts(decodeStructure);
 
-        std::cout << "Seeking info " << request->startMicroseconds << " current_position=" << decodeStructure->lastPts << " expected=" << seek_target << " distance=" << seek_distance << std::endl;
+        DEBUG("Seeking info " << request->startMicroseconds << " current_position=" << decodeStructure->lastPts << " expected=" << seek_target << " distance=" << seek_distance);
         int FRAME_TIME = 1; // rounding imprecision???
         if (seek_distance > minimumTimeRequiredToSeek || seek_distance < -FRAME_TIME)
         {
-            std::cout << "Seeking required" << std::endl;
+            DEBUG("Seeking required");
             av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
             avcodec_flush_buffers(pCodecCtx);
             emptyQueue(decodeStructure);
         }
         else
         {
-            std::cout << "No seek, distance " << seek_distance << std::endl;
+            DEBUG("No seek, distance " << seek_distance);
         }
 
         if (request->useApproximatePosition)
@@ -404,7 +404,7 @@ extern "C" {
                         freeFrame(pFrameRGB);
                     }
                     decodeStructure->lastPts = packet.pts;
-                    //std::cout << "Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")" << std::endl;
+                    //DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
                 }
                 // Free the packet that was allocated by av_read_frame
                 av_free_packet(&packet);
@@ -421,7 +421,7 @@ extern "C" {
 
                 if (element.timestamp < seek_target)
                 {
-                    std::cout << "Skipping package " << element.timestamp << std::endl;
+                    DEBUG("Skipping package " << element.timestamp);
                 }
                 else
                 {
@@ -431,13 +431,13 @@ extern "C" {
                 freeFrame(element.pFrame);
             }
         }
-        std::cout << "Queue size: " << decodeStructure->decodedPackages.size() << std::endl;
+        DEBUG("Queue size: " << decodeStructure->decodedPackages.size());
 
     }
 
     DecodeStructure* openFile(FFmpegImageRequest* request)
     {
-        std::cout << "Opening file " << request->path << " " << request->width << " " << request->height << std::endl;
+        DEBUG("Opening file " << request->path << " " << request->width << " " << request->height);
 
         // Initalizing these to NULL prevents segfaults!
         AVFormatContext   *pFormatCtx = NULL;
@@ -454,13 +454,13 @@ extern "C" {
 
         if(avformat_open_input(&pFormatCtx, request->path, NULL, NULL)!=0)
         {
-            std::cerr << "Cannot open input " << std::endl;
+            ERROR("Cannot open input ");
             return NULL;
         }
 
         if(avformat_find_stream_info(pFormatCtx, NULL)<0)
         {
-            std::cerr << "Cannot find stream info " << std::endl;
+            ERROR("Cannot find stream info ");
             return NULL;
         }
 
@@ -473,7 +473,7 @@ extern "C" {
             }
         if(videoStream==-1)
         {
-            std::cerr << "No video stream found in " << request->path << std::endl;
+            ERROR("No video stream found in " << request->path);
             return NULL;
         }
 
@@ -481,28 +481,28 @@ extern "C" {
         pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
         if(pCodec==NULL)
         {
-            std::cerr << "Unsupported codec: " << pCodecCtxOrig->codec_id << std::endl;
+            ERROR("Unsupported codec: " << pCodecCtxOrig->codec_id);
             return NULL;
         }
-        std::cout << "Using codec " << pCodec->name << " for " << request->path << std::endl;
+        DEBUG("Using codec " << pCodec->name << " for " << request->path);
 
         pCodecCtx = avcodec_alloc_context3(pCodec);
 
         if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
         {
-            std::cerr << "Couldn't copy codec context" << std::endl;
+            ERROR("Couldn't copy codec context");
             return NULL;
         }
 
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
         {
-            std::cerr << "Cannot open codec context" << std::endl;
+            ERROR("Cannot open codec context");
             return NULL;
         }
 
         pFrame=av_frame_alloc();
 
-        std::cout << "Opening file with size " << request->width << " " << request->height << std::endl;
+        INFO("Opening file with size " << request->width << "x" << request->height);
 
         sws_ctx = sws_getContext(pCodecCtx->width,
                                  pCodecCtx->height,
@@ -536,14 +536,14 @@ extern "C" {
         return element;
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
 
 int main() {
     char* path = "/testvideo.mkv";
 
     MediaMetadata result = readMediaMetadata(path);
 
-    std::cout << result.width << " " << result.height << " " << result.fps << " " << result.lengthInMicroseconds << " " << result.bitRate << std::endl;
+    INFO(result.width << " " << result.height << " " << result.fps << " " << result.lengthInMicroseconds << " " << result.bitRate);
 
     const int framesPerRequest = 30;
 
@@ -574,7 +574,7 @@ int main() {
         }
 
         delete request;
-        std::cout <<  "read frames " << i * framesPerRequest << " " << (i + 1) *  framesPerRequest << std::endl; 
+        INFO("read frames " << i * framesPerRequest << " " << (i + 1) *  framesPerRequest); 
     }
 
 }

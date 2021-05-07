@@ -312,13 +312,13 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                         long nextSampleCount = allAudioSamples + frame.getAudioResult().getNumberSamples();
                         int deltaSamples = (int) (nextSampleCount - expectedNumberOfSamples);
 
-                        LOGGER.debug("Delta samples = {}", deltaSamples);
+                        LOGGER.debug("Audio rendering delta samples = {}", deltaSamples);
 
                         int numberOfSamples = frame.getAudioResult().getNumberSamples();
-                        if (deltaSamples > 1) {
+                        if (deltaSamples > 0) {
                             numberOfSamples = frame.getAudioResult().getNumberSamples() - deltaSamples;
-                        } else if (deltaSamples < -1) {
-                            LOGGER.error("Delta samples are less than 1, this will cause misalignment of audio and video. This is not supposed to happen");
+                        } else if (deltaSamples < 0) {
+                            LOGGER.error("Delta samples are less than 0, this will cause misalignment of audio and video. This is not supposed to happen");
                         }
                         array[0].audioData = convertAudio(frame.getAudioResult(), numberOfSamples);
                         array[0].numberOfAudioSamples = numberOfSamples;

@@ -60,7 +60,6 @@ extern "C"
 
 
       if (request->spillRemovalEnabled) {
-        std::cout << "Spill removal " <<  request->spillSaturationThreshold << " " << request->spillValueThreshold << std::endl;
         for(int i=0; i<rgbMat.rows; i++) {
             for(int j=0; j<rgbMat.cols; j++) {
               cv::Vec3b hsvColor = hsv.at<cv::Vec3b>(i, j);
