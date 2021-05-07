@@ -2,7 +2,7 @@
 
 Tactview is an open-source advanced multi-track video editor aims to provide both powerful features and intuitive usage.
 
-![Screenshot](/images/screenshot-2.png)
+![Screenshot](/images/screenshot-3.png)
 
 ## Running
 

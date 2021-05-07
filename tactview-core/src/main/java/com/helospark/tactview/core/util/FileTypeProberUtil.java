@@ -21,10 +21,15 @@ public class FileTypeProberUtil {
     public static boolean isAudioByContentType(File file) {
         try {
             String contentType = Files.probeContentType(file.toPath());
+
             if (contentType == null) {
                 return false;
             } else {
-                return contentType.contains("audio/");
+                if (contentType.equals("audio/ogg")) {
+                    return false; // we cannot decide, since video OGG is also returning this content type
+                } else {
+                    return contentType.contains("audio/");
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

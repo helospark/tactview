@@ -1,9 +1,14 @@
 package com.helospark.tactview.ui.javafx.uicomponents.pattern;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -20,6 +25,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
 import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -33,6 +39,7 @@ public class ClipPatternDrawerListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClipPatternDrawerListener.class);
     private volatile boolean running = true;
     private Map<String, Boolean> blacklistedClips = new ConcurrentHashMap<>();
+    private Queue<String> clipRedrawRequestQueue = new ConcurrentLinkedDeque<>();
 
     private MessagingService messagingService;
     private TimelineImagePatternService timelineImagePatternService;
@@ -68,6 +75,12 @@ public class ClipPatternDrawerListener {
         messagingService.register(RegenerateAllImagePatternsMessage.class, message -> {
             timelinePatternRepository.clearAll();
         });
+        messagingService.register(KeyframeSuccesfullyAddedMessage.class, message -> {
+            Optional<TimelineClip> clip = timelineAccessor.findClipById(message.getContainingElementId());
+            if (clip.isPresent()) {
+                clipRedrawRequestQueue.offer(message.getContainingElementId());
+            }
+        });
     }
 
     @PreDestroy
@@ -80,6 +93,14 @@ public class ClipPatternDrawerListener {
             while (running) {
                 try {
                     ThreadSleep.sleep(1000);
+
+                    Set<String> requestedClipIds = new HashSet<>(clipRedrawRequestQueue);
+                    while (clipRedrawRequestQueue.size() > 0) {
+                        String newElement = clipRedrawRequestQueue.poll();
+                        if (newElement != null) {
+                            requestedClipIds.add(newElement);
+                        }
+                    }
 
                     for (var channel : timelineAccessor.getChannels()) {
                         for (var clip : channel.getAllClips()) {
@@ -123,8 +144,7 @@ public class ClipPatternDrawerListener {
                                 }
 
                                 TimelineInterval intervalInClipSpace = TimelineInterval.fromDoubles(intervalStart, intervalEnd);
-                                if (intervalInClipSpace.intersects(visibleInterval)
-                                        && !timelinePatternRepository.hasFullyOverlappingClipWithSimilarZoomLevel(clip.getId(), intervalInClipSpace, zoom, clipLength)) {
+                                if (clipRequiresRedraw(requestedClipIds, clip, clipLength, zoom, visibleInterval, intervalInClipSpace)) {
                                     Image pattern = updatePattern(clip, intervalInClipSpace, zoom);
                                     if (pattern != null) {
                                         generatedPatterns.add(Pair.of(pattern, intervalInClipSpace));
@@ -142,8 +162,7 @@ public class ClipPatternDrawerListener {
                                     break;
                                 }
                                 TimelineInterval intervalInGlobalSpace = TimelineInterval.fromDoubles(startValue, intervalEnd);
-                                if (intervalInGlobalSpace.intersects(visibleInterval)
-                                        && !timelinePatternRepository.hasFullyOverlappingClipWithSimilarZoomLevel(clip.getId(), intervalInGlobalSpace, zoom, clipLength)) {
+                                if (clipRequiresRedraw(requestedClipIds, clip, clipLength, zoom, visibleInterval, intervalInGlobalSpace)) {
                                     Image pattern = updatePattern(clip, intervalInGlobalSpace, zoom);
                                     if (pattern != null) {
                                         generatedPatterns.add(Pair.of(pattern, intervalInGlobalSpace));
@@ -160,6 +179,13 @@ public class ClipPatternDrawerListener {
                 }
             }
         }, "clip-pattern-updater-thread").start();
+    }
+
+    private boolean clipRequiresRedraw(Set<String> requestedClipIds, TimelineClip clip, TimelineLength clipLength, double zoom, TimelineInterval visibleInterval,
+            TimelineInterval intervalInGlobalSpace) {
+        return intervalInGlobalSpace.intersects(visibleInterval)
+                && (requestedClipIds.contains(clip.getId())
+                        || !timelinePatternRepository.hasFullyOverlappingClipWithSimilarZoomLevel(clip.getId(), intervalInGlobalSpace, zoom, clipLength));
     }
 
     private double roundDownToNearest(double value, double multiple) {

@@ -114,6 +114,11 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                 useHandler("Back one frame", event -> {
                     uiTimelineManager.jumpRelative(BigDecimal.valueOf(-10));
                 }), disabledFocusedNodeClass);
+        keyCombinationRepository.registerGlobalKeyFilters(KeyCode.DELETE,
+                useHandler("Delete selected", event -> {
+                    removeClipService.removeClips(selectedNodeRepository.getSelectedClipIds());
+                    removeEffectService.removeEffects(selectedNodeRepository.getSelectedEffectIds());
+                }), disabledFocusedNodeClass);
     }
 
     private KeyCodeCombination on(KeyCode code) {
