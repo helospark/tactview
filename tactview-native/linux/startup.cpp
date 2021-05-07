@@ -81,9 +81,8 @@ std::string getCommandLine(const char* logFile, const char* startFileName) {
 
 int main(int argc, char** argv) {
   int statusCode = 0;
+  std::string logFile = std::string(argv[0]) + "_application.log";
   do {
-
-    std::string logFile = std::string(argv[0]) + ".log";
     // If launched from another folder, we have to move into the executable's folder, because of relative paths in command line
     char *dirsep = strrchr( argv[0], '/' );
     if( dirsep != NULL ) *dirsep = 0;
