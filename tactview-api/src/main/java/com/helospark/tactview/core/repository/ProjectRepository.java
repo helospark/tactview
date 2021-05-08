@@ -11,14 +11,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.markers.ResettableBean;
+import com.helospark.tactview.core.repository.ProjectSizeChangedMessage.ProjectSizeChangeType;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.save.SaveMetadata;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class ProjectRepository implements SaveLoadContributor, ResettableBean {
     @JsonIgnore
     private ObjectMapper objectMapper;
+    private MessagingService messagingService;
 
     private boolean isVideoInitialized;
     private boolean isAudioInitialized;
@@ -30,8 +33,9 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
     private BigDecimal fps;
     private BigDecimal frameTime;
 
-    public ProjectRepository(@Qualifier("getterIgnoringObjectMapper") ObjectMapper objectMapper) {
+    public ProjectRepository(@Qualifier("getterIgnoringObjectMapper") ObjectMapper objectMapper, MessagingService messagingService) {
         this.objectMapper = objectMapper;
+        this.messagingService = messagingService;
         resetDefaults();
     }
 
@@ -46,6 +50,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
         numberOfChannels = 2;
         fps = BigDecimal.valueOf(24);
         frameTime = BigDecimal.ONE.divide(fps, 100, RoundingMode.HALF_UP);
+        messagingService.sendAsyncMessage(new ProjectSizeChangedMessage(ProjectSizeChangeType.CLEARED));
     }
 
     public void initializeVideo(int width, int height, BigDecimal fps) {
@@ -54,6 +59,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
         this.height = height;
         this.fps = fps;
         this.frameTime = BigDecimal.ONE.divide(fps, 100, RoundingMode.HALF_UP);
+        messagingService.sendAsyncMessage(new ProjectSizeChangedMessage(ProjectSizeChangeType.VIDEO));
     }
 
     public void initializeAudio(int samleRate, int bytesPerSample, int numberOfChannels) {
@@ -61,6 +67,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
         this.sampleRate = samleRate;
         this.bytesPerSample = bytesPerSample;
         this.numberOfChannels = numberOfChannels;
+        messagingService.sendAsyncMessage(new ProjectSizeChangedMessage(ProjectSizeChangeType.AUDIO));
     }
 
     public boolean isVideoInitialized() {

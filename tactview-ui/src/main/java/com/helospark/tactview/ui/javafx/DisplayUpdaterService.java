@@ -25,6 +25,7 @@ import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
@@ -91,6 +92,10 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             } else {
                 updateCurrentPositionWithoutInvalidatedCache();
             }
+        });
+        messagingService.register(AffectedModifiedIntervalAware.class, message -> {
+            // this could be optimized based on the affected interval
+            framecache.clear();
         });
     }
 
