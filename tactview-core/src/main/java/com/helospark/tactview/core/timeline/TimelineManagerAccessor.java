@@ -546,9 +546,17 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         if (useSpecialPoints) {
             List<String> excludedIds = new ArrayList<>();
             excludedIds.add(clip.getId());
+            excludedIds.addAll(resizeClipRequest.getOtherClips());
             clip.getEffects()
                     .stream()
                     .map(effect -> effect.getId())
+                    .forEach(effectId -> excludedIds.add(effectId));
+
+            resizeClipRequest.getOtherClips()
+                    .stream()
+                    .flatMap(a -> findClipById(a).stream())
+                    .flatMap(a -> a.getEffects().stream())
+                    .map(a -> a.getId())
                     .forEach(effectId -> excludedIds.add(effectId));
 
             specialPointUsed = findSpecialPositionAround(globalPosition, resizeClipRequest.getMaximumJumpLength(), excludedIds)
@@ -1028,4 +1036,19 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return Optional.empty();
     }
 
+    public List<String> findLinkedClipsWithSameInterval(String clipId) {
+        TimelineClip originalClip = findClipById(clipId).get();
+        List<String> linkedClips = linkClipRepository.getLinkedClips(clipId);
+
+        List<String> allElements = new ArrayList<>();
+        allElements.add(clipId);
+
+        for (var otherClipId : linkedClips) {
+            TimelineClip other = findClipById(otherClipId).get();
+            if (originalClip.getInterval().isEqualWithEpsilon(other.getInterval())) {
+                allElements.add(otherClipId);
+            }
+        }
+        return allElements;
+    }
 }

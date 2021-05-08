@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
+import java.util.Optional;
+
 import javax.annotation.PostConstruct;
 
 import com.helospark.lightdi.annotation.Component;
@@ -40,8 +42,10 @@ public class ClipResizedMessageListener {
 
     private void drawSpecialPositionLine(ClipResizedMessage message) {
         ClosesIntervalChannel specialPosition = message.getSpecialPointUsed().get();
-        String channelId = timelineAccessor.findChannelForClipId(message.getClipId()).get().getId();
-        specialPointLineDrawer.drawSpecialPositionLineForClip(specialPosition, channelId);
+        Optional<String> channelId = timelineAccessor.findChannelForClipId(message.getClipId()).map(a -> a.getId());
+        if (channelId.isPresent()) {
+            specialPointLineDrawer.drawSpecialPositionLineForClip(specialPosition, channelId.get());
+        }
     }
 
 }

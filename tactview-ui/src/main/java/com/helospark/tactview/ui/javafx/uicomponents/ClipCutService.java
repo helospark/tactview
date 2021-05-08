@@ -39,6 +39,10 @@ public class ClipCutService {
 
     public void cutClip(String currentClipId, boolean includeLinked) {
         TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
+        cutClipAtPosition(currentClipId, includeLinked, currentPosition);
+    }
+
+    public void cutClipAtPosition(String currentClipId, boolean includeLinked, TimelinePosition currentPosition) {
         List<String> linkedIds = linkClipRepository.getLinkedClips(currentClipId);
         List<String> clipIds = new ArrayList<>();
         if (includeLinked) {

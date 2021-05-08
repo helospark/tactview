@@ -21,6 +21,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 public class ProjectRepository implements SaveLoadContributor, ResettableBean {
     @JsonIgnore
     private ObjectMapper objectMapper;
+    @JsonIgnore
     private MessagingService messagingService;
 
     private boolean isVideoInitialized;

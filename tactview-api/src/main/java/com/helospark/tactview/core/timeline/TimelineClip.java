@@ -501,4 +501,51 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         }
     }
 
+    public TimelineInterval getIntervalAfterRescaleTo(boolean left, TimelinePosition position) {
+        TimelineInterval originalInterval = getInterval();
+        return left ? originalInterval.butWithStartPosition(position) : originalInterval.butWithEndPosition(position);
+    }
+
+    public void resize(boolean left, TimelineInterval position) {
+        // interval is set by caller, no further action on global resize
+    }
+
+    // Following two method moved here to make it reusable with audio and video clip, but it might not be the best here
+    protected TimelineInterval intervalAfterResizeAsCut(boolean left, TimelinePosition position, TimelineLength mediaLength, boolean reverse) {
+        TimelineInterval originalInterval = getInterval();
+        TimelinePosition relativePosition = position.subtract(this.interval.getStartPosition());
+        if (left) {
+            System.out.println(renderOffset);
+            System.out.println(relativePosition);
+            TimelinePosition relativeRenderOffset = renderOffset.toPosition().add(relativePosition);
+
+            if (relativeRenderOffset.isLessThan(0)) {
+                return originalInterval.butWithStartPosition(originalInterval.getStartPosition().subtract(renderOffset));
+            } else {
+                return originalInterval.butWithStartPosition(position);
+            }
+
+        } else {
+            TimelinePosition endPositionUnscaled = mediaLength.toPosition().subtract(renderOffset);
+            TimelinePosition endPosition = calculatePositionInClipSpaceTo(endPositionUnscaled, reverse).add(this.interval.getStartPosition()).subtract(renderOffset);
+
+            if (endPosition.isGreaterThan(position)) {
+                return originalInterval.butWithEndPosition(position);
+            } else {
+                return originalInterval.butWithEndPosition(endPosition);
+            }
+
+        }
+    }
+
+    protected void resizeAsCut(boolean left, TimelineInterval position) {
+        if (left) {
+            TimelinePosition relativeMove = this.getInterval().getStartPosition().subtract(position.getStartPosition());
+            renderOffset = renderOffset.toPosition().subtract(relativeMove).toLength();
+            if (renderOffset.lessThan(TimelineLength.ofZero())) {
+                renderOffset = TimelineLength.ofZero();
+            }
+        } // else is covered by parent by setting the interval
+    }
+
 }

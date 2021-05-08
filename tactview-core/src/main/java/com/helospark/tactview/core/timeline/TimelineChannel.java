@@ -151,11 +151,15 @@ public class TimelineChannel {
     }
 
     public boolean resizeClip(TimelineClip clip, boolean left, TimelinePosition position) {
-        TimelineInterval originalInterval = clip.getInterval();
-        TimelineInterval newInterval = left ? originalInterval.butWithStartPosition(position) : originalInterval.butWithEndPosition(position);
+        TimelineInterval newInterval = clip.getIntervalAfterRescaleTo(left, position);
 
         synchronized (fullChannelLock) {
-            return clips.resize(clip, newInterval);
+            if (clips.canAddIntervalAtExcluding(newInterval, List.of(clip))) {
+                clip.resize(left, newInterval);
+                return clips.resize(clip, newInterval);
+            } else {
+                return false;
+            }
         }
     }
 
@@ -166,6 +170,7 @@ public class TimelineChannel {
                 .filter(a -> !ignoredIds.contains(a.getId()))
                 .map(a -> a.getInterval())
                 .collect(Collectors.toList());
+
         List<TimelineInterval> otherSpecialPoints = Collections.singletonList(new TimelineInterval(TimelinePosition.ofZero(), TimelineLength.ofZero()));
         // We could add effects
         ArrayList<TimelineInterval> result = new ArrayList<>(specialPointsFromClips);

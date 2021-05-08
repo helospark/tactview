@@ -63,7 +63,7 @@ public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem 
                     TimelinePosition newRightPosition = clipToResize.getInterval().getStartPosition().add(newLength);
 
                     ClipResizedCommand command = ClipResizedCommand.builder()
-                            .withClipId(clipToResize.getId())
+                            .withClipIds(timelineManager.findLinkedClipsWithSameInterval(clipToResize.getId()))
                             .withLeft(false)
                             .withMoreResizeExpected(false)
                             .withOriginalPosition(clipToResize.getInterval().getEndPosition())

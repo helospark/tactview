@@ -1,9 +1,12 @@
 package com.helospark.tactview.core.timeline;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TimelineInterval {
+    private static final BigDecimal EPSILON = new BigDecimal("0.0001");
     private final TimelinePosition startPosition;
     private final TimelineLength length;
     @JsonIgnore
@@ -107,6 +110,12 @@ public class TimelineInterval {
 
     public static TimelineInterval fromDoubles(double visibleStartPosition, double visibleEndPosition) {
         return new TimelineInterval(TimelinePosition.ofSeconds(visibleStartPosition), TimelinePosition.ofSeconds(visibleEndPosition));
+    }
+
+    public boolean isEqualWithEpsilon(TimelineInterval other) {
+        return this.getStartPosition().subtract(other.getStartPosition()).getSeconds().abs().compareTo(EPSILON) < 0 &&
+                this.getEndPosition().subtract(other.getEndPosition()).getSeconds().abs().compareTo(EPSILON) < 0;
+
     }
 
 }

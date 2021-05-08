@@ -9,6 +9,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
+import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveMetadata;
@@ -97,7 +98,7 @@ public class VideoClip extends VisualTimelineClip {
 
     @Override
     public boolean isResizable() {
-        return mediaMetadata.isResizable();
+        return true;
     }
 
     @Override
@@ -120,6 +121,26 @@ public class VideoClip extends VisualTimelineClip {
     public String toString() {
         return "VideoClip [mediaMetadata=" + mediaMetadata + ", startPosition=" + startPosition + ", lowResolutionProxySource=" + lowResolutionProxySource + ", getBackingSource()="
                 + getBackingSource() + "]";
+    }
+
+    // this is really a cut instead of a resize, but on UI it shows the exact same way as resize
+    // maximum size a clip can be is the size of the videoclip
+    @Override
+    public TimelineInterval getIntervalAfterRescaleTo(boolean left, TimelinePosition position) {
+        if (mediaMetadata instanceof VideoMetadata) {
+            return intervalAfterResizeAsCut(left, position, mediaMetadata.getLength(), reverseTimeProvider.getValueAt(TimelinePosition.ofZero()));
+        } else {
+            return super.getIntervalAfterRescaleTo(left, position);
+        }
+    }
+
+    @Override
+    public void resize(boolean left, TimelineInterval position) {
+        if (mediaMetadata instanceof VideoMetadata) {
+            resizeAsCut(left, position);
+        } else {
+            super.resize(left, position);
+        }
     }
 
 }

@@ -78,7 +78,7 @@ public class TimelineDragAndDropHandler {
     public void moveClip(String channelId, boolean revertable, TimelinePosition position) {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
-            String clipId = currentlyDraggedEffect.getClipId();
+            String clipId = currentlyDraggedEffect.getClipId().get(0);
 
             if (position.isLessThan(TimelinePosition.ofZero())) {
                 position = TimelinePosition.ofZero();
@@ -106,10 +106,10 @@ public class TimelineDragAndDropHandler {
     public void resizeClip(TimelinePosition position, boolean revertable) {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
-            String clipId = currentlyDraggedEffect.getClipId();
+            List<String> clipId = currentlyDraggedEffect.getClipId();
 
             ClipResizedCommand command = ClipResizedCommand.builder()
-                    .withClipId(clipId)
+                    .withClipIds(clipId)
                     .withLeft(dragRepository.getDragDirection().equals(DragRepository.DragDirection.LEFT))
                     .withPosition(position)
                     .withOriginalPosition(currentlyDraggedEffect.getOriginalPosition())

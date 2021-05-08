@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Generated;
@@ -12,6 +13,7 @@ public class ResizeClipRequest {
     private TimelineLength minimumSize;
     private boolean useSpecialPoints;
     private boolean moreResizeExpected;
+    private List<String> otherClips;
 
     public TimelineClip getClip() {
         return clip;
@@ -41,6 +43,10 @@ public class ResizeClipRequest {
         return moreResizeExpected;
     }
 
+    public List<String> getOtherClips() {
+        return otherClips;
+    }
+
     @Generated("SparkTools")
     private ResizeClipRequest(Builder builder) {
         this.clip = builder.clip;
@@ -50,6 +56,7 @@ public class ResizeClipRequest {
         this.useSpecialPoints = builder.useSpecialPoints;
         this.moreResizeExpected = builder.moreResizeExpected;
         this.minimumSize = builder.minimumSize;
+        this.otherClips = builder.otherClips;
     }
 
     @Generated("SparkTools")
@@ -66,6 +73,7 @@ public class ResizeClipRequest {
         private boolean useSpecialPoints;
         private boolean moreResizeExpected;
         private TimelineLength minimumSize;
+        private List<String> otherClips = List.of();
 
         private Builder() {
         }
@@ -102,6 +110,11 @@ public class ResizeClipRequest {
 
         public Builder withMoreResizeExpected(boolean moreResizeExpected) {
             this.moreResizeExpected = moreResizeExpected;
+            return this;
+        }
+
+        public Builder withOtherClipsResized(List<String> otherClips) {
+            this.otherClips = otherClips;
             return this;
         }
 

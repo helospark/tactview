@@ -425,7 +425,7 @@ public class TimelineCanvas {
 
     private void selectElementOnMouseDrag() {
         if (dragRepository.currentlyDraggedClip() != null) {
-            String elementId = dragRepository.currentlyDraggedClip().getClipId();
+            String elementId = dragRepository.currentlyDraggedClip().getClipId().get(0);
             boolean nodeSelected = selectedNodeRepository.getSelectedClipIds().contains(elementId);
             if (!nodeSelected) {
                 selectedNodeRepository.setOnlySelectedClip(elementId);
@@ -531,10 +531,11 @@ public class TimelineCanvas {
             if (isResizing) {
                 boolean resizingLeft = isResizingLeft(element, event.getX());
                 TimelinePosition originalPosition = resizingLeft ? clip.getGlobalInterval().getStartPosition() : clip.getGlobalInterval().getEndPosition();
-                ClipDragInformation clipDragInformation = new ClipDragInformation(originalPosition, element.elementId, channelId, currentX - clipPositionAsDouble);
+                List<String> clipIds = timelineAccessor.findLinkedClipsWithSameInterval(element.elementId);
+                ClipDragInformation clipDragInformation = new ClipDragInformation(originalPosition, clipIds, channelId, currentX - clipPositionAsDouble);
                 dragRepository.onClipResizing(clipDragInformation, resizingLeft ? DragDirection.LEFT : DragDirection.RIGHT);
             } else {
-                ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), element.elementId, channelId, currentX - clipPositionAsDouble);
+                ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), List.of(element.elementId), channelId, currentX - clipPositionAsDouble);
                 dragRepository.onClipDragged(clipDragInformation);
             }
         } else {
@@ -581,7 +582,7 @@ public class TimelineCanvas {
                 try {
                     AddClipsCommand result = commandInterpreter.synchronousSend(new AddClipsCommand(addClipRequest, timelineAccessor));
                     String addedClipId = result.getAddedClipId();
-                    ClipDragInformation clipDragInformation = new ClipDragInformation(result.getRequestedPosition(), addedClipId, channelId, 0);
+                    ClipDragInformation clipDragInformation = new ClipDragInformation(result.getRequestedPosition(), List.of(addedClipId), channelId, 0);
                     dragRepository.onClipDragged(clipDragInformation);
                     db.clear();
                 } catch (Exception e1) {
@@ -797,7 +798,7 @@ public class TimelineCanvas {
 
             for (int i = 0; i < timelineAccessor.getChannels().size(); ++i) {
                 TimelineChannel currentChannel = timelineAccessor.getChannels().get(i);
-                NonIntersectingIntervalList<TimelineClip> clips = currentChannel.getAllClips();
+                NonIntersectingIntervalList<TimelineClip> clips = currentChannel.getAllClips().shallowCopy();
 
                 double clipHeight = calculateHeight(currentChannel);
 
