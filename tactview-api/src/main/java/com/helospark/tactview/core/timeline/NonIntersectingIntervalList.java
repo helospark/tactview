@@ -30,6 +30,7 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
             result.add(intervalAwares.get(index));
             ++index;
         }
+
         return result;
     }
 

@@ -197,7 +197,13 @@ public class TimelineCanvas {
             var oldValue = redrawRequest.getAndSet(null);
 
             if (oldValue != null) {
-                Platform.runLater(() -> redrawInternal(oldValue.fullRedraw));
+                Platform.runLater(() -> {
+                    try {
+                        redrawInternal(oldValue.fullRedraw);
+                    } catch (Exception e) {
+                        LOGGER.warn("Unable to redraw", e);
+                    }
+                });
             }
 
         }, 0, 40, TimeUnit.MILLISECONDS);
@@ -347,16 +353,20 @@ public class TimelineCanvas {
             if (!event.isStillSincePress()) {
                 onDrag(event.getX(), event.getY(), true);
             }
-            dragRepository.clean();
-            selectionBox = null;
-            redraw(false);
+            disableToolsOnMouseRelease();
         });
 
         canvas.setOnDragDropped(event -> {
             onDrag(event.getX(), event.getY(), true);
-            dragRepository.clean();
-            selectionBox = null;
-            redraw(false);
+            disableToolsOnMouseRelease();
+        });
+
+        canvas.setOnMouseDragReleased(event -> {
+            disableToolsOnMouseRelease();
+        });
+
+        canvas.setOnDragExited(event -> {
+            disableToolsOnMouseRelease();
         });
 
         canvas.setOnDragOver(event -> {
@@ -421,6 +431,13 @@ public class TimelineCanvas {
         });
 
         return resultPane;
+    }
+
+    private void disableToolsOnMouseRelease() {
+        dragRepository.clean();
+        selectionBox = null;
+        timelineState.disableSpecialPointLineProperties();
+        redraw(false);
     }
 
     private void selectElementOnMouseDrag() {
@@ -832,8 +849,9 @@ public class TimelineCanvas {
 
                         newCachedElements.add(new TimelineUiCacheElement(clip.getId(), TimelineUiCacheType.CLIP, new CollisionRectangle(clipX, clipY, clipWidth, MIN_CHANNEL_HEIGHT)));
 
-                        for (int j = 0; j < clip.getEffectChannels().size(); ++j) {
-                            for (var effect : clip.getEffectChannels().get(j)) {
+                        List<NonIntersectingIntervalList<StatelessEffect>> effects = shallowCloneEffects(clip.getEffectChannels());
+                        for (int j = 0; j < effects.size(); ++j) {
+                            for (var effect : effects.get(j)) {
 
                                 double effectX = timelineState.secondsToPixelsWidthZoomAndTranslate(effect.getGlobalInterval().getStartPosition());
                                 double effectEndX = timelineState.secondsToPixelsWidthZoomAndTranslate(effect.getGlobalInterval().getEndPosition());
@@ -914,6 +932,14 @@ public class TimelineCanvas {
         drawLoopingLines();
         drawPlaybackLine();
         drawSpecialPositionLine(visibleAreaStartY);
+    }
+
+    private List<NonIntersectingIntervalList<StatelessEffect>> shallowCloneEffects(List<NonIntersectingIntervalList<StatelessEffect>> effectChannels) {
+        List<NonIntersectingIntervalList<StatelessEffect>> result = new ArrayList<>();
+        for (int i = 0; i < effectChannels.size(); ++i) {
+            result.add(effectChannels.get(i).shallowCopy());
+        }
+        return result;
     }
 
     private void drawClip(TimelineInterval visibleInterval, TimelineClip clip, double xOffset, double clipY) {

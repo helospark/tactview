@@ -304,15 +304,16 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .forEach(effectId -> ignoredIds.add(effectId));
 
             synchronized (timelineChannelsState.fullLock) { // allLinkedClipsCanBeMoved requires state modification
-                specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds, moveClipRequest.additionalSpecialPositions)
-                        .stream()
-                        .filter(a -> {
-                            TimelinePosition relativeMove = originalInterval.getStartPosition().subtract(a.getClipPosition());
-                            boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
-                            return allClipsCanBePlaced;
-                        })
-                        .sorted()
-                        .findFirst();
+                specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds,
+                        moveClipRequest.additionalSpecialPositions)
+                                .stream()
+                                .filter(a -> {
+                                    TimelinePosition relativeMove = a.getClipPosition().subtract(originalInterval.getStartPosition());
+                                    boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
+                                    return allClipsCanBePlaced;
+                                })
+                                .sorted()
+                                .findFirst();
             }
             if (specialPositionUsed.isPresent()) {
                 newPosition = specialPositionUsed.get().getClipPosition();
@@ -464,6 +465,18 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             specialPosition = calculateSpecialPositionAround(globalNewPosition, request.getMaximumJumpToSpecialPositions().get(), effect.getGlobalInterval(), List.of(request.getEffectId()),
                     request.getAdditionalSpecialPositions())
                             .stream()
+                            .filter(a -> {
+                                TimelinePosition relativeMove = a.getClipPosition().subtract(effect.getGlobalInterval().getStartPosition());
+                                TimelineInterval newInterval = effect.getInterval().butAddOffset(relativeMove);
+
+                                if (newInterval.getStartPosition().isLessThan(0)) {
+                                    return false;
+                                }
+                                if (newInterval.getEndPosition().isGreaterThan(currentClip.getUnmodifiedInterval().getEndPosition())) {
+                                    return false;
+                                }
+                                return true;
+                            })
                             .findFirst();
             globalNewPosition = specialPosition.map(a -> a.getClipPosition()).orElse(globalNewPosition);
         }
@@ -624,6 +637,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     }
 
     public void resizeEffect(ResizeEffectRequest resizeEffectRequest) {
+
         StatelessEffect effect = resizeEffectRequest.getEffect();
         boolean left = resizeEffectRequest.isLeft();
         TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
@@ -665,26 +679,28 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 }
             }
         }
+        synchronized (clip.getFullClipLock()) {
 
-        if (resizeEffectRequest.getAllowResizeToDisplaceOtherEffects()) {
-            Integer effectChannelIndex = clip.getEffectChannelIndex(resizeEffectRequest.getEffect().getId()).get();
-            NonIntersectingIntervalList<StatelessEffect> newChannel = clip.addEffectChannel(effectChannelIndex);
-            newChannel.addInterval(clip.removeEffectById(resizeEffectRequest.getEffect().getId()));
-        }
-        boolean success = clip.resizeEffect(effect, left, newPosition);
+            if (resizeEffectRequest.getAllowResizeToDisplaceOtherEffects()) {
+                Integer effectChannelIndex = clip.getEffectChannelIndex(resizeEffectRequest.getEffect().getId()).get();
+                NonIntersectingIntervalList<StatelessEffect> newChannel = clip.addEffectChannel(effectChannelIndex);
+                newChannel.addInterval(clip.removeEffectById(resizeEffectRequest.getEffect().getId()));
+            }
+            boolean success = clip.resizeEffect(effect, left, newPosition);
 
-        if (success) {
-            StatelessEffect renewedClip = findEffectById(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such effect"));
-            EffectResizedMessage clipResizedMessage = EffectResizedMessage.builder()
-                    .withClipId(clip.getId())
-                    .withEffectId(renewedClip.getId())
-                    .withNewInterval(renewedClip.getInterval())
-                    .withOriginalInterval(originalInterval)
-                    .withSpecialPositionUsed(specialPointUsed)
-                    .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
-                    .build();
-            messagingService.sendMessage(clipResizedMessage);
-            optimizeEffectChannels(clip);
+            if (success) {
+                StatelessEffect renewedClip = findEffectById(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such effect"));
+                EffectResizedMessage clipResizedMessage = EffectResizedMessage.builder()
+                        .withClipId(clip.getId())
+                        .withEffectId(renewedClip.getId())
+                        .withNewInterval(renewedClip.getInterval())
+                        .withOriginalInterval(originalInterval)
+                        .withSpecialPositionUsed(specialPointUsed)
+                        .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
+                        .build();
+                messagingService.sendMessage(clipResizedMessage);
+                optimizeEffectChannels(clip);
+            }
         }
     }
 
