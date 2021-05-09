@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -295,6 +296,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
 
         if (moveClipRequest.enableJumpingToSpecialPosition) {
+            TimelinePosition relativeClipMove = newPosition.subtract(originalInterval.getStartPosition());
+
             List<String> ignoredIds = new ArrayList<>();
             ignoredIds.add(clipToMove.getId());
             ignoredIds.addAll(linkedClipIds);
@@ -303,20 +306,46 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .map(effect -> effect.getId())
                     .forEach(effectId -> ignoredIds.add(effectId));
 
+            Map<String, Set<ClosesIntervalChannel>> result = new HashMap<>();
             synchronized (timelineChannelsState.fullLock) { // allLinkedClipsCanBeMoved requires state modification
-                specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds,
-                        moveClipRequest.additionalSpecialPositions)
-                                .stream()
-                                .filter(a -> {
-                                    TimelinePosition relativeMove = a.getClipPosition().subtract(originalInterval.getStartPosition());
-                                    boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
-                                    return allClipsCanBePlaced;
-                                })
-                                .sorted()
-                                .findFirst();
+                for (var currentClip : linkedClips) {
+                    calculateSpecialPositionAround(currentClip.getInterval().getStartPosition().add(relativeClipMove), moveClipRequest.maximumJump, currentClip.getInterval(), ignoredIds,
+                            moveClipRequest.additionalSpecialPositions)
+                                    .stream()
+                                    .filter(a -> {
+                                        TimelinePosition relativeMove = a.getClipPosition().subtract(currentClip.getInterval().getStartPosition());
+                                        boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
+                                        return allClipsCanBePlaced;
+                                    })
+                                    .forEach(a -> {
+                                        Set<ClosesIntervalChannel> previousSet = result.get(currentClip.getId());
+                                        if (previousSet == null) {
+                                            previousSet = new TreeSet<>();
+                                        }
+                                        previousSet.add(a);
+                                        result.put(currentClip.getId(), previousSet);
+                                    });
+                }
             }
+
+            String minimumClip = null;
+            ClosesIntervalChannel minimumFound = null;
+            for (var entry : result.entrySet()) {
+                Optional<ClosesIntervalChannel> optionalSmallestElement = entry.getValue().stream().findFirst();
+                if (optionalSmallestElement.isPresent()) {
+                    ClosesIntervalChannel smallestElement = optionalSmallestElement.get();
+
+                    if (minimumFound == null || smallestElement.getDistance().lessThan(minimumFound.getDistance())) {
+                        minimumFound = smallestElement;
+                        minimumClip = entry.getKey();
+                    }
+                }
+            }
+
+            specialPositionUsed = Optional.ofNullable(minimumFound);
             if (specialPositionUsed.isPresent()) {
-                newPosition = specialPositionUsed.get().getClipPosition();
+                TimelinePosition relativeMove = specialPositionUsed.get().getClipPosition().subtract(findClipById(minimumClip).get().getInterval().getStartPosition());
+                newPosition = originalInterval.getStartPosition().add(relativeMove);
             }
         }
 
