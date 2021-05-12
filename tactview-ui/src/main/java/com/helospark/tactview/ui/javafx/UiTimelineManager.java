@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.preference.PreferenceValue;
@@ -30,6 +33,7 @@ import sonic.Sonic;
 
 @Component
 public class UiTimelineManager {
+    private ExecutorService playbackExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("playback-thread-%d").build());
     private final int CACHE_MODULO = 1;
     private int numberOfFramesToCache = 2;
     private final List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
@@ -81,9 +85,10 @@ public class UiTimelineManager {
             isPlaying = true;
             statusChangeConsumers.stream()
                     .forEach(consumer -> consumer.accept(PlaybackStatus.STARTED));
-            runThread = new Thread(() -> {
+            playbackExecutorService.submit(() -> {
                 try {
                     int frame = 0;
+                    audioStreamService.startPlayback();
                     while (isPlaying) {
                         TimelinePosition nextFrame = this.expectedNextFrames(1).get(0);
                         synchronized (timelineLock) {
@@ -124,11 +129,10 @@ public class UiTimelineManager {
                 } catch (Throwable e) {
                     e.printStackTrace();
                 } finally {
-                    audioStreamService.clearBuffer();
+                    audioStreamService.stopPlayback();
                     isPlaying = false;
                 }
-            }, "playback-thread");
-            runThread.start();
+            });
         }
     }
 

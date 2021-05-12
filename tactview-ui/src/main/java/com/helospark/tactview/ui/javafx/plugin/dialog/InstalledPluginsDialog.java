@@ -7,9 +7,11 @@ import com.helospark.tactview.core.plugin.PluginDescriptor;
 import com.helospark.tactview.core.plugin.PluginManager;
 import com.helospark.tactview.ui.javafx.plugin.RestartDialogOpener;
 import com.helospark.tactview.ui.javafx.plugin.service.PluginInstallationService;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
@@ -27,21 +29,21 @@ public class InstalledPluginsDialog {
     private Stage stage;
     private PluginManager pluginManager;
     private RestartDialogOpener restartDialogOpener;
-    private PluginInstallationService pluginInstallationService;
 
-    public InstalledPluginsDialog(PluginManager pluginManager, PluginInstallationService pluginInstallationService, RestartDialogOpener restartDialogOpener) {
+    public InstalledPluginsDialog(PluginManager pluginManager, PluginInstallationService pluginInstallationService, RestartDialogOpener restartDialogOpener,
+            StylesheetAdderService stylesheetAdderService) {
         this.pluginManager = pluginManager;
-        this.pluginInstallationService = pluginInstallationService;
         this.restartDialogOpener = restartDialogOpener;
 
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
 
         Scene dialog = new Scene(borderPane);
-        dialog.getStylesheets().add("stylesheet.css");
+
         stage = new Stage();
         stage.setHeight(400);
         stage.setWidth(400);
+        stylesheetAdderService.styleDialog(stage, borderPane, "stylesheet.css");
 
         GridPane pluginsGridPane = createGridPane();
 
@@ -86,7 +88,7 @@ public class InstalledPluginsDialog {
         List<PluginDescriptor> installedPlugins = pluginManager.getInstalledPlugins();
 
         if (installedPlugins.isEmpty()) {
-            pluginsGridPane.add(new Text("You have no plugins installed yet"), 0, 0);
+            pluginsGridPane.add(new Label("You have no plugins installed yet"), 0, 0);
         } else {
             int index = 0;
             for (var pluginDescriptor : installedPlugins) {

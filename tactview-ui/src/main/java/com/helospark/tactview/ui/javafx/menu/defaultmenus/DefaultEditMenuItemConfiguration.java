@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.menu.defaultmenus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
@@ -9,6 +10,7 @@ import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SeparatorMenuContribution;
@@ -25,6 +27,7 @@ import javafx.scene.input.KeyCodeCombination;
 public class DefaultEditMenuItemConfiguration {
     public static final String EDIT_ROOT = "_Edit";
     public static final String SELECT_ROOT = "_Select";
+    public static final String JUMP_ROOT = "_Jump";
 
     @Bean
     @Order(1000)
@@ -134,6 +137,46 @@ public class DefaultEditMenuItemConfiguration {
     @Order(1820)
     public SelectableMenuContribution deselectAllContributionMenuItem(SelectedNodeRepository selectedNodeRepository) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Clear selection"), event -> selectedNodeRepository.clearAllSelectedItems());
+    }
+
+    @Bean
+    @Order(1899)
+    public SeparatorMenuContribution afterSelectSeparatorMenuItem() {
+        return new SeparatorMenuContribution(List.of(EDIT_ROOT));
+    }
+
+    @Bean
+    @Order(1900)
+    public SelectableMenuContribution jumpForwardOneFrameMenuItem(UiTimelineManager timelineManager) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump _forward one frame"), event -> timelineManager.moveForwardOneFrame());
+    }
+
+    @Bean
+    @Order(1901)
+    public SelectableMenuContribution jumpBackwardOneFrameMenuItem(UiTimelineManager timelineManager) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump _backward one frame"), event -> timelineManager.moveBackOneFrame());
+    }
+
+    @Bean
+    @Order(1902)
+    public SelectableMenuContribution jumpToAMarkerMenuItem(UiTimelineManager timelineManager, TimelineState timelineState) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to '_A' marker"), event -> {
+            Optional<TimelinePosition> loopAProperties = timelineState.getLoopALineProperties();
+            if (loopAProperties.isPresent()) {
+                timelineManager.jumpAbsolute(loopAProperties.get().getSeconds());
+            }
+        });
+    }
+
+    @Bean
+    @Order(1903)
+    public SelectableMenuContribution jumpToBMarkerMenuItem(UiTimelineManager timelineManager, TimelineState timelineState) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to '_B' marker"), event -> {
+            Optional<TimelinePosition> loopBProperties = timelineState.getLoopBLineProperties();
+            if (loopBProperties.isPresent()) {
+                timelineManager.jumpAbsolute(loopBProperties.get().getSeconds());
+            }
+        });
     }
 
     @Bean

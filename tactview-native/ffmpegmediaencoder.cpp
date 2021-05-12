@@ -307,6 +307,9 @@ extern "C" {
 
         c = ost->enc;
 
+        c->thread_count = 0; // 0 = automatic
+        c->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
+
         /* open it */
         av_dict_copy(&opt, opt_arg, 0);
         ret = avcodec_open2(c, codec, &opt);
@@ -410,7 +413,7 @@ extern "C" {
 
         av_init_packet(&pkt);
         c = ost->enc;
-        ERROR("Writing audio frame " << ((double)ost->next_pts * c->time_base.num / c->time_base.den) << " " << ost->samples_count << " " << dst_nb_samples);
+        DEBUG("Writing audio frame " << ((double)ost->next_pts * c->time_base.num / c->time_base.den) << " " << ost->samples_count << " " << dst_nb_samples);
 
         if (frame) {
             /* convert samples from native format to destination codec format, using the resampler */
@@ -506,6 +509,10 @@ extern "C" {
           DEBUG("Set preset " << request->videoPreset);
         }
 
+        c->thread_count = 0; // 0 = automatic
+        c->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
+
+
         ret = avcodec_open2(c, codec, &opt);
         av_dict_free(&opt);
         if (ret < 0) {
@@ -588,7 +595,7 @@ extern "C" {
         }
 
         if (ret < 0) {
-            ERROR("Error while writing video frame");
+            ERROR("Error while writing video frame, write_frame returned " << ret);
             return -1;
         }
 

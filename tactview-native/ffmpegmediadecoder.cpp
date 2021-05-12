@@ -494,6 +494,9 @@ extern "C" {
             return NULL;
         }
 
+        pCodecCtx->thread_count = 0; // 0 = automatic
+        pCodecCtx->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
+
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
         {
             ERROR("Cannot open codec context");
@@ -539,7 +542,7 @@ extern "C" {
 #ifdef DEBUG_BUILD
 
 int main() {
-    char* path = "/testvideo.mkv";
+    char* path = "/testvideo.mp4";
 
     MediaMetadata result = readMediaMetadata(path);
 
@@ -549,6 +552,9 @@ int main() {
 
     const int outWidth = result.width;
     const int outHeight = result.height;
+
+    long long start = time(NULL);
+    int frames = 0;
 
     for (int i = 0; i < 100; ++i) {
 
@@ -575,7 +581,14 @@ int main() {
 
         delete request;
         INFO("read frames " << i * framesPerRequest << " " << (i + 1) *  framesPerRequest); 
+        frames += framesPerRequest;
     }
+
+    long long end = time(NULL);
+
+    long took = (end - start);
+
+    std::cout << ((double)frames / took) << " fps" << std::endl;
 
 }
 #endif

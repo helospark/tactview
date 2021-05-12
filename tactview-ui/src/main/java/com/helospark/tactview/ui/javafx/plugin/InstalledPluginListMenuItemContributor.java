@@ -8,6 +8,7 @@ import com.helospark.tactview.core.plugin.PluginManager;
 import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.plugin.dialog.InstalledPluginsDialog;
 import com.helospark.tactview.ui.javafx.plugin.service.PluginInstallationService;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.event.ActionEvent;
 
@@ -17,11 +18,14 @@ public class InstalledPluginListMenuItemContributor implements SelectableMenuCon
     private PluginManager pluginManager;
     private PluginInstallationService pluginInstallationService;
     private RestartDialogOpener restartDialogOpener;
+    private StylesheetAdderService stylesheetAdderService;
 
-    public InstalledPluginListMenuItemContributor(PluginManager pluginManager, PluginInstallationService pluginInstallationService, RestartDialogOpener restartDialogOpener) {
+    public InstalledPluginListMenuItemContributor(PluginManager pluginManager, PluginInstallationService pluginInstallationService, RestartDialogOpener restartDialogOpener,
+            StylesheetAdderService stylesheetAdderService) {
         this.pluginManager = pluginManager;
         this.pluginInstallationService = pluginInstallationService;
         this.restartDialogOpener = restartDialogOpener;
+        this.stylesheetAdderService = stylesheetAdderService;
     }
 
     @Override
@@ -31,7 +35,7 @@ public class InstalledPluginListMenuItemContributor implements SelectableMenuCon
 
     @Override
     public void onAction(ActionEvent event) {
-        InstalledPluginsDialog dialog = new InstalledPluginsDialog(pluginManager, pluginInstallationService, restartDialogOpener);
+        InstalledPluginsDialog dialog = new InstalledPluginsDialog(pluginManager, pluginInstallationService, restartDialogOpener, stylesheetAdderService);
         dialog.show();
     }
 

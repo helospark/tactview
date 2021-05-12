@@ -54,3 +54,6 @@ cp libopencvcartoon.dylib ../tactview-core/src/main/resources/darwin/.
 
 g++ -std=c++11 -I/usr/local/Cellar/opencv/4.5.0_4/include/opencv4/ -shared -fPIC -Wl,-install_name,libopencvpencil.dylib -o libopencvpencil.dylib opencvpencil.cpp -lopencv_core -lopencv_imgproc -lopencv_photo
 cp libopencvpencil.dylib ../tactview-core/src/main/resources/darwin/.
+
+g++ -std=c++11 -shared -fPIC -Wl,-install_name,libnativealphablend.dylib -o libnativealphablend.dylib nativealphablend.cpp
+cp libnativealphablend.dylib ../tactview-core/src/main/resources/darwin/.

@@ -2,6 +2,8 @@ package com.helospark.tactview.core.timeline.framemerge;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
+import com.helospark.tactview.core.timeline.framemerge.nativelibrary.AlphaBlendRequest;
+import com.helospark.tactview.core.timeline.framemerge.nativelibrary.NativeAlphaBlendService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -9,9 +11,11 @@ import com.helospark.tactview.core.util.IndependentPixelOperation;
 @Component
 public class AlphaBlitServiceImpl implements AlphaBlitService {
     private IndependentPixelOperation independentPixelOperation;
+    private NativeAlphaBlendService nativeAlphaBlendService;
 
-    public AlphaBlitServiceImpl(IndependentPixelOperation independentPixelOperation) {
+    public AlphaBlitServiceImpl(IndependentPixelOperation independentPixelOperation, NativeAlphaBlendService nativeAlphaBlendService) {
         this.independentPixelOperation = independentPixelOperation;
+        this.nativeAlphaBlendService = nativeAlphaBlendService;
     }
 
     // Expensive method, during preview & render uses 30% of all CPU
@@ -20,6 +24,21 @@ public class AlphaBlitServiceImpl implements AlphaBlitService {
     @Override
     public void alphaBlitFrame(ClipImage result, ReadOnlyClipImage clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
 
+        if (blendMode.getId().equals("normal")) {
+            AlphaBlendRequest request = new AlphaBlendRequest();
+            request.alpha = globalAlpha;
+            request.foreground = clipFrameResult.getBuffer();
+            request.backgroundAndResult = result.getBuffer();
+            request.width = width;
+            request.height = height;
+
+            nativeAlphaBlendService.normalAlphablend(request);
+        } else {
+            javaAlphaBlending(result, clipFrameResult, width, height, blendMode, globalAlpha);
+        }
+    }
+
+    private void javaAlphaBlending(ClipImage result, ReadOnlyClipImage clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             int[] forground = new int[4];
             int[] blendedForground = new int[4];
@@ -39,7 +58,6 @@ public class AlphaBlitServiceImpl implements AlphaBlitService {
             }
             result.setPixel(blendedForground, x, y);
         });
-
     }
 
     // TODO: avoid duplication

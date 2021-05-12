@@ -535,6 +535,7 @@ public class TimelineCanvas {
                     selectedNodeRepository.addSelectedEffect(element.elementId);
                 }
             }
+            redraw(true);
         }
     }
 

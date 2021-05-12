@@ -46,15 +46,21 @@ public class AudioStreamService {
         });
     }
 
+    public void startPlayback() {
+        sourceDataLine.start();
+        logger.debug("Start playback available={}", sourceDataLine.available());
+    }
+
     public void streamAudio(byte[] data) {
+        int expectedTimeMs = 1000 * data.length / (PlaybackFrameAccessor.BYTES * PlaybackFrameAccessor.CHANNELS * PlaybackFrameAccessor.SAMPLE_RATE);
         logger.debug("Streaming " + data.length + " at " + System.currentTimeMillis() + " with length "
-                + (1000 * data.length / (PlaybackFrameAccessor.BYTES * PlaybackFrameAccessor.CHANNELS * PlaybackFrameAccessor.SAMPLE_RATE)));
+                + expectedTimeMs);
 
         if (data.length > 0) {
             if (isInitialized) {
-                logger.debug("There is still " + (sourceDataLine.getBufferSize() - sourceDataLine.available()) + " bytes in the buffer at " + System.currentTimeMillis());
+                logger.debug("Streaming audio, bufferSize={} bytes, available={} at {}", sourceDataLine.getBufferSize(), sourceDataLine.available(), System.currentTimeMillis());
                 int bytesWritten = sourceDataLine.write(data, 0, data.length);
-                logger.debug("Bytes written: " + bytesWritten + " " + data.length + " at " + System.currentTimeMillis());
+                logger.debug("Bytes written: " + bytesWritten + " " + data.length);
             } else {
                 try {
                     int lengthInMs = (data.length * 1000) / (PlaybackFrameAccessor.CHANNELS * PlaybackFrameAccessor.BYTES * PlaybackFrameAccessor.SAMPLE_RATE);
@@ -84,14 +90,9 @@ public class AudioStreamService {
 
             sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
             sourceDataLine.open(defaultAudioFormat, size);
-            sourceDataLine.start();
-
-            // Bug(?) in openJDK. Without this later sourceDataLine.write hangs indefinitely sometimes...
-            // See https://gist.github.com/helospark/9406f093cc39fe8c4ccf1ea61951e4ee that shows it on some computers (but not on others)
-            sourceDataLine.write(new byte[4], 0, 4);
 
             isInitialized = true;
-            logger.info("SourceDataLine is initialized");
+            logger.info("SourceDataLine is initialized, available size={}", sourceDataLine.available());
         } catch (LineUnavailableException | IllegalArgumentException e) {
             logger.error("Unable to initialize sound, there will be no sound during playback", e);
         }
@@ -101,7 +102,16 @@ public class AudioStreamService {
         return sourceDataLine.available();
     }
 
-    public void clearBuffer() {
-        sourceDataLine.flush();
+    public void stopPlayback() {
+        logger.debug("Stopped playback");
+
+        // These two methods cause the stream to have a weird effect after playback is restarted on Linux (at least). It's like a draining is not finished even though it should be.
+        // so instead let's just write empty data
+        //        sourceDataLine.drain();
+        //        sourceDataLine.flush();
+
+        int size = sourceDataLine.getBufferSize();
+        sourceDataLine.write(new byte[size], 0, size);
+        sourceDataLine.stop();
     }
 }
