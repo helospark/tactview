@@ -48,6 +48,10 @@ public class AudioStreamService {
 
     public void startPlayback() {
         sourceDataLine.start();
+        sourceDataLine.write(new byte[4], 0, 4);
+        sourceDataLine.flush();
+
+        fillBufferWithSilence();
         logger.debug("Start playback available={}", sourceDataLine.available());
     }
 
@@ -105,13 +109,21 @@ public class AudioStreamService {
     public void stopPlayback() {
         logger.debug("Stopped playback");
 
-        // These two methods cause the stream to have a weird effect after playback is restarted on Linux (at least). It's like a draining is not finished even though it should be.
-        // so instead let's just write empty data
-        //        sourceDataLine.drain();
-        //        sourceDataLine.flush();
-
-        int size = sourceDataLine.getBufferSize();
-        sourceDataLine.write(new byte[size], 0, size);
+        sourceDataLine.drain();
         sourceDataLine.stop();
+    }
+
+    /**
+     * Problem: Audio and video is synchronized based on audio channel, the FPS therefore depends on sourceDataLine.write.
+     * We set a buffer size for sourceDataLine that is equal to the number of samples we will write per frame any rely on sourceDataLine.write's blocking behaviour to 
+     * control the framerate. This would work perfectly, however the backend buffer may actually be larger than what we give, from docs:
+     * "there is no guarantee that attempts to write additional data will block".
+     * Due to this until the buffer is filled it may return much faster than expected (ex. first 5 frame each return in 1-2ms instead of 33 that would be expected for 30FPS video)
+     * Solution: when we start playing fill up the buffer to make sure it will properly block.
+     * Disadvantage: Pressing the play button will have additional delay due to this depending on buffer size
+     */
+    private void fillBufferWithSilence() {
+        int silenceSize = sourceDataLine.getBufferSize() * 4;
+        sourceDataLine.write(new byte[silenceSize], 0, silenceSize);
     }
 }
