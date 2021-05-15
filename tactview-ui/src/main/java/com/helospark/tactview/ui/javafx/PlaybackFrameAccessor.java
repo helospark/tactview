@@ -1,9 +1,15 @@
 package com.helospark.tactview.ui.javafx;
 
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
@@ -108,6 +114,15 @@ public class PlaybackFrameAccessor {
                     .withAudioLength(length)
                     .build();
             frame = timelineManager.getFrame(request);
+        }
+        if (frame == null || frame.getAudioResult().isEmpty()) {
+            // this is so the same audio->video sync code can be used to play video, instead of writing a secondary play video logic
+            int bytes = projectRepository.getFrameTime().multiply(BigDecimal.valueOf(SAMPLE_RATE)).intValue() * BYTES;
+            List<ByteBuffer> channels = new ArrayList<>(CHANNELS);
+            for (int i = 0; i < CHANNELS; ++i) {
+                channels.add(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(bytes));
+            }
+            frame = new AudioVideoFragment(null, new AudioFrameResult(channels, SAMPLE_RATE, BYTES));
         }
         return frame;
     }

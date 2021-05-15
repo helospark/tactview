@@ -1,7 +1,9 @@
 package com.helospark.tactview.core.decoder.framecache;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class MediaCache {
-    private ConcurrentHashMap<String, NavigableMap<Integer, MediaHashValue>> backCache = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, NavigableMap<BigDecimal, MediaHashValue>> backCache = new ConcurrentHashMap<>();
     private Set<CacheRemoveDomain> accessTimeOrderedList = new ConcurrentSkipListSet<>();
     private MemoryManager memoryManager;
     private MessagingService messagingService;
@@ -78,12 +80,12 @@ public class MediaCache {
             CacheRemoveDomain firstElement = elements.pollFirst();
             //                            logger.debug("Trying to clean {}", firstElement);
             if (firstElement != null) {
-                NavigableMap<Integer, MediaHashValue> line = backCache.get(firstElement.key);
+                NavigableMap<BigDecimal, MediaHashValue> line = backCache.get(firstElement.key);
                 if (line != null) {
-                    MediaHashValue removedElement = line.remove(firstElement.value.frameStart);
+                    MediaHashValue removedElement = line.remove(firstElement.time);
                     if (removedElement != null) {
                         for (var buffer : removedElement.frames) {
-                            returnBuffer(buffer);
+                            returnBuffers(buffer.allAudioDataFrames);
                         }
                         logger.debug("Removed buffer {} {}, current buffer size: {}", firstElement.key, removedElement, approximateSize);
                     }
@@ -98,6 +100,7 @@ public class MediaCache {
     }
 
     public void cacheMedia(String key, MediaHashValue value, boolean cloneValue) {
+
         MediaHashValue clonedValue;
         if (cloneValue) {
             clonedValue = cloneValue(value);
@@ -105,26 +108,28 @@ public class MediaCache {
             clonedValue = value;
             int newCachedSize = value.frames
                     .stream()
+                    .flatMap(a -> a.allAudioDataFrames.stream())
                     .map(a -> a.capacity())
                     .mapToInt(Integer::valueOf)
                     .sum();
             approximateSize += newCachedSize;
         }
-        NavigableMap<Integer, MediaHashValue> cachedFrames = backCache.get(key);
+        NavigableMap<BigDecimal, MediaHashValue> cachedFrames = backCache.get(key);
         if (cachedFrames == null) {
             cachedFrames = new ConcurrentSkipListMap<>();
             backCache.put(key, cachedFrames);
         }
 
-        MediaHashValue previousValue = cachedFrames.put(clonedValue.frameStart, clonedValue);
+        BigDecimal startTime = clonedValue.frames.get(0).startTime;
+        MediaHashValue previousValue = cachedFrames.put(startTime, clonedValue);
 
         if (previousValue != null) {
             previousValue.frames
                     .stream()
-                    .forEach(f -> GlobalMemoryManagerAccessor.memoryManager.returnBuffer(f));
+                    .forEach(f -> GlobalMemoryManagerAccessor.memoryManager.returnBuffers(f.allAudioDataFrames));
         }
 
-        accessTimeOrderedList.add(new CacheRemoveDomain(key, clonedValue));
+        accessTimeOrderedList.add(new CacheRemoveDomain(key, clonedValue, startTime));
 
         if (logger.isDebugEnabled()) {
             logger.debug("Following frames are cached {}", value.frames.stream()
@@ -137,13 +142,13 @@ public class MediaCache {
 
     private MediaHashValue cloneValue(MediaHashValue value) {
         List<ByteBuffer> copied = new ArrayList<>(value.frames.size());
-        for (ByteBuffer bufferToClone : value.frames) {
-            ByteBuffer result = requestBuffersForCloning(bufferToClone);
-            copyToResult(result, bufferToClone);
+        for (MediaDataFrame bufferToClone : value.frames) {
+            ByteBuffer result = requestBuffersForCloning(bufferToClone.frame);
+            copyToResult(result, bufferToClone.frame);
             copied.add(result);
         }
 
-        return new MediaHashValue(value.frameStart, value.endIndex, copied);
+        return new MediaHashValue(value.frames, value.endTime);
     }
 
     private ByteBuffer requestBuffersForCloning(ByteBuffer bufferToClone) {
@@ -159,51 +164,136 @@ public class MediaCache {
         logger.debug("Returned " + System.identityHashCode(buffer) + " new size: " + approximateSize);
     }
 
-    public Optional<MediaHashValue> findInCache(String key, int frame) {
-        NavigableMap<Integer, MediaHashValue> media = backCache.get(key);
+    private void returnBuffers(List<ByteBuffer> buffers) {
+        for (var buffer : buffers) {
+            returnBuffer(buffer);
+        }
+    }
+
+    public Optional<MediaDataFrame> findInCache(String key, BigDecimal time) {
+        NavigableMap<BigDecimal, MediaHashValue> media = backCache.get(key);
         if (media == null) {
-            logger.debug("NOT found " + key + " at frame " + frame);
+            logger.debug("NOT found " + key + " at frame " + time);
             return Optional.empty();
         } else {
-            Optional<MediaHashValue> result = media // todo: avoid linear search
+            Optional<MediaHashValue> cacheFrame = media // todo: avoid linear search
                     .values()
                     .stream()
-                    .filter(value -> frame >= value.frameStart && frame < value.endIndex)
+                    .filter(value -> time.compareTo(value.frames.get(0).startTime) >= 0 && time.compareTo(value.endTime) < 0)
                     .findFirst();
-            result.ifPresent(value -> value.lastAccessed = System.currentTimeMillis());
 
-            logger.debug("Found " + key + " at frame " + frame + " = " + result.isPresent());
+            Optional<MediaDataFrame> result = cacheFrame
+                    .map(value -> value.getFrameAt(time));
+
+            System.out.println("Found in cache " + result + " for time " + time);
+
+            cacheFrame.ifPresent(value -> value.lastAccessed = System.currentTimeMillis());
+
+            logger.debug("Found " + key + " at frame " + time + " = " + result.isPresent());
 
             return result;
         }
     }
 
     public static class MediaHashValue implements Comparable<MediaHashValue> {
-        public int frameStart;
-        public int endIndex;
-        public List<ByteBuffer> frames;
+        public List<MediaDataFrame> frames;
+        public BigDecimal endTime;
         private volatile long lastAccessed = System.currentTimeMillis();
 
-        public MediaHashValue(int frameStart, int endIndex, List<ByteBuffer> frames) {
-            this.frameStart = frameStart;
-            this.endIndex = endIndex;
+        public MediaHashValue(List<MediaDataFrame> frames, BigDecimal endTime) {
             this.frames = frames;
+            this.endTime = endTime;
         }
 
-        public MediaHashValue(ByteBuffer singleFrame) {
-            this.frameStart = 0;
-            this.endIndex = 0;
-            this.frames = List.of(singleFrame);
+        public MediaDataFrame getFrameAt(BigDecimal time) {
+            var value = this;
+            BigDecimal closesDistance = null;
+            MediaDataFrame result = null;
+            for (int i = value.frames.size() - 1; i >= 0; --i) {
+                BigDecimal distance = value.frames.get(i).startTime.subtract(time).abs();
+
+                if (closesDistance == null || distance.compareTo(closesDistance) < 0) {
+                    result = value.frames.get(i);
+                    closesDistance = distance;
+                }
+            }
+            if (value.frames.size() > 1) {
+                System.out.println("$$$$$$$$$$$ " + time + " " + result + " all=" + this.frames + " endTime=" + endTime);
+            }
+            return result;
+        }
+
+        public MediaHashValue(ByteBuffer singleFrame, BigDecimal startTime, BigDecimal endTime) {
+            this.frames = List.of(new MediaDataFrame(singleFrame, startTime));
+            this.endTime = endTime;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((endTime == null) ? 0 : endTime.hashCode());
+            result = prime * result + ((frames == null) ? 0 : frames.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            MediaHashValue other = (MediaHashValue) obj;
+            if (endTime == null) {
+                if (other.endTime != null)
+                    return false;
+            } else if (!endTime.equals(other.endTime))
+                return false;
+            if (frames == null) {
+                if (other.frames != null)
+                    return false;
+            } else if (!frames.equals(other.frames))
+                return false;
+            return true;
         }
 
         @Override
         public int compareTo(MediaHashValue o) {
-            return Integer.valueOf(frameStart).compareTo(o.frameStart); // may not work correctly for variable length
+            return endTime.compareTo(o.endTime);
         }
 
         @Override
         public String toString() {
-            return "MediaHashValue [frameStart=" + frameStart + "]";
+            return "MediaHashValue [frames=" + frames + ", endTime=" + endTime + "]";
+        }
+
+    }
+
+    public static class MediaDataFrame {
+        public ByteBuffer frame;
+        public BigDecimal startTime;
+
+        public List<ByteBuffer> allAudioDataFrames; // for audio channels 
+
+        public MediaDataFrame(ByteBuffer frame, BigDecimal startTime) {
+            this.frame = frame;
+            this.startTime = startTime;
+
+            this.allAudioDataFrames = Collections.singletonList(frame);
+        }
+
+        public MediaDataFrame(List<ByteBuffer> frame, BigDecimal startTime) {
+            this.frame = null;
+            this.startTime = startTime;
+
+            this.allAudioDataFrames = frame;
+        }
+
+        @Override
+        public String toString() {
+            return "MediaDataFrame [startTime=" + startTime + "]";
         }
 
     }
@@ -217,10 +307,12 @@ public class MediaCache {
     public static class CacheRemoveDomain implements Comparable<CacheRemoveDomain> {
         private String key;
         private MediaHashValue value;
+        private BigDecimal time;
 
-        public CacheRemoveDomain(String key, MediaHashValue value) {
+        public CacheRemoveDomain(String key, MediaHashValue value, BigDecimal time) {
             this.key = key;
             this.value = value;
+            this.time = time;
         }
 
         @Override
@@ -233,6 +325,7 @@ public class MediaCache {
             final int prime = 31;
             int result = 1;
             result = prime * result + ((key == null) ? 0 : key.hashCode());
+            result = prime * result + ((time == null) ? 0 : time.hashCode());
             return result;
         }
 
@@ -250,6 +343,11 @@ public class MediaCache {
                     return false;
             } else if (!key.equals(other.key))
                 return false;
+            if (time == null) {
+                if (other.time != null)
+                    return false;
+            } else if (!time.equals(other.time))
+                return false;
             return true;
         }
 
@@ -258,13 +356,13 @@ public class MediaCache {
     public void dropCaches() {
         logger.debug("Drop all media caches");
 
-        Map<String, NavigableMap<Integer, MediaHashValue>> copiedElements = new HashMap<>(backCache);
+        Map<String, NavigableMap<BigDecimal, MediaHashValue>> copiedElements = new HashMap<>(backCache);
         backCache.clear();
         accessTimeOrderedList.clear();
         for (var cachedEntry : copiedElements.entrySet()) {
             for (var cachedFrameSequence : cachedEntry.getValue().entrySet()) {
                 for (var frame : cachedFrameSequence.getValue().frames) {
-                    returnBuffer(frame);
+                    returnBuffers(frame.allAudioDataFrames);
                 }
             }
         }

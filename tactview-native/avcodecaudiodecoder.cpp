@@ -108,6 +108,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
     typedef struct {
         char* data;
+        long long startTimeInMs;
     } FFMpegFrame;
 
 

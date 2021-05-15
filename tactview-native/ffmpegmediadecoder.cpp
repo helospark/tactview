@@ -51,6 +51,7 @@ extern "C" {
         int64_t lastPts = -1;
         std::set<DecodedPackage, PtsComparator> decodedPackages;
         int width, height;
+        AVRational framerate;
     };
 
 
@@ -81,6 +82,19 @@ extern "C" {
         int bitRate;
         long long lengthInMicroseconds;
     };
+
+    AVRational findFramerate(AVStream* st) {
+        AVRational framerate;
+        if (st->avg_frame_rate.den == 0)
+        {
+            framerate = st->r_frame_rate;
+        }
+        else
+        {
+            framerate = st->avg_frame_rate;
+        }
+        return framerate;
+    }
 
     EXPORTED MediaMetadata readMediaMetadata(const char* path)
     {
@@ -155,16 +169,7 @@ extern "C" {
         mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
         mediaMetadata.bitRate = st->codec->bit_rate;
 
-        AVRational framerate;
-
-        if (st->avg_frame_rate.den == 0)
-        {
-            framerate = st->r_frame_rate;
-        }
-        else
-        {
-            framerate = st->avg_frame_rate;
-        }
+        AVRational framerate = findFramerate(st);
 
         mediaMetadata.fps = framerate.num / (double)framerate.den;
 
@@ -186,6 +191,7 @@ extern "C" {
     typedef struct
     {
         char* data;
+        long long startTimeInMs;
     } FFMpegFrame;
 
     typedef struct
@@ -197,6 +203,9 @@ extern "C" {
         long long startMicroseconds;
         char* path;
         FFMpegFrame* frames;
+
+        int actualNumberOfFramesRead;
+        long long endTimeInMs;
     } FFmpegImageRequest;
 
     int decodedMinPts(DecodeStructure* decodeStructure)
@@ -245,7 +254,16 @@ extern "C" {
         }
     }
 
-    // Dropin replacement for legacy avcodec_decode_video2
+    int receiveFrame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt) {
+        int ret = avcodec_receive_frame(avctx, frame);
+        if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
+            return ret;
+        if (ret >= 0)
+            *got_frame = 1;
+        return 0;
+    }
+
+
     // From here: https://blogs.gentoo.org/lu_zero/2016/03/29/new-avcodec-api/
     int decode_video_frame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt)
     {
@@ -257,19 +275,20 @@ extern "C" {
             ret = avcodec_send_packet(avctx, pkt);
             // In particular, we don't expect AVERROR(EAGAIN), because we read all
             // decoded frames with avcodec_receive_frame() until done.
-            if (ret < 0)
+            
+            if ( ret == AVERROR(EAGAIN)) {
+                receiveFrame(avctx, frame, got_frame, pkt);
+                std::cout << "EAGAIN" << std::endl;
+                return AVERROR(EAGAIN);
+            }
+            
+            if (ret < 0) {
                 return ret == AVERROR_EOF ? 0 : ret;
+            }
         }
 
-        ret = avcodec_receive_frame(avctx, frame);
-        if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
-            return ret;
-        if (ret >= 0)
-            *got_frame = 1;
-
-        return 0;
+        return receiveFrame(avctx, frame, got_frame, pkt);
     }
-
 
     void fillQueue(DecodeStructure* element)
     {
@@ -282,40 +301,44 @@ extern "C" {
         AVPacket          packet = element->packet;
         struct SwsContext *sws_ctx = element->sws_ctx;
         int frameFinished;
+        int decodedFrame;
         while(element->decodedPackages.size() < QUEUE_SIZE && av_read_frame(pFormatCtx, &packet)>=0)
         {
             if(packet.stream_index==videoStream)
             {
-                int decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
+                do {
+                    decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
+                    if(frameFinished)
+                    {
+                        AVFrame* pFrameRGB=allocateFrame(element->width, element->height);
 
-                if(frameFinished)
-                {
-                    AVFrame* pFrameRGB=allocateFrame(element->width, element->height);
+                        sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
+                                pFrame->linesize, 0, pCodecCtx->height,
+                                pFrameRGB->data, pFrameRGB->linesize);
 
-                    sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
-                              pFrame->linesize, 0, pCodecCtx->height,
-                              pFrameRGB->data, pFrameRGB->linesize);
+                        /** // debug for https://trello.com/c/otpORnEy/445-black-bar-on-the-right-if-width-is-not-divisable-by-8-ex-854px-width-there-is-6px-black-bar
+                        if (pCodecCtx->width >= 850) {
+                            for (int id = 850; id < 854; ++id) {
+                                DEBUG("Unexpected color: " << (int)(*(pFrame->data[0] + id + 0)) << " " << 
+                                    (int)(*(pFrame->data[0] + id + 1)) << " " << 
+                                    (int)(*(pFrame->data[0] + id + 2)) << " " << 
+                                    (int)(*(pFrame->data[0] + id + 3)) << " ");
+                            }
+                        } */
 
-                    /** // debug for https://trello.com/c/otpORnEy/445-black-bar-on-the-right-if-width-is-not-divisable-by-8-ex-854px-width-there-is-6px-black-bar
-                    if (pCodecCtx->width >= 850) {
-                        for (int id = 850; id < 854; ++id) {
-                            DEBUG("Unexpected color: " << (int)(*(pFrame->data[0] + id + 0)) << " " << 
-                                (int)(*(pFrame->data[0] + id + 1)) << " " << 
-                                (int)(*(pFrame->data[0] + id + 2)) << " " << 
-                                (int)(*(pFrame->data[0] + id + 3)) << " ");
-                        }
-                    } */
+                        DecodedPackage decodedPackage;
+                        decodedPackage.pts = packet.pts;
+                        decodedPackage.dts = packet.dts;
+                        decodedPackage.timestamp = av_frame_get_best_effort_timestamp(pFrame);
+                        decodedPackage.pFrame = pFrameRGB;
 
-                    DecodedPackage decodedPackage;
-                    decodedPackage.pts = packet.pts;
-                    decodedPackage.dts = packet.dts;
-                    decodedPackage.timestamp = av_frame_get_best_effort_timestamp(pFrame);
-                    decodedPackage.pFrame = pFrameRGB;
+                        element->decodedPackages.insert(decodedPackage);
 
-                    element->decodedPackages.insert(decodedPackage);
-                }
-                element->lastPts = packet.pts;
-               // DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
+                        DEBUG("Actual video package " << packet.dts << " " <<  packet.pts << " " << decodedPackage.timestamp << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
+                    }
+                    element->lastPts = packet.pts;
+                    //DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
+                } while (decodedFrame == AVERROR(EAGAIN));
             }
             // Free the packet that was allocated by av_read_frame
             av_free_packet(&packet);
@@ -365,14 +388,28 @@ extern "C" {
         timeBaseQ.den = AV_TIME_BASE;
 
         int64_t seek_target = request->startMicroseconds * (AV_TIME_BASE / 1000000); // rethink
+        int64_t end_target = request->endTimeInMs * (AV_TIME_BASE / 1000000); // rethink
+
         int64_t minimumTimeRequiredToSeek = 2 * 1000000 * (AV_TIME_BASE / 1000000); // Seek if distance is more than 2 seconds
-        seek_target = av_rescale_q(seek_target, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
+        AVRational timeframe = pFormatCtx->streams[videoStream]->time_base;
+        seek_target = av_rescale_q(seek_target, timeBaseQ, timeframe);
         minimumTimeRequiredToSeek = av_rescale_q(minimumTimeRequiredToSeek, timeBaseQ, pFormatCtx->streams[videoStream]->time_base);
         int64_t seek_distance = seek_target - decodedMinPts(decodeStructure);
+        
+        int64_t nextPts = decodeStructure->lastPts;
 
-        DEBUG("Seeking info " << request->startMicroseconds << " current_position=" << decodeStructure->lastPts << " expected=" << seek_target << " distance=" << seek_distance);
-        int FRAME_TIME = 1; // rounding imprecision???
-        if (seek_distance > minimumTimeRequiredToSeek || seek_distance < -FRAME_TIME)
+        if (decodeStructure->decodedPackages.size() > 0) {
+            DecodedPackage nextElement = *(decodeStructure->decodedPackages.begin());
+            nextPts = nextElement.timestamp;
+        }
+
+        int frameTime = (int)ceil((double)decodeStructure->framerate.den / decodeStructure->framerate.num * AV_TIME_BASE);
+        int frameTimeInStreamTimebase = av_rescale_q(frameTime, timeBaseQ, timeframe);
+        
+        DEBUG("Seeking info " << request->startMicroseconds << " current_position=" << nextPts << " expected=" << seek_target << " distance=" << seek_distance << " frameTime=" << frameTimeInStreamTimebase);
+        
+
+        if (seek_distance > minimumTimeRequiredToSeek || seek_distance < -frameTimeInStreamTimebase || request->useApproximatePosition)
         {
             DEBUG("Seeking required");
             av_seek_frame(pFormatCtx, videoStream, seek_target, AVSEEK_FLAG_BACKWARD);
@@ -400,8 +437,13 @@ extern "C" {
                                   pFrameRGB->data, pFrameRGB->linesize);
 
                         copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
+                        request->frames[i].startTimeInMs = av_rescale_q(av_frame_get_best_effort_timestamp(pFrame), timeframe, timeBaseQ);
                         ++i;
                         freeFrame(pFrameRGB);
+
+                        if (request->frames[i].startTimeInMs >= end_target) {
+                            break;
+                        }
                     }
                     decodeStructure->lastPts = packet.pts;
                     //DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
@@ -416,23 +458,38 @@ extern "C" {
             while (i < request->numberOfFrames && decodeStructure->decodedPackages.size() > 0)
             {
                 DecodedPackage element = *(decodeStructure->decodedPackages.begin());
-                decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
-                fillQueue(decodeStructure);
+                long time = av_rescale_q(element.timestamp, timeframe, timeBaseQ);
 
                 if (element.timestamp < seek_target)
                 {
                     DEBUG("Skipping package " << element.timestamp);
                 }
-                else
+                else if (time < end_target)
                 {
                     copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
+                    request->frames[i].startTimeInMs = time;
+                    std::cout << "########### reading: " << i << " " << time << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
                     ++i;
+                } else {
+                    std::cout << "End reading " << time << std::endl;
+                    if (decodeStructure->decodedPackages.size() == 0) {
+                        //  fillQueue(decodeStructure);
+                    }
+                    if (decodeStructure->decodedPackages.size() > 0) {
+                        long long nextFrameTime = av_rescale_q(decodeStructure->decodedPackages.begin()->timestamp, timeframe, timeBaseQ);
+                        request->endTimeInMs = nextFrameTime;
+                    }
+
+                    break;
                 }
+                decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
+                fillQueue(decodeStructure);
                 freeFrame(element.pFrame);
             }
         }
-        DEBUG("Queue size: " << decodeStructure->decodedPackages.size());
+        request->actualNumberOfFramesRead = i;
 
+        DEBUG("Queue size: " << decodeStructure->decodedPackages.size());
     }
 
     DecodeStructure* openFile(FFmpegImageRequest* request)
@@ -531,6 +588,7 @@ extern "C" {
         element->sws_ctx = sws_ctx;
         element->width = request->width;
         element->height = request->height;
+        element->framerate = findFramerate(pFormatCtx->streams[videoStream]);
 
         std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
 

@@ -14,8 +14,12 @@ public class FFmpegImageRequest extends Structure implements Structure.ByReferen
     public String path;
     public FFMpegFrame frames;
 
+    // output
+    public int actualNumberOfFramesRead;
+    public long endTimeInMs;
+
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("width", "height", "numberOfFrames", "useApproximatePosition", "startMicroseconds", "path", "frames");
+        return Arrays.asList("width", "height", "numberOfFrames", "useApproximatePosition", "startMicroseconds", "path", "frames", "actualNumberOfFramesRead", "endTimeInMs");
     }
 }
