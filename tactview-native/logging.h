@@ -4,6 +4,7 @@
 #include <iostream>
 #include <ctime>
 #include <thread>
+#include <string>
 
 std::string getCurrentTime() {
   time_t rawtime;

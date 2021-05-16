@@ -4,7 +4,7 @@
 #include <experimental/filesystem>
 #include <numeric>
 
-#include "common.h"
+#include "../common.h"
 
 inline bool ends_with(std::string const & value, std::string const & ending) {
     if (ending.size() > value.size())
