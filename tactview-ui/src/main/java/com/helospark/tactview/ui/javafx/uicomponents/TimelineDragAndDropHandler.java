@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.ChangeClipForEffectCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.EffectResizedCommand;
@@ -180,6 +181,12 @@ public class TimelineDragAndDropHandler {
                 .withMoreMoveExpected(!revertable)
                 .withAdditionalSpecialPositions(List.of(uiTimelineManager.getCurrentPosition()))
                 .build();
+        commandInterpreter.sendWithResult(command);
+    }
+
+    public void moveEffectToDifferentParent(String newClipId, TimelinePosition position) {
+        EffectDragInformation dragInformation = dragRepository.currentEffectDragInformation();
+        ChangeClipForEffectCommand command = new ChangeClipForEffectCommand(timelineManager, dragInformation.getEffectId(), newClipId, position);
         commandInterpreter.sendWithResult(command);
     }
 

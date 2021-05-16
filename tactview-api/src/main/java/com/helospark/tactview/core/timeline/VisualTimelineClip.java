@@ -31,6 +31,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -274,6 +275,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
         } else {
             savedContent.put("backingFile", backingSource.getBackingFile());
         }
+    }
+
+    @Override
+    public boolean effectSupported(StatelessEffect effect) {
+        return effect instanceof StatelessVideoEffect || effect instanceof AbstractVideoTransitionEffect;
     }
 
 }

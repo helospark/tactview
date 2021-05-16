@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
@@ -21,10 +23,7 @@ public class EffectFactoryChain {
     }
 
     public StatelessEffect createEffect(CreateEffectRequest request) {
-        EffectFactory factory = context.getListOfBeans(EffectFactory.class)
-                .stream()
-                .filter(effectFactory -> effectFactory.doesSupport(request))
-                .findFirst()
+        EffectFactory factory = findSupportedFactory(request)
                 .orElseThrow(() -> new IllegalArgumentException("No factory for " + request));
         StatelessEffect result = factory.createEffect(request);
         result.setFactoryId(factory.getId());
@@ -38,6 +37,17 @@ public class EffectFactoryChain {
         }
 
         return result;
+    }
+
+    public boolean supports(CreateEffectRequest request) {
+        return findSupportedFactory(request).isPresent();
+    }
+
+    private Optional<EffectFactory> findSupportedFactory(CreateEffectRequest request) {
+        return context.getListOfBeans(EffectFactory.class)
+                .stream()
+                .filter(effectFactory -> effectFactory.doesSupport(request))
+                .findFirst();
     }
 
     public StatelessEffect restoreEffect(JsonNode node, LoadMetadata loadMetadata) {

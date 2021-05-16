@@ -636,13 +636,35 @@ public class TimelineCanvas {
                     TimelinePosition newX = TimelinePosition.ofSeconds(mapCanvasPixelToTime(x));
                     timelineDragAndDropHandler.resizeEffect(newX, finished);
                 } else {
+                    Optional<TimelineUiCacheElement> optionalElementUnderCursor = findElementAt(x, y);
                     TimelinePosition newX = TimelinePosition.ofSeconds(mapCanvasPixelToTime(x) - dragRepository.currentEffectDragInformation().getAnchorPointX());
-                    timelineDragAndDropHandler.moveEffect(newX, finished);
+
+                    if (optionalElementUnderCursor.isPresent() && optionalElementUnderCursor.get().elementType == TimelineUiCacheType.CLIP
+                            && isClipIdDifferentThanClipUnderCursorAndSupported(optionalElementUnderCursor.get())) {
+                        timelineDragAndDropHandler.moveEffectToDifferentParent(optionalElementUnderCursor.get().elementId, newX);
+                    } else {
+                        timelineDragAndDropHandler.moveEffect(newX, finished);
+                    }
                 }
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean isClipIdDifferentThanClipUnderCursorAndSupported(TimelineUiCacheElement element) {
+        String newClipId = element.elementId;
+        String effectId = dragRepository.currentEffectDragInformation().getEffectId();
+        Optional<StatelessEffect> effect = timelineAccessor.findEffectById(effectId);
+        Optional<TimelineClip> originalClip = timelineAccessor.findClipForEffect(effectId);
+        Optional<TimelineClip> newClip = timelineAccessor.findClipById(newClipId);
+
+        Optional<String> clipId = originalClip.map(clipA -> clipA.getId());
+        boolean isNewClipUnderCursor = clipId.isPresent() && !clipId.get().equals(newClipId);
+
+        boolean doesClipSupportEffect = effect.isPresent() && newClip.isPresent() && newClip.get().effectSupported(effect.get());
+
+        return isNewClipUnderCursor && doesClipSupportEffect;
     }
 
     private boolean isResizing(TimelineUiCacheElement element, double x) {

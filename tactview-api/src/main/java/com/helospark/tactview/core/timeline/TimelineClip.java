@@ -231,6 +231,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
     }
 
     public int addEffectAtAnyChannel(StatelessEffect effect) {
+        if (!effectSupported(effect)) {
+            throw new IllegalArgumentException("Effect type " + effect.getClass().getName() + " is not supported by " + this.getClass().getName());
+        }
         synchronized (getFullClipLock()) {
             int i = findOrCreateFirstChannelWhichEffectCanBeAdded(effect);
             return addEffectAtChannel(i, effect);
@@ -546,6 +549,10 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
                 renderOffset = TimelineLength.ofZero();
             }
         } // else is covered by parent by setting the interval
+    }
+
+    public boolean effectSupported(StatelessEffect effect) {
+        return false;
     }
 
 }

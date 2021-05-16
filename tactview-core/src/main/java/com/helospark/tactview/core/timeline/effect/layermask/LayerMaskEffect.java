@@ -31,6 +31,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
 
     private DependentClipProvider layerMaskProvider;
     private BooleanProvider invertProvider;
+    private BooleanProvider scaleLayerMaskProvider;
 
     private ValueListProvider<LayerMaskTypeListElement> layerMaskTypeProvider;
 
@@ -59,7 +60,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
             LayerMaskApplyRequest layerMaskRequest = LayerMaskApplyRequest.builder()
                     .withCurrentFrame(request.getCurrentFrame())
                     .withMask(layerMask.get())
-                    .withScaleLayerMask(true)
+                    .withScaleLayerMask(scaleLayerMaskProvider.getValueAt(request.getEffectPosition()))
                     .withCalculator(layerMaskType)
                     .withInvert(invertProvider.getValueAt(request.getEffectPosition()))
                     .build();
@@ -77,6 +78,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
         layerMaskProvider = new DependentClipProvider(new StepStringInterpolator());
         layerMaskTypeProvider = new ValueListProvider<>(getList(calculators), new StepStringInterpolator(getDefault(calculators)));
         invertProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
+        scaleLayerMaskProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0));
     }
 
     @Override
@@ -96,10 +98,15 @@ public class LayerMaskEffect extends StatelessVideoEffect {
                 .withKeyframeableEffect(invertProvider)
                 .withName("Invert")
                 .build();
+        ValueProviderDescriptor scaleLayerMaskDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(scaleLayerMaskProvider)
+                .withName("Scale layer mask")
+                .build();
 
         result.add(layerMaskProviderDescriptor);
         result.add(layerMaskTypeDescriptor);
         result.add(invertProviderDescriptor);
+        result.add(scaleLayerMaskDescriptor);
 
         return result;
     }

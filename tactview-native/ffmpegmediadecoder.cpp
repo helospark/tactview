@@ -333,7 +333,7 @@ extern "C" {
 
                         element->decodedPackages.insert(decodedPackage);
 
-                        DEBUG("Actual video package " << packet.dts << " " <<  packet.pts << " " << decodedPackage.timestamp << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
+                        //DEBUG("Actual video package " << packet.dts << " " <<  packet.pts << " " << decodedPackage.timestamp << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
                     }
                     element->lastPts = packet.pts;
                     //DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");

@@ -36,7 +36,7 @@ public class LayerMaskApplyRequest {
         return calculator;
     }
 
-    public boolean isScaleLayerMask() {
+    public boolean getScaleLayerMask() {
         return scaleLayerMask;
     }
 

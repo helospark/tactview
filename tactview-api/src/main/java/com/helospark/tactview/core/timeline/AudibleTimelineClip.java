@@ -185,4 +185,9 @@ public abstract class AudibleTimelineClip extends TimelineClip implements Single
 
         return result;
     }
+
+    @Override
+    public boolean effectSupported(StatelessEffect effect) {
+        return effect instanceof StatelessAudioEffect;
+    }
 }

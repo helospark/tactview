@@ -170,6 +170,15 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 .findFirst();
     }
 
+    public boolean supportsEffect(String id, String effectId, TimelinePosition position) {
+        Optional<TimelineClip> clipById = findClipById(id);
+        if (!clipById.isPresent()) {
+            return false;
+        }
+        CreateEffectRequest request = new CreateEffectRequest(position, effectId, clipById.get().getType(), clipById.get().getInterval());
+        return effectFactoryChain.supports(request);
+    }
+
     public StatelessEffect addEffectForClip(String id, String effectId, TimelinePosition position) {
         TimelineClip clipById = findClipById(id).get();
         StatelessEffect effect = createEffect(effectId, position.from(clipById.getInterval().getStartPosition()), clipById);
