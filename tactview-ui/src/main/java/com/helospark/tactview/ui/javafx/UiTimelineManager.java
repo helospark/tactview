@@ -286,6 +286,10 @@ public class UiTimelineManager {
         if (seconds.compareTo(BigDecimal.ZERO) < 0) {
             seconds = BigDecimal.ZERO;
         }
+        BigDecimal frameTime = projectRepository.getFrameTime();
+
+        seconds = seconds.divideToIntegralValue(frameTime).multiply(frameTime);
+
         synchronized (timelineLock) {
             currentPosition = new TimelinePosition(seconds);
         }

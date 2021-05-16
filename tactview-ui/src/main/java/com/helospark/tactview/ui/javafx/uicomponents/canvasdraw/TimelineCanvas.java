@@ -741,6 +741,15 @@ public class TimelineCanvas {
         double zoomFactor = Math.exp((wheelDelta * 0.05) * zoomIntensity);
 
         double scaleValue = timelineState.getZoom();
+        scaleValue = scaleValue * zoomFactor;
+        if (scaleValue < 0.001) {
+            scaleValue = 0.001;
+            return;
+        }
+        if (scaleValue > 25) {
+            scaleValue = 25;
+            return;
+        }
 
         double mousePointerTime = mapCanvasPixelToTime(mousePoint.getX());
         double newTime = mousePointerTime * zoomFactor;
@@ -752,12 +761,6 @@ public class TimelineCanvas {
             newTranslate = 0;
         }
         setTranslateSeconds(newTranslate);
-
-        scaleValue = scaleValue * zoomFactor;
-        if (scaleValue < 0.001)
-            scaleValue = 0.001;
-        if (scaleValue > 20)
-            scaleValue = 20;
 
         timelineState.setZoom(scaleValue);
     }
