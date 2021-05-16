@@ -278,7 +278,6 @@ extern "C" {
             
             if ( ret == AVERROR(EAGAIN)) {
                 receiveFrame(avctx, frame, got_frame, pkt);
-                std::cout << "EAGAIN" << std::endl;
                 return AVERROR(EAGAIN);
             }
             
@@ -455,7 +454,7 @@ extern "C" {
         else
         {
             fillQueue(decodeStructure);
-            while (i < request->numberOfFrames && decodeStructure->decodedPackages.size() > 0)
+            while (i < request->numberOfFrames - 1 && decodeStructure->decodedPackages.size() > 0)
             {
                 DecodedPackage element = *(decodeStructure->decodedPackages.begin());
                 long time = av_rescale_q(element.timestamp, timeframe, timeBaseQ);
@@ -468,16 +467,20 @@ extern "C" {
                 {
                     copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
                     request->frames[i].startTimeInMs = time;
-                    std::cout << "########### reading: " << i << " " << time << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
+                    //std::cout << "########### reading: " << i << " " << time << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
                     ++i;
                 } else {
-                    std::cout << "End reading " << time << std::endl;
+                    //std::cout << "End reading " << time << std::endl;
                     if (decodeStructure->decodedPackages.size() == 0) {
                         //  fillQueue(decodeStructure);
                     }
                     if (decodeStructure->decodedPackages.size() > 0) {
-                        long long nextFrameTime = av_rescale_q(decodeStructure->decodedPackages.begin()->timestamp, timeframe, timeBaseQ);
+                        DecodedPackage nextFrame = *decodeStructure->decodedPackages.begin();
+                        long long nextFrameTime = av_rescale_q(nextFrame.timestamp, timeframe, timeBaseQ);
+                        copyFrameData(nextFrame.pFrame, request->width, request->height, i, request->frames[i].data);
+                        request->frames[i].startTimeInMs = nextFrameTime;
                         request->endTimeInMs = nextFrameTime;
+                        ++i;
                     }
 
                     break;

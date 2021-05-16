@@ -51,7 +51,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
         String cacheKey = request.getFile().getAbsolutePath() + " " + request.getWidth() + " " + request.getHeight();
-        Optional<MediaDataFrame> result = mediaCache.findInCache(cacheKey, BigDecimal.ZERO);
+        Optional<MediaDataFrame> result = mediaCache.findInCacheAndClone(cacheKey, BigDecimal.ZERO);
 
         ByteBuffer image;
         if (result.isPresent()) {
@@ -67,7 +67,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
             implementation.readImage(imageRequest);
             image = imageRequest.data;
 
-            mediaCache.cacheMedia(cacheKey, new MediaHashValue(Collections.singletonList(new MediaDataFrame(image, BigDecimal.ZERO)), BigDecimal.ONE));
+            mediaCache.cacheMedia(cacheKey, new MediaHashValue(Collections.singletonList(new MediaDataFrame(image, BigDecimal.ZERO)), BigDecimal.ONE, BigDecimal.ZERO));
         }
 
         ByteBuffer resultFrame = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4);

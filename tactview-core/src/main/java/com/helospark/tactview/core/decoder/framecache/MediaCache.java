@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
@@ -141,14 +142,28 @@ public class MediaCache {
     }
 
     private MediaHashValue cloneValue(MediaHashValue value) {
-        List<ByteBuffer> copied = new ArrayList<>(value.frames.size());
+        List<MediaDataFrame> copied = new ArrayList<>(value.frames.size());
         for (MediaDataFrame bufferToClone : value.frames) {
-            ByteBuffer result = requestBuffersForCloning(bufferToClone.frame);
-            copyToResult(result, bufferToClone.frame);
-            copied.add(result);
+            copied.add(copyValue(bufferToClone));
         }
 
-        return new MediaHashValue(value.frames, value.endTime);
+        return new MediaHashValue(copied, value.endTime, value.startTime);
+    }
+
+    private MediaDataFrame copyValue(MediaDataFrame bufferToClone) {
+        if (bufferToClone.frame != null) {
+            ByteBuffer result = requestBuffersForCloning(bufferToClone.frame);
+            copyToResult(result, bufferToClone.frame);
+            return new MediaDataFrame(result, bufferToClone.startTime);
+        } else {
+            List<ByteBuffer> frames = new ArrayList<>(bufferToClone.allAudioDataFrames.size());
+            for (var entry : bufferToClone.allAudioDataFrames) {
+                ByteBuffer result = requestBuffersForCloning(entry);
+                copyToResult(result, entry);
+                frames.add(result);
+            }
+            return new MediaDataFrame(frames, bufferToClone.startTime);
+        }
     }
 
     private ByteBuffer requestBuffersForCloning(ByteBuffer bufferToClone) {
@@ -179,13 +194,15 @@ public class MediaCache {
             Optional<MediaHashValue> cacheFrame = media // todo: avoid linear search
                     .values()
                     .stream()
-                    .filter(value -> time.compareTo(value.frames.get(0).startTime) >= 0 && time.compareTo(value.endTime) < 0)
+                    .filter(value -> time.compareTo(value.startTime) >= 0 && time.compareTo(value.endTime) < 0)
                     .findFirst();
 
             Optional<MediaDataFrame> result = cacheFrame
                     .map(value -> value.getFrameAt(time));
 
-            System.out.println("Found in cache " + result + " for time " + time);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Found in cache {} for time {}", result, time);
+            }
 
             cacheFrame.ifPresent(value -> value.lastAccessed = System.currentTimeMillis());
 
@@ -195,14 +212,24 @@ public class MediaCache {
         }
     }
 
+    // TODO: locking
+    public Optional<MediaDataFrame> findInCacheAndClone(String key, BigDecimal time) {
+        Optional<MediaDataFrame> result = findInCache(key, time);
+
+        return result.map(a -> copyValue(a));
+    }
+
     public static class MediaHashValue implements Comparable<MediaHashValue> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(MediaHashValue.class);
         public List<MediaDataFrame> frames;
         public BigDecimal endTime;
+        public BigDecimal startTime;
         private volatile long lastAccessed = System.currentTimeMillis();
 
-        public MediaHashValue(List<MediaDataFrame> frames, BigDecimal endTime) {
+        public MediaHashValue(List<MediaDataFrame> frames, BigDecimal endTime, BigDecimal startTime) {
             this.frames = frames;
             this.endTime = endTime;
+            this.startTime = startTime;
         }
 
         public MediaDataFrame getFrameAt(BigDecimal time) {
@@ -217,8 +244,9 @@ public class MediaCache {
                     closesDistance = distance;
                 }
             }
-            if (value.frames.size() > 1) {
-                System.out.println("$$$$$$$$$$$ " + time + " " + result + " all=" + this.frames + " endTime=" + endTime);
+
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Get closest frae time={} result={}, all={} endTime={}", time, result, this.frames, endTime);
             }
             return result;
         }
@@ -284,11 +312,11 @@ public class MediaCache {
             this.allAudioDataFrames = Collections.singletonList(frame);
         }
 
-        public MediaDataFrame(List<ByteBuffer> frame, BigDecimal startTime) {
+        public MediaDataFrame(List<ByteBuffer> frames, BigDecimal startTime) {
             this.frame = null;
             this.startTime = startTime;
 
-            this.allAudioDataFrames = frame;
+            this.allAudioDataFrames = frames;
         }
 
         @Override

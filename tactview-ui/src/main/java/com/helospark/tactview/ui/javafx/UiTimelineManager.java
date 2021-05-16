@@ -8,12 +8,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -33,7 +38,8 @@ import sonic.Sonic;
 
 @Component
 public class UiTimelineManager {
-    private ExecutorService playbackExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("playback-thread-%d").build());
+    private static final Logger LOGGER = LoggerFactory.getLogger(UiTimelineManager.class);
+    private ThreadPoolExecutor playbackExecutorService = createExecutorService();
     private final int CACHE_MODULO = 1;
     private int numberOfFramesToCache = 2;
     private final List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
@@ -42,7 +48,6 @@ public class UiTimelineManager {
 
     private volatile TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
     private volatile boolean isPlaying;
-    private Thread runThread;
     private final Object timelineLock = new Object();
 
     private Sonic sonic = null;
@@ -56,9 +61,13 @@ public class UiTimelineManager {
     private JavaByteArrayConverter javaByteArrayConverter;
     private List<AudioPlayedListener> audioPlayedListeners;
 
+    private ScheduledExecutorService scheduledExecutorService;
+
+    private long lastTimeScreenUpdated = 0;
+
     public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
             AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository, JavaByteArrayConverter javaByteArrayConverter,
-            List<AudioPlayedListener> audioPlayedListeners) {
+            List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
         this.playbackFrameAccessor = playbackController;
@@ -66,6 +75,15 @@ public class UiTimelineManager {
         this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
         this.javaByteArrayConverter = javaByteArrayConverter;
         this.audioPlayedListeners = audioPlayedListeners;
+        this.scheduledExecutorService = scheduledExecutorService;
+
+        scheduledExecutorService.scheduleAtFixedRate(() -> handleStuckPlayback(), 5000, 5000, TimeUnit.MILLISECONDS);
+    }
+
+    private ThreadPoolExecutor createExecutorService() {
+        return new ThreadPoolExecutor(1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>());
     }
 
     public void setDisplayUpdaterService(DisplayUpdaterService displayUpdaterService) {
@@ -85,54 +103,58 @@ public class UiTimelineManager {
             isPlaying = true;
             statusChangeConsumers.stream()
                     .forEach(consumer -> consumer.accept(PlaybackStatus.STARTED));
-            playbackExecutorService.submit(() -> {
-                try {
-                    int frame = 0;
-                    audioStreamService.startPlayback();
-                    while (isPlaying) {
-                        TimelinePosition nextFrame = this.expectedNextFrames(1).get(0);
-                        synchronized (timelineLock) {
-                            currentPosition = nextFrame;
-                        }
+            lastTimeScreenUpdated = System.currentTimeMillis();
+            playbackExecutorService.submit(() -> playback());
+        }
+    }
 
-                        boolean isMute = uiPlaybackPreferenceRepository.isMute();
-                        TimelineLength length = new TimelineLength(projectRepository.getFrameTime());
-                        AudioVideoFragment audioVideoFragment = playbackFrameAccessor.getSingleAudioFrameAtPosition(currentPosition, isMute, Optional.of(length));
-
-                        if (!uiPlaybackPreferenceRepository.getPlaybackSpeedMultiplier().equals(BigDecimal.ONE)) {
-                            AudioFrameResult newResult = changePlaybackRateOfAudio(audioVideoFragment);
-                            audioVideoFragment = audioVideoFragment.butFreeAndReplaceVideoFrame(newResult);
-                        }
-
-                        byte[] audioFrame = convertToPlayableFormat(audioVideoFragment);
-
-                        notifyAudioListeners(audioVideoFragment);
-
-                        audioStreamService.streamAudio(audioFrame);
-
-                        // finished writing currentPosition to buffer, play this frame
-
-                        TimelineDisplayAsyncUpdateRequest request = TimelineDisplayAsyncUpdateRequest.builder()
-                                .withCanDropFrames(true)
-                                .withCurrentPosition(currentPosition)
-                                .withExpectedNextPositions(expectedNextFramesWithDroppedFrameModulo(10, CACHE_MODULO, frame + 1))
-                                .build();
-
-                        audioVideoFragment.free();
-                        if (frame % CACHE_MODULO == 0) {
-                            displayUpdaterService.updateDisplayAsync(request);
-                        }
-
-                        notifyConsumers();
-                        ++frame;
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                } finally {
-                    audioStreamService.stopPlayback();
-                    isPlaying = false;
+    private void playback() {
+        try {
+            int frame = 0;
+            audioStreamService.startPlayback();
+            while (isPlaying) {
+                TimelinePosition nextFrame = this.expectedNextFrames(1).get(0);
+                synchronized (timelineLock) {
+                    currentPosition = nextFrame;
                 }
-            });
+
+                boolean isMute = uiPlaybackPreferenceRepository.isMute();
+                TimelineLength length = new TimelineLength(projectRepository.getFrameTime());
+                AudioVideoFragment audioVideoFragment = playbackFrameAccessor.getSingleAudioFrameAtPosition(currentPosition, isMute, Optional.of(length));
+
+                if (!uiPlaybackPreferenceRepository.getPlaybackSpeedMultiplier().equals(BigDecimal.ONE)) {
+                    AudioFrameResult newResult = changePlaybackRateOfAudio(audioVideoFragment);
+                    audioVideoFragment = audioVideoFragment.butFreeAndReplaceVideoFrame(newResult);
+                }
+
+                byte[] audioFrame = convertToPlayableFormat(audioVideoFragment);
+
+                notifyAudioListeners(audioVideoFragment);
+
+                audioStreamService.streamAudio(audioFrame);
+
+                // finished writing currentPosition to buffer, play this frame
+
+                TimelineDisplayAsyncUpdateRequest request = TimelineDisplayAsyncUpdateRequest.builder()
+                        .withCanDropFrames(true)
+                        .withCurrentPosition(currentPosition)
+                        .withExpectedNextPositions(expectedNextFramesWithDroppedFrameModulo(10, CACHE_MODULO, frame + 1))
+                        .build();
+
+                audioVideoFragment.free();
+                if (frame % CACHE_MODULO == 0) {
+                    displayUpdaterService.updateDisplayAsync(request);
+                }
+                lastTimeScreenUpdated = System.currentTimeMillis();
+
+                notifyConsumers();
+                ++frame;
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        } finally {
+            audioStreamService.stopPlayback();
+            isPlaying = false;
         }
     }
 
@@ -225,7 +247,29 @@ public class UiTimelineManager {
             isPlaying = false;
             statusChangeConsumers.stream()
                     .forEach(consumer -> consumer.accept(PlaybackStatus.STOPPED));
+
+            scheduledExecutorService.schedule(() -> {
+                if (!isPlaying && playbackExecutorService.getActiveCount() == 1) {
+                    restartThreadpoolToAvoidStuckPlayback();
+                }
+            }, 200, TimeUnit.MILLISECONDS);
         }
+    }
+
+    private void handleStuckPlayback() {
+        if (isPlaying && System.currentTimeMillis() - lastTimeScreenUpdated > 5000) {
+            restartThreadpoolToAvoidStuckPlayback();
+            playbackExecutorService.submit(() -> playback());
+        }
+    }
+
+    // This is a workaround for something that appears to be either an OpenJDK or ALSA bug, but very difficult to reproduce.
+    // See more explanation here: https://gist.github.com/helospark/9406f093cc39fe8c4ccf1ea61951e4ee
+    private void restartThreadpoolToAvoidStuckPlayback() {
+        LOGGER.error("Timeline playback stuck, attempting to interrupt and restart");
+        var originalExecutorService = playbackExecutorService;
+        playbackExecutorService = createExecutorService();
+        originalExecutorService.shutdownNow();
     }
 
     public void jumpRelative(BigDecimal seconds) {

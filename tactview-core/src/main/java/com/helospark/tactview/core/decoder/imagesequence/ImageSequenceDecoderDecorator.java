@@ -37,22 +37,22 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
-        BigDecimal fps = new BigDecimal(metadata.getFps());
-        int startFrame = request.getStart().getSeconds().multiply(fps).setScale(2, RoundingMode.HALF_UP).intValue();
+        BigDecimal frameTime = BigDecimal.ONE.divide(new BigDecimal(metadata.getFps()), 10, RoundingMode.HALF_UP);
+        int startFrame = request.getStart().getSeconds().divide(frameTime, 0, RoundingMode.HALF_DOWN).intValue();
 
-        Optional<MediaDataFrame> foundElement = mediaCache.findInCache(createCacheKey(request), request.getStart().getSeconds());
+        Optional<MediaDataFrame> foundElement = mediaCache.findInCacheAndClone(createCacheKey(request), request.getStart().getSeconds());
 
         if (foundElement.isPresent()) {
-            return copyOf(foundElement.get());
+            return new MediaDataResponse(List.of(foundElement.get().frame));
         } else {
-            return loadAndCacheFrame(request, startFrame, fps);
+            return loadAndCacheFrame(request, startFrame, frameTime);
         }
     }
 
-    private MediaDataResponse loadAndCacheFrame(VideoMediaDataRequest request, int frame, BigDecimal fps) {
+    private MediaDataResponse loadAndCacheFrame(VideoMediaDataRequest request, int frame, BigDecimal frameTime) {
         List<FileHolder> files = fileNamePatternService.filenamePatternToFileResolver(request.getFilePath());
-        BigDecimal frameStart = request.getStart().getSeconds().divideToIntegralValue(fps).multiply(fps);
-        BigDecimal frameEnd = request.getStart().getSeconds().divideToIntegralValue(fps).add(fps);
+        BigDecimal frameStart = BigDecimal.valueOf(frame).multiply(frameTime).setScale(3, RoundingMode.HALF_UP);
+        BigDecimal frameEnd = frameStart.add(frameTime);
 
         int actualFrameSequenceNumber = frame + files.get(0).getFrameIndex(); // ex. frame might start from 1
 
@@ -66,7 +66,7 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
             imageRequest.data = memoryManager.requestBuffer(imageRequest.width * imageRequest.height * 4);
             ByteBuffer data = readImageFromFile(imageRequest);
 
-            mediaCache.cacheMedia(createCacheKey(request), new MediaHashValue(List.of(new MediaDataFrame(data, frameStart)), frameEnd));
+            mediaCache.cacheMedia(createCacheKey(request), new MediaHashValue(List.of(new MediaDataFrame(data, frameStart)), frameEnd, frameStart));
 
             return new MediaDataResponse(data);
         } else {
@@ -102,15 +102,6 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
         }
 
         return Optional.empty();
-    }
-
-    private MediaDataResponse copyOf(MediaDataFrame mediaDataFrame) {
-        ByteBuffer frame = mediaDataFrame.frame;
-        ByteBuffer result = memoryManager.requestBuffer(frame.capacity());
-        for (int i = 0; i < frame.capacity(); ++i) {
-            result.put(i, frame.get(i));
-        }
-        return new MediaDataResponse(List.of(result));
     }
 
     private String createCacheKey(VideoMediaDataRequest request) {
