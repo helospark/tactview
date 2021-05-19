@@ -333,10 +333,10 @@ extern "C" {
 
                         element->decodedPackages.insert(decodedPackage);
 
-                        //DEBUG("Actual video package " << packet.dts << " " <<  packet.pts << " " << decodedPackage.timestamp << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
+                        //DEBUG("Actual video package " << packet.dts << " " <<  packet.pts << " " << decodedPackage.timestamp << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ") " << " (" << (pFrame->pts * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
                     }
                     element->lastPts = packet.pts;
-                    //DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
+                 //   DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
                 } while (decodedFrame == AVERROR(EAGAIN));
             }
             // Free the packet that was allocated by av_read_frame
@@ -399,7 +399,7 @@ extern "C" {
 
         if (decodeStructure->decodedPackages.size() > 0) {
             DecodedPackage nextElement = *(decodeStructure->decodedPackages.begin());
-            nextPts = nextElement.timestamp;
+            nextPts = nextElement.pts;
         }
 
         int frameTime = (int)ceil((double)decodeStructure->framerate.den / decodeStructure->framerate.num * AV_TIME_BASE);
@@ -467,10 +467,10 @@ extern "C" {
                 {
                     copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
                     request->frames[i].startTimeInMs = time;
-                    //std::cout << "########### reading: " << i << " " << time << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
+                   // std::cout << "########### reading: " << i << " " << time << " " << element.timestamp << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
                     ++i;
                 } else {
-                    //std::cout << "End reading " << time << std::endl;
+                   // std::cout << "End reading " << time << std::endl;
                     if (decodeStructure->decodedPackages.size() == 0) {
                         //  fillQueue(decodeStructure);
                     }

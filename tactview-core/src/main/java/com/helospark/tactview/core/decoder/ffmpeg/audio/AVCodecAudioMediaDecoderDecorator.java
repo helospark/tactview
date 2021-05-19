@@ -46,7 +46,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         Optional<MediaDataFrame> cachedResult = mediaCache.findInCache(hashKey, request.getStart().getSeconds());
         if (cachedResult.isPresent()) {
             MediaDataFrame foundInCache = cachedResult.get();
-            List<ByteBuffer> dataFrames = foundInCache.allAudioDataFrames;
+            List<ByteBuffer> dataFrames = foundInCache.allDataFrames;
             int realStartSample = startSample - secondsToBytes(foundInCache.startTime, request.getExpectedBytesPerSample(), sampleRate);
 
             return copyRelevantParts(request, realStartSample, dataFrames);
@@ -55,7 +55,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
             int realStartSample = secondsToBytes(result.data.startTime, request.getExpectedBytesPerSample(), sampleRate);
             mediaCache.cacheMedia(hashKey, new MediaHashValue(List.of(result.data), result.endPosition, request.getStart().getSeconds()), false);
 
-            return copyRelevantParts(request, startSample - realStartSample, result.data.allAudioDataFrames);
+            return copyRelevantParts(request, startSample - realStartSample, result.data.allDataFrames);
         }
     }
 

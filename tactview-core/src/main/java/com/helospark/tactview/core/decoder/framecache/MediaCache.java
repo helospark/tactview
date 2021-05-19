@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 @Component
 public class MediaCache {
     private ConcurrentHashMap<String, NavigableMap<BigDecimal, MediaHashValue>> backCache = new ConcurrentHashMap<>();
-    private Set<CacheRemoveDomain> accessTimeOrderedList = new ConcurrentSkipListSet<>();
+    private Set<CacheRemoveDomain> accessTimeOrderedList = Collections.newSetFromMap(new ConcurrentHashMap<CacheRemoveDomain, Boolean>());
     private MemoryManager memoryManager;
     private MessagingService messagingService;
     private ScheduledExecutorService executorService;
@@ -72,21 +71,22 @@ public class MediaCache {
     }
 
     private void doImmediateCleanup(int size) {
-        TreeSet<CacheRemoveDomain> elements = new TreeSet<>(accessTimeOrderedList);
+        TreeSet<CacheRemoveDomain> elements = new TreeSet<>((a, b) -> a.compareTo(b));
+        elements.addAll(accessTimeOrderedList);
         while (approximateSize >= size) {
             if (elements.isEmpty()) {
                 logger.debug("ToRemove elements is empty");
                 break;
             }
             CacheRemoveDomain firstElement = elements.pollFirst();
-            //                            logger.debug("Trying to clean {}", firstElement);
+            logger.debug("Trying to clean key=\"{}\" time={} lastAccessTime={}", firstElement.key, firstElement.time, System.currentTimeMillis() - firstElement.value.lastAccessed);
             if (firstElement != null) {
                 NavigableMap<BigDecimal, MediaHashValue> line = backCache.get(firstElement.key);
                 if (line != null) {
                     MediaHashValue removedElement = line.remove(firstElement.time);
                     if (removedElement != null) {
                         for (var buffer : removedElement.frames) {
-                            returnBuffers(buffer.allAudioDataFrames);
+                            returnBuffers(buffer.allDataFrames);
                         }
                         logger.debug("Removed buffer {} {}, current buffer size: {}", firstElement.key, removedElement, approximateSize);
                     }
@@ -94,6 +94,19 @@ public class MediaCache {
                 accessTimeOrderedList.remove(firstElement);
             }
         }
+        approximateSize = recalculateBufferSize();
+    }
+
+    private long recalculateBufferSize() {
+        Map<String, NavigableMap<BigDecimal, MediaHashValue>> copy = new HashMap<>(backCache);
+
+        return copy.values()
+                .stream()
+                .flatMap(a -> a.values().stream())
+                .flatMap(a -> a.frames.stream())
+                .flatMap(a -> a.allDataFrames.stream())
+                .mapToInt(a -> a.capacity())
+                .sum();
     }
 
     public void cacheMedia(String key, MediaHashValue value) {
@@ -109,7 +122,7 @@ public class MediaCache {
             clonedValue = value;
             int newCachedSize = value.frames
                     .stream()
-                    .flatMap(a -> a.allAudioDataFrames.stream())
+                    .flatMap(a -> a.allDataFrames.stream())
                     .map(a -> a.capacity())
                     .mapToInt(Integer::valueOf)
                     .sum();
@@ -125,9 +138,7 @@ public class MediaCache {
         MediaHashValue previousValue = cachedFrames.put(startTime, clonedValue);
 
         if (previousValue != null) {
-            previousValue.frames
-                    .stream()
-                    .forEach(f -> GlobalMemoryManagerAccessor.memoryManager.returnBuffers(f.allAudioDataFrames));
+            returnBuffers(previousValue.frames.stream().flatMap(a -> a.allDataFrames.stream()).collect(Collectors.toList()));
         }
 
         accessTimeOrderedList.add(new CacheRemoveDomain(key, clonedValue, startTime));
@@ -156,8 +167,8 @@ public class MediaCache {
             copyToResult(result, bufferToClone.frame);
             return new MediaDataFrame(result, bufferToClone.startTime);
         } else {
-            List<ByteBuffer> frames = new ArrayList<>(bufferToClone.allAudioDataFrames.size());
-            for (var entry : bufferToClone.allAudioDataFrames) {
+            List<ByteBuffer> frames = new ArrayList<>(bufferToClone.allDataFrames.size());
+            for (var entry : bufferToClone.allDataFrames) {
                 ByteBuffer result = requestBuffersForCloning(entry);
                 copyToResult(result, entry);
                 frames.add(result);
@@ -174,9 +185,10 @@ public class MediaCache {
     }
 
     private void returnBuffer(ByteBuffer buffer) {
+        long size = buffer.capacity();
         memoryManager.returnBuffer(buffer);
-        approximateSize -= buffer.capacity();
-        logger.debug("Returned " + System.identityHashCode(buffer) + " new size: " + approximateSize);
+        approximateSize -= size;
+        logger.trace("Returned " + System.identityHashCode(buffer) + " with size=" + size + ", new mediacache size=" + approximateSize);
     }
 
     private void returnBuffers(List<ByteBuffer> buffers) {
@@ -294,7 +306,7 @@ public class MediaCache {
 
         @Override
         public String toString() {
-            return "MediaHashValue [frames=" + frames + ", endTime=" + endTime + "]";
+            return "MediaHashValue [endTime=" + endTime + ", startTime=" + startTime + ", lastAccessed=" + lastAccessed + "]";
         }
 
     }
@@ -303,20 +315,20 @@ public class MediaCache {
         public ByteBuffer frame;
         public BigDecimal startTime;
 
-        public List<ByteBuffer> allAudioDataFrames; // for audio channels 
+        public List<ByteBuffer> allDataFrames; // for audio channels 
 
         public MediaDataFrame(ByteBuffer frame, BigDecimal startTime) {
             this.frame = frame;
             this.startTime = startTime;
 
-            this.allAudioDataFrames = Collections.singletonList(frame);
+            this.allDataFrames = Collections.singletonList(frame);
         }
 
         public MediaDataFrame(List<ByteBuffer> frames, BigDecimal startTime) {
             this.frame = null;
             this.startTime = startTime;
 
-            this.allAudioDataFrames = frames;
+            this.allDataFrames = frames;
         }
 
         @Override
@@ -332,7 +344,7 @@ public class MediaCache {
         }
     }
 
-    public static class CacheRemoveDomain implements Comparable<CacheRemoveDomain> {
+    public static class CacheRemoveDomain {
         private String key;
         private MediaHashValue value;
         private BigDecimal time;
@@ -343,7 +355,6 @@ public class MediaCache {
             this.time = time;
         }
 
-        @Override
         public int compareTo(final CacheRemoveDomain other) {
             return Long.compare(value.lastAccessed, other.value.lastAccessed);
         }
@@ -379,6 +390,11 @@ public class MediaCache {
             return true;
         }
 
+        @Override
+        public String toString() {
+            return "CacheRemoveDomain [key=" + key + ", value=" + value + ", time=" + time + "]";
+        }
+
     }
 
     public void dropCaches() {
@@ -390,10 +406,11 @@ public class MediaCache {
         for (var cachedEntry : copiedElements.entrySet()) {
             for (var cachedFrameSequence : cachedEntry.getValue().entrySet()) {
                 for (var frame : cachedFrameSequence.getValue().frames) {
-                    returnBuffers(frame.allAudioDataFrames);
+                    returnBuffers(frame.allDataFrames);
                 }
             }
         }
-    }
 
+        approximateSize = recalculateBufferSize();
+    }
 }
