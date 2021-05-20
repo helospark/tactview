@@ -1,7 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -32,7 +31,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointP
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
-import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -82,8 +80,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withLowResolutionPreview(request.isLowResolutionPreview())
                 .build();
 
-        ByteBuffer frame = requestFrame(frameRequest);
-        ClipImage frameResult = new ClipImage(frame, width, height);
+        ReadOnlyClipImage frameResult = requestFrame(frameRequest);
 
         return applyEffects(rateAdjustedPosition.subtract(renderOffset), frameResult, request);
     }
@@ -132,7 +129,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return frameResult;
     }
 
-    public abstract ByteBuffer requestFrame(RequestFrameParameter request);
+    public abstract ReadOnlyClipImage requestFrame(RequestFrameParameter request);
 
     @Override
     public List<NonIntersectingIntervalList<StatelessEffect>> getEffectChannels() {

@@ -14,12 +14,14 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.VisualMediaSource;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
 
 @Component
 public class GifClipFactory implements ClipFactory {
     private GifMediaDecoder gifMediaDecoder;
+    private RotateService rotateService;
 
-    public GifClipFactory(GifMediaDecoder gifMediaDecoder) {
+    public GifClipFactory(GifMediaDecoder gifMediaDecoder, RotateService rotateService) {
         this.gifMediaDecoder = gifMediaDecoder;
     }
 
@@ -40,7 +42,7 @@ public class GifClipFactory implements ClipFactory {
         GifVideoMetadata metadata = gifMediaDecoder.readMetadata(file);
 
         VisualMediaSource videoSource = new VisualMediaSource(file, gifMediaDecoder);
-        VideoClip videoClip = new VideoClip(metadata, videoSource, position, metadata.getLength());
+        VideoClip videoClip = new VideoClip(metadata, videoSource, position, metadata.getLength(), rotateService);
 
         videoClip.setCreatorFactoryId(getId());
 
@@ -53,7 +55,7 @@ public class GifClipFactory implements ClipFactory {
         GifVideoMetadata metadata = gifMediaDecoder.readMetadata(file);
         VisualMediaSource videoSource = new VisualMediaSource(file, gifMediaDecoder);
 
-        return new VideoClip(metadata, videoSource, savedClip, loadMetadata);
+        return new VideoClip(metadata, videoSource, savedClip, loadMetadata, rotateService);
     }
 
     @Override

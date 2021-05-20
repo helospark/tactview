@@ -26,17 +26,21 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualMediaSource;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileHolder;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
 
 @Component
 public class ImageSequenceClipFactory implements ClipFactory {
     private FileNamePatternToFileResolverService fileNamePatternToFileResolverService;
     private ImageMediaLoader implementation;
     private ImageSequenceDecoderDecorator imageSequenceDecoder;
+    private RotateService rotateService;
 
-    public ImageSequenceClipFactory(FileNamePatternToFileResolverService fileNamePatternToFileResolverService, ImageMediaLoader implementation, ImageSequenceDecoderDecorator imageSequenceDecoder) {
+    public ImageSequenceClipFactory(FileNamePatternToFileResolverService fileNamePatternToFileResolverService, ImageMediaLoader implementation, ImageSequenceDecoderDecorator imageSequenceDecoder,
+            RotateService rotateService) {
         this.fileNamePatternToFileResolverService = fileNamePatternToFileResolverService;
         this.implementation = implementation;
         this.imageSequenceDecoder = imageSequenceDecoder;
+        this.rotateService = rotateService;
     }
 
     @Override
@@ -59,7 +63,7 @@ public class ImageSequenceClipFactory implements ClipFactory {
         TimelinePosition position = request.getPosition();
         VideoMetadata metadata = (VideoMetadata) readMetadata(request);
         VisualMediaSource videoSource = new VisualMediaSource(filePath, imageSequenceDecoder);
-        ImageSequenceVideoClip result = new ImageSequenceVideoClip(metadata, videoSource, position, metadata.getLength(), fileNamePatternToFileResolverService);
+        ImageSequenceVideoClip result = new ImageSequenceVideoClip(metadata, videoSource, position, metadata.getLength(), fileNamePatternToFileResolverService, rotateService);
         result.setCreatorFactoryId(getId());
         return result;
     }
@@ -86,7 +90,7 @@ public class ImageSequenceClipFactory implements ClipFactory {
 
         VisualMediaSource videoSource = new VisualMediaSource(file, imageSequenceDecoder);
 
-        return new ImageSequenceVideoClip(mediaMetadata, videoSource, savedClip, loadMetadata, fileNamePatternToFileResolverService);
+        return new ImageSequenceVideoClip(mediaMetadata, videoSource, savedClip, loadMetadata, fileNamePatternToFileResolverService, rotateService);
     }
 
     public MediaMetadata readMetadataFromFileAndFps(BigDecimal fps, String backingFiles) {

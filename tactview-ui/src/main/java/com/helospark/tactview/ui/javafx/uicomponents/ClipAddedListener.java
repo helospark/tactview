@@ -12,8 +12,11 @@ import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
+import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
@@ -56,8 +59,18 @@ public class ClipAddedListener {
         if (!projectRepository.isVideoInitialized() && clip instanceof VisualTimelineClip) {
             VisualTimelineClip visualClip = (VisualTimelineClip) clip;
             VisualMediaMetadata metadata = visualClip.getMediaMetadata();
-            int width = visualClip.getMediaMetadata().getWidth();
-            int height = visualClip.getMediaMetadata().getHeight();
+            int width = metadata.getWidth();
+            int height = metadata.getHeight();
+
+            if (metadata instanceof VideoMetadata && visualClip instanceof VideoClip) {
+                double rotation = ((VideoMetadata) metadata).getRotation();
+                if (MathUtil.fuzzyEquals(Math.abs(rotation), 90.0) && ((VideoClip) visualClip).isRotationEnabledAt(TimelinePosition.ofZero())) {
+                    int tmp = width;
+                    width = height;
+                    height = tmp;
+                }
+            }
+
             BigDecimal fps = metadata instanceof VideoMetadata ? new BigDecimal(((VideoMetadata) metadata).getFps()) : new BigDecimal("30");
 
             projectSizeInitializer.initializeProjectSize(width, height, fps);

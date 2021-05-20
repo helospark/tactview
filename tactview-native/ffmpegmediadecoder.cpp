@@ -10,6 +10,7 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
+#include <libavutil/display.h>
 
 #include <stdio.h>
 
@@ -81,6 +82,7 @@ extern "C" {
         int height;
         int bitRate;
         long long lengthInMicroseconds;
+        double rotationAngle;
     };
 
     AVRational findFramerate(AVStream* st) {
@@ -94,6 +96,21 @@ extern "C" {
             framerate = st->avg_frame_rate;
         }
         return framerate;
+    }
+ 
+    // from FFMPEG: https://github.com/FFmpeg/FFmpeg/blob/bc70684e74a185d7b80c8b80bdedda659cb581b8/fftools/cmdutils.c#L2188
+    double get_rotation(AVStream *st)
+    {
+        uint8_t* displaymatrix = av_stream_get_side_data(st,
+                                                        AV_PKT_DATA_DISPLAYMATRIX, NULL);
+        double theta = 0;
+        if (displaymatrix) {
+            theta = -av_display_rotation_get((int32_t*) displaymatrix);
+        }
+
+        theta -= 360*floor(theta/360 + 0.9/360);
+
+        return theta;
     }
 
     EXPORTED MediaMetadata readMediaMetadata(const char* path)
@@ -168,6 +185,7 @@ extern "C" {
         mediaMetadata.height = pCodecCtx->height;
         mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
         mediaMetadata.bitRate = st->codec->bit_rate;
+        mediaMetadata.rotationAngle = get_rotation(st);
 
         AVRational framerate = findFramerate(st);
 

@@ -11,6 +11,7 @@ import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileHolder;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
 
 public class ImageSequenceVideoClip extends VideoClip {
     private FileNamePatternToFileResolverService fileNamePatternService;
@@ -21,14 +22,14 @@ public class ImageSequenceVideoClip extends VideoClip {
     }
 
     public ImageSequenceVideoClip(VisualMediaMetadata metadata, VisualMediaSource videoSource, JsonNode savedClip, LoadMetadata loadMetadata,
-            FileNamePatternToFileResolverService fileNamePatternService) {
-        super(metadata, videoSource, savedClip, loadMetadata);
+            FileNamePatternToFileResolverService fileNamePatternService, RotateService rotateService) {
+        super(metadata, videoSource, savedClip, loadMetadata, rotateService);
         this.fileNamePatternService = fileNamePatternService;
     }
 
     public ImageSequenceVideoClip(VisualMediaMetadata mediaMetadata, VisualMediaSource backingSource, TimelinePosition startPosition, TimelineLength length,
-            FileNamePatternToFileResolverService fileNamePatternService) {
-        super(mediaMetadata, backingSource, startPosition, length);
+            FileNamePatternToFileResolverService fileNamePatternService, RotateService rotateService) {
+        super(mediaMetadata, backingSource, startPosition, length, rotateService);
         this.fileNamePatternService = fileNamePatternService;
     }
 

@@ -24,7 +24,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.LinePr
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
-import com.helospark.tactview.core.timeline.effect.rotate.RotateService.RotateServiceRequest;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateServiceRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -140,7 +140,7 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
         fitToRectangleScaleAndTranslate = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
         translatePointProvider = PointProvider.ofNormalizedImagePosition(0.0, 0.0);
         scaleXProvider = new DoubleProvider(-3.0, 3.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
-        scaleYProvider = new DoubleProvider(-3.0, 3.0, new MultiKeyframeBasedDoubleInterpolator(1.0));;
+        scaleYProvider = new DoubleProvider(-3.0, 3.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
     }
 
     private DoubleProvider createDoubleProvider(double defaultValue) {

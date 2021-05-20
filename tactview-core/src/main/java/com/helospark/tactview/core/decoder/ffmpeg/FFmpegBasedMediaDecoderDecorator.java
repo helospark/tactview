@@ -64,6 +64,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
                 .withWidth(result.width)
                 .withBitRate(result.bitRate)
                 .withLength(TimelineLength.ofMicroseconds(result.lengthInMicroseconds))
+                .withRotation(result.rotationAngle)
                 .build();
 
         System.out.println("Video metadata read: " + resultMetadata);
