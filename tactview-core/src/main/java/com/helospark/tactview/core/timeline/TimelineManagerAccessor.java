@@ -796,6 +796,10 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     ++channelId;
                 }
                 addClip(createdChannel, restoredClip);
+
+                for (var effect : restoredClip.getEffects()) {
+                    effect.notifyAfterInitialized();
+                }
             }
         }
 

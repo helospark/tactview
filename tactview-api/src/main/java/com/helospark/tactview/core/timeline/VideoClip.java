@@ -49,6 +49,8 @@ public class VideoClip extends VisualTimelineClip {
         this.backingSource = clip.backingSource;
         this.startPosition = clip.startPosition;
         this.rotateService = clip.rotateService;
+
+        this.useRotationMetadataProvider = clip.useRotationMetadataProvider.deepClone();
     }
 
     public VideoClip(VisualMediaMetadata metadata, VisualMediaSource videoSource, JsonNode savedClip, LoadMetadata loadMetadata, RotateService rotateService) {

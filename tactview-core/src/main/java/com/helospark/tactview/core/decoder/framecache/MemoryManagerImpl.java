@@ -163,7 +163,10 @@ public class MemoryManagerImpl implements MemoryManager {
         BufferInformation freeBuffers = freeBuffersMap.get(bytes);
         if (freeBuffers == null) {
             freeBuffers = new BufferInformation(new ConcurrentLinkedQueue<>());
-            freeBuffersMap.put(bytes, freeBuffers);
+            BufferInformation oldData = freeBuffersMap.put(bytes, freeBuffers);
+            if (oldData != null) {
+                logger.error("Memory leak on adding new buffer");
+            }
         }
         freeBuffers.lastRequestedAccessed = System.currentTimeMillis();
         ByteBuffer element;

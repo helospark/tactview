@@ -28,6 +28,7 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
@@ -120,7 +121,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         }
     }
 
-    private MediaDataResponse readFramesInternal(VideoMediaDataRequest request, BigDecimal startFrame, BigDecimal endFrame, BigDecimal frameNeeded) {
+    private MediaDataResponse readFramesInternal(VideoMediaDataRequest request, BigDecimal startTime, BigDecimal endTime, BigDecimal frameNeeded) {
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
         String filePath = request.getFile().getAbsolutePath();
 
@@ -131,9 +132,15 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         if (framesFromCache.isPresent()) {
             result = framesFromCache.get();
         } else if (!request.useApproximatePosition()) {
-            LOGGER.debug("Reading " + startFrame + " " + endFrame);
+            LOGGER.debug("Reading " + startTime + " " + endTime);
 
-            MediaHashValue readFrames = readFromFile(request, startFrame, endFrame, filePath);
+            MediaHashValue readFrames = readFromFile(request, startTime, endTime, filePath);
+
+            if (readFrames.frames.size() == 0) {
+                LOGGER.warn("There were no frames read for {}, adding transparent frame", startTime);
+                readFrames.frames.add(new MediaDataFrame(ClipImage.fromSize(request.getWidth(), request.getHeight()).getBuffer(), startTime));
+            }
+
             result = copyResultAtIndex(readFrames, frameNeeded);
 
             storeInCache(request, filePath, readFrames);

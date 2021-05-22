@@ -76,7 +76,7 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
 
 
     void addFrame(Mat frame) {
-           // DEBUG("Stabilize frame " << frameCount_);
+            DEBUG("Stabilize frame " << frameCount_);
             if (frameCount_ > 0)
             {
                 //imwrite("/tmp/frame_bad_" + std::to_string(frameCount_) + ".png", frame);
@@ -95,12 +95,10 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
                         motions2_.push_back(motions_.back());
                 }
 
-                if (ok)
+                if (!ok || !ok2)
                 {
-                    if (ok2) log_->print("#");
-                    else log_->print("?");
+                    WARN("Unable to stabilize frame " << frameCount_ << " " << ok << " " << ok2);
                 }
-                else log_->print("x");
 
             }
             else
@@ -163,7 +161,12 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
 
         Mat estimateStabilizationMotionCustom(int index)
         {
-            return stabilizationMotions_[index].clone();
+            int realIndex = index;
+            if (realIndex >= stabilizationMotions_.size()) {
+                WARN("No stabilization matrix at frame " << realIndex);
+                realIndex = stabilizationMotions_.size() - 1;
+            }
+            return stabilizationMotions_[realIndex].clone();
         }
 
         Mat stabilizeFrameCustom(Mat frame, int index)

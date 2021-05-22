@@ -57,7 +57,13 @@ public class EffectFactoryChain {
                 .filter(effectFactory -> effectFactory.getId().equals(factoryId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No factory for " + factoryId));
-        return factory.restoreEffect(node, loadMetadata);
+        StatelessEffect result = factory.restoreEffect(node, loadMetadata);
+
+        if (result instanceof LongProcessAware) {
+            ((LongProcessAware) result).setLongProcessRequestor(longProcessRequestor);
+        }
+
+        return result;
     }
 
 }
