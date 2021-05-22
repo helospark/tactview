@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -61,25 +62,24 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
     }
 
     protected Double doInterpolate(TimelinePosition position) {
-        return interpolatorImplementation.interpolate(getKeys(values), getValuesAsDouble(values))
+        // This is used to deduplicate double keys (since TimelinePosition has more precision than double)
+        Map<Double, Double> keyValueMap = new TreeMap<>();
+        for (var entry : values.entrySet()) {
+            keyValueMap.put(entry.getKey().getSeconds().doubleValue(), entry.getValue());
+        }
+
+        return interpolatorImplementation.interpolate(setToArray(keyValueMap.keySet()), setToArray(keyValueMap.values()))
                 .value(position.getSeconds().doubleValue());
     }
 
-    protected double[] getValuesAsDouble(TreeMap<TimelinePosition, Double> values) {
-        return values.values()
-                .stream()
-                .mapToDouble(Double::valueOf)
-                .toArray();
-    }
+    protected double[] setToArray(Collection<Double> keyValueMap) {
+        Double[] wrapperResult = keyValueMap.toArray(new Double[keyValueMap.size()]);
+        double[] result = new double[wrapperResult.length];
 
-    protected double[] getKeys(TreeMap<TimelinePosition, Double> values) {
-        return values.keySet()
-                .stream()
-                .map(key -> key.getSeconds())
-                .map(key -> key.doubleValue())
-                .distinct() // just in case double representation of TimelinePosition is equals. // TODO: this causes exception due to dimension mismatch
-                .mapToDouble(Double::valueOf)
-                .toArray();
+        for (int i = 0; i < wrapperResult.length; ++i) {
+            result[i] = wrapperResult[i];
+        }
+        return result;
     }
 
     @Override
@@ -145,6 +145,7 @@ public class MultiKeyframeBasedDoubleInterpolator extends KeyframeSupportingDoub
         this.defaultValue = defaultValue;
     }
 
+    @Override
     public void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
         if (useKeyframes) {
             values.remove(timelinePosition);

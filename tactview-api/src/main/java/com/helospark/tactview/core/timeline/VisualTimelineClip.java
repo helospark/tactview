@@ -1,9 +1,6 @@
 package com.helospark.tactview.core.timeline;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -33,7 +30,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
-import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
@@ -49,7 +46,6 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     protected VisualMediaSource backingSource;
     protected ValueListProvider<BlendModeValueListElement> blendModeProvider;
-
 
     public VisualTimelineClip(VisualMediaMetadata mediaMetadata, TimelineInterval interval, TimelineClipType type) {
         super(interval, type);
@@ -84,28 +80,17 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withLowResolutionPreview(request.isLowResolutionPreview())
                 .build();
 
-        ByteBuffer frame = requestFrame(frameRequest);
-        ClipImage frameResult = new ClipImage(frame, width, height);
+        ReadOnlyClipImage frameResult = requestFrame(frameRequest);
 
-        return applyEffects(rateAdjustedPosition, frameResult, request);
+        return applyEffects(rateAdjustedPosition.subtract(renderOffset), frameResult, request);
     }
 
     protected TimelinePosition calculatePositionToRender(GetFrameRequest request) {
-        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
-
         boolean reverse = reverseTimeProvider.getValueAt(TimelinePosition.ofZero());
 
-        if (reverse) {
-            TimelinePosition endPosition = interval.getLength().toPosition().add(renderOffset);
-            TimelinePosition unscaledPosition = endPosition.subtract(relativePosition);
-            BigDecimal integrated = timeScaleProvider.integrate(unscaledPosition, endPosition);
-            return endPosition.subtract(new TimelinePosition(integrated));
-        } else {
-            TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
-            BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
-            return renderOffset.toPosition().add(integrated);
-        }
+        TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
 
+        return calculatePositionInClipSpaceTo(relativePosition, reverse);
     }
 
     protected ReadOnlyClipImage applyEffects(TimelinePosition relativePosition, ReadOnlyClipImage frameResult, GetFrameRequest frameRequest) {
@@ -118,7 +103,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                     break;
                 }
 
-                if (effect.isEnabledAt(frameRequest.getRelativePosition())) {
+                if (effect.isEnabledAt(relativePosition)) {
                     StatelessEffectRequest request = StatelessEffectRequest.builder()
                             .withClipPosition(relativePosition)
                             .withEffectPosition(relativePosition.from(effect.interval.getStartPosition()))
@@ -144,7 +129,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
         return frameResult;
     }
 
-    public abstract ByteBuffer requestFrame(RequestFrameParameter request);
+    public abstract ReadOnlyClipImage requestFrame(RequestFrameParameter request);
 
     @Override
     public List<NonIntersectingIntervalList<StatelessEffect>> getEffectChannels() {
@@ -287,6 +272,11 @@ public abstract class VisualTimelineClip extends TimelineClip {
         } else {
             savedContent.put("backingFile", backingSource.getBackingFile());
         }
+    }
+
+    @Override
+    public boolean effectSupported(StatelessEffect effect) {
+        return effect instanceof StatelessVideoEffect || effect instanceof AbstractVideoTransitionEffect;
     }
 
 }

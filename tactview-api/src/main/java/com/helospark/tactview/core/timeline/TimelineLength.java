@@ -100,6 +100,14 @@ public class TimelineLength implements SecondsAware {
         return new TimelineLength(this.seconds.multiply(newLengthMultiplier));
     }
 
+    public TimelineLength multiply(double scaler) {
+        return new TimelineLength(this.seconds.multiply(new BigDecimal(scaler)));
+    }
+
+    public TimelineLength add(TimelineLength otherLength) {
+        return new TimelineLength(this.seconds.add(otherLength.seconds));
+    }
+
     public boolean isEquals(TimelineLength length) {
         BigDecimal epsilon = BigDecimal.valueOf(0.01);
         return this.getSeconds().subtract(length.getSeconds()).abs().compareTo(epsilon) < 0;

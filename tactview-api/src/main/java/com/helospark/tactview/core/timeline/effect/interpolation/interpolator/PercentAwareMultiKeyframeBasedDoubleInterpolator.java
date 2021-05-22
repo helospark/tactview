@@ -2,7 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -42,7 +42,7 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
     public Double valueAt(TimelinePosition nonScaledPosition) {
         Entry<TimelinePosition, Double> lastEntry = values.lastEntry();
         Entry<TimelinePosition, Double> firstEntry = values.firstEntry();
-        double[] keys = getKeys(values);
+        double[] keys = getKeys();
         TimelinePosition position = nonScaledPosition.divide(length);
         if (values.isEmpty() || !useKeyframes) {
             return defaultValue;
@@ -58,11 +58,25 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
     }
 
     @Override
-    protected double[] getKeys(TreeMap<TimelinePosition, Double> values) {
+    protected Double doInterpolate(TimelinePosition position) {
+        // This is used to deduplicate double keys (since TimelinePosition has more precision than double)
+        Map<Double, Double> keyValueMap = getKeyValueMap();
+
+        return interpolatorImplementation.interpolate(setToArray(keyValueMap.keySet()), setToArray(keyValueMap.values()))
+                .value(position.getSeconds().doubleValue());
+    }
+
+    public double[] getKeys() {
+        return setToArray(getKeyValueMap().keySet());
+    }
+
+    private Map<Double, Double> getKeyValueMap() {
         double widthAsDouble = length.getSeconds().doubleValue();
-        return Arrays.stream(super.getKeys(values))
-                .map(a -> a / widthAsDouble)
-                .toArray();
+        Map<Double, Double> keyValueMap = new TreeMap<>();
+        for (var entry : values.entrySet()) {
+            keyValueMap.put(entry.getKey().getSeconds().doubleValue() / widthAsDouble, entry.getValue());
+        }
+        return keyValueMap;
     }
 
     @Override

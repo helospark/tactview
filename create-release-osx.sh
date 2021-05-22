@@ -4,11 +4,11 @@ set -e
 
 rm -rf release/tactview.app || true
 
-cp -r buildconfig/osx/bundle_template release/tactview.app
-
 mkdir -p release/tactview.app/Contents/MacOS
 mkdir -p release/tactview.app/Contents/Resources
 mkdir -p release/tactview.app/Contents/tacview
+
+cp -r buildconfig/osx/bundle_template release/tactview.app
 
 cd tactview-native
 echo "Compiling native code..."
@@ -37,7 +37,7 @@ EXCLUDES="$ADDITIONAL_EXCLUDES\|$DEFAULT_LIBS"
 
 LIBS_LOCATION=buildconfig/osx/tmp/libs.txt
 
-rm -r buildconfig/osx/tmp
+rm -r buildconfig/osx/tmp || true
 mkdir -p buildconfig/osx/tmp
 
 for i in `ls  tactview-native/*.dylib`; do echo " - Processing $i"; python buildconfig/osx/otoolrecursive.py $(pwd)/$i >> $LIBS_LOCATION 2>/dev/null; done

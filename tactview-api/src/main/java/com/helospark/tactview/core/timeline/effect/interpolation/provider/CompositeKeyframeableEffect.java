@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.util.List;
 
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 
 public abstract class CompositeKeyframeableEffect<T> extends KeyframeableEffect<T> {
@@ -15,6 +16,14 @@ public abstract class CompositeKeyframeableEffect<T> extends KeyframeableEffect<
     public boolean supportsKeyframes() {
         return compositeElements.stream()
                 .anyMatch(a -> a.supportsKeyframes());
+    }
+
+    @Override
+    public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
+        List<KeyframeableEffect<?>> children = getChildren();
+        for (int i = 0; i < children.size(); ++i) {
+            children.get(i).removeKeyframeAt(globalTimelinePosition);
+        }
     }
 
     @Override

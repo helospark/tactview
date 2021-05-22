@@ -18,6 +18,7 @@ extern "C"
     }
 
     EXPORTED void free(void* data) {
+        std::cout << "Freeing: " << (long)data << std::endl;
         free(data);
     }
 

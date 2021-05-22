@@ -4,6 +4,8 @@ import static com.helospark.tactview.core.render.helper.ExtensionType.AUDIO;
 import static com.helospark.tactview.core.render.helper.ExtensionType.VIDEO;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +34,7 @@ import com.helospark.tactview.core.decoder.opencv.ImageMetadataRequest;
 import com.helospark.tactview.core.decoder.opencv.ImageMetadataResponse;
 import com.helospark.tactview.core.decoder.opencv.ImageRequest;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.render.domain.FFmpegRenderThreadResult;
 import com.helospark.tactview.core.render.ffmpeg.CodecExtraDataRequest;
 import com.helospark.tactview.core.render.ffmpeg.CodecInformation;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegBasedMediaEncoder;
@@ -51,6 +54,7 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.MergeOnIntersectingIntervalList;
 import com.helospark.tactview.core.timeline.TimelineInterval;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -178,8 +182,16 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             threads = 1;
         }
 
-        BlockingQueue<CompletableFuture<AudioVideoFragment>> queue = new ArrayBlockingQueue<>(threads);
+        BlockingQueue<CompletableFuture<FFmpegRenderThreadResult>> queue = new ArrayBlockingQueue<>(threads);
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
+
+        // This hack is needed because the number of samples during a frame might not be an integer.
+        // For example for a 29.97 FPS video & 44100 samples/sec, number of samples per frame is 1471.4715, however number of samples can only be an integer.
+        // therefore only 1471 samples are sent to the audio file. This means that 0.53 samples will be missing for every frame.
+        // this will lead to audio misalignment in a 1h video: 29.97⋅60⋅60⋅0.53/44100 = 1.29s
+        // Solution is to ask a little more samples, keep tract of how many samples we sent and if there is a misalignment copy more/less samples from result.
+        // in the previous example 1 additional sample will be used per ~2 frames.
+        TimelineLength fewExtraAudioSamples = new TimelineLength(BigDecimal.TEN.divide(BigDecimal.valueOf(projectRepository.getSampleRate()), 5, RoundingMode.HALF_UP));
 
         try {
             var producerThread = new Thread() {
@@ -210,7 +222,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                                     && !renderRequest.getIsCancelledSupplier().get()) {
 
                                 TimelinePosition position = currentPosition; // thanks Java...
-                                CompletableFuture<AudioVideoFragment> job = CompletableFuture
+                                CompletableFuture<FFmpegRenderThreadResult> job = CompletableFuture
                                         .supplyAsync(() -> {
                                             RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
                                                     .withBytesPerSample(Optional.of(bytesPerSample))
@@ -222,8 +234,10 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                                                     .withSampleRate(Optional.of(audioSampleRate))
                                                     .withExpectedHeight(initNativeRequest.renderHeight)
                                                     .withExpectedWidth(initNativeRequest.renderWidth)
+                                                    .withAudioLength(new TimelineLength(projectRepository.getFrameTime()).add(fewExtraAudioSamples))
                                                     .build();
-                                            return queryFrameAt(superRequest);
+                                            AudioVideoFragment audioVideo = queryFrameAt(superRequest);
+                                            return new FFmpegRenderThreadResult(audioVideo, position);
                                         }, executorService);
                                 queue.put(job);
                                 currentPosition = currentPosition.add(renderRequest.getStep());
@@ -244,8 +258,9 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                                         .withSampleRate(Optional.of(audioSampleRate))
                                         .withExpectedHeight(initNativeRequest.renderHeight)
                                         .withExpectedWidth(initNativeRequest.renderWidth)
+                                        .withAudioLength(new TimelineLength(projectRepository.getFrameTime()).add(fewExtraAudioSamples))
                                         .build();
-                                AudioVideoFragment frame = queryFrameAt(superRequest);
+                                FFmpegRenderThreadResult frame = new FFmpegRenderThreadResult(queryFrameAt(superRequest), currentPosition);
                                 queue.put(CompletableFuture.completedFuture(frame));
                                 currentPosition = currentPosition.add(renderRequest.getStep());
                             }
@@ -272,11 +287,13 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
             boolean hasAlreadyEncodedCoverImage = false;
 
+            long allAudioSamples = 0;
             // Encoding must be done in single thread
             while (!producerThread.isFinished || queue.peek() != null) {
-                CompletableFuture<AudioVideoFragment> future = pollQueue(queue);
+                CompletableFuture<FFmpegRenderThreadResult> future = pollQueue(queue);
                 if (future != null) {
-                    AudioVideoFragment frame = future.join();
+                    FFmpegRenderThreadResult threadResult = future.join();
+                    AudioVideoFragment frame = threadResult.audioVideo;
                     FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
                     nativeRequest.frame = new RenderFFMpegFrame();
                     RenderFFMpegFrame[] array = (RenderFFMpegFrame[]) nativeRequest.frame.toArray(1);
@@ -288,8 +305,25 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     }
                     boolean audioConverted = false;
                     if (needsAudio && frame.getAudioResult().getChannels().size() > 0) {
-                        array[0].audioData = convertAudio(frame.getAudioResult());
-                        array[0].numberOfAudioSamples = frame.getAudioResult().getNumberSamples();
+                        int expectedNumberOfSamples = threadResult.time.getSeconds()
+                                .add(projectRepository.getFrameTime())
+                                .multiply(BigDecimal.valueOf(audioSampleRate)).intValue();
+
+                        long nextSampleCount = allAudioSamples + frame.getAudioResult().getNumberSamples();
+                        int deltaSamples = (int) (nextSampleCount - expectedNumberOfSamples);
+
+                        LOGGER.debug("Audio rendering delta samples = {}", deltaSamples);
+
+                        int numberOfSamples = frame.getAudioResult().getNumberSamples();
+                        if (deltaSamples > 0) {
+                            numberOfSamples = frame.getAudioResult().getNumberSamples() - deltaSamples;
+                        } else if (deltaSamples < 0) {
+                            LOGGER.error("Delta samples are less than 0, this will cause misalignment of audio and video. This is not supposed to happen");
+                        }
+                        array[0].audioData = convertAudio(frame.getAudioResult(), numberOfSamples);
+                        array[0].numberOfAudioSamples = numberOfSamples;
+                        allAudioSamples += numberOfSamples;
+
                         audioConverted = true;
                     }
                     nativeRequest.encoderIndex = encoderIndex;
@@ -349,7 +383,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         }
     }
 
-    private CompletableFuture<AudioVideoFragment> pollQueue(BlockingQueue<CompletableFuture<AudioVideoFragment>> queue) {
+    private CompletableFuture<FFmpegRenderThreadResult> pollQueue(BlockingQueue<CompletableFuture<FFmpegRenderThreadResult>> queue) {
         try {
             return queue.poll(1, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -357,11 +391,11 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         }
     }
 
-    private ByteBuffer convertAudio(AudioFrameResult audioResult) {
-        ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(audioResult.getBytesPerSample() * audioResult.getNumberSamples() * audioResult.getChannels().size());
+    private ByteBuffer convertAudio(AudioFrameResult audioResult, int numberOfSamples) {
+        ByteBuffer result = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(audioResult.getBytesPerSample() * numberOfSamples * audioResult.getChannels().size());
 
         int index = 0;
-        for (int i = 0; i < audioResult.getNumberSamples(); ++i) {
+        for (int i = 0; i < numberOfSamples; ++i) {
             for (int j = 0; j < audioResult.getChannels().size(); ++j) {
                 for (int k = 0; k < audioResult.getBytesPerSample(); ++k) {
                     result.put(index++, audioResult.getChannels().get(j).get(i * audioResult.getBytesPerSample() + k));

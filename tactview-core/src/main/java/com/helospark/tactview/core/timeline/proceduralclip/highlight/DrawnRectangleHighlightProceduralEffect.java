@@ -85,12 +85,13 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
         }
 
         String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr");
+        Point brushHalfSize = new Point((double) brushSize / request.getExpectedWidth() / 2.0, (double) brushSize / request.getExpectedHeight() / 2.0);
 
         Color color = colorProvider.getValueAt(relativePosition);
 
         for (int i = 0; i < 4 && lengthToDraw > 0.0; ++i) { // 0->1, 1->2, 2->3, 3->0
-            Point start = rectangle.points.get(i);
-            Point end = rectangle.points.get((i + 1) % 4);
+            Point start = rectangle.points.get(i).subtract(brushHalfSize);
+            Point end = rectangle.points.get((i + 1) % 4).subtract(brushHalfSize);
 
             Point overshootOffsetVector = end.subtract(start).normalize().scalarMultiply(overshoot);
 

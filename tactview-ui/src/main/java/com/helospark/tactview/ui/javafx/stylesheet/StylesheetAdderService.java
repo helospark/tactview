@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.stylesheet;
 
 import java.awt.Taskbar;
+import java.awt.Taskbar.Feature;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
@@ -63,7 +64,9 @@ public class StylesheetAdderService {
         stage.getIcons().add(image);
         if (Taskbar.isTaskbarSupported()) {
             BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
-            Taskbar.getTaskbar().setIconImage(bufferedImage);
+            if (Taskbar.getTaskbar().isSupported(Feature.ICON_IMAGE)) {
+                Taskbar.getTaskbar().setIconImage(bufferedImage);
+            }
         }
     }
 

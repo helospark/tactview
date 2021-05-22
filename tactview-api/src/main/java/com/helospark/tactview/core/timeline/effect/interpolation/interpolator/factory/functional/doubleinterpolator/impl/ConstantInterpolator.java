@@ -79,4 +79,9 @@ public class ConstantInterpolator extends KeyframeSupportingDoubleInterpolator {
         return value;
     }
 
+    @Override
+    public void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
+        this.value = newValue;
+    }
+
 }

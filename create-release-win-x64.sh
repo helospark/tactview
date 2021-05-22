@@ -2,7 +2,11 @@
 
 set -e
 
-rm -r release/win64 || true
+if [ -d "release/win64" ]
+then
+	rm -r release/win64
+fi
+
 mkdir -p release/win64
 cd tactview-native
 

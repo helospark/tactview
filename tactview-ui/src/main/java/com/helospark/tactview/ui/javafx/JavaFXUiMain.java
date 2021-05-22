@@ -28,6 +28,7 @@ import com.helospark.tactview.core.plugin.PluginMainClassProviders;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
+import com.helospark.tactview.ui.javafx.aware.MainWindowStageAware;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
@@ -89,6 +90,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
@@ -130,6 +132,10 @@ public class JavaFXUiMain extends Application {
         styleSheetAdder.setTactviewIconForStage(stage);
 
         JavaFXUiMain.STAGE = stage;
+
+        lightDi.getListOfBeans(MainWindowStageAware.class)
+                .forEach(listener -> listener.setMainWindowStage(stage));
+
         NotificationPane notificationPane = new NotificationPane();
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 650, 550, Color.GREY);
@@ -143,7 +149,7 @@ public class JavaFXUiMain extends Application {
         }
 
         stage.setOnCloseRequest(e -> {
-            exitApplication(exitWithSaveService);
+            exitApplication(exitWithSaveService, e);
         });
 
         root.setTop(menuBar);
@@ -429,12 +435,15 @@ public class JavaFXUiMain extends Application {
         return outerPane;
     }
 
-    private void exitApplication(ExitWithSaveService exitWithSaveService) {
-        exitWithSaveService.optionallySaveAndThenRun(() -> {
+    private void exitApplication(ExitWithSaveService exitWithSaveService, WindowEvent event) {
+        boolean exitPerformed = exitWithSaveService.optionallySaveAndThenRun(() -> {
             Platform.exit();
             lightDi.close();
             System.exit(0);
         });
+        if (!exitPerformed) {
+            event.consume();
+        }
     }
 
     private static Consumer<Boolean> onClassChange(Node element) {

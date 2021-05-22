@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.CreateEffectRequest;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
+import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelAddedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelMovedMessage;
 import com.helospark.tactview.core.timeline.message.ChannelRemovedMessage;
@@ -74,6 +76,42 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     @PostConstruct
     public void postConstruct() {
         longProcessRequestor.setTimelineManagerAccessor(this);
+
+        messagingService.register(AbstractKeyframeChangedMessage.class, message -> {
+            createNewChannelWhenClipLengthChangeCausesIntersectingClips(message);
+        });
+    }
+
+    private void createNewChannelWhenClipLengthChangeCausesIntersectingClips(AbstractKeyframeChangedMessage message) {
+        TimelineClip affectedClip = null;
+        TimelineChannel affectedChannel = null;
+        for (var channel : getChannels()) {
+            for (var clip : channel.getAllClips()) {
+                if (message.getDescriptorId().equals(clip.getTimeScaleProviderId())) {
+                    affectedClip = clip;
+                    affectedChannel = channel;
+                    break;
+                }
+                if (affectedClip != null) {
+                    break;
+                }
+            }
+        }
+        if (affectedClip != null && affectedChannel.areIntervalsIntersecting()) {
+            Integer channelIndex = findChannelIndex(affectedChannel.getId()).get();
+            TimelineChannel newChannel = createChannel(channelIndex);
+
+            MoveClipRequest moveClipRequest = MoveClipRequest.builder()
+                    .withAdditionalClipIds(List.of())
+                    .withClipId(affectedClip.getId())
+                    .withEnableJumpingToSpecialPosition(false)
+                    .withMoreMoveExpected(false)
+                    .withNewChannelId(newChannel.getId())
+                    .withNewPosition(affectedClip.getInterval().getStartPosition())
+                    .build();
+
+            moveClip(moveClipRequest);
+        }
     }
 
     public TimelineClip addClip(AddClipRequest request) {
@@ -101,7 +139,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
                 channelToAddResourceTo.addResource(clip);
             } else {
-                throw new IllegalArgumentException("Cannot add clip");
+                List<TimelineInterval> intersectingIntervals = channelToAddResourceTo.getAllClips()
+                        .computeIntersectingIntervals(clip.getInterval())
+                        .stream()
+                        .map(a -> a.getInterval())
+                        .collect(Collectors.toList());
+                throw new IllegalArgumentException("Cannot add clip with interval {} " + clip.getInterval() + " because it intesects with " + intersectingIntervals);
             }
         }
         sendClipAndEffectMessages(channelToAddResourceTo, clip);
@@ -127,9 +170,18 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 .findFirst();
     }
 
+    public boolean supportsEffect(String id, String effectId, TimelinePosition position) {
+        Optional<TimelineClip> clipById = findClipById(id);
+        if (!clipById.isPresent()) {
+            return false;
+        }
+        CreateEffectRequest request = new CreateEffectRequest(position, effectId, clipById.get().getType(), clipById.get().getInterval());
+        return effectFactoryChain.supports(request);
+    }
+
     public StatelessEffect addEffectForClip(String id, String effectId, TimelinePosition position) {
         TimelineClip clipById = findClipById(id).get();
-        StatelessEffect effect = createEffect(effectId, position, clipById);
+        StatelessEffect effect = createEffect(effectId, position.from(clipById.getInterval().getStartPosition()), clipById);
         addEffectForClip(clipById, effect);
         return effect;
     }
@@ -239,7 +291,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         TimelineChannel originalChannel = findChannelForClipId(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip " + clipId));
 
         TimelineClip clipToMove = findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("Cannot find clip"));
-        TimelineInterval originalInterval = clipToMove.getGlobalInterval();
+        TimelineInterval originalInterval = clipToMove.getInterval();
 
         Set<String> linkedClipIds = fillWithAllTransitiveLinkedClips(moveClipRequest);
 
@@ -253,6 +305,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         Optional<ClosesIntervalChannel> specialPositionUsed = Optional.empty();
 
         if (moveClipRequest.enableJumpingToSpecialPosition) {
+            TimelinePosition relativeClipMove = newPosition.subtract(originalInterval.getStartPosition());
+
             List<String> ignoredIds = new ArrayList<>();
             ignoredIds.add(clipToMove.getId());
             ignoredIds.addAll(linkedClipIds);
@@ -261,19 +315,46 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .map(effect -> effect.getId())
                     .forEach(effectId -> ignoredIds.add(effectId));
 
+            Map<String, Set<ClosesIntervalChannel>> result = new HashMap<>();
             synchronized (timelineChannelsState.fullLock) { // allLinkedClipsCanBeMoved requires state modification
-                specialPositionUsed = calculateSpecialPositionAround(newPosition, moveClipRequest.maximumJump, clipToMove.getInterval(), ignoredIds, moveClipRequest.additionalSpecialPositions)
-                        .stream()
-                        .filter(a -> {
-                            TimelinePosition relativeMove = originalInterval.getStartPosition().subtract(a.getClipPosition());
-                            boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
-                            return allClipsCanBePlaced;
-                        })
-                        .sorted()
-                        .findFirst();
+                for (var currentClip : linkedClips) {
+                    calculateSpecialPositionAround(currentClip.getInterval().getStartPosition().add(relativeClipMove), moveClipRequest.maximumJump, currentClip.getInterval(), ignoredIds,
+                            moveClipRequest.additionalSpecialPositions)
+                                    .stream()
+                                    .filter(a -> {
+                                        TimelinePosition relativeMove = a.getClipPosition().subtract(currentClip.getInterval().getStartPosition());
+                                        boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
+                                        return allClipsCanBePlaced;
+                                    })
+                                    .forEach(a -> {
+                                        Set<ClosesIntervalChannel> previousSet = result.get(currentClip.getId());
+                                        if (previousSet == null) {
+                                            previousSet = new TreeSet<>();
+                                        }
+                                        previousSet.add(a);
+                                        result.put(currentClip.getId(), previousSet);
+                                    });
+                }
             }
+
+            String minimumClip = null;
+            ClosesIntervalChannel minimumFound = null;
+            for (var entry : result.entrySet()) {
+                Optional<ClosesIntervalChannel> optionalSmallestElement = entry.getValue().stream().findFirst();
+                if (optionalSmallestElement.isPresent()) {
+                    ClosesIntervalChannel smallestElement = optionalSmallestElement.get();
+
+                    if (minimumFound == null || smallestElement.getDistance().lessThan(minimumFound.getDistance())) {
+                        minimumFound = smallestElement;
+                        minimumClip = entry.getKey();
+                    }
+                }
+            }
+
+            specialPositionUsed = Optional.ofNullable(minimumFound);
             if (specialPositionUsed.isPresent()) {
-                newPosition = specialPositionUsed.get().getClipPosition();
+                TimelinePosition relativeMove = specialPositionUsed.get().getClipPosition().subtract(findClipById(minimumClip).get().getInterval().getStartPosition());
+                newPosition = originalInterval.getStartPosition().add(relativeMove);
             }
         }
 
@@ -316,8 +397,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                                 TimelineChannel originalMovedChannel = timelineChannelsState.channels.get(originalIndex);
                                 TimelineChannel newMovedChannel = timelineChannelsState.channels.get(currentIndex);
 
-                                TimelineInterval clipCurrentInterval = clip.getInterval();
-                                TimelineInterval clipNewPosition = clipCurrentInterval.butAddOffset(relativeMove);
+                                TimelineInterval clipCurrentInterval = clip.getUnmodifiedInterval();
+                                TimelineInterval clipNewPosition = clip.getUnmodifiedInterval().butAddOffset(relativeMove);
 
                                 originalMovedChannel.removeClip(clip.getId());
                                 clip.setInterval(clipNewPosition);
@@ -351,7 +432,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     for (int i = 0; i < linkedClips.size(); ++i) {
                         TimelineClip clip = linkedClips.get(i);
                         TimelineChannel channel = channelForClip.get(i);
-                        TimelineInterval clipCurrentInterval = clip.getInterval();
+                        TimelineInterval clipCurrentInterval = clip.getUnmodifiedInterval();
                         TimelinePosition clipNewPosition = clipCurrentInterval.getStartPosition().add(relativeMove);
                         clip.setInterval(new TimelineInterval(clipNewPosition, clipCurrentInterval.getLength()));
                         channel.addResource(clip);
@@ -422,6 +503,18 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             specialPosition = calculateSpecialPositionAround(globalNewPosition, request.getMaximumJumpToSpecialPositions().get(), effect.getGlobalInterval(), List.of(request.getEffectId()),
                     request.getAdditionalSpecialPositions())
                             .stream()
+                            .filter(a -> {
+                                TimelinePosition relativeMove = a.getClipPosition().subtract(effect.getGlobalInterval().getStartPosition());
+                                TimelineInterval newInterval = effect.getInterval().butAddOffset(relativeMove);
+
+                                if (newInterval.getStartPosition().isLessThan(0)) {
+                                    return false;
+                                }
+                                if (newInterval.getEndPosition().isGreaterThan(currentClip.getUnmodifiedInterval().getEndPosition())) {
+                                    return false;
+                                }
+                                return true;
+                            })
                             .findFirst();
             globalNewPosition = specialPosition.map(a -> a.getClipPosition()).orElse(globalNewPosition);
         }
@@ -504,9 +597,17 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         if (useSpecialPoints) {
             List<String> excludedIds = new ArrayList<>();
             excludedIds.add(clip.getId());
+            excludedIds.addAll(resizeClipRequest.getOtherClips());
             clip.getEffects()
                     .stream()
                     .map(effect -> effect.getId())
+                    .forEach(effectId -> excludedIds.add(effectId));
+
+            resizeClipRequest.getOtherClips()
+                    .stream()
+                    .flatMap(a -> findClipById(a).stream())
+                    .flatMap(a -> a.getEffects().stream())
+                    .map(a -> a.getId())
                     .forEach(effectId -> excludedIds.add(effectId));
 
             specialPointUsed = findSpecialPositionAround(globalPosition, resizeClipRequest.getMaximumJumpLength(), excludedIds)
@@ -529,7 +630,6 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         List<StatelessEffect> effectsToResize = clip.getEffects()
                 .stream()
                 .filter(effect -> {
-                    System.out.println("Interval: " + effect.getGlobalInterval() + " " + clip.getInterval());
                     return effect.getGlobalInterval().getLength().isEquals(clip.getInterval().getLength());
                 })
                 .collect(Collectors.toList());
@@ -549,8 +649,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             effectsToResize.stream()
                     .forEach(effect -> {
                         TimelineInterval originalEffectInterval = effect.getInterval();
-                        boolean asd = clip.resizeEffect(effect, false, clip.getInterval().getEndPosition());
-                        System.out.println("Effect resize " + asd);
+                        clip.resizeEffect(effect, false, clip.getInterval().getEndPosition());
                         EffectResizedMessage effectResizedMessage = EffectResizedMessage.builder()
                                 .withClipId(clip.getId())
                                 .withEffectId(effect.getId())
@@ -576,13 +675,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     }
 
     public void resizeEffect(ResizeEffectRequest resizeEffectRequest) {
+
         StatelessEffect effect = resizeEffectRequest.getEffect();
         boolean left = resizeEffectRequest.isLeft();
         TimelineClip clip = findClipForEffect(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
         TimelinePosition globalPosition = resizeEffectRequest.getGlobalPosition();
         boolean useSpecialPoints = resizeEffectRequest.isUseSpecialPoints();
-
-        System.out.println("GP1: " + globalPosition);
 
         TimelineLength minimumSize = resizeEffectRequest.getMinimumLength().orElse(null);
         if (minimumSize != null && getIntervalWhenResizedTo(effect, left, globalPosition).getLength().lessThanOrEqual(minimumSize)) {
@@ -619,26 +717,28 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 }
             }
         }
+        synchronized (clip.getFullClipLock()) {
 
-        if (resizeEffectRequest.getAllowResizeToDisplaceOtherEffects()) {
-            Integer effectChannelIndex = clip.getEffectChannelIndex(resizeEffectRequest.getEffect().getId()).get();
-            NonIntersectingIntervalList<StatelessEffect> newChannel = clip.addEffectChannel(effectChannelIndex);
-            newChannel.addInterval(clip.removeEffectById(resizeEffectRequest.getEffect().getId()));
-        }
-        boolean success = clip.resizeEffect(effect, left, newPosition);
+            if (resizeEffectRequest.getAllowResizeToDisplaceOtherEffects()) {
+                Integer effectChannelIndex = clip.getEffectChannelIndex(resizeEffectRequest.getEffect().getId()).get();
+                NonIntersectingIntervalList<StatelessEffect> newChannel = clip.addEffectChannel(effectChannelIndex);
+                newChannel.addInterval(clip.removeEffectById(resizeEffectRequest.getEffect().getId()));
+            }
+            boolean success = clip.resizeEffect(effect, left, newPosition);
 
-        if (success) {
-            StatelessEffect renewedClip = findEffectById(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such effect"));
-            EffectResizedMessage clipResizedMessage = EffectResizedMessage.builder()
-                    .withClipId(clip.getId())
-                    .withEffectId(renewedClip.getId())
-                    .withNewInterval(renewedClip.getInterval())
-                    .withOriginalInterval(originalInterval)
-                    .withSpecialPositionUsed(specialPointUsed)
-                    .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
-                    .build();
-            messagingService.sendMessage(clipResizedMessage);
-            optimizeEffectChannels(clip);
+            if (success) {
+                StatelessEffect renewedClip = findEffectById(effect.getId()).orElseThrow(() -> new IllegalArgumentException("No such effect"));
+                EffectResizedMessage clipResizedMessage = EffectResizedMessage.builder()
+                        .withClipId(clip.getId())
+                        .withEffectId(renewedClip.getId())
+                        .withNewInterval(renewedClip.getInterval())
+                        .withOriginalInterval(originalInterval)
+                        .withSpecialPositionUsed(specialPointUsed)
+                        .withMoreResizeExpected(resizeEffectRequest.isMoreResizeExpected())
+                        .build();
+                messagingService.sendMessage(clipResizedMessage);
+                optimizeEffectChannels(clip);
+            }
         }
     }
 
@@ -696,6 +796,10 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     ++channelId;
                 }
                 addClip(createdChannel, restoredClip);
+
+                for (var effect : restoredClip.getEffects()) {
+                    effect.notifyAfterInitialized();
+                }
             }
         }
 
@@ -721,27 +825,20 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             BigDecimal startDistance = additionalPosition.distanceFrom(position);
             BigDecimal endDistance = additionalPosition.distanceFrom(endPosition);
 
-            System.out.println("Distance   ----    " + startDistance + " " + endDistance);
-
             if (startDistance.compareTo(endDistance) < 0) {
-                System.out.println("Startdistance is less");
                 if (startDistance.compareTo(inRadius.getSeconds()) < 0) {
                     for (TimelineChannel channel : getChannels()) {
                         set.add(new ClosesIntervalChannel(new TimelineLength(startDistance), channel.getId(), additionalPosition, additionalPosition));
                     }
                 }
             } else {
-                System.out.println("Endistance is less");
                 if (endDistance.compareTo(inRadius.getSeconds()) < 0) {
-                    System.out.println("Endistance is less - 2   " + clipLength);
                     for (TimelineChannel channel : getChannels()) {
                         set.add(new ClosesIntervalChannel(new TimelineLength(endDistance), channel.getId(), additionalPosition.subtract(clipLength), additionalPosition));
                     }
                 }
             }
         }
-
-        System.out.println(set);
 
         return set;
     }
@@ -997,4 +1094,19 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return Optional.empty();
     }
 
+    public List<String> findLinkedClipsWithSameInterval(String clipId) {
+        TimelineClip originalClip = findClipById(clipId).get();
+        List<String> linkedClips = linkClipRepository.getLinkedClips(clipId);
+
+        List<String> allElements = new ArrayList<>();
+        allElements.add(clipId);
+
+        for (var otherClipId : linkedClips) {
+            TimelineClip other = findClipById(otherClipId).get();
+            if (originalClip.getInterval().isEqualWithEpsilon(other.getInterval())) {
+                allElements.add(otherClipId);
+            }
+        }
+        return allElements;
+    }
 }

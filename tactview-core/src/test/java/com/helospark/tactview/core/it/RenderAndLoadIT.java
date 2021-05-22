@@ -114,7 +114,7 @@ public class RenderAndLoadIT {
                 .setChannel(0)
                 .setPosition(TimelinePosition.ofZero())
                 .setPath(renderTargetDirectory.getAbsolutePath())
-                .setFps(BigDecimal.valueOf(30))
+                .setFps(BigDecimal.valueOf(24))
                 .setPattern("images_(\\d+)." + extension)
                 .clickOkButton();
 

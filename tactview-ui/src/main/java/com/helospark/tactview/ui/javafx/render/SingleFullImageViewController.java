@@ -18,6 +18,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
@@ -29,6 +30,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -38,15 +40,17 @@ public class SingleFullImageViewController {
     private TimelineManagerRenderService timelineManagerRenderService;
     private ProjectRepository projectRepository;
     private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
+    private StylesheetAdderService stylesheetAdderService;
     @Slf4j
     private Logger logger;
 
     public SingleFullImageViewController(UiTimelineManager uiTimelineManager, TimelineManagerRenderService timelineManagerRenderService, ProjectRepository projectRepository,
-            ByteBufferToJavaFxImageConverter byteBufferToImageConverter) {
+            ByteBufferToJavaFxImageConverter byteBufferToImageConverter, StylesheetAdderService stylesheetAdderService) {
         this.uiTimelineManager = uiTimelineManager;
         this.timelineManagerRenderService = timelineManagerRenderService;
         this.projectRepository = projectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
+        this.stylesheetAdderService = stylesheetAdderService;
     }
 
     public void renderFullScreenAtCurrentLocation() {
@@ -70,7 +74,7 @@ public class SingleFullImageViewController {
             return null;
         }).thenAccept(image -> {
             Platform.runLater(() -> {
-                ImageShowDialog dialog = new ImageShowDialog(image);
+                ImageShowDialog dialog = new ImageShowDialog(image, stylesheetAdderService);
                 dialog.show();
             });
         });
@@ -80,15 +84,17 @@ public class SingleFullImageViewController {
     static class ImageShowDialog {
         private Stage stage;
 
-        public ImageShowDialog(Image image) {
+        public ImageShowDialog(Image image, StylesheetAdderService stylesheetAdderService) {
             ImageView imageView = new ImageView();
             imageView.setImage(image);
 
             ScrollPane root = new ScrollPane();
+
             root.setContent(imageView);
 
             Scene dialog = new Scene(root);
             stage = new Stage();
+            stylesheetAdderService.styleDialog(stage, root, "stylesheet.css");
             stage.setTitle("FullScreenRender");
             stage.setScene(dialog);
 
@@ -99,6 +105,8 @@ public class SingleFullImageViewController {
             });
 
             ContextMenu contextMenu = new ContextMenu();
+
+            root.setContextMenu(contextMenu);
 
             MenuItem item1 = new MenuItem("Save");
             item1.setOnAction(e -> {
@@ -115,6 +123,12 @@ public class SingleFullImageViewController {
                 contextMenu.show(imageView, e.getScreenX(), e.getScreenY());
             });
 
+            imageView.setOnMouseClicked(e -> {
+                if (e.getButton().equals(MouseButton.PRIMARY)) {
+                    contextMenu.hide();
+                }
+            });
+
             stage.show();
             stage.toFront();
         }
@@ -126,7 +140,11 @@ public class SingleFullImageViewController {
         private void saveToFile(Image image, File file) {
             BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
             try {
-                ImageIO.write(bufferedImage, "png", new File(file.getAbsolutePath() + ".png"));
+                String outputFileName = file.getAbsolutePath();
+                if (!outputFileName.endsWith(".png")) {
+                    outputFileName = outputFileName + ".png";
+                }
+                ImageIO.write(bufferedImage, "png", new File(outputFileName));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

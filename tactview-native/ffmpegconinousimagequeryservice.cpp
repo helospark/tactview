@@ -34,7 +34,7 @@ extern "C" {
 
     void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
     {
-        //std::cout << "Copying data " << width << " " << height << std::endl;
+        //DEBUG("Copying data " << width << " " << height );
         for(int y=0; y<height; y++)
         {
             for (int i = 0; i < width; ++i)
@@ -76,21 +76,21 @@ extern "C" {
 
     void freeFrame(AVFrame* frame)
     {
-        // std::cout << "Preparing to free " << frame << " " << frame->opaque << std::endl;
+        // DEBUG("Preparing to free " << frame << " " << frame->opaque );
         av_free(frame->opaque);
         av_frame_free(&frame);
     }
 
     EXPORTED int readFrames(QueryFramesRequest* request)
     {
-        std::cout << "Called readFrames" << std::endl;
+        DEBUG("Called readFrames" );
         std::map<int,DecodeStructure*>::iterator elementIterator = decodeStructureMap.find(request->jobId);
 
         DecodeStructure* decodeStructure;
 
         if (elementIterator == decodeStructureMap.end())
         {
-            std::cout << "Job not initialized" << std::endl;
+            ERROR("Job not initialized" );
             return -1;
         }
         else
@@ -112,7 +112,7 @@ extern "C" {
         {
             if(packet.stream_index==videoStream)
             {
-                std::cout << "Read " << packet.pts << " " << packet.dts << std::endl;
+                DEBUG("Read pts=" << packet.pts << " dts=" << packet.dts );
                 int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 
                 if(frameFinished)
@@ -144,7 +144,7 @@ extern "C" {
 
     EXPORTED int openFile(InitializeReadJobRequest* request)
     {
-        std::cout << "Opening file " << request->path << " " << request->width << " " << request->height << std::endl;
+        DEBUG("Opening file " << request->path << " " << request->width << " " << request->height );
 
         // Initalizing these to NULL prevents segfaults!
         AVFormatContext   *pFormatCtx = NULL;
@@ -159,13 +159,13 @@ extern "C" {
 
         if(avformat_open_input(&pFormatCtx, request->path, NULL, NULL)!=0)
         {
-            std::cerr << "Cannot open input " << std::endl;
+            ERROR("Cannot open input " );
             return -1;
         }
 
         if(avformat_find_stream_info(pFormatCtx, NULL)<0)
         {
-            std::cerr << "Cannot find stream info " << std::endl;
+            ERROR("Cannot find stream info " );
             return -1;
         }
 
@@ -178,7 +178,7 @@ extern "C" {
             }
         if(videoStream==-1)
         {
-            std::cerr << "No video stream found in " << request->path << std::endl;
+            ERROR("No video stream found in " << request->path );
             return -1;
         }
 
@@ -186,29 +186,29 @@ extern "C" {
         pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
         if(pCodec==NULL)
         {
-            std::cerr << "Unsupported codec: " << pCodecCtxOrig->codec_id << std::endl;
+            ERROR("Unsupported codec: " << pCodecCtxOrig->codec_id );
             return NULL;
         }
-        std::cout << "Using codec " << pCodec->name << " for " << request->path << std::endl;
+        DEBUG("Using codec " << pCodec->name << " for " << request->path );
 
         pCodecCtx = avcodec_alloc_context3(pCodec);
 
         if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
         {
-            std::cerr << "Couldn't copy codec context" << std::endl;
+            ERROR("Couldn't copy codec context" );
             return NULL;
         }
 
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
         {
-            std::cerr << "Cannot open codec context" << std::endl;
+            ERROR("Cannot open codec context" );
             return NULL;
         }
 
 
         pFrame=av_frame_alloc();
 
-        std::cout << "Opening file with size " << request->width << " " << request->height << std::endl;
+        DEBUG("Opening file with size " << request->width << "x" << request->height );
 
         sws_ctx = sws_getContext(pCodecCtx->width,
                                  pCodecCtx->height,
@@ -246,7 +246,7 @@ extern "C" {
 
         if (elementIterator == decodeStructureMap.end())
         {
-            std::cout << "Job not initialized" << std::endl;
+            ERROR("Job not initialized" );
             return;
         }
         else
@@ -274,7 +274,7 @@ int charToUnsignedInt(char data) {
 
 
 void saveFrame(int width, int height, FFmpegFrameWithFrameNumber* frame) {
-    std::cout << "Writing " << frame->frame << std::endl;
+    DEBUG("Writing " << frame->frame );
     std::stringstream ss;
     ss << "/tmp/frame_" << frame->frame << ".ppm";
     std::ofstream file(ss.str());
@@ -302,7 +302,7 @@ int main() {
     int job = openFile(&initRequest);
 
     if (job < 0) {
-        std::cout << "Unable to open job" << std::endl;
+        ERROR("Unable to open job" );
         return -1;
     }
 
@@ -320,7 +320,7 @@ int main() {
 
         f = readFrames(&req);
 
-        std::cout << "Read " << f << " frames" << std::endl;
+        DEBUG("Read " << f << " frames" );
 
         for (int i = 0; i < f; ++i) {
             saveFrame(initRequest.width, initRequest.height, &req.frames[i]);

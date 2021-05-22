@@ -113,6 +113,11 @@ public class PolygonProvider extends KeyframeableEffect<Polygon> {
     }
 
     @Override
+    public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
+        values.remove(globalTimelinePosition);
+    }
+
+    @Override
     public SizeFunction getSizeFunction() {
         return SizeFunction.IMAGE_SIZE_IN_0_to_1_RANGE;
     }
@@ -131,4 +136,5 @@ public class PolygonProvider extends KeyframeableEffect<Polygon> {
     public void setUseKeyframes(boolean useKeyframes) {
         this.useKeyframes = useKeyframes;
     }
+
 }

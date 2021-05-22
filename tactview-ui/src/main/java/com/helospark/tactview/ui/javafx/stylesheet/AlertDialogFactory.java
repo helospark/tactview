@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.ui.javafx.aware.MainWindowStageAware;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -15,11 +16,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Stage;
 
 @Component
-public class AlertDialogFactory {
+public class AlertDialogFactory implements MainWindowStageAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(AlertDialogFactory.class);
     private final StylesheetAdderService stylesheetAdderService;
+    private Stage stage;
 
     public AlertDialogFactory(StylesheetAdderService stylesheetAdderService) {
         this.stylesheetAdderService = stylesheetAdderService;
@@ -27,6 +30,7 @@ public class AlertDialogFactory {
 
     public Alert createSimpleAlertWithTitleAndContent(AlertType alertType, String title, String content) {
         Alert alert = new Alert(alertType);
+        alert.initOwner(stage.getOwner());
         alert.setTitle(title);
         alert.setContentText(content);
         alert.setHeaderText(null);
@@ -38,6 +42,7 @@ public class AlertDialogFactory {
     public Alert createErrorAlertWithStackTrace(String title, Throwable ex) {
         LOGGER.error("Exception happened showing dialog with title {}", title, ex);
         Alert alert = new Alert(AlertType.ERROR);
+        alert.initOwner(stage.getOwner());
         alert.getDialogPane().getStylesheets().add("stylesheet.css");
 
         alert.setHeaderText(null);
@@ -77,6 +82,11 @@ public class AlertDialogFactory {
 
             alert.showAndWait();
         });
+    }
+
+    @Override
+    public void setMainWindowStage(Stage stage) {
+        this.stage = stage;
     }
 
 }

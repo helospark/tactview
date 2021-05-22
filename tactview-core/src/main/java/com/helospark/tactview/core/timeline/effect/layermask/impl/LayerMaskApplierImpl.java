@@ -10,16 +10,19 @@ import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleEffectImplem
 import com.helospark.tactview.core.timeline.effect.scale.OpenCVScaleRequest;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
 
 @Component
 public class LayerMaskApplierImpl implements LayerMaskApplier {
     private IndependentPixelOperation independentPixelOperation;
     private OpenCVScaleEffectImplementation scaleImplementation;
+    private FrameExtender frameExtender;
 
-    public LayerMaskApplierImpl(IndependentPixelOperation independentPixelOperation, OpenCVScaleEffectImplementation scaleImplementation) {
+    public LayerMaskApplierImpl(IndependentPixelOperation independentPixelOperation, OpenCVScaleEffectImplementation scaleImplementation, FrameExtender frameExtender) {
         this.independentPixelOperation = independentPixelOperation;
         this.scaleImplementation = scaleImplementation;
+        this.frameExtender = frameExtender;
     }
 
     @Override
@@ -29,18 +32,22 @@ public class LayerMaskApplierImpl implements LayerMaskApplier {
         LayerMaskAlphaCalculator calculator = layerMaskRequest.getCalculator();
 
         ReadOnlyClipImage scaledMask = null;
-        if (mask.getWidth() != input.getWidth() || mask.getHeight() != input.getHeight()) { // TODO: scale
-            scaledMask = ClipImage.sameSizeAs(input);
+        if (mask.getWidth() != input.getWidth() || mask.getHeight() != input.getHeight()) {
+            if (layerMaskRequest.getScaleLayerMask()) {
+                scaledMask = ClipImage.sameSizeAs(input);
 
-            OpenCVScaleRequest request = new OpenCVScaleRequest();
-            request.input = mask.getBuffer();
-            request.output = scaledMask.getBuffer();
-            request.originalWidth = mask.getWidth();
-            request.originalHeight = mask.getHeight();
-            request.newWidth = input.getWidth();
-            request.newHeight = input.getHeight();
+                OpenCVScaleRequest request = new OpenCVScaleRequest();
+                request.input = mask.getBuffer();
+                request.output = scaledMask.getBuffer();
+                request.originalWidth = mask.getWidth();
+                request.originalHeight = mask.getHeight();
+                request.newWidth = input.getWidth();
+                request.newHeight = input.getHeight();
 
-            scaleImplementation.scaleImage(request);
+                scaleImplementation.scaleImage(request);
+            } else {
+                scaledMask = frameExtender.expandAndTranslate(mask, input.getWidth(), input.getHeight(), 0, 0);
+            }
         }
 
         ReadOnlyClipImage maskToUse = (scaledMask == null ? mask : scaledMask);

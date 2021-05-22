@@ -4,6 +4,8 @@
 #include <experimental/filesystem>
 #include <numeric>
 
+#include "../common.h"
+
 inline bool ends_with(std::string const & value, std::string const & ending) {
     if (ending.size() > value.size())
       return false;
@@ -39,14 +41,14 @@ std::string getCommandLine(const char* startupFile) {
   try {
     homedir = std::string(getenv("USERPROFILE")) + "/.tactview/plugins/";
 
-    std::cout << homedir << std::endl;
+    INFO(homedir);
 
     for (const auto & entry : std::experimental::filesystem::directory_iterator(homedir)) {
         findPathAndNativesFor(entry.path().string(), jars, natives);        
-        std::cout << entry.path() << std::endl;
+        INFO(entry.path());
     }
   } catch(...) {
-    std::cout << "Cannot load plugins" << std::endl;
+    WARN("Cannot load plugins");
   }
     
   jars.push_back("tactview.jar");
@@ -54,15 +56,14 @@ std::string getCommandLine(const char* startupFile) {
   std::string classpathString = mergeWithDelimiter(jars, ";");
   std::string nativesString = mergeWithDelimiter(natives, ";");
 
-//  std::cout << classpathString << " " << nativesString << std::endl;
 
-  std::string commandLine = "\"java-runtime/bin/java\" -classpath " + classpathString + " -Dprism.order=sw -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=\"" + homedir + "\" \"" + startupFile + "\"";
-  std::cout << commandLine << std::endl;
+  std::string commandLine = "\"java-runtime/bin/java\" -classpath " + classpathString + " -Djdk.gtk.version=2 -Xmx8g application.HackyMain -Dtactview.plugindirectory=\"" + homedir + "\" \"" + startupFile + "\"";
+  INFO(commandLine);
 
   if (nativesString.size() > 0) {
     std::string path = std::string(getenv("PATH")) + nativesString;
     _putenv_s("PATH", path.c_str());
-    std::cout << "Set PATH=" << path << std::endl;
+    INFO("Set PATH=" << path);
   }
   return commandLine;
 }
@@ -76,7 +77,7 @@ int execute(std::string commandLine) {
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;   
 
-	std::cout << "Create file" << std::endl;
+	INFO("Create file");
     HANDLE h = CreateFile("tactview.log",
         FILE_APPEND_DATA,
         FILE_SHARE_WRITE | FILE_SHARE_READ,
@@ -125,7 +126,7 @@ int execute(std::string commandLine) {
 	return (int)returnCode;
 }
 
-int main(int args, char** argv) {
+int main(int argc, char** argv) {
   int statusCode = 0;
   do {
     const char* startupFile = "";
@@ -136,8 +137,8 @@ int main(int args, char** argv) {
 	  std::string commandLine = getCommandLine(startupFile);
 
     statusCode = execute(commandLine.c_str());
-    std::cout << "Tactview returned " << statusCode << std::endl;
+    INFO("Tactview returned " << statusCode);
   } while (statusCode == 3);
-  std::cout << "Exiting tactview, bye!" << std::endl;
+  INFO("Exiting tactview, bye!");
 }
 

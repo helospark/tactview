@@ -73,7 +73,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
             int finalStartFrame = startFrame;
 
             CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
-                renderFrames(finalPosition, finalStartFrame, renderRequest);
+                renderFrames(finalPosition, finalStartFrame, renderRequest, renderRequest.getEndPosition());
             }, renderExecutorService);
 
             futures.add(completableFuture);
@@ -85,7 +85,7 @@ public class ImageSequenceRenderService extends AbstractRenderService {
         renderExecutorService.shutdown();
     }
 
-    private void renderFrames(BigDecimal position, int startFrame, RenderRequest renderRequest) {
+    private void renderFrames(BigDecimal position, int startFrame, RenderRequest renderRequest, TimelinePosition endPosition) {
         BigDecimal currentPosition = position;
         int currentFrame = startFrame;
         String fileName = renderRequest.getFileName();
@@ -94,10 +94,14 @@ public class ImageSequenceRenderService extends AbstractRenderService {
         String fileNameWithoutExtension = fileName.substring(0, extensionIndex);
         for (int i = 0; i < FRAME_PER_BATCH; ++i) {
             try {
+                TimelinePosition framePosition = new TimelinePosition(position).add(BigDecimal.valueOf(i).multiply(projectRepository.getFrameTime()));
+                if (framePosition.isGreaterThan(endPosition)) {
+                    break;
+                }
 
                 RenderRequestFrameRequest superRequest = RenderRequestFrameRequest.builder()
                         .withRenderRequest(renderRequest)
-                        .withCurrentPosition(new TimelinePosition(position).add(BigDecimal.valueOf(i).multiply(projectRepository.getFrameTime())))
+                        .withCurrentPosition(framePosition)
                         .withNeedsSound(false)
                         .withNeedsVideo(true)
                         .withExpectedWidth(renderRequest.getWidth())

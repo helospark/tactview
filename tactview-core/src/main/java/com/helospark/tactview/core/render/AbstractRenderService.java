@@ -8,6 +8,7 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -67,6 +68,7 @@ public abstract class AbstractRenderService implements RenderService {
                 .withNeedVideo(needsVideo)
                 .withNeedSound(needsSound)
                 .withNumberOfChannels(numberOfChannels)
+                .withAudioLength(request.audioLength)
                 .build();
 
         AudioVideoFragment frame = timelineManagerRenderService.getFrame(frameRequest);
@@ -94,6 +96,7 @@ public abstract class AbstractRenderService implements RenderService {
         Optional<Integer> sampleRate;
         Optional<Integer> bytesPerSample;
         Optional<Integer> numberOfChannels;
+        Optional<TimelineLength> audioLength;
         boolean needsVideo;
         boolean needsSound;
         int expectedWidth;
@@ -110,6 +113,7 @@ public abstract class AbstractRenderService implements RenderService {
             this.needsSound = builder.needsSound;
             this.expectedWidth = builder.expectedWidth;
             this.expectedHeight = builder.expectedHeight;
+            this.audioLength = builder.audioLength;
         }
 
         @Generated("SparkTools")
@@ -124,6 +128,7 @@ public abstract class AbstractRenderService implements RenderService {
             private Optional<Integer> sampleRate = Optional.empty();
             private Optional<Integer> bytesPerSample = Optional.empty();
             private Optional<Integer> numberOfChannels = Optional.empty();
+            private Optional<TimelineLength> audioLength = Optional.empty();
             private boolean needsVideo;
             private boolean needsSound;
             private int expectedWidth;
@@ -174,6 +179,11 @@ public abstract class AbstractRenderService implements RenderService {
 
             public Builder withExpectedHeight(int expectedHeight) {
                 this.expectedHeight = expectedHeight;
+                return this;
+            }
+
+            public Builder withAudioLength(TimelineLength audioLength) {
+                this.audioLength = Optional.ofNullable(audioLength);
                 return this;
             }
 

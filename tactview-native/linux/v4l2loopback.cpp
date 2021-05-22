@@ -11,6 +11,8 @@
 #include <linux/videodev2.h>
 #include <string>
 
+#include "../common.h"
+
 using namespace std;
 using namespace cv;
 
@@ -33,20 +35,18 @@ int v4l2lo = -1;
 
         if (v4l2Cache != cacheKey) {
             if (v4l2lo != -1) {
-                std::cout << "Closing v4l2 device" << std::endl;
+                INFO("Closing v4l2 device");
                 close(v4l2lo);
                 v4l2lo = -1;
             }
-            std::cout << "Init v4l2 device with cache key "<< cacheKey << std::endl;
+            DEBUG("Init v4l2 device with cache key "<< cacheKey);
 
             int width  = request->width;
             int height = request->height;
 
-            std::cout << width << " x " << height << std::endl;
-
             v4l2lo = open(request->loopbackDevice, O_WRONLY);
             if(v4l2lo < 0) {
-                std::cout << "Error opening v4l2l device: " << strerror(errno);
+                ERROR("Error opening v4l2l device: " << strerror(errno));
                 return;
             } else {
                 v4l2Cache = cacheKey;
@@ -66,7 +66,7 @@ int v4l2lo = -1;
                 v.fmt.pix.sizeimage = width * height * 3;
                 t = ioctl(v4l2lo, VIDIOC_S_FMT, &v);
                 if( t < 0 ) {
-                    std::cout << "Unable to call ioctl" << std::endl;
+                    ERROR("Unable to call ioctl");
                     return;
                 }
             }
@@ -80,7 +80,7 @@ int v4l2lo = -1;
         size_t written = write(v4l2lo, rgbMat.data, rgbMat.cols * rgbMat.rows * rgbMat.elemSize());
         
         if (written < 0) {
-            std::cout << "Error writing v4l2l device";
+            ERROR("Error writing v4l2l device");
         }
     }
 

@@ -30,6 +30,7 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
             result.add(intervalAwares.get(index));
             ++index;
         }
+
         return result;
     }
 
@@ -75,6 +76,11 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
         }
     }
 
+    public T removeIndex(int index) {
+        T result = intervalAwares.remove(index);
+        return result;
+    }
+
     public Stream<T> stream() {
         return StreamSupport.stream(spliterator(), false);
     }
@@ -114,6 +120,12 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
     @Override
     public String toString() {
         return "NonIntersectingIntervalList [intervalAwares=" + intervalAwares + "]";
+    }
+
+    public NonIntersectingIntervalList<T> shallowCopy() {
+        NonIntersectingIntervalList<T> result = new NonIntersectingIntervalList<>();
+        result.intervalAwares.addAll(intervalAwares);
+        return result;
     }
 
 }

@@ -27,7 +27,6 @@ extern "C" {
   void process(Mat image, OpenCVHistogramEquizationRequest* request, Mat& outputMat);
 
   EXPORTED void equizeHistogram(OpenCVHistogramEquizationRequest* request)  {
-    std::cout << "SIIZE_0: " << request->adaptiveKernelWidth << " " << request->adaptiveKernelHeight << " " << request->adaptive << std::endl;
     Mat inputMat(request->height, request->width, CV_8UC4, (void*)request->input);
     Mat outputMat(request->height, request->width, CV_8UC4, (void*)request->output);
 
@@ -69,7 +68,6 @@ extern "C" {
   }
 
   void process(Mat image, OpenCVHistogramEquizationRequest* request, Mat& outputMat) {
-    std::cout << "SIIZE: " << request->adaptiveKernelWidth << " " << request->adaptiveKernelHeight << " " << request->adaptive << std::endl;
     if (request->adaptive) {
       cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(request->adaptiveClipLimit, cv::Size(request->adaptiveKernelWidth, request->adaptiveKernelHeight));
       clahe->setClipLimit(request->adaptiveClipLimit);

@@ -92,6 +92,22 @@ public class SelectedNodeRepository implements CleanableMode {
         messagingService.sendMessage(new ClipSelectionChangedMessage(clip, type));
     }
 
+    public void toggleClipSelection(String clip) {
+        if (this.selectedClips.contains(clip)) {
+            removeClipSelection(clip);
+        } else {
+            addSelectedClip(clip);
+        }
+    }
+
+    public void toggleEffectSelection(String effect) {
+        if (this.selectedClips.contains(effect)) {
+            removeEffect(effect);
+        } else {
+            addSelectedEffect(effect);
+        }
+    }
+
     public void addSelectedEffect(String clip) {
         this.selectedEffects.add(clip);
         ChangeType type = PRIMARY_SELECTION_ADDED;
@@ -114,6 +130,11 @@ public class SelectedNodeRepository implements CleanableMode {
     @Override
     public void clean() {
         clearAllSelectedItems();
+    }
+
+    public void addSelectedClips(List<String> clipIds) {
+        clipIds.stream()
+                .forEach(clipId -> addSelectedClip(clipId));
     }
 
 }

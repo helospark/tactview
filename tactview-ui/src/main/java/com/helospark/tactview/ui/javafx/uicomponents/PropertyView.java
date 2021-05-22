@@ -30,6 +30,7 @@ import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
 import com.helospark.tactview.ui.javafx.notification.NotificationService;
+import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyPage.Builder;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.DetailsGridChain;
@@ -55,7 +56,7 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
 @Component
-public class PropertyView {
+public class PropertyView implements CleanableMode {
     private final Image keyframesOn;
     private final Image keyframesOff;
 
@@ -373,6 +374,11 @@ public class PropertyView {
             shownEntries = null;
             Platform.runLater(() -> propertyWindow.getChildren().clear());
         }
+    }
+
+    @Override
+    public void clean() {
+        closeCurrentPage();
     }
 
 }

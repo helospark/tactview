@@ -55,7 +55,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                         .withDescriptorId(stringProvider.getId())
                         .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
-                        .withValue(newValue)
+                        .withValue(textArea.getText())
                         .withRevertable(true)
                         .build();
 

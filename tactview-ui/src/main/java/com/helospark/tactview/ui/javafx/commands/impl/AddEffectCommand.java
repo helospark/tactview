@@ -14,6 +14,8 @@ public class AddEffectCommand implements UiCommand {
 
     private String addedEffectId;
 
+    private boolean success = false;
+
     public AddEffectCommand(String clipId, String effectId, TimelinePosition position, TimelineManagerAccessor timelineManager) {
         this.clipId = clipId;
         this.effectId = effectId;
@@ -25,6 +27,7 @@ public class AddEffectCommand implements UiCommand {
     public void execute() {
         StatelessEffect result = timelineManager.addEffectForClip(clipId, effectId, position);
         addedEffectId = result.getId();
+        success = true;
     }
 
     @Override
@@ -34,6 +37,10 @@ public class AddEffectCommand implements UiCommand {
 
     public String getAddedEffectId() {
         return addedEffectId;
+    }
+
+    public boolean isSuccess() {
+        return success;
     }
 
 }

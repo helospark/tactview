@@ -12,6 +12,7 @@ import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
+import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
 import com.helospark.tactview.core.decoder.opencv.ImageMediaLoader;
@@ -36,19 +37,22 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
         VideoMetadata metadata = (VideoMetadata) request.getMetadata();
-        int startFrame = request.getStart().getSeconds().multiply(new BigDecimal(metadata.getFps())).setScale(2, RoundingMode.HALF_UP).intValue();
+        BigDecimal frameTime = BigDecimal.ONE.divide(new BigDecimal(metadata.getFps()), 10, RoundingMode.HALF_UP);
+        int startFrame = request.getStart().getSeconds().divide(frameTime, 0, RoundingMode.HALF_DOWN).intValue();
 
-        Optional<MediaHashValue> foundElement = mediaCache.findInCache(createCacheKey(request), startFrame);
+        Optional<MediaDataFrame> foundElement = mediaCache.findInCacheAndClone(createCacheKey(request), request.getStart().getSeconds());
 
         if (foundElement.isPresent()) {
-            return copyOf(foundElement.get());
+            return new MediaDataResponse(List.of(foundElement.get().frame));
         } else {
-            return loadAndCacheFrame(request, startFrame);
+            return loadAndCacheFrame(request, startFrame, frameTime);
         }
     }
 
-    private MediaDataResponse loadAndCacheFrame(VideoMediaDataRequest request, int frame) {
+    private MediaDataResponse loadAndCacheFrame(VideoMediaDataRequest request, int frame, BigDecimal frameTime) {
         List<FileHolder> files = fileNamePatternService.filenamePatternToFileResolver(request.getFilePath());
+        BigDecimal frameStart = BigDecimal.valueOf(frame).multiply(frameTime).setScale(3, RoundingMode.HALF_UP);
+        BigDecimal frameEnd = frameStart.add(frameTime);
 
         int actualFrameSequenceNumber = frame + files.get(0).getFrameIndex(); // ex. frame might start from 1
 
@@ -62,7 +66,7 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
             imageRequest.data = memoryManager.requestBuffer(imageRequest.width * imageRequest.height * 4);
             ByteBuffer data = readImageFromFile(imageRequest);
 
-            mediaCache.cacheMedia(createCacheKey(request), new MediaHashValue(frame, frame + 1, List.of(data)));
+            mediaCache.cacheMedia(createCacheKey(request), new MediaHashValue(List.of(new MediaDataFrame(data, frameStart)), frameEnd, frameStart));
 
             return new MediaDataResponse(data);
         } else {
@@ -98,15 +102,6 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
         }
 
         return Optional.empty();
-    }
-
-    private MediaDataResponse copyOf(MediaHashValue mediaHashValue) {
-        ByteBuffer frame = mediaHashValue.frames.get(0);
-        ByteBuffer result = memoryManager.requestBuffer(frame.capacity());
-        for (int i = 0; i < frame.capacity(); ++i) {
-            result.put(i, frame.get(i));
-        }
-        return new MediaDataResponse(List.of(result));
     }
 
     private String createCacheKey(VideoMediaDataRequest request) {

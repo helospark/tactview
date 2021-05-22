@@ -72,9 +72,12 @@ cd ..
 
 echo "Downloading FFmpeg"
 
+<<<<<<< HEAD
 # 4.3 onward has an issue with SSSE3, therefore cannot be used until that is fixed:
 # https://trac.ffmpeg.org/ticket/8747
 # fire.webm test fails with that and crashes when no scaling applied
+=======
+>>>>>>> master
 FFMPEG_VERSION=4.4
 
 if [ ! -e ffmpeg-$FFMPEG_VERSION.tar.gz ]; then
@@ -83,6 +86,14 @@ fi
 tar -xvf "ffmpeg-$FFMPEG_VERSION.tar.gz"
 
 cd "ffmpeg-$FFMPEG_VERSION"
+
+# 4.3 onward has an issue with SSSE3, therefore cannot be used until that is fixed:
+# https://trac.ffmpeg.org/ticket/8747 -> maybe this, but this was fixed
+# fire.webm test fails with that and crashes when no scaling applied
+# This line turns off this feature for yuv2rgb.c file
+echo "Applying FFmpeg patch"
+sed -i "s/if (EXTERNAL_SSSE3/if (0 \&\& EXTERNAL_SSSE3/g" libswscale/x86/yuv2rgb.c
+
 
 echo "Configuring FFmpeg"
 

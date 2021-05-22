@@ -148,6 +148,7 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
         return Optional.ofNullable(value);
     }
 
+    @Override
     public void valueModifiedAt(TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
         MixedDoubleInterpolatorElement originalValue = values.remove(timelinePosition);
         values.put(newTime, originalValue.butWithPoint(newValue));

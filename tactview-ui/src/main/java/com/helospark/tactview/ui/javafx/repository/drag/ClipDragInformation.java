@@ -1,17 +1,16 @@
 package com.helospark.tactview.ui.javafx.repository.drag;
 
+import java.util.List;
+
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
-import javafx.scene.Parent;
-
 public class ClipDragInformation {
-    private Parent node;
     private TimelinePosition originalPosition;
-    private String clipId;
+    private List<String> clipId;
     private String originalChannelId;
     private double anchorPointX;
 
-    public ClipDragInformation(TimelinePosition originalPosition, String clipId, String originalChannelId, double anchorPointX) {
+    public ClipDragInformation(TimelinePosition originalPosition, List<String> clipId, String originalChannelId, double anchorPointX) {
         this.originalPosition = originalPosition;
         this.clipId = clipId;
         this.originalChannelId = originalChannelId;
@@ -23,7 +22,7 @@ public class ClipDragInformation {
         return originalPosition;
     }
 
-    public String getClipId() {
+    public List<String> getClipId() {
         return clipId;
     }
 

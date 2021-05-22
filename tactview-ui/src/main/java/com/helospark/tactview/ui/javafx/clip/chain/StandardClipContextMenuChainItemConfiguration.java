@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.clip.chain;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
@@ -16,33 +17,14 @@ import com.helospark.tactview.core.timeline.effect.EffectFactory;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddScaleCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.RemoveEffectCommand;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
-import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
 
 import javafx.scene.control.MenuItem;
 
 @Configuration
 public class StandardClipContextMenuChainItemConfiguration {
-
-    @Bean
-    @Order(95)
-    public ClipContextMenuChainItem cutCurrentClip(ClipCutService clipCutService) {
-        return alwaysSupportedContextMenuItem(request -> {
-            MenuItem copyClip = new MenuItem("Cut clip");
-            copyClip.setOnAction(e -> clipCutService.cutClip(request.getPrimaryClip().getId(), true));
-            return copyClip;
-        });
-    }
-
-    @Bean
-    @Order(96)
-    public ClipContextMenuChainItem cutWithUnlinkCurrentClip(ClipCutService clipCutService) {
-        return alwaysSupportedContextMenuItem(request -> {
-            MenuItem copyClip = new MenuItem("Cut only this clip");
-            copyClip.setOnAction(e -> clipCutService.cutClip(request.getPrimaryClip().getId(), false));
-            return copyClip;
-        });
-    }
 
     @Bean
     @Order(100)
@@ -71,6 +53,30 @@ public class StandardClipContextMenuChainItemConfiguration {
             }
 
             return pasteEffectOnClipMenuItem;
+        });
+    }
+
+    @Bean
+    @Order(102)
+    public ClipContextMenuChainItem deleteAllEffectsMenuItem(CopyPasteRepository copyPasteRepository, UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem deleteEffectsFromClipMenuItem = new MenuItem("Delete all effects");
+
+            deleteEffectsFromClipMenuItem.setOnAction(e -> {
+                List<RemoveEffectCommand> removeEffectsCommand = request.getPrimaryClip()
+                        .getEffects()
+                        .stream()
+                        .map(effect -> new RemoveEffectCommand(timelineManager, effect.getId()))
+                        .collect(Collectors.toList());
+
+                commandInterpreter.sendWithResult(new CompositeCommand(removeEffectsCommand));
+            });
+
+            if (request.getPrimaryClip().getEffects().isEmpty()) {
+                deleteEffectsFromClipMenuItem.setDisable(true);
+            }
+
+            return deleteEffectsFromClipMenuItem;
         });
     }
 

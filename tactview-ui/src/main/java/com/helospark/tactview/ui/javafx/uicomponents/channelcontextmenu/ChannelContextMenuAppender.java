@@ -26,6 +26,15 @@ public class ChannelContextMenuAppender {
     }
 
     public void addContextMenu(Node node, String channelId) {
+        ContextMenu contextMenu = createContextMenu(channelId);
+
+        node.setOnContextMenuRequested(event -> {
+            contextMenu.show(node.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+            event.consume();
+        });
+    }
+
+    public ContextMenu createContextMenu(String channelId) {
         ContextMenu contextMenu = new ContextMenu();
 
         contextMenu.getItems().add(createMoveChannelUpMenuItem(channelId));
@@ -40,11 +49,7 @@ public class ChannelContextMenuAppender {
         contextMenu.getItems().add(new SeparatorMenuItem());
 
         contextMenu.getItems().add(deleteChannelMenuItem(channelId));
-
-        node.setOnContextMenuRequested(event -> {
-            contextMenu.show(node.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-            event.consume();
-        });
+        return contextMenu;
     }
 
     private MenuItem createMoveChannelUpMenuItem(String channelId) {

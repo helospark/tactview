@@ -1,6 +1,5 @@
 package com.helospark.tactview.core.timeline.proceduralclip;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +42,7 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
     }
 
     @Override
-    public ByteBuffer requestFrame(RequestFrameParameter request) {
+    public ReadOnlyClipImage requestFrame(RequestFrameParameter request) {
         // TODO something is very wrong here
         throw new IllegalStateException();
     }

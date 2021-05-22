@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
@@ -72,7 +73,7 @@ public class IndependentPixelOperationImpl implements IndependentPixelOperation 
     @Override
     public void executePixelTransformation(int width, int height, BiConsumer<Integer, Integer> consumer) {
         int taskSize = height / numberOfThreads;
-        List<CompletableFuture<?>> futures = new ArrayList<>();
+        List<CompletableFuture<?>> futures = new ArrayList<>(numberOfThreads);
         for (int i = 0; i < numberOfThreads; ++i) {
             int currentIndex = i;
             CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
@@ -91,6 +92,34 @@ public class IndependentPixelOperationImpl implements IndependentPixelOperation 
 
     private CompletableFuture<?>[] toArray(List<CompletableFuture<?>> futures) {
         return futures.toArray(new CompletableFuture[futures.size()]);
+    }
+
+    @Override
+    public void executePixelTransformation(int width, int height, List<ThreadLocalProvider<?>> threadLocalProviders, Consumer<PixelUpdateRequest> consumer) {
+        int taskSize = height / numberOfThreads;
+        List<CompletableFuture<?>> futures = new ArrayList<>(numberOfThreads);
+        for (int i = 0; i < numberOfThreads; ++i) {
+            int currentIndex = i;
+            CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
+                int startIndex = currentIndex * taskSize;
+                int endIndex = (currentIndex == numberOfThreads - 1 ? height : (currentIndex + 1) * taskSize);
+
+                Map<ThreadLocalProvider<?>, Object> threadLocals = threadLocalProviders.stream()
+                        .collect(Collectors.toMap(a -> a, a -> a.get()));
+
+                PixelUpdateRequest request = new PixelUpdateRequest(0, 0, threadLocals);
+                for (int y = startIndex; y < endIndex; y++) {
+                    for (int x = 0; x < width; x++) {
+                        request.x = x;
+                        request.y = y;
+
+                        consumer.accept(request);
+                    }
+                }
+            }, workerExecutor);
+            futures.add(future);
+        }
+        CompletableFuture.allOf(toArray(futures)).join(); // block until finished
     }
 
 }

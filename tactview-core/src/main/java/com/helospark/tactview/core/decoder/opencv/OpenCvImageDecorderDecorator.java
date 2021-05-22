@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.decoder.opencv;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaDecoder;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
+import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
@@ -49,11 +51,11 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     @Override
     public MediaDataResponse readFrames(VideoMediaDataRequest request) {
         String cacheKey = request.getFile().getAbsolutePath() + " " + request.getWidth() + " " + request.getHeight();
-        Optional<MediaHashValue> result = mediaCache.findInCache(cacheKey, 0);
+        Optional<MediaDataFrame> result = mediaCache.findInCacheAndClone(cacheKey, BigDecimal.ZERO);
 
         ByteBuffer image;
         if (result.isPresent()) {
-            image = result.get().frames.get(0);
+            image = result.get().frame;
         } else {
             ImageRequest imageRequest = new ImageRequest();
 
@@ -65,7 +67,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
             implementation.readImage(imageRequest);
             image = imageRequest.data;
 
-            mediaCache.cacheMedia(cacheKey, new MediaHashValue(0, 1, Collections.singletonList(image)));
+            mediaCache.cacheMedia(cacheKey, new MediaHashValue(Collections.singletonList(new MediaDataFrame(image, BigDecimal.ZERO)), BigDecimal.ONE, BigDecimal.ZERO));
         }
 
         ByteBuffer resultFrame = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4);

@@ -107,7 +107,7 @@ public class LowResolutionProxyCreatorService {
                     .withLowResolutionPreview(false)
                     .withUseApproximatePosition(false)
                     .build();
-            ByteBuffer frame = clip.requestFrame(frameRequest);
+            ByteBuffer frame = clip.requestFrame(frameRequest).getBuffer();
 
             FFmpegEncodeFrameRequest nativeRequest = new FFmpegEncodeFrameRequest();
             nativeRequest.frame = new RenderFFMpegFrame();

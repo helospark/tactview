@@ -38,4 +38,10 @@ public class ChangeClipForEffectCommand implements UiCommand {
         timelineManager.changeClipForEffect(originalEffect, originalContainingClip.getId(), originalPosition);
     }
 
+    @Override
+    public String toString() {
+        return "ChangeClipForEffectCommand [effectId=" + effectId + ", newClipId=" + newClipId + ", newPosition=" + newPosition + ", originalEffect=" + originalEffect + ", originalContainingClip="
+                + originalContainingClip + ", originalPosition=" + originalPosition + "]";
+    }
+
 }

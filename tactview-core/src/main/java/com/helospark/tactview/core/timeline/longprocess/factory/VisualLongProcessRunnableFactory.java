@@ -39,7 +39,7 @@ public class VisualLongProcessRunnableFactory {
             String jobId = descriptor.jobId;
             try {
                 TimelineInterval interval = target.getGlobalInterval();
-                BigDecimal step = BigDecimal.ONE.divide(projectRepository.getFps(), 10, RoundingMode.HALF_UP);
+                BigDecimal step = projectRepository.getFrameTime();
                 messagingService.sendAsyncMessage(new ProgressInitializeMessage(jobId, interval.getLength().getSeconds().divide(step, 10, RoundingMode.HALF_UP).intValue(), LONG_PROCESS));
 
                 TimelinePosition currentPosition = interval.getStartPosition();

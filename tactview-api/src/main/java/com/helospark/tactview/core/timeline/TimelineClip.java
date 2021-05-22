@@ -138,6 +138,10 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         }
     }
 
+    public TimelineInterval getUnmodifiedInterval() {
+        return this.interval;
+    }
+
     public TimelineClipType getType() {
         return type;
     }
@@ -227,6 +231,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
     }
 
     public int addEffectAtAnyChannel(StatelessEffect effect) {
+        if (!effectSupported(effect)) {
+            throw new IllegalArgumentException("Effect type " + effect.getClass().getName() + " is not supported by " + this.getClass().getName());
+        }
         synchronized (getFullClipLock()) {
             int i = findOrCreateFirstChannelWhichEffectCanBeAdded(effect);
             return addEffectAtChannel(i, effect);
@@ -280,7 +287,6 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
             newInterval = newInterval.butMoveStartPostionTo(TimelinePosition.ofZero());
         }
 
-        System.out.println("gi " + globalNewPosition + " " + newInterval);
         if (newInterval.getEndPosition().isGreaterThan(localClipInterval.getEndPosition())) {
             TimelinePosition difference = newInterval.getEndPosition().subtract(localClipInterval.getEndPosition());
             newInterval = newInterval.butMoveStartPostionTo(newInterval.getStartPosition().subtract(difference));
@@ -314,9 +320,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     public abstract TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata);
 
-    protected void changeRenderStartPosition(TimelinePosition localPosition, TimelinePosition globalTimelinePosition, TimelineLength originalRenderOffset) {
+    protected void changeRenderStartPosition(TimelinePosition localPosition, TimelinePosition startPosition, TimelinePosition globalTimelinePosition, TimelineLength originalRenderOffset) {
         this.renderOffset = localPosition.add(originalRenderOffset).toLength();
-        TimelineInterval newInterval = this.interval.butWithStartPosition(globalTimelinePosition);
+        TimelineInterval newInterval = new TimelineInterval(globalTimelinePosition, this.interval.getEndPosition()).butMoveStartPostionTo(startPosition);
 
         this.setInterval(newInterval);
 
@@ -331,13 +337,19 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
     }
 
     public List<TimelineClip> createCutClipParts(TimelinePosition globalTimelinePosition) {
-        TimelinePosition localPosition = globalTimelinePosition.from(this.interval.getStartPosition());
+        TimelinePosition relativePosition = globalTimelinePosition.from(this.interval.getStartPosition());
+
+        TimelinePosition integratedStartPosition = new TimelinePosition(timeScaleProvider.integrateUntil(TimelinePosition.ofZero(), renderOffset, new BigDecimal("100000")));
+
+        BigDecimal integrated = timeScaleProvider.integrate(integratedStartPosition, relativePosition);
+        TimelinePosition localPosition = renderOffset.toPosition().add(integrated);
+
         TimelineClip clipOne = this.cloneClip(CloneRequestMetadata.ofDefault());
         TimelineClip clipTwo = this.cloneClip(CloneRequestMetadata.ofDefault());
 
-        clipOne.changeRenderEndPosition(globalTimelinePosition);
-        // getEndPosition() should be globalTimelinePosition, however due to timescale interpolation, we might have lost some resolution, so let's just use endPosition of first clip
-        clipTwo.changeRenderStartPosition(localPosition, clipOne.getInterval().getEndPosition(), renderOffset);
+        TimelinePosition remappedGlobalTimelinePosition = localPosition.add(clipOne.getInterval().getStartPosition());
+        clipOne.changeRenderEndPosition(remappedGlobalTimelinePosition);
+        clipTwo.changeRenderStartPosition(localPosition, clipOne.getInterval().getEndPosition(), remappedGlobalTimelinePosition, renderOffset);
 
         handleEffect(localPosition, clipOne, false);
         handleEffect(TimelinePosition.ofZero(), clipTwo, true);
@@ -472,6 +484,75 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
             lengthCache = null;
             //                    ((PercentAwareMultiKeyframeBasedDoubleInterpolator) timeScaleProvider.getInterpolator()).resizeTo(getInterval().getLength());
         }
+    }
+
+    public String getTimeScaleProviderId() {
+        return timeScaleProvider.getId();
+    }
+
+    protected TimelinePosition calculatePositionInClipSpaceTo(TimelinePosition relativePosition, boolean reverse) {
+
+        if (reverse) {
+            TimelinePosition endPosition = interval.getLength().toPosition().add(renderOffset);
+            TimelinePosition unscaledPosition = endPosition.subtract(relativePosition);
+            BigDecimal integrated = timeScaleProvider.integrate(unscaledPosition, endPosition);
+            return endPosition.subtract(new TimelinePosition(integrated));
+        } else {
+            TimelinePosition unscaledPosition = relativePosition.add(renderOffset);
+            BigDecimal integrated = timeScaleProvider.integrate(renderOffset.toPosition(), unscaledPosition);
+            return renderOffset.toPosition().add(integrated);
+        }
+    }
+
+    public TimelineInterval getIntervalAfterRescaleTo(boolean left, TimelinePosition position) {
+        TimelineInterval originalInterval = getInterval();
+        return left ? originalInterval.butWithStartPosition(position) : originalInterval.butWithEndPosition(position);
+    }
+
+    public void resize(boolean left, TimelineInterval position) {
+        // interval is set by caller, no further action on global resize
+    }
+
+    // Following two method moved here to make it reusable with audio and video clip, but it might not be the best here
+    protected TimelineInterval intervalAfterResizeAsCut(boolean left, TimelinePosition position, TimelineLength mediaLength, boolean reverse) {
+        TimelineInterval originalInterval = getInterval();
+        TimelinePosition relativePosition = position.subtract(this.interval.getStartPosition());
+        if (left) {
+            System.out.println(renderOffset);
+            System.out.println(relativePosition);
+            TimelinePosition relativeRenderOffset = renderOffset.toPosition().add(relativePosition);
+
+            if (relativeRenderOffset.isLessThan(0)) {
+                return originalInterval.butWithStartPosition(originalInterval.getStartPosition().subtract(renderOffset));
+            } else {
+                return originalInterval.butWithStartPosition(position);
+            }
+
+        } else {
+            TimelinePosition endPositionUnscaled = mediaLength.toPosition().subtract(renderOffset);
+            TimelinePosition endPosition = calculatePositionInClipSpaceTo(endPositionUnscaled, reverse).add(this.interval.getStartPosition()).subtract(renderOffset);
+
+            if (endPosition.isGreaterThan(position)) {
+                return originalInterval.butWithEndPosition(position);
+            } else {
+                return originalInterval.butWithEndPosition(endPosition);
+            }
+
+        }
+    }
+
+    protected void resizeAsCut(boolean left, TimelineInterval position) {
+        if (left) {
+            TimelinePosition relativeMove = this.getInterval().getStartPosition().subtract(position.getStartPosition());
+            renderOffset = renderOffset.toPosition().subtract(relativeMove).toLength();
+            if (renderOffset.lessThan(TimelineLength.ofZero())) {
+                renderOffset = TimelineLength.ofZero();
+            }
+        } // else is covered by parent by setting the interval
+    }
+
+    public boolean effectSupported(StatelessEffect effect) {
+        return false;
     }
 
 }

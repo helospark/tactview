@@ -22,7 +22,7 @@
 .menu-item,.context-menu,.menu-bar {
     -fx-background-color: #444444;
     
-    -fx-padding: 0px;
+    -fx-padding: 2px;
 }
 
 .context-menu {
@@ -531,4 +531,9 @@
 
 .resolution-component>.text-field {
     -fx-pref-width: 60px
+}
+
+.image-sequence-dialog-grid-pane {
+    -fx-vgap: 2px;
+    -fx-hgap: 20px;
 }

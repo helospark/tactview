@@ -43,7 +43,7 @@ public class SoundClip extends AudibleTimelineClip {
         AudioMediaDataRequest request = AudioMediaDataRequest.builder()
                 .withFile(new File(backingSource.backingFile))
                 .withMetadata(mediaMetadata)
-                .withStart(audioRequest.getPosition().from(interval.getStartPosition()).add(renderOffset))
+                .withStart(audioRequest.getPosition())
                 .withExpectedBytesPerSample(audioRequest.getBytesPerSample())
                 .withExpectedSampleRate(audioRequest.getSampleRate())
                 .withExpectedChannels(audioRequest.getNumberOfChannels())
@@ -88,4 +88,20 @@ public class SoundClip extends AudibleTimelineClip {
         return super.getDescriptorsInternal();
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
+    // this is really a cut instead of a resize, but on UI it shows the exact same way as resize
+    // maximum size a clip can be is the size of the videoclip
+    @Override
+    public TimelineInterval getIntervalAfterRescaleTo(boolean left, TimelinePosition position) {
+        return intervalAfterResizeAsCut(left, position, mediaMetadata.getLength(), false);
+    }
+
+    @Override
+    public void resize(boolean left, TimelineInterval position) {
+        resizeAsCut(left, position);
+    }
 }

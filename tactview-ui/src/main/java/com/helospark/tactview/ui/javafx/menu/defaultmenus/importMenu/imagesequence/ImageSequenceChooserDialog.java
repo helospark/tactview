@@ -16,6 +16,7 @@ import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePattern
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -23,6 +24,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -35,13 +38,22 @@ public class ImageSequenceChooserDialog {
     private Stage stage;
 
     public ImageSequenceChooserDialog(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, ProjectRepository projectRepository,
-            AlertDialogFactory alertDialogFactory) {
+            AlertDialogFactory alertDialogFactory, StylesheetAdderService stylesheetAdderService) {
         BorderPane borderPane = new BorderPane();
+        borderPane.getStyleClass().add("dialog-root");
 
         Scene dialog = new Scene(borderPane);
         stage = new Stage();
+        stage.addEventFilter(KeyEvent.KEY_TYPED, e -> {
+            if (e.getCode().equals(KeyCode.ESCAPE)) {
+                stage.close();
+            }
+        });
+
+        stylesheetAdderService.styleDialog(stage, borderPane, "stylesheet.css");
 
         GridPane gridPane = new GridPane();
+        gridPane.getStyleClass().add("image-sequence-dialog-grid-pane");
 
         gridPane.add(new Label("Images"), 0, 0);
         Button button = new Button("Choose first image");

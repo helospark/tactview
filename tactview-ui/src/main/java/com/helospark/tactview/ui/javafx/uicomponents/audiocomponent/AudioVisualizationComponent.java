@@ -5,7 +5,6 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
 import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
-import com.helospark.tactview.ui.javafx.repository.SoundRmsRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
@@ -32,13 +31,11 @@ public class AudioVisualizationComponent implements AudioPlayedListener {
 
     private int numberOfBars = 45;
 
-    private final SoundRmsRepository soundRmsRepository;
     private final AudioRmsCalculator audioRmsCalculator;
 
-    public AudioVisualizationComponent(PlaybackFrameAccessor playbackController, SoundRmsRepository soundRmsRepository, AudioRmsCalculator audioRmsCalculator, UiProjectRepository uiProjectRepository,
+    public AudioVisualizationComponent(PlaybackFrameAccessor playbackController, AudioRmsCalculator audioRmsCalculator, UiProjectRepository uiProjectRepository,
             UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
         canvas = new Canvas(numberOfBars * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
-        this.soundRmsRepository = soundRmsRepository;
         this.audioRmsCalculator = audioRmsCalculator;
 
         uiProjectRepository.getPreviewAvailableWidth().addListener((e, oldV, newV) -> {
@@ -79,9 +76,8 @@ public class AudioVisualizationComponent implements AudioPlayedListener {
 
     private void updateUiForChannel(int channel, double value) {
         int numberOfBarsLocal = numberOfBars;
-        double maxRms = soundRmsRepository.getMaxRms();
         GraphicsContext graphics = canvas.getGraphicsContext2D();
-        double normalizedValue = MathUtil.clamp(value / maxRms, 0.0, 1.0);
+        double normalizedValue = MathUtil.clamp(value, 0.0, 1.0);
         double increment = 1.0 / numberOfBarsLocal;
         for (int i = 0; i < numberOfBarsLocal; ++i) {
             if (i * increment < normalizedValue) {

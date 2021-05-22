@@ -4,7 +4,6 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.ResizeEffectRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
-import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -17,7 +16,7 @@ public class EffectResizedCommand implements UiCommand {
     private TimelinePosition globalPosition;
     private boolean left;
 
-    private TimelineInterval originalInterval;
+    private TimelinePosition originalPosition;
 
     private boolean revertable;
     private boolean moreResizeExpected;
@@ -34,7 +33,7 @@ public class EffectResizedCommand implements UiCommand {
         this.effectId = builder.effectId;
         this.globalPosition = builder.globalPosition;
         this.left = builder.left;
-        this.originalInterval = builder.originalInterval;
+        this.originalPosition = builder.originalPosition;
         this.revertable = builder.revertable;
         this.moreResizeExpected = builder.moreResizeExpected;
         this.useSpecialPoints = builder.useSpecialPoints;
@@ -46,7 +45,6 @@ public class EffectResizedCommand implements UiCommand {
     @Override
     public void execute() {
         StatelessEffect effect = timelineManager.findEffectById(effectId).orElseThrow(() -> new IllegalArgumentException("No effect found"));
-        originalInterval = effect.getGlobalInterval();
 
         ResizeEffectRequest request = ResizeEffectRequest.builder()
                 .withEffect(effect)
@@ -65,7 +63,7 @@ public class EffectResizedCommand implements UiCommand {
     @Override
     public void revert() {
         StatelessEffect effect = timelineManager.findEffectById(effectId).orElseThrow(() -> new IllegalArgumentException("No effect found"));
-        TimelinePosition previousPosition = (left ? originalInterval.getStartPosition() : originalInterval.getEndPosition());
+        TimelinePosition previousPosition = originalPosition;
 
         ResizeEffectRequest request = ResizeEffectRequest.builder()
                 .withEffect(effect)
@@ -85,8 +83,8 @@ public class EffectResizedCommand implements UiCommand {
 
     @Override
     public String toString() {
-        return "EffectResizedCommand [timelineManager=" + timelineManager + ", effectId=" + effectId + ", globalPosition=" + globalPosition + ", left=" + left + ", originalInterval="
-                + originalInterval + ", revertable=" + revertable + ", moreResizeExpected=" + moreResizeExpected + ", useSpecialPoints=" + useSpecialPoints + ", maximumJumpLength=" + maximumJumpLength
+        return "EffectResizedCommand [timelineManager=" + timelineManager + ", effectId=" + effectId + ", globalPosition=" + globalPosition + ", left=" + left + ", originalPosition="
+                + originalPosition + ", revertable=" + revertable + ", moreResizeExpected=" + moreResizeExpected + ", useSpecialPoints=" + useSpecialPoints + ", maximumJumpLength=" + maximumJumpLength
                 + ", minimumLength=" + minimumLength + "]";
     }
 
@@ -101,7 +99,7 @@ public class EffectResizedCommand implements UiCommand {
         private String effectId;
         private TimelinePosition globalPosition;
         private boolean left;
-        private TimelineInterval originalInterval;
+        private TimelinePosition originalPosition;
         private boolean revertable;
         private boolean moreResizeExpected;
         private boolean useSpecialPoints;
@@ -132,8 +130,8 @@ public class EffectResizedCommand implements UiCommand {
             return this;
         }
 
-        public Builder withOriginalInterval(TimelineInterval originalInterval) {
-            this.originalInterval = originalInterval;
+        public Builder withOriginalPosition(TimelinePosition originalPosition) {
+            this.originalPosition = originalPosition;
             return this;
         }
 

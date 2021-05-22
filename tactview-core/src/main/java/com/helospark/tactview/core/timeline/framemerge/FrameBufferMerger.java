@@ -24,6 +24,7 @@ public class FrameBufferMerger {
     public ReadOnlyClipImage alphaMergeFrames(List<RenderFrameData> frames, TimelineManagerFramesRequest request) {
         int width = request.getPreviewWidth();
         int height = request.getPreviewHeight();
+
         if (frames.size() > 0) {
             ClipImage output = new ClipImage(GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4), width, height);
 

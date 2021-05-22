@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.timeline.SecondsAware;
+import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChange;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.UiTimelineChangeType;
@@ -33,9 +34,10 @@ public class TimelineState implements ResettableBean {
 
     private SimpleDoubleProperty hscroll = new SimpleDoubleProperty(0);
     private SimpleDoubleProperty vscroll = new SimpleDoubleProperty(0);
-    private SimpleDoubleProperty timelineWidthProperty = new SimpleDoubleProperty(2000.0);
     private SimpleDoubleProperty zoomValue = new SimpleDoubleProperty(1.0);
     private SimpleDoubleProperty translate = new SimpleDoubleProperty(0);
+
+    private TimelineLength timelineLength = TimelineLength.ofZero();
 
     private SimpleDoubleProperty linePosition = new SimpleDoubleProperty(0.0);
     private TimelineLineProperties moveSpecialPointLineProperties = new TimelineLineProperties();
@@ -43,11 +45,13 @@ public class TimelineState implements ResettableBean {
     private TimelinePosition loopAProperties = null;
     private TimelinePosition loopBProperties = null;
 
-    private ZoomableScrollPane timeLineScrollPane;
-
     private ObservableList<Pane> channelHeaders = FXCollections.observableArrayList();
 
     private TimelinePosition playbackPosition = TimelinePosition.ofZero();
+
+    public TimelineState() {
+        vscroll.addListener(e -> notifySubscribers(UiTimelineChangeType.OTHER));
+    }
 
     public TimelinePosition pixelsToSeconds(double xCoordinate) {
         BigDecimal position = new BigDecimal(xCoordinate)
@@ -93,6 +97,14 @@ public class TimelineState implements ResettableBean {
 
     public ObservableDoubleValue getTranslate() {
         return translate;
+    }
+
+    public double getTranslateDouble() {
+        return this.pixelsToSecondsWithZoom(translate.get()).getSeconds().doubleValue();
+    }
+
+    public double getTimelineLengthDouble() {
+        return timelineLength.getSeconds().doubleValue();
     }
 
     public SimpleDoubleProperty getReadOnlyLinePosition() {
@@ -181,23 +193,6 @@ public class TimelineState implements ResettableBean {
         return new TimelinePosition(position);
     }
 
-    public SimpleDoubleProperty getTimelineWidthProperty() {
-        return timelineWidthProperty;
-    }
-
-    public void setTimelineWidthProperty(double newWidth) {
-        timelineWidthProperty.set(newWidth);
-        notifySubscribers(UiTimelineChangeType.OTHER);
-    }
-
-    public ZoomableScrollPane getTimeLineScrollPane() {
-        return timeLineScrollPane;
-    }
-
-    public void setTimeLineScrollPane(ZoomableScrollPane timeLineScrollPane) {
-        this.timeLineScrollPane = timeLineScrollPane;
-    }
-
     public void horizontalScroll(double scrollStrength) {
         double newScroll = hscroll.get() + scrollStrength;
         if (newScroll >= 0 && newScroll < 1.0) {
@@ -245,7 +240,6 @@ public class TimelineState implements ResettableBean {
         zoomValue.set(1.0);
         hscroll.set(0);
         vscroll.set(0);
-        timelineWidthProperty.set(2000.0);
         translate.set(0);
         linePosition.set(0.0);
         moveSpecialPointLineProperties.reset();
@@ -281,8 +275,10 @@ public class TimelineState implements ResettableBean {
         return playbackPosition;
     }
 
-    public void addChannelHeader(String channelId, VBox timelineTitle) {
-        channelHeaders.add(timelineTitle);
+    public void addChannelHeader(String channelId, VBox timelineTitle, int index) {
+        channelHeaders.add(index, timelineTitle);
+        timelineTitle.setUserData(channelId);
+        notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
     public void moveChannel(int originalIndex, int newIndex) {
@@ -291,11 +287,21 @@ public class TimelineState implements ResettableBean {
         notifySubscribers(UiTimelineChangeType.OTHER);
     }
 
-    public void removeChannel(Optional<Integer> index) {
-        index.ifPresent(originalIndex -> {
-            channelHeaders.remove((int) originalIndex);
-            notifySubscribers(UiTimelineChangeType.OTHER);
-        });
+    public void removeChannel(String channelId) {
+        for (int i = 0; i < channelHeaders.size(); ++i) {
+            if (channelHeaders.get(i).getUserData().equals(channelId)) {
+                channelHeaders.remove(i);
+                notifySubscribers(UiTimelineChangeType.OTHER);
+                break;
+            }
+        }
     }
 
+    public void setVisibleLength(TimelineLength timelineLength) {
+        this.timelineLength = timelineLength;
+    }
+
+    public TimelineLength getTimelineLength() {
+        return timelineLength;
+    }
 }

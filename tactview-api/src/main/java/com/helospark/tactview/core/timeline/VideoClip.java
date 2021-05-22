@@ -3,28 +3,44 @@ package com.helospark.tactview.core.timeline;
 import static com.helospark.tactview.core.timeline.TimelineClipType.VIDEO;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
+import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
+import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveMetadata;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateService;
+import com.helospark.tactview.core.timeline.effect.rotate.RotateServiceRequest;
+import com.helospark.tactview.core.timeline.image.ClipImage;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 public class VideoClip extends VisualTimelineClip {
+    private RotateService rotateService;
+
     protected VisualMediaMetadata mediaMetadata;
     protected TimelinePosition startPosition;
 
+    protected BooleanProvider useRotationMetadataProvider;
+
     protected Optional<LowResolutionProxyData> lowResolutionProxySource = Optional.empty(); // We could also have multiple proxies
 
-    public VideoClip(VisualMediaMetadata mediaMetadata, VisualMediaSource backingSource, TimelinePosition startPosition, TimelineLength length) {
+    public VideoClip(VisualMediaMetadata mediaMetadata, VisualMediaSource backingSource, TimelinePosition startPosition, TimelineLength length, RotateService rotateService) {
         super(mediaMetadata, new TimelineInterval(startPosition, length), VIDEO);
         this.mediaMetadata = mediaMetadata;
         this.backingSource = backingSource;
         this.startPosition = startPosition;
+        this.rotateService = rotateService;
     }
 
     public VideoClip(VideoClip clip, CloneRequestMetadata cloneRequestMetadata) {
@@ -32,13 +48,17 @@ public class VideoClip extends VisualTimelineClip {
         this.mediaMetadata = clip.mediaMetadata;
         this.backingSource = clip.backingSource;
         this.startPosition = clip.startPosition;
+        this.rotateService = clip.rotateService;
+
+        this.useRotationMetadataProvider = clip.useRotationMetadataProvider.deepClone();
     }
 
-    public VideoClip(VisualMediaMetadata metadata, VisualMediaSource videoSource, JsonNode savedClip, LoadMetadata loadMetadata) {
+    public VideoClip(VisualMediaMetadata metadata, VisualMediaSource videoSource, JsonNode savedClip, LoadMetadata loadMetadata, RotateService rotateService) {
         super(metadata, savedClip, loadMetadata);
         this.mediaMetadata = metadata;
         this.backingSource = videoSource;
         this.startPosition = StaticObjectMapper.toValue(savedClip, loadMetadata, "startPosition", TimelinePosition.class);
+        this.rotateService = rotateService;
         // savedClip.get("shouldHaveLowResolutionProxy").asBoolean(false); // TODO
     }
 
@@ -50,7 +70,7 @@ public class VideoClip extends VisualTimelineClip {
     }
 
     @Override
-    public ByteBuffer requestFrame(RequestFrameParameter frameRequest) {
+    public ReadOnlyClipImage requestFrame(RequestFrameParameter frameRequest) {
         VisualMediaMetadata metadataToUse;
         VisualMediaSource mediaSourceToUse;
 
@@ -70,8 +90,36 @@ public class VideoClip extends VisualTimelineClip {
                 .withStart(frameRequest.getPosition())
                 .withUseApproximatePosition(frameRequest.useApproximatePosition())
                 .build();
-        return mediaSourceToUse.decoder.readFrames(request)
+        ByteBuffer frame = mediaSourceToUse.decoder.readFrames(request)
                 .getFrame();
+
+        ClipImage result = new ClipImage(frame, frameRequest.getWidth(), frameRequest.getHeight());
+        if (isRotationEnabledAt(frameRequest.getPosition()) && !MathUtil.fuzzyEquals(getRotationFromMetadata(), 0.0)) {
+            RotateServiceRequest serviceRequest = RotateServiceRequest.builder()
+                    .withAngle(getRotationFromMetadata())
+                    .withImage(result)
+                    .withCenterX(0.5)
+                    .withCenterY(0.5)
+                    .build();
+
+            ClipImage rotatedImage = rotateService.rotateExactSize(serviceRequest);
+            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(result.getBuffer());
+            result = rotatedImage;
+        }
+
+        return result;
+    }
+
+    public Boolean isRotationEnabledAt(TimelinePosition position) {
+        return useRotationMetadataProvider.getValueAt(position);
+    }
+
+    private double getRotationFromMetadata() {
+        if (mediaMetadata instanceof VideoMetadata) {
+            return ((VideoMetadata) mediaMetadata).getRotation();
+        } else {
+            return 0.0;
+        }
     }
 
     @Override
@@ -97,7 +145,7 @@ public class VideoClip extends VisualTimelineClip {
 
     @Override
     public boolean isResizable() {
-        return mediaMetadata.isResizable();
+        return true;
     }
 
     @Override
@@ -120,6 +168,46 @@ public class VideoClip extends VisualTimelineClip {
     public String toString() {
         return "VideoClip [mediaMetadata=" + mediaMetadata + ", startPosition=" + startPosition + ", lowResolutionProxySource=" + lowResolutionProxySource + ", getBackingSource()="
                 + getBackingSource() + "]";
+    }
+
+    // this is really a cut instead of a resize, but on UI it shows the exact same way as resize
+    // maximum size a clip can be is the size of the videoclip
+    @Override
+    public TimelineInterval getIntervalAfterRescaleTo(boolean left, TimelinePosition position) {
+        if (mediaMetadata instanceof VideoMetadata) {
+            return intervalAfterResizeAsCut(left, position, mediaMetadata.getLength(), reverseTimeProvider.getValueAt(TimelinePosition.ofZero()));
+        } else {
+            return super.getIntervalAfterRescaleTo(left, position);
+        }
+    }
+
+    @Override
+    public void resize(boolean left, TimelineInterval position) {
+        if (mediaMetadata instanceof VideoMetadata) {
+            resizeAsCut(left, position);
+        } else {
+            super.resize(left, position);
+        }
+    }
+
+    @Override
+    protected void initializeValueProvider() {
+        super.initializeValueProvider();
+        useRotationMetadataProvider = new BooleanProvider(new BezierDoubleInterpolator(1.0));
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+
+        ValueProviderDescriptor useRotationMetadataProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(useRotationMetadataProvider)
+                .withName("Use rotation metadata")
+                .withGroup("common")
+                .build();
+        result.add(useRotationMetadataProviderDescriptor);
+
+        return result;
     }
 
 }

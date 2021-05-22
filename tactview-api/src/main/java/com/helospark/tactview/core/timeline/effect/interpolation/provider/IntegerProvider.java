@@ -50,11 +50,6 @@ public class IntegerProvider extends KeyframeableEffect<Number> {
     }
 
     @Override
-    public void interpolatorChanged(EffectInterpolator newInterpolator) {
-        this.interpolator = (MultiKeyframeBasedDoubleInterpolator) newInterpolator;
-    }
-
-    @Override
     public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
         if (interpolator instanceof KeyframeSupportingDoubleInterpolator) {
             ((KeyframeSupportingDoubleInterpolator) interpolator).valueRemoved(globalTimelinePosition);

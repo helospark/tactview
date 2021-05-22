@@ -122,7 +122,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
             } else if (draggedPointType == PointType.OUT) {
                 ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).updatedOutControlPointAt(positionToModify, pointToModify.controlPointOut.add(relativePoint));
             } else {
-                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).updateDoubleValueAt(positionToModify, newTime, newPosition);
+                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).valueModifiedAt(positionToModify, newTime, newPosition);
             }
             return true;
         }
@@ -188,11 +188,6 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
         Point screenSpaceInPosition = remapPointToScreenSpace(drawRequest, absolueInPoint);
         drawRequest.graphics.strokeLine(actualPoint.x, actualPoint.y, screenSpaceInPosition.x, screenSpaceInPosition.y);
         drawRequest.graphics.fillOval(screenSpaceInPosition.x - 3, screenSpaceInPosition.y - 3, 6, 6);
-    }
-
-    @Override
-    protected void valueModifiedAt(KeyframeSupportingDoubleInterpolator currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
-        ((BezierDoubleInterpolator) currentKeyframeableEffect).updateDoubleValueAt(timelinePosition, newTime, newValue);
     }
 
     @Override

@@ -34,6 +34,14 @@ public class BooleanProvider extends KeyframeableEffect<Boolean> {
     }
 
     @Override
+    public void removeKeyframeAt(TimelinePosition globalTimelinePosition) {
+        if (doubleInterpolator instanceof KeyframeSupportingDoubleInterpolator) {
+            KeyframeSupportingDoubleInterpolator keyframeInterpolator = ((KeyframeSupportingDoubleInterpolator) doubleInterpolator);
+            keyframeInterpolator.valueRemoved(globalTimelinePosition);
+        }
+    }
+
+    @Override
     public boolean isPrimitive() {
         return true;
     }

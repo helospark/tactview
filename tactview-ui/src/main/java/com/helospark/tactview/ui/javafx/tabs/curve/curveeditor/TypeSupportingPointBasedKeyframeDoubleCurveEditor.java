@@ -24,13 +24,6 @@ public abstract class TypeSupportingPointBasedKeyframeDoubleCurveEditor<T extend
     }
 
     @Override
-    protected void valueModifiedAt(KeyframeSupportingDoubleInterpolator currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue) {
-        valueModifiedAtInternal((T) currentKeyframeableEffect, timelinePosition, newTime, newValue);
-    }
-
-    protected abstract void valueModifiedAtInternal(T currentKeyframeableEffect, TimelinePosition timelinePosition, TimelinePosition newTime, double newValue);
-
-    @Override
     protected List<KeyframePoint> getKeyframePoints(KeyframeSupportingDoubleInterpolator effect) {
         Map<TimelinePosition, Object> values = effect.getValues();
         return values.entrySet()

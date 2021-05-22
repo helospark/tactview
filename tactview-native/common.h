@@ -1,3 +1,5 @@
+#include "logging.h"
+
 #ifdef _WIN32
 # define EXPORTED  __declspec( dllexport )
 #else

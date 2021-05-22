@@ -8,10 +8,11 @@ import com.sun.jna.Structure;
 
 public class FFMpegFrame extends Structure implements Structure.ByReference {
     public ByteBuffer data;
+    public long startTimeInMs;
 
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("data");
+        return Arrays.asList("data", "startTimeInMs");
     }
 
 }

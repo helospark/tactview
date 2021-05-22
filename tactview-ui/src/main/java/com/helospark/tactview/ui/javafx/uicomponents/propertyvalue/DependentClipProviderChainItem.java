@@ -28,6 +28,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 
@@ -79,6 +80,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                             MenuItem menuItem = new MenuItem(name);
                             menuItem.setOnAction(e -> {
                                 textArea.setText(name);
+                                addKeyframeWithValue(stringProvider, textArea);
                             });
                             contextMenu.getItems().addAll(menuItem);
                         });
@@ -113,20 +115,27 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
                 .withEffectParametersRepository(effectParametersRepository)
                 .build();
 
-        textArea.setOnKeyReleased(newValue -> {
-            KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
-                    .withDescriptorId(stringProvider.getId())
-                    .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
-                    .withValue(newValue)
-                    .withRevertable(true)
-                    .build();
-
-            commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+        textArea.setOnKeyReleased(event -> {
+            if (!event.getCode().equals(KeyCode.CONTROL) && !event.isControlDown()) {
+                addKeyframeWithValue(stringProvider, textArea);
+            }
         });
 
         contextMenuAppender.addContextMenu(result, stringProvider, descriptor, browseButton);
 
         return result;
+    }
+
+    private void addKeyframeWithValue(DependentClipProvider stringProvider, TextField textArea) {
+        String id = nameToIdRepository.getIdForName(textArea.getText());
+        KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
+                .withDescriptorId(stringProvider.getId())
+                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                .withValue(id)
+                .withRevertable(true)
+                .build();
+
+        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
     }
 
     private void renderFrameTo(ImageView imageView, String currentValue, TimelinePosition position) {

@@ -29,7 +29,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         int ret;
 
         if (!frame) {
-            fprintf(stderr, "Error allocating an audio frame\n");
+            ERROR("Error allocating an audio frame");
             exit(1);
         }
 
@@ -41,9 +41,9 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         if (nb_samples) {
             ret = av_frame_get_buffer(frame, 0);
             if (ret < 0) {
-                std::cerr <<  "Error allocating an audio buffer for format format=" << sample_fmt << " " << ", layout=" 
+                ERROR("Error allocating an audio buffer for format format=" << sample_fmt << " " << ", layout=" 
                     << channel_layout << " " << " sample_rate=" << sample_rate << " " << " nb_samples=" << nb_samples
-                    << " error_code=" << ret << std::endl;
+                    << " error_code=" << ret);
                 exit(1);
             }
         }
@@ -61,11 +61,11 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         // get format from audio file
         AVFormatContext* format = avformat_alloc_context();
         if (avformat_open_input(&format, path, NULL, NULL) != 0) {
-            fprintf(stderr, "Could not open file '%s'\n", path);
+            ERROR("Could not open file " << path);
             return AVCodecAudioMetadataResponse();
         }
         if (avformat_find_stream_info(format, NULL) < 0) {
-            fprintf(stderr, "Could not retrieve stream info from file '%s'\n", path);
+            ERROR("Could not retrieve stream info from file " << path);
             return AVCodecAudioMetadataResponse();
         }
 
@@ -78,14 +78,14 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
             }
         }
         if (stream_index == -1) {
-            fprintf(stderr, "Could not retrieve audio stream from file '%s'\n", path);
+            ERROR("Could not retrieve audio stream from file" << path);
             return AVCodecAudioMetadataResponse();
         }
         AVStream* stream = format->streams[stream_index];
 
         AVCodecContext* codec = stream->codec;
         if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0) {
-            fprintf(stderr, "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
+            ERROR("Failed to open decoder for stream " << stream_index << " in file " << path);
             return AVCodecAudioMetadataResponse();
         }
         AVCodec* pCodec = avcodec_find_decoder(codec->codec_id);
@@ -108,6 +108,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
     typedef struct {
         char* data;
+        long long startTimeInMs;
     } FFMpegFrame;
 
 
@@ -125,18 +126,18 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
     };
 
     EXPORTED int readAudio(AVCodecAudioRequest* request) {
-        //std::cout << "Audio size: " << request->bufferSize << " " << request->path << " " << request->startMicroseconds << " " << request->numberOfChannels << std::endl;
+        //DEBUG("Audio size: " << request->bufferSize << " " << request->path << " " << request->startMicroseconds << " " << request->numberOfChannels);
 
         av_register_all();
 
         // get format from audio file
         AVFormatContext* format = avformat_alloc_context();
         if (avformat_open_input(&format, request->path, NULL, NULL) != 0) {
-            fprintf(stderr, "Could not open file '%s'\n", request->path);
+            ERROR("Could not open file " << request->path);
             return -1;
         }
         if (avformat_find_stream_info(format, NULL) < 0) {
-            fprintf(stderr, "Could not retrieve stream info from file '%s'\n", request->path);
+            ERROR("Could not retrieve stream info from file " << request->path);
             return -1;
         }
 
@@ -148,9 +149,9 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 break;
             }
         }
-        //std::cout << "Stream index: " << stream_index << std::endl;
+        //DEBUG("Stream index: " << stream_index);
         if (stream_index == -1) {
-            fprintf(stderr, "Could not retrieve audio stream from file '%s'\n", request->path);
+            ERROR("Could not retrieve audio stream from file " << request->path);
             return -1;
         }
         AVStream* stream = format->streams[stream_index];
@@ -159,7 +160,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         AVCodecContext* codec = stream->codec;
         AVCodec* pCodec = avcodec_find_decoder(codec->codec_id);
         if (avcodec_open2(codec, pCodec, NULL) < 0) {
-            fprintf(stderr, "Failed to open decoder for stream #%u in file '%s'\n", stream_index, request->path);
+            ERROR("Failed to open decoder for stream " << stream_index << " in file " << request->path);
             return -1;
         }
 
@@ -180,7 +181,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
           needsResampling = true;
           swrContext = swr_alloc();
           if (!swrContext) {
-              fprintf(stderr, "Could not allocate resampler context\n");
+              ERROR("Could not allocate resampler context");
               exit(1);
           }
 
@@ -193,11 +194,11 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                } else if (request->bytesPerSample == 4) {
                   outputSampleFormat = AV_SAMPLE_FMT_S32P;
                } else {
-                  std::cout << "Unexpected sample rescale " << request->bytesPerSample << std::endl;
+                  ERROR("Unexpected sample rescale " << request->bytesPerSample);
                }
           }
 
-          std::cout << "Resampling audio to " << request->sampleRate << " " << codec->sample_fmt << " " <<  outputSampleFormat << " bytes=" << av_get_bytes_per_sample(outputSampleFormat) << std::endl;
+          DEBUG("Resampling audio to " << request->sampleRate << " " << codec->sample_fmt << " " <<  outputSampleFormat << " bytes=" << av_get_bytes_per_sample(outputSampleFormat));
           
           /* set options */
           av_opt_set_int       (swrContext, "in_channel_count",   codec->channels,       0);
@@ -209,9 +210,9 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
           av_opt_set_sample_fmt(swrContext, "out_sample_fmt",     outputSampleFormat,     0);
           av_opt_set_channel_layout(swrContext, "out_channel_layout", outputChannelLayout,  0);
 
-          //std::cout << "Initializing SWR" << std::endl;
+          //DEBUG("Initializing SWR");
           if ((swr_init(swrContext)) < 0) {
-              fprintf(stderr, "Failed to initialize the resampling context\n");
+              ERROR("Failed to initialize the resampling context");
               exit(1);
           }
 
@@ -225,7 +226,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         av_init_packet(&packet);
         AVFrame* frame = av_frame_alloc();
         if (!frame) {
-            fprintf(stderr, "Error allocating the frame\n");
+            ERROR("Error allocating the frame");
             return -1;
         }
 
@@ -243,7 +244,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         av_seek_frame(format, stream_index, seek_target, AVSEEK_FLAG_BACKWARD);
         avcodec_flush_buffers(codec);
 
-        std::cout << "SEEKING to " << request->startMicroseconds << " " << seek_target << std::endl;
+        DEBUG("SEEKING to " << request->startMicroseconds << " " << seek_target);
 
         int totalNumberOfSamplesRead = 0;
         bool running = true;
@@ -251,31 +252,33 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         while ((returnStatusCode=av_read_frame(format, &packet)) >= 0 && running) {
             if(packet.stream_index==stream_index) {
                 int gotFrame;
-                if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
-                    std::cout << "Cannot decode package" << std::endl;
+                int readBytes = avcodec_decode_audio4(codec, frame, &gotFrame, &packet);
+                if (readBytes < 0) {
+                    ERROR("Cannot decode package");
                     break;
                 }
-                //std::cout << "Read packet " << packet.stream_index << " (" << (av_frame_get_best_effort_timestamp(frame) * av_q2d(stream->time_base)) << " " << totalNumberOfSamplesRead << ")" << std::endl;
+                //DEBUG("Read packet " << packet.stream_index << " (" << (av_frame_get_best_effort_timestamp(frame) * av_q2d(stream->time_base)) << " " << totalNumberOfSamplesRead << ")");
                 if (!gotFrame) {
                     continue;
                 }
                 if (packet.pts < seek_target) {
-                  std::cout << "Skipping package " << packet.pts << std::endl;
+                  DEBUG("Skipping package " << packet.pts);
                   continue;
                 }
-                //std::cout << "Got frame" << std::endl;
+                //DEBUG("Got frame");
 
                 AVFrame* frameToUse = frame;
+                int actualNumberOfOutputSamples = frame->nb_samples;
                 if (needsResampling) {
 
                   int resampledCount = (int)ceil(frame->nb_samples * ((double)request->sampleRate / codec->sample_rate));
 
-                //  std::cout << "Allocating " << resampledCount << std::endl;
+                  //DEBUG("Allocating " << resampledCount);
 
                   tmp_frame = alloc_audio_frame(sampleFormat, outputChannelLayout,
                                        request->sampleRate, resampledCount);
 
-                  swr_convert(swrContext,
+                  actualNumberOfOutputSamples = swr_convert(swrContext,
                                 ( uint8_t **)tmp_frame->data, tmp_frame->nb_samples,
                                 (const uint8_t **)frame->data, frame->nb_samples);
 
@@ -283,15 +286,15 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                 }
 
                 if (isPlanar) {
-                  //  std::cout << "Before copy planar: " << " " << frame->nb_samples << " " <<  frameToUse->nb_samples << " " << sampleSize << std::endl;
+                    //DEBUG("Before copy planar: " << readBytes << " " << request->sampleRate << " " << codec->sample_rate << " " << frame->nb_samples << " " <<  frameToUse->nb_samples << " " << sampleSize);
                     int actuallyWrittenSamples = 0;
                     for (int channel = 0; channel < request->numberOfChannels; ++channel) {
-                        for (int i = 0; i < frameToUse->nb_samples; ++i) {
+                        for (int i = 0; i < actualNumberOfOutputSamples; ++i) {
                             for (int k = 0; k < sampleSize; ++k) {
                                 int toUpdate = totalNumberOfSamplesRead + i * sampleSize + k;
                                 if (toUpdate >= request->bufferSize) {
                                     running = false;
-                                  //  std::cout << "Buffer is full 1" << std::endl;
+                                  //  DEBUG("Buffer is full 1");
                                     break;
                                 }
 
@@ -299,20 +302,20 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                             }
                             if (running && channel==0) actuallyWrittenSamples++;
                         }
-                        //std::cout << "\nChannel done" << channel << std::endl;
+                        //DEBUG("\nChannel done" << channel);
                     }
                     totalNumberOfSamplesRead += actuallyWrittenSamples * sampleSize;
                 } else {
                     // TODO: currently this branch is unused, when fixed add non-planar format back into resampling needed method
                     // like: sampleFormat != AV_SAMPLE_FMT_U8 && sampleFormat != AV_SAMPLE_FMT_S16 && sampleFormat != AV_SAMPLE_FMT_S32
-                    std::cout << "Not planar" << std::endl;
+                    DEBUG("Not planar");
                     for (int i = 0, j = 0; i < frameToUse->nb_samples; ++i, ++j) {
                         for (int channel = 0; channel < request->numberOfChannels; ++channel) {
                             for (int k = 0; k < sampleSize; ++k) {
                                 int outputBufferIndex = j * sampleSize + k;
                                 if (totalNumberOfSamplesRead >= request->bufferSize) {
                                     running = false;
-                                 //   std::cout << "Buffer is full 2" << std::endl;
+                                 //   DEBUG("Buffer is full 2");
                                     break;
                                 }
                                 // TODO: this only supports single channel
@@ -332,7 +335,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         if (returnStatusCode < 0) {
           char* errorStr = new char[1000];
           av_make_error_string(errorStr, 1000, returnStatusCode);
-          std::cout << "Audio decode ended with error, statusCode=" << returnStatusCode << " (" << errorStr << ")" << std::endl;
+          ERROR("Audio decode ended with error, statusCode=" << returnStatusCode << " (" << errorStr << ")");
           delete[] errorStr;
         }
 
@@ -375,11 +378,11 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         request.bufferSize = 100000;
 
         int readSamples = decode_audio_file(&request);
-        std::cout << readSamples << std::endl;
+        DEBUG(readSamples);
         for (int i = 0; i < 50000; ++i) {
-         //   std::cout << (int)request.channels[1].data[i] << " ";
+         //   DEBUG((int)request.channels[1].data[i] << " ";
         }
-        std::cout << std::endl;
+        DEBUG(std::endl;
     }
     */
 }

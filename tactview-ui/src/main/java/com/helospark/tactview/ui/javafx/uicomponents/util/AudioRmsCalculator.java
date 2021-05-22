@@ -10,13 +10,12 @@ public class AudioRmsCalculator {
         if (frame.getNumberSamples() == 0) {
             return 0;
         }
-        int result = 0;
+        double result = 0;
         for (int i = 0; i < frame.getNumberSamples(); ++i) {
-            double sample = frame.getRescaledSample(channelNumber, 1, frame.getSamplePerSecond(), i);
+            double sample = frame.getNormalizedSampleAt(channelNumber, i);
             result += (sample * sample);
         }
-        double rms = Math.sqrt((double) result / (frame.getNumberSamples()));
-        return rms;
+        return Math.sqrt(result / (frame.getNumberSamples()));
     }
 
 }

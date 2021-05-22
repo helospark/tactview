@@ -122,6 +122,11 @@ public class RectangleInputTypeStrategy implements InputTypeStrategy<Rectangle> 
             }
             previous = current;
         }
+
+        if (result.size() == 4) { // close the loop
+            Point current = result.get(0).multiply(parameterObject.getWidth(), parameterObject.getHeight());
+            parameterObject.getCanvas().strokeLine(previous.x, previous.y, current.x, current.y);
+        }
     }
 
     @Override
