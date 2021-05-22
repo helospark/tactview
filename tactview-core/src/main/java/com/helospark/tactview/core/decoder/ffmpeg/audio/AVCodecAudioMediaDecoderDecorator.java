@@ -111,7 +111,14 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
 
         int readBytes = implementation.readAudio(nativeRequest);
 
-        BigDecimal endPosition = correctedStartPosition.add(bytesToSeconds(readBytes - oneAdditionalSample, request.getExpectedBytesPerSample(), request.getExpectedSampleRate()));
+        int correctedEndBytes = readBytes;
+        if (readBytes >= bufferSize - 100) {
+            correctedEndBytes = readBytes - oneAdditionalSample;
+        } else {
+            LOGGER.debug("Audio file end has been reached");
+        }
+
+        BigDecimal endPosition = correctedStartPosition.add(bytesToSeconds(correctedEndBytes, request.getExpectedBytesPerSample(), request.getExpectedSampleRate()));
 
         LOGGER.debug("Audio file read from {} to {}", correctedStartPosition, endPosition);
 

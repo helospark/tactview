@@ -118,4 +118,25 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
         this.aspectRatio = node.get("aspectRatio").doubleValue();
     }
 
+    // For performance reason it is preferable to have the video width divisable by 16
+    public void setAlignedPreviewSize(int previewWidthToSet, int previewHeightToSet, int fullWidth) {
+        int previewWidthModulo = previewWidthToSet % 16;
+        if (previewWidthModulo != 0) {
+            double multiplier = 0.0;
+            if (previewWidthModulo < 8) {
+                multiplier = ((previewWidthToSet - previewWidthModulo) / (double) previewWidthToSet);
+                previewWidthToSet -= previewWidthModulo;
+            } else {
+                multiplier = ((previewWidthToSet + previewWidthModulo) / (double) previewWidthToSet);
+                previewWidthToSet += previewWidthModulo;
+            }
+
+            previewHeightToSet = (int) (previewHeightToSet * multiplier);
+
+        }
+        this.setPreviewWidth(previewWidthToSet);
+        this.setPreviewHeight(previewHeightToSet);
+        this.setScaleFactor((double) previewWidthToSet / fullWidth);
+    }
+
 }
