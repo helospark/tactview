@@ -223,9 +223,14 @@ public class TimelineManagerRenderService {
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
 
-        audioFrames.add(0, generateSilence(request));
+        AudioFrameResult silence = generateSilence(request);
+        audioFrames.add(0, silence);
 
-        return audioBufferMerger.mergeBuffers(audioFrames);
+        AudioFrameResult result = audioBufferMerger.mergeBuffers(audioFrames);
+
+        silence.free();
+
+        return result;
     }
 
     private AudioFrameResult generateSilence(TimelineManagerFramesRequest request) {

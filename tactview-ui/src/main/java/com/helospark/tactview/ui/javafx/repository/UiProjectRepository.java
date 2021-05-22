@@ -128,7 +128,7 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
                 previewWidthToSet -= previewWidthModulo;
             } else {
                 multiplier = ((previewWidthToSet + previewWidthModulo) / (double) previewWidthToSet);
-                previewWidthToSet += previewWidthModulo;
+                previewWidthToSet += (16 - previewWidthModulo);
             }
 
             previewHeightToSet = (int) (previewHeightToSet * multiplier);
