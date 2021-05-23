@@ -6,11 +6,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.AudioMediaDataRequest;
 import com.helospark.tactview.core.decoder.AudioMediaDecoder;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
@@ -22,6 +24,7 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 
 @Component
 public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
@@ -30,11 +33,14 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     private AVCodecBasedAudioMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
+    private ScheduledExecutorService prefetchExecutor;
 
-    public AVCodecAudioMediaDecoderDecorator(AVCodecBasedAudioMediaDecoderImplementation implementation, MediaCache mediaCache, MemoryManager memoryManager) {
+    public AVCodecAudioMediaDecoderDecorator(AVCodecBasedAudioMediaDecoderImplementation implementation, MediaCache mediaCache, MemoryManager memoryManager,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService prefetchExecutor) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.memoryManager = memoryManager;
+        this.prefetchExecutor = prefetchExecutor;
     }
 
     @Override
@@ -42,6 +48,10 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         BigDecimal sampleRate = new BigDecimal(request.getExpectedSampleRate());
         String hashKey = request.getFile().getAbsolutePath() + " " + request.getExpectedSampleRate() + " " + request.getExpectedBytesPerSample() + " " + request.getExpectedChannels();
         int startSample = secondsToBytes(request.getStart().getSeconds(), request.getExpectedBytesPerSample(), sampleRate);
+
+        if (!request.isAvoidPrefetch()) {
+            schedulePrefetchJobIfNeeded(request, hashKey);
+        }
 
         Optional<MediaDataFrame> cachedResult = mediaCache.findInCache(hashKey, request.getStart().getSeconds());
         if (cachedResult.isPresent()) {
@@ -56,6 +66,27 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
             mediaCache.cacheMedia(hashKey, new MediaHashValue(List.of(result.data), result.endPosition, request.getStart().getSeconds()), false);
 
             return copyRelevantParts(request, startSample - realStartSample, result.data.allDataFrames);
+        }
+    }
+
+    private void schedulePrefetchJobIfNeeded(AudioMediaDataRequest request, String hashKey) {
+        BigDecimal correctedStartPosition = getCacheStartPosition(request).add(BigDecimal.valueOf(MINIMUM_LENGTH_TO_READ));
+        BigDecimal distance = correctedStartPosition.subtract(request.getStart().getSeconds());
+        if (mediaCache.findInCache(hashKey, correctedStartPosition).isEmpty() && distance.compareTo(BigDecimal.valueOf(4)) < 0) {
+            prefetchExecutor.execute(() -> {
+                if (mediaCache.findInCache(hashKey, correctedStartPosition).isEmpty()) {
+                    LOGGER.debug("Prefetching audio at {} due to read at {}", correctedStartPosition, request.getStart().getSeconds());
+                    AudioMediaDataRequest newRequest = AudioMediaDataRequest.builderFrom(request)
+                            .withAvoidPrefetch(true)
+                            .withStart(new TimelinePosition(correctedStartPosition))
+                            .build();
+
+                    MediaDataResponse result = readFrames(newRequest);
+
+                    GlobalMemoryManagerAccessor.memoryManager.returnBuffers(result.getFrames());
+                    LOGGER.debug("Prefetching audio done at {}", correctedStartPosition);
+                }
+            });
         }
     }
 
@@ -87,8 +118,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         int oneAdditionalSample = request.getLength().getSeconds()
                 .multiply(BigDecimal.valueOf(request.getExpectedSampleRate()))
                 .intValue() * request.getExpectedBytesPerSample();
-        BigDecimal remainder = request.getStart().getSeconds().remainder(BigDecimal.valueOf(MINIMUM_LENGTH_TO_READ));
-        BigDecimal correctedStartPosition = request.getStart().getSeconds().subtract(remainder);
+        BigDecimal correctedStartPosition = getCacheStartPosition(request);
         int bufferSize = request.getExpectedBytesPerSample() * request.getExpectedSampleRate() * MINIMUM_LENGTH_TO_READ + oneAdditionalSample;
         AVCodecAudioRequest nativeRequest = new AVCodecAudioRequest();
         nativeRequest.numberOfChannels = request.getExpectedChannels();
@@ -123,6 +153,12 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         LOGGER.debug("Audio file read from {} to {}", correctedStartPosition, endPosition);
 
         return new FileReadResult(endPosition, new MediaDataFrame(result, correctedStartPosition));
+    }
+
+    private BigDecimal getCacheStartPosition(AudioMediaDataRequest request) {
+        BigDecimal remainder = request.getStart().getSeconds().remainder(BigDecimal.valueOf(MINIMUM_LENGTH_TO_READ));
+        BigDecimal correctedStartPosition = request.getStart().getSeconds().subtract(remainder);
+        return correctedStartPosition;
     }
 
     @Override

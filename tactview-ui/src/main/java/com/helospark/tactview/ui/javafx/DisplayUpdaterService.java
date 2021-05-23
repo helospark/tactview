@@ -3,7 +3,6 @@ package com.helospark.tactview.ui.javafx;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -18,10 +17,10 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
-import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
@@ -42,11 +41,12 @@ import javafx.scene.paint.Color;
 @Component
 public class DisplayUpdaterService implements ScenePostProcessor {
     private static final int NUMBER_OF_CACHE_JOBS_TO_RUN = 2;
-    private final ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(NUMBER_OF_CACHE_JOBS_TO_RUN);
+    private final ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(NUMBER_OF_CACHE_JOBS_TO_RUN,
+            new ThreadFactoryBuilder().setNameFormat("playback-prefetch-cache-job-%d").build());
     private final Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
     private volatile long currentPositionLastRendered = -1;
 
-    private final PlaybackFrameAccessor playbackController;
+    private final PlaybackFrameAccessor playbackFrameAccessor;
     private final UiProjectRepository uiProjectRepostiory;
     private final UiTimelineManager uiTimelineManager;
     private final GlobalDirtyClipManager globalDirtyClipManager;
@@ -74,7 +74,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
             @Value("${debug.display-audio-updater.enabled}") boolean debugAudioUpdateEnabled,
             @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
-        this.playbackController = playbackController;
+        this.playbackFrameAccessor = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
         this.globalDirtyClipManager = globalDirtyClipManager;
@@ -162,7 +162,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             if (cachedKey != null) {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             } else {
-                actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
+                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition);
             }
 
             numberOfDroppedFrames = 0;
@@ -193,12 +193,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         } else {
             Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
             if (cachedKey == null) {
-                actualAudioVideoFragment = playbackController.getVideoFrameAt(currentPosition);
-
-                if (debugAudioUpdateEnabled) { // just so it is easier to debug. Will need to think of other solution later
-                    AudioVideoFragment result = playbackController.getSingleAudioFrameAtPosition(currentPosition, false, Optional.empty());
-                    result.free();
-                }
+                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition);
             } else {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             }
@@ -247,14 +242,14 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             int numberOfJobsAdded = 0;
             if (!framecache.containsKey(nextFrameTime)) {
                 Future<JavaDisplayableAudioVideoFragment> task = executorService.submit(() -> {
+                    logger.debug("started {}", nextFrameTime);
                     if (recentlyDroppedFrames.contains(nextFrameTime)) {
                         return null; // result is ignored, we dropped this frame
                     } else {
-                        return playbackController.getVideoFrameAt(nextFrameTime);
+                        return playbackFrameAccessor.getVideoFrameAt(nextFrameTime);
                     }
                 });
                 framecache.put(nextFrameTime, task);
-                logger.debug("started " + nextFrameTime);
                 ++numberOfJobsAdded;
                 if (numberOfJobsAdded > NUMBER_OF_CACHE_JOBS_TO_RUN) {
                     break;

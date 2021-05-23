@@ -17,7 +17,8 @@ public class AudioMediaDataRequest {
     private TimelinePosition start;
     private TimelineLength length;
 
-    @Generated("SparkTools")
+    private boolean avoidPrefetch;
+
     private AudioMediaDataRequest(Builder builder) {
         this.file = builder.file;
         this.metadata = builder.metadata;
@@ -26,6 +27,7 @@ public class AudioMediaDataRequest {
         this.expectedChannels = builder.expectedChannels;
         this.start = builder.start;
         this.length = builder.length;
+        this.avoidPrefetch = builder.avoidPrefetch;
     }
 
     @Generated("SparkTools")
@@ -60,12 +62,18 @@ public class AudioMediaDataRequest {
         return length;
     }
 
-    @Generated("SparkTools")
+    public boolean isAvoidPrefetch() {
+        return avoidPrefetch;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    @Generated("SparkTools")
+    public static Builder builderFrom(AudioMediaDataRequest audioMediaDataRequest) {
+        return new Builder(audioMediaDataRequest);
+    }
+
     public static final class Builder {
         private File file;
         private AudioMediaMetadata metadata;
@@ -74,8 +82,19 @@ public class AudioMediaDataRequest {
         private int expectedChannels;
         private TimelinePosition start;
         private TimelineLength length;
-
+        private boolean avoidPrefetch;
         private Builder() {
+        }
+
+        private Builder(AudioMediaDataRequest audioMediaDataRequest) {
+            this.file = audioMediaDataRequest.file;
+            this.metadata = audioMediaDataRequest.metadata;
+            this.expectedSampleRate = audioMediaDataRequest.expectedSampleRate;
+            this.expectedBytesPerSample = audioMediaDataRequest.expectedBytesPerSample;
+            this.expectedChannels = audioMediaDataRequest.expectedChannels;
+            this.start = audioMediaDataRequest.start;
+            this.length = audioMediaDataRequest.length;
+            this.avoidPrefetch = audioMediaDataRequest.avoidPrefetch;
         }
 
         public Builder withFile(File file) {
@@ -110,6 +129,11 @@ public class AudioMediaDataRequest {
 
         public Builder withLength(TimelineLength length) {
             this.length = length;
+            return this;
+        }
+
+        public Builder withAvoidPrefetch(boolean avoidPrefetch) {
+            this.avoidPrefetch = avoidPrefetch;
             return this;
         }
 

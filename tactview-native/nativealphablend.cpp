@@ -22,16 +22,19 @@ extern "C"
     }
 
     EXPORTED void normalAlphablend(AlphaBlendRequest* request)  {
-
+        bool isGlobalAlphaFullOpaque = (abs(request->alpha - 1.0) < 0.0001);
         for (int y = 0; y < request->height; ++y) {
             for (int x = 0; x < request->width; ++x) {
-                int startIndex = y * 4 * request->width + x * 4;
+                int pixel = y * request->width + x;
+                int startIndex = pixel * 4;
                 unsigned char uForegroundAlpha = request->foreground[startIndex + 3];
 
-                if (uForegroundAlpha == 255 && request->alpha == 255) {
-                    for (int c = 0; c < 4; ++c) {
-                        request->backgroundAndResult[startIndex + c] = request->foreground[startIndex + c];
-                    }
+                if (isGlobalAlphaFullOpaque && uForegroundAlpha == 255) {
+                    ((uint32_t*)request->backgroundAndResult)[pixel] = ((uint32_t*)request->foreground)[pixel];
+                    // 4x faster but otherwise the same as:
+                    // for (int c = 0; c < 4; ++c) {
+                    //     request->backgroundAndResult[startIndex + c] = request->foreground[startIndex + c];
+                    // }
                 } else {
                     double foregroundAlpha = uForegroundAlpha / 255.0;
                     double alpha = foregroundAlpha * request->alpha;

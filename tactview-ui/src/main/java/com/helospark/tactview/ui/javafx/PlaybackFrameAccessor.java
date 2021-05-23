@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -25,6 +28,7 @@ import javafx.scene.paint.Color;
 
 @Component
 public class PlaybackFrameAccessor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlaybackFrameAccessor.class);
     public static final int CHANNELS = 2;
     public static final int SAMPLE_RATE = 44100;
     public static final int BYTES = 2;
@@ -56,6 +60,8 @@ public class PlaybackFrameAccessor {
         } else {
             result = imageWithEffects;
         }
+
+        LOGGER.debug("Frame at {} is loaded", position);
 
         return new JavaDisplayableAudioVideoFragment(result, new byte[0]);
     }

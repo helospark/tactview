@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -83,7 +84,8 @@ public class UiTimelineManager {
     private ThreadPoolExecutor createExecutorService() {
         return new ThreadPoolExecutor(1, 1,
                 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>());
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactoryBuilder().setNameFormat("playback-thread-%d").build());
     }
 
     public void setDisplayUpdaterService(DisplayUpdaterService displayUpdaterService) {

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
@@ -28,7 +29,7 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 
 @Component
 public class TimelineManagerRenderService {
-    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new ThreadFactoryBuilder().setNameFormat("timeline-manager-executor-%d").build());
     private final FrameBufferMerger frameBufferMerger;
     private final AudioBufferMerger audioBufferMerger;
     private final ProjectRepository projectRepository;
