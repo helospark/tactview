@@ -25,6 +25,8 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
+import com.helospark.tactview.core.timeline.chapter.ChaptersChangedMessage;
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
@@ -116,6 +118,7 @@ public class TimelineCanvas {
     private ScheduledExecutorService scheduledExecutorService;
     private ChannelContextMenuAppender channelContextMenuAppender;
     private CurrentlyPressedKeyRepository pressedKeyRepository;
+    private ChapterRepository chapterRepository;
 
     private BorderPane resultPane;
     private ScrollBar rightBar;
@@ -134,7 +137,7 @@ public class TimelineCanvas {
             SelectedNodeRepository selectedNodeRepository, UiCommandInterpreterService commandInterpreter, EffectDragAdder effectDragAdder,
             UiTimelineManager uiTimelineManager, PropertyView propertyView, ClipContextMenuFactory clipContextMenuFactory, EffectContextMenuFactory effectContextMenuFactory,
             NameToIdRepository nameToIdRepository, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
-            ChannelContextMenuAppender channelContextMenuAppender, CurrentlyPressedKeyRepository pressedKeyRepository) {
+            ChannelContextMenuAppender channelContextMenuAppender, CurrentlyPressedKeyRepository pressedKeyRepository, ChapterRepository chapterRepository) {
         this.timelineAccessor = timelineAccessor;
         this.timelineState = timelineState;
         this.timelinePatternRepository = timelinePatternRepository;
@@ -152,6 +155,7 @@ public class TimelineCanvas {
         this.scheduledExecutorService = scheduledExecutorService;
         this.channelContextMenuAppender = channelContextMenuAppender;
         this.pressedKeyRepository = pressedKeyRepository;
+        this.chapterRepository = chapterRepository;
     }
 
     @PostConstruct
@@ -191,6 +195,9 @@ public class TimelineCanvas {
         });
         messagingService.register(ClipSelectionChangedMessage.class, message -> {
             redraw(true);
+        });
+        messagingService.register(ChaptersChangedMessage.class, message -> {
+            redraw(false);
         });
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -956,6 +963,7 @@ public class TimelineCanvas {
 
         drawSelectionBox();
         drawLoopingLines();
+        drawChapterLines();
         drawPlaybackLine();
         drawSpecialPositionLine(visibleAreaStartY);
     }
@@ -1089,6 +1097,12 @@ public class TimelineCanvas {
         }
         if (loopBProperties.isPresent()) {
             drawVerticalLineAtPosition(loopBProperties.get(), Color.GREEN);
+        }
+    }
+
+    private void drawChapterLines() {
+        for (var chapter : chapterRepository.getChapters().entrySet()) {
+            drawVerticalLineAtPosition(chapter.getKey(), Color.GREENYELLOW);
         }
     }
 

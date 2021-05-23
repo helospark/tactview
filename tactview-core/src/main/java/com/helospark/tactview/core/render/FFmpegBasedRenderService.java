@@ -35,6 +35,7 @@ import com.helospark.tactview.core.decoder.opencv.ImageMetadataResponse;
 import com.helospark.tactview.core.decoder.opencv.ImageRequest;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
 import com.helospark.tactview.core.render.domain.FFmpegRenderThreadResult;
+import com.helospark.tactview.core.render.ffmpeg.ChapterInformation;
 import com.helospark.tactview.core.render.ffmpeg.CodecExtraDataRequest;
 import com.helospark.tactview.core.render.ffmpeg.CodecInformation;
 import com.helospark.tactview.core.render.ffmpeg.FFmpegBasedMediaEncoder;
@@ -65,6 +66,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class FFmpegBasedRenderService extends AbstractRenderService {
+    private static final BigDecimal SECONDS_TO_MICROSECONDS = BigDecimal.valueOf(1000000);
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedRenderService.class);
     private static final Set<String> COMMON_AUDIO_CONTAINERS = Set.of("mp3", "wav", "oga");
     private static final String DEFAULT_VALUE = "default";
@@ -90,37 +92,40 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int videoBitRate = (int) renderRequest.getOptions().get("videobitrate").getValue();
 
-        System.out.println("Video BitRate: " + videoBitRate);
+        LOGGER.info("Video BitRate: " + videoBitRate);
 
         int audioBitRate = (int) renderRequest.getOptions().get("audiobitrate").getValue();
-        System.out.println("Audio BitRate: " + audioBitRate);
+        LOGGER.info("Audio BitRate: " + audioBitRate);
 
         int audioSampleRate = (int) renderRequest.getOptions().get("audiosamplerate").getValue();
-        System.out.println("Audio SampleRate: " + audioSampleRate);
+        LOGGER.info("Audio SampleRate: " + audioSampleRate);
 
         int bytesPerSample = Integer.parseInt(renderRequest.getOptions().get("audiobytespersample").getValue().toString());
-        System.out.println("Audio bytes per sample: " + bytesPerSample);
+        LOGGER.info("Audio bytes per sample: " + bytesPerSample);
 
         String audioCodec = (String) renderRequest.getOptions().get("audiocodec").getValue();
-        System.out.println("AudioCodec: " + audioCodec);
+        LOGGER.info("AudioCodec: " + audioCodec);
 
         String videoCodec = (String) renderRequest.getOptions().get("videocodec").getValue();
         if (isAudioContainerForFileName(renderRequest.getFileName(), renderRequest.getSelectedExtensionType())) {
             videoCodec = NONE_VALUE;
         }
-        System.out.println("VideoCodec: " + videoCodec);
+        LOGGER.info("VideoCodec: " + videoCodec);
 
         String videoPixelFormat = (String) renderRequest.getOptions().get("videoPixelFormat").getValue();
-        System.out.println("videoPixelFormat: " + videoPixelFormat);
+        LOGGER.info("videoPixelFormat: " + videoPixelFormat);
 
         int numberOfChannels = Integer.parseInt(renderRequest.getOptions().get("audionumberofchannels").getValue().toString());
-        System.out.println("numberOfChannels: " + numberOfChannels);
+        LOGGER.info("numberOfChannels: " + numberOfChannels);
 
         String videoPresetOrNull = (String) Optional.ofNullable(renderRequest.getOptions().get("preset")).map(a -> a.getValue()).orElse(null);
-        System.out.println("video preset: " + videoPresetOrNull);
+        LOGGER.info("video preset: " + videoPresetOrNull);
 
         int threads = Integer.parseInt(renderRequest.getOptions().get("threads").getValue().toString());
-        System.out.println("threads: " + threads);
+        LOGGER.info("threads: " + threads);
+
+        Map<TimelinePosition, String> chapters = renderRequest.getChapters();
+        LOGGER.info("chapters: {}" + chapters);
 
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();
@@ -163,6 +168,14 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
         initNativeRequest.videoPixelFormat = videoPixelFormat;
         initNativeRequest.videoPreset = videoPresetOrNull;
         initNativeRequest.metadata = convertToNativeMap(renderRequest.getMetadata());
+
+        initNativeRequest.totalLengthInMicroseconds = renderRequest.getEndPosition().multiply(SECONDS_TO_MICROSECONDS).getSeconds().longValue();
+        initNativeRequest.numberOfChapters = renderRequest.getChapters().size();
+        if (renderRequest.getChapters().size() > 0) {
+            initNativeRequest.chapters = new ChapterInformation();
+            ChapterInformation[] chaptersArray = (ChapterInformation[]) initNativeRequest.chapters.toArray(chapters.size());
+            fillChapters(chaptersArray, chapters);
+        }
         // frame not freed
 
         int encoderIndex = ffmpegBasedMediaEncoder.initEncoder(initNativeRequest);
@@ -360,6 +373,15 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
             clearRequest.encoderIndex = encoderIndex;
             ffmpegBasedMediaEncoder.clearEncoder(clearRequest);
             executorService.shutdownNow();
+        }
+    }
+
+    private void fillChapters(ChapterInformation[] chaptersArray, Map<TimelinePosition, String> chapters) {
+        int i = 0;
+        for (var entry : chapters.entrySet()) {
+            chaptersArray[i].name = entry.getValue();
+            chaptersArray[i].timeInMicroseconds = entry.getKey().getSeconds().multiply(SECONDS_TO_MICROSECONDS).longValue();
+            ++i;
         }
     }
 

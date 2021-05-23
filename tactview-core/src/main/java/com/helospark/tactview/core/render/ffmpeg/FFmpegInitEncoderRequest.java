@@ -27,9 +27,14 @@ public class FFmpegInitEncoderRequest extends Structure implements Structure.ByR
 
     public NativeMap metadata;
 
+    public int numberOfChapters;
+    public long totalLengthInMicroseconds;
+    public ChapterInformation chapters;
+
     @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("fileName", "actualWidth", "actualHeight", "renderWidth", "renderHeight", "fps", "audioChannels", "bytesPerSample", "sampleRate",
-                "videoBitRate", "audioBitRate", "audioSampleRate", "videoCodec", "audioCodec", "videoPixelFormat", "videoPreset", "metadata");
+                "videoBitRate", "audioBitRate", "audioSampleRate", "videoCodec", "audioCodec", "videoPixelFormat", "videoPreset", "metadata", "numberOfChapters", "totalLengthInMicroseconds",
+                "chapters");
     }
 }

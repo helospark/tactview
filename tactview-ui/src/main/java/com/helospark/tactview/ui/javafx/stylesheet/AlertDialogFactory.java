@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.stylesheet;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
@@ -82,6 +84,45 @@ public class AlertDialogFactory implements MainWindowStageAware {
 
             alert.showAndWait();
         });
+    }
+
+    public Optional<String> showTextInputDialog(String title, String content, String defaultValue) {
+        TextInputDialog dialog = new TextInputDialog(defaultValue);
+
+        dialog.setTitle(title);
+        dialog.setHeaderText(null);
+        dialog.setContentText(content);
+        stylesheetAdderService.addStyleSheets(dialog.getDialogPane(), "stylesheet.css");
+
+        return dialog.showAndWait();
+    }
+
+    public void showTextDialog(String title, String header, String content, String expandedContent) {
+        Alert dialog = new Alert(AlertType.INFORMATION);
+        dialog.setTitle(title);
+        dialog.setHeaderText(header);
+        dialog.setContentText(content);
+
+        TextArea textArea = new TextArea(expandedContent);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(textArea, 0, 0);
+
+        // Set expandable Exception into the dialog pane.
+        dialog.getDialogPane().setExpandableContent(expContent);
+        dialog.getDialogPane().setExpanded(true);
+
+        stylesheetAdderService.addStyleSheets(dialog.getDialogPane(), "stylesheet.css");
+
+        dialog.showAndWait();
     }
 
     @Override

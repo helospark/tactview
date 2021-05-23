@@ -30,6 +30,8 @@ public class RenderRequest {
     private final Consumer<ReadOnlyClipImage> encodedImageCallback;
     private final HandledExtensionValueElement selectedExtensionType;
 
+    private Map<TimelinePosition, String> chapters;
+
     @Generated("SparkTools")
     private RenderRequest(Builder builder) {
         this.startPosition = builder.startPosition;
@@ -45,6 +47,7 @@ public class RenderRequest {
         this.isCancelledSupplier = builder.isCancelledSupplier;
         this.encodedImageCallback = builder.encodedImageCallback;
         this.selectedExtensionType = builder.selectedExtensionType;
+        this.chapters = builder.chapters;
     }
 
     public String getRenderId() {
@@ -103,6 +106,10 @@ public class RenderRequest {
         return selectedExtensionType;
     }
 
+    public Map<TimelinePosition, String> getChapters() {
+        return chapters;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -123,6 +130,7 @@ public class RenderRequest {
         private Map<String, String> metadata = Collections.emptyMap();
         private Consumer<ReadOnlyClipImage> encodedImageCallback;
         private HandledExtensionValueElement selectedExtensionType;
+        private Map<TimelinePosition, String> chapters = Collections.emptyMap();
 
         private Builder() {
         }
@@ -189,6 +197,11 @@ public class RenderRequest {
 
         public Builder withSelectedExtensionType(HandledExtensionValueElement selectedExtensionType) {
             this.selectedExtensionType = selectedExtensionType;
+            return this;
+        }
+
+        public Builder withChapters(Map<TimelinePosition, String> chapters) {
+            this.chapters = chapters;
             return this;
         }
 

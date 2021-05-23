@@ -9,6 +9,7 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
@@ -18,6 +19,7 @@ import com.helospark.tactview.ui.javafx.preferences.PreferencesPage;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.scene.input.KeyCode;
@@ -28,6 +30,7 @@ public class DefaultEditMenuItemConfiguration {
     public static final String EDIT_ROOT = "_Edit";
     public static final String SELECT_ROOT = "_Select";
     public static final String JUMP_ROOT = "_Jump";
+    public static final String CHAPTER_ROOT = "_Chapter";
 
     @Bean
     @Order(1000)
@@ -176,6 +179,65 @@ public class DefaultEditMenuItemConfiguration {
             if (loopBProperties.isPresent()) {
                 timelineManager.jumpAbsolute(loopBProperties.get().getSeconds());
             }
+        });
+    }
+
+    @Bean
+    @Order(1950)
+    public SelectableMenuContribution addChapterMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, ChapterRepository chapterRepository) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Add chapter at current position"), event -> {
+            TimelinePosition position = timelineState.getPlaybackPosition();
+
+            Optional<String> result = dialogFactory.showTextInputDialog("Add chapter", "Label of the chapter", "Chapter x");
+
+            if (result.isPresent()) {
+                chapterRepository.addChapter(position, result.get());
+            }
+        }, new KeyCodeCombination(KeyCode.O, KeyCodeCombination.CONTROL_DOWN));
+    }
+
+    @Bean
+    @Order(1951)
+    public SelectableMenuContribution removeAllChaptersMenuItem(ChapterRepository chapterRepository) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Remove all chapters"), event -> {
+            chapterRepository.removeAllChapters();
+        });
+    }
+
+    @Bean
+    @Order(1952)
+    public SelectableMenuContribution exportAsYoutubeChapterMenuItem(ChapterRepository chapterRepository, AlertDialogFactory alertDialogFactory) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Show as Youtube chapter"), event -> {
+            String result = "";
+            String errors = "";
+            int numberOfChapters = 0;
+
+            TimelinePosition previousPosition = null;
+            if (chapterRepository.getChapters().get(TimelinePosition.ofZero()) == null) {
+                result += "00:00 Intro\n";
+                errors += "[WARN] No chapter is defined in position 00:00, added intro chapter at 0\n";
+                previousPosition = TimelinePosition.ofZero();
+                ++numberOfChapters;
+            }
+
+            for (var chapter : chapterRepository.getChapters().entrySet()) {
+                long allSeconds = chapter.getKey().getSeconds().longValue();
+                long minutes = allSeconds / 60;
+                long seconds = allSeconds % 60;
+                result += (String.format("%02d:%02d %s\n", minutes, seconds, chapter.getValue()));
+                ++numberOfChapters;
+
+                if (previousPosition != null && chapter.getKey().subtract(previousPosition).isLessThan(10)) {
+                    errors += "[ERROR] Chapter at " + minutes + ":" + seconds + " is less than 10s from previous chapter which is unaccaptable by YouTube\n";
+                }
+
+                previousPosition = chapter.getKey();
+            }
+            if (numberOfChapters < 3) {
+                errors += "[ERROR] Minimum 3 chapters needed by YouTube";
+            }
+
+            alertDialogFactory.showTextDialog("Youtube chapters", "Copy the below in your description to add chapters to Youtube", errors, result);
         });
     }
 

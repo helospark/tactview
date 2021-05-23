@@ -26,6 +26,7 @@ import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -80,6 +81,7 @@ public class RenderDialog {
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private ScaleService scaleService;
     private RenderServiceChain renderService;
+    private ChapterRepository chapterRepository;
 
     TextField fileNameTextField;
     GridPane rendererOptions;
@@ -102,12 +104,13 @@ public class RenderDialog {
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
             StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter,
-            ScaleService scaleService) {
+            ScaleService scaleService, ChapterRepository chapterRepository) {
         this.projectRepository = projectRepository;
         this.alertDialogFactory = alertDialogFactory;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
         this.scaleService = scaleService;
         this.renderService = renderService;
+        this.chapterRepository = chapterRepository;
 
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
@@ -382,6 +385,7 @@ public class RenderDialog {
                 .withMetadata(collectMetadata(metadataVBox))
                 .withSelectedExtensionType(selectedExtensionElement)
                 .withEncodedImageCallback(image -> updatePreviewConsumer(image))
+                .withChapters(chapterRepository.getChapters())
                 .build();
     }
 

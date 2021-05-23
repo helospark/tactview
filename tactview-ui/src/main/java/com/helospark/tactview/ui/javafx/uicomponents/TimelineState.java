@@ -304,4 +304,5 @@ public class TimelineState implements ResettableBean {
     public TimelineLength getTimelineLength() {
         return timelineLength;
     }
+
 }

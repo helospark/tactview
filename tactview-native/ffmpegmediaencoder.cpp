@@ -15,6 +15,7 @@
 #define __STDC_CONSTANT_MACROS whatisthis
 
 #include <iostream>
+#include <vector>
 #include "common.h"
 
 extern "C" {
@@ -35,6 +36,10 @@ extern "C" {
 
     #define SCALE_FLAGS SWS_BICUBIC
 
+    struct ChapterInformation {
+        long long timeInMicroseconds;
+        char* name;
+    };
 
     struct FFmpegInitEncoderRequest {
         const char* fileName;
@@ -57,6 +62,10 @@ extern "C" {
         const char* videoPreset;
 
         NativeMap* metadata;
+
+        int numberOfChapters;
+        long long totalLengthInMicroseconds;
+        ChapterInformation* chapters;
     };
 
 
@@ -102,7 +111,7 @@ extern "C" {
         int actualHeight;
         int renderWidth;
         int renderHeight;
-        AVPixelFormat videoPixelFormat;    
+        AVPixelFormat videoPixelFormat;
     };
     RenderContext renderContext;
 
@@ -660,6 +669,26 @@ extern "C" {
           }
         }
 
+        if (request->numberOfChapters != 0) {
+            DEBUG("Adding " << request->numberOfChapters << " chapters");
+            AVChapter** chapters = (AVChapter**)av_malloc(request->numberOfChapters*sizeof(AVChapter*));
+            long long previous = 0;
+            for (int i = 0; i < request->numberOfChapters; ++i) {
+                chapters[i] = (AVChapter*)av_malloc(sizeof(AVChapter));
+                chapters[i]->id = i;
+                chapters[i]->start = request->chapters[i].timeInMicroseconds;
+                chapters[i]->end = i < (request->numberOfChapters - 1) ? request->chapters[i+1].timeInMicroseconds : request->totalLengthInMicroseconds;
+                chapters[i]->time_base = AV_TIME_BASE_Q;
+
+                AVDictionary *dictionary = NULL;
+                av_dict_set(&dictionary, "title", request->chapters[i].name, 0);
+
+                chapters[i]->metadata = dictionary;
+            }
+            oc->chapters = chapters;
+            oc->nb_chapters = request->numberOfChapters;
+        }
+
         fmt = oc->oformat;
 
         AVPixelFormat videoPixelFormat;
@@ -697,6 +726,8 @@ extern "C" {
             have_audio = 1;
             encode_audio = 1;
         }
+
+        
 
         /* Now that all the parameters are set, we can open the audio and
          * video codecs and allocate the necessary encode buffers. */
