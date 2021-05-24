@@ -57,3 +57,6 @@ cp libopencvpencil.dylib ../tactview-core/src/main/resources/darwin/.
 
 g++ -std=c++11 -shared -fPIC -Wl,-install_name,libnativealphablend.dylib -o libnativealphablend.dylib nativealphablend.cpp
 cp libnativealphablend.dylib ../tactview-core/src/main/resources/darwin/.
+
+g++ -std=c++11  -shared -fPIC -Wl,-soname,libnativememoryoperations.so -o libnativememoryoperations.so nativememoryoperations.cpp
+cp libnativememoryoperations.so ../tactview-core/src/main/resources/linux-x86-64/.

@@ -26,6 +26,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
@@ -35,6 +36,7 @@ public class MediaCache {
     private MemoryManager memoryManager;
     private MessagingService messagingService;
     private ScheduledExecutorService executorService;
+    private MemoryOperations memoryOperations;
 
     @Slf4j
     private Logger logger;
@@ -43,11 +45,12 @@ public class MediaCache {
     private volatile long maximumSizeHint;
 
     public MediaCache(MemoryManager memoryManager, @Value("${mediacache.max.size}") Long maximumSize, MessagingService messagingService,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService) {
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService, MemoryOperations memoryOperations) {
         this.memoryManager = memoryManager;
         this.maximumSizeHint = maximumSize;
         this.messagingService = messagingService;
         this.executorService = executorService;
+        this.memoryOperations = memoryOperations;
     }
 
     @PostConstruct
@@ -339,9 +342,7 @@ public class MediaCache {
     }
 
     private void copyToResult(ByteBuffer copyTo, ByteBuffer elementToCopy) {
-        for (int i = 0; i < elementToCopy.capacity(); ++i) {
-            copyTo.put(i, elementToCopy.get(i));
-        }
+        memoryOperations.copyBuffer(elementToCopy, copyTo, copyTo.capacity());
     }
 
     public static class CacheRemoveDomain {

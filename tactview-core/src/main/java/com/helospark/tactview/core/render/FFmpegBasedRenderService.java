@@ -225,12 +225,12 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     TimelinePosition currentPosition = renderRequest.getStartPosition();
                     try {
                         int partitionIndex = 0;
-                        while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
+                        while (currentPosition.isLessThan(renderRequest.getEndPosition()) && !renderRequest.getIsCancelledSupplier().get()) {
                             TimelineInterval nextIntersection = partitionList.size() > partitionIndex ? partitionList.get(partitionIndex) : TimelineInterval.ofPoint(renderRequest.getEndPosition());
 
                             // TODO: parallel and single threaded part is almost entirely a copy-pase of each other, fix it
                             // parallel render
-                            while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())
+                            while (currentPosition.isLessThan(renderRequest.getEndPosition())
                                     && currentPosition.isLessThan(nextIntersection.getStartPosition())
                                     && !renderRequest.getIsCancelledSupplier().get()) {
 
@@ -257,7 +257,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                             }
 
                             // single threaded render interval
-                            while (currentPosition.isLessOrEqualToThan(renderRequest.getEndPosition())
+                            while (currentPosition.isLessThan(renderRequest.getEndPosition())
                                     && currentPosition.isLessThan(nextIntersection.getEndPosition())
                                     && !renderRequest.getIsCancelledSupplier().get()) {
 

@@ -18,16 +18,19 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
+import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
 
 @Component
 public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     public TimelineLength imageLength = TimelineLength.ofMillis(10000);
     private ImageMediaLoader implementation;
     private MediaCache mediaCache;
+    private MemoryOperations memoryOperations;
 
-    public OpenCvImageDecorderDecorator(ImageMediaLoader implementation, MediaCache mediaCache) {
+    public OpenCvImageDecorderDecorator(ImageMediaLoader implementation, MediaCache mediaCache, MemoryOperations memoryOperations) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
+        this.memoryOperations = memoryOperations;
     }
 
     @PreferenceValue(name = "Default image clip length (ms)", defaultValue = "10000", group = "Clip")
@@ -78,9 +81,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     }
 
     private void copyToResult(ByteBuffer result, ByteBuffer fromCopy) {
-        result.position(0);
-        fromCopy.position(0);
-        result.put(fromCopy);
+        memoryOperations.copyBuffer(fromCopy, result, fromCopy.capacity());
 
     }
 

@@ -13,7 +13,7 @@ ALL_TARGETS = libopencvsharpen.so libopencvlensdistort.so libgenericconvolutionm
  libffmpegconinousimagequeryservice.so libavcodecaudiodecoder.so libopencvblur.so libopencvscale.so \
  libopencvdenoise.so libopencvthreshold.so libopencverodedilate.so libopencvedgedetect.so libopencvrotate.so \
  libffmpegmediaencoder.so libopencvgreenscreen.so libopencvhistogram.so libopencvcartoon.so libopencvpencil.so \
- libopencvvideostab.so libv4l2loopback.so libnativealphablend.so
+ libopencvvideostab.so libv4l2loopback.so libnativealphablend.so libnativememoryoperations.so
 
 release: CXXFLAGS += -O2
 release: $(ALL_TARGETS)
@@ -115,6 +115,9 @@ libnativealphablend.so : nativealphablend.cpp $(COMMON_HEADERS)
 	$(CXX) $(CXXFLAGS)  -shared -fPIC -Wl,-soname,libnativealphablend.so -o libnativealphablend.so nativealphablend.cpp
 	cp libnativealphablend.so ../tactview-core/src/main/resources/linux-x86-64/.
 
+libnativememoryoperations.so : nativememoryoperations.cpp $(COMMON_HEADERS)
+	$(CXX) $(CXXFLAGS)  -shared -fPIC -Wl,-soname,libnativememoryoperations.so -o libnativememoryoperations.so nativememoryoperations.cpp
+	cp libnativememoryoperations.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 libopencvvideostab.so : linux/opencvvideostab.cpp $(COMMON_HEADERS)
 	$(CXX) $(CXXFLAGS)  `pkg-config --cflags opencv4` -shared -fPIC -Wl,-soname,libopencvvideostab.so -o libopencvvideostab.so linux/opencvvideostab.cpp `pkg-config --libs opencv4` -lopencv_videostab

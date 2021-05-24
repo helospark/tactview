@@ -30,6 +30,7 @@ import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
+import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
@@ -40,11 +41,13 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MessagingService messagingService;
+    private MemoryOperations memoryOperations;
 
-    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService) {
+    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService, MemoryOperations memoryOperations) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.messagingService = messagingService;
+        this.memoryOperations = memoryOperations;
     }
 
     @PostConstruct
@@ -232,10 +235,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     }
 
     private void copyToResult(ByteBuffer result, ByteBuffer fromBuffer) {
-        for (int i = 0; i < result.capacity(); ++i) {
-            result.put(i, fromBuffer.get(i));
-        }
-
+        memoryOperations.copyBuffer(fromBuffer, result, fromBuffer.capacity());
     }
 
 }
