@@ -92,40 +92,40 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int videoBitRate = (int) renderRequest.getOptions().get("videobitrate").getValue();
 
-        LOGGER.info("Video BitRate: " + videoBitRate);
+        LOGGER.info("Video BitRate: ", videoBitRate);
 
         int audioBitRate = (int) renderRequest.getOptions().get("audiobitrate").getValue();
-        LOGGER.info("Audio BitRate: " + audioBitRate);
+        LOGGER.info("Audio BitRate: ", audioBitRate);
 
         int audioSampleRate = (int) renderRequest.getOptions().get("audiosamplerate").getValue();
-        LOGGER.info("Audio SampleRate: " + audioSampleRate);
+        LOGGER.info("Audio SampleRate: ", audioSampleRate);
 
         int bytesPerSample = Integer.parseInt(renderRequest.getOptions().get("audiobytespersample").getValue().toString());
-        LOGGER.info("Audio bytes per sample: " + bytesPerSample);
+        LOGGER.info("Audio bytes per sample: ", bytesPerSample);
 
         String audioCodec = (String) renderRequest.getOptions().get("audiocodec").getValue();
-        LOGGER.info("AudioCodec: " + audioCodec);
+        LOGGER.info("AudioCodec: ", audioCodec);
 
         String videoCodec = (String) renderRequest.getOptions().get("videocodec").getValue();
         if (isAudioContainerForFileName(renderRequest.getFileName(), renderRequest.getSelectedExtensionType())) {
             videoCodec = NONE_VALUE;
         }
-        LOGGER.info("VideoCodec: " + videoCodec);
+        LOGGER.info("VideoCodec: ", videoCodec);
 
         String videoPixelFormat = (String) renderRequest.getOptions().get("videoPixelFormat").getValue();
-        LOGGER.info("videoPixelFormat: " + videoPixelFormat);
+        LOGGER.info("videoPixelFormat: ", videoPixelFormat);
 
         int numberOfChannels = Integer.parseInt(renderRequest.getOptions().get("audionumberofchannels").getValue().toString());
-        LOGGER.info("numberOfChannels: " + numberOfChannels);
+        LOGGER.info("numberOfChannels: ", numberOfChannels);
 
         String videoPresetOrNull = (String) Optional.ofNullable(renderRequest.getOptions().get("preset")).map(a -> a.getValue()).orElse(null);
-        LOGGER.info("video preset: " + videoPresetOrNull);
+        LOGGER.info("video preset: ", videoPresetOrNull);
 
         int threads = Integer.parseInt(renderRequest.getOptions().get("threads").getValue().toString());
-        LOGGER.info("threads: " + threads);
+        LOGGER.info("threads: ", threads);
 
         Map<TimelinePosition, String> chapters = renderRequest.getChapters();
-        LOGGER.info("chapters: {}" + chapters);
+        LOGGER.info("chapters: {}", chapters);
 
         FFmpegInitEncoderRequest initNativeRequest = new FFmpegInitEncoderRequest();
         initNativeRequest.fileName = renderRequest.getFileName();

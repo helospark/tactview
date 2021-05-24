@@ -29,6 +29,8 @@ import javafx.scene.layout.VBox;
 @Component
 public class TimelineState implements ResettableBean {
     public static final BigDecimal PIXEL_PER_SECOND = new BigDecimal(10L);
+    public static final double MIN_ZOOM = 0.005;
+    public static final double MAX_ZOOM = 20;
 
     private List<Consumer<UiTimelineChange>> onChangeSubscribers = new ArrayList<>();
 
@@ -51,6 +53,7 @@ public class TimelineState implements ResettableBean {
 
     public TimelineState() {
         vscroll.addListener(e -> notifySubscribers(UiTimelineChangeType.OTHER));
+        zoomValue.addListener(e -> notifySubscribers(UiTimelineChangeType.OTHER));
     }
 
     public TimelinePosition pixelsToSeconds(double xCoordinate) {

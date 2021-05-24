@@ -224,7 +224,7 @@ public class TimelineCanvas {
         }
     }
 
-    public BorderPane create(VBox timelineTitlesPane) {
+    public BorderPane create(BorderPane timelineTitlesBorderPane) {
         BorderPane centerPane = new BorderPane();
         centerPane.getStyleClass().add("timeline-pane");
 
@@ -266,7 +266,7 @@ public class TimelineCanvas {
         centerPane.setCenter(wrapperPane);
 
         resultPane = new BorderPane();
-        resultPane.setLeft(timelineTitlesPane);
+        resultPane.setLeft(timelineTitlesBorderPane);
         resultPane.setCenter(centerPane);
 
         timelineState.subscribe(type -> {
@@ -940,6 +940,7 @@ public class TimelineCanvas {
                     }
 
                     graphics.setStroke(Color.GRAY);
+                    graphics.setLineWidth(0.8);
                     graphics.strokeLine(0, channelStartY + clipHeight + CHANNEL_PADDING - visibleAreaStartY, canvas.getWidth(), channelStartY + clipHeight + CHANNEL_PADDING - visibleAreaStartY);
                 }
 
@@ -1219,7 +1220,7 @@ public class TimelineCanvas {
             graphics.setLineWidth(width);
             graphics.strokeLine(pos, TIMELINE_TIMESCALE_HEIGHT - height, pos, TIMELINE_TIMESCALE_HEIGHT);
             value += 1;
-            if (drawLabels) {
+            if (drawLabels && seconds.compareTo(TimelinePosition.ofZero()) > 0) {
                 drawLabel(seconds, divider >= 1.0);
             }
         }

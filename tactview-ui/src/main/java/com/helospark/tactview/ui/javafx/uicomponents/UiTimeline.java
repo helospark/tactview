@@ -23,7 +23,10 @@ import com.helospark.tactview.ui.javafx.uicomponents.pattern.TimelinePatternRepo
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.Property;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Separator;
@@ -33,6 +36,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 @Component
@@ -45,7 +49,6 @@ public class UiTimeline {
     private LinkClipRepository linkClipRepository;
     private TimelineCanvas timelineCanvas;
 
-    private VBox timelineTitlesPane;
     private BorderPane borderPane;
 
     public UiTimeline(MessagingService messagingService,
@@ -71,17 +74,31 @@ public class UiTimeline {
 
         borderPane.setTop(timelineTopRow);
 
-        timelineTitlesPane = new VBox();
-        timelineTitlesPane.getStyleClass().add("timeline-titles-pane");
         ScrollPane timelineTitlesScrollPane = new ScrollPane();
         timelineTitlesScrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
-        timelineTitlesScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
+        timelineTitlesScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         timelineTitlesScrollPane.vvalueProperty().bindBidirectional(timelineState.getVscroll());
 
         VBox timelineTitles = new VBox();
         Bindings.bindContentBidirectional(timelineState.getChannelTitlesAsNodes(), timelineTitles.getChildren());
         timelineTitlesScrollPane.setContent(timelineTitles);
-        timelineTitlesPane.getChildren().add(timelineTitlesScrollPane);
+        ScrollBar zoomScrollBar = new ScrollBar();
+        zoomScrollBar.setId("zoom-scroll-bar");
+        zoomScrollBar.setMin(TimelineState.MIN_ZOOM);
+        zoomScrollBar.setMax(TimelineState.MAX_ZOOM);
+        zoomScrollBar.setValue(1.0);
+        zoomScrollBar.setVisibleAmount(TimelineState.MAX_ZOOM - TimelineState.MIN_ZOOM / 0.00001);
+        zoomScrollBar.valueProperty().bindBidirectional((Property<Number>) timelineState.getZoomValue());
+        zoomScrollBar.setOrientation(Orientation.HORIZONTAL);
+
+        Pane topEmptyPane = new Pane();
+        topEmptyPane.setId("timeline-titles-pane-top-space");
+
+        BorderPane timelineTitlesBorderPane = new BorderPane();
+        timelineTitlesScrollPane.getStyleClass().add("timeline-titles-pane");
+        timelineTitlesBorderPane.setTop(topEmptyPane);
+        timelineTitlesBorderPane.setCenter(timelineTitlesScrollPane);
+        timelineTitlesBorderPane.setBottom(zoomScrollBar);
 
         ScrollPane timelineTimeLabelsScrollPane = new ScrollPane();
         timelineTimeLabelsScrollPane.addEventFilter(KeyEvent.ANY, e -> {
@@ -104,7 +121,7 @@ public class UiTimeline {
             }
         });
 
-        borderPane.setCenter(timelineCanvas.create(timelineTitlesPane));
+        borderPane.setCenter(timelineCanvas.create(timelineTitlesBorderPane));
 
         return borderPane;
     }

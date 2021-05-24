@@ -211,7 +211,12 @@ public class ClipPatternDrawerListener {
 
     private Image updatePattern(TimelineClip clipToUpdate, TimelineInterval interval, double zoom) {
         try {
-            Image result = updatePatternDelegate(clipToUpdate, interval, zoom);
+            int pixelWidth = (int) timelineState.secondsToPixelsWithZoom(interval.getLength());
+
+            if (pixelWidth < 1) {
+                return null;
+            }
+            Image result = updatePatternDelegate(clipToUpdate, interval, zoom, pixelWidth);
             if (result == null) {
                 blacklistedClips.put(clipToUpdate.getId(), true);
             }
@@ -223,10 +228,9 @@ public class ClipPatternDrawerListener {
         return null;
     }
 
-    private Image updatePatternDelegate(TimelineClip clipToUpdate, TimelineInterval interval, double zoom) {
+    private Image updatePatternDelegate(TimelineClip clipToUpdate, TimelineInterval interval, double zoom, int pixelWidth) {
         if (patternDrawingEnabled) {
             LOGGER.debug("Generating pattern for clip={} with the local interval={} and zoom={}", clipToUpdate.getId(), interval, zoom);
-            int pixelWidth = (int) timelineState.secondsToPixelsWithZoom(interval.getLength());
 
             double visibleStartPosition = interval.getStartPosition().getSeconds().doubleValue();
             double visibleEndPosition = interval.getEndPosition().getSeconds().doubleValue();

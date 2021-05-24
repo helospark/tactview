@@ -15,7 +15,6 @@
 #define __STDC_CONSTANT_MACROS whatisthis
 
 #include <iostream>
-#include <vector>
 #include "common.h"
 
 extern "C" {

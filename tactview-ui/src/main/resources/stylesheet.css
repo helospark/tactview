@@ -130,7 +130,7 @@
     -fx-background-color: #333;
     //-fx-border-insets: 5;
     -fx-border-width: 1;
-    -fx-border-style: hidden hidden dashed hidden;
+    -fx-border-style: hidden hidden solid hidden;
     -fx-alignment: center;
 }
 
@@ -150,7 +150,16 @@
 .timeline-titles-pane {
     -fx-pref-width: 151px;
     -fx-min-width: 151px;
-    -fx-padding: 25px 0 0 0;
+}
+
+#timeline-titles-pane-top-space {
+    -fx-pref-height: 25px;
+    -fx-min-height: 25px;
+    -fx-max-height: 25px;
+    -fx-pref-width: 151px;
+    -fx-min-width: 151px;
+    -fx-border-color: rgba(150,150,150,0.4);
+    -fx-border-width: 0px;
 }
 
 #video-status-bar {
@@ -536,4 +545,21 @@
 .image-sequence-dialog-grid-pane {
     -fx-vgap: 2px;
     -fx-hgap: 20px;
+}
+
+#zoom-scroll-bar .increment-arrow{
+     // Shape from: https://iconmonstr.com/magnifier-8-svg/
+    -fx-shape:"M 12.5,11 H 11 v 1.5 H 10 V 11 H 8.5 V 10 H 10 V 8.5 h 1 V 10 h 1.5 z m 4.086,7 -3.6935,-3.6935 C 12.1985,14.7435 11.3805,15 10.5,15 8.0145,15 6,12.9855 6,10.5 6,8.0145 8.0145,6 10.5,6 c 2.4855,0 4.5,2.0145 4.5,4.5 0,0.8805 -0.257,1.699 -0.6935,2.3925 L 18,16.586 Z M 10.5,14 C 12.4295,14 14,12.43 14,10.5 14,8.57 12.4295,7 10.5,7 8.5705,7 7,8.57 7,10.5 7,12.43 8.5705,14 10.5,14 Z";
+    -fx-pref-width: 8;
+    -fx-pref-height: 8;
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
+}
+#zoom-scroll-bar .decrement-arrow {
+    // Shape from: https://iconmonstr.com/magnifier-7-svg/
+    -fx-shape:"m 12.5,11 h -4 v -1 h 4 z m 4.086,7 -3.6935,-3.6935 C 12.1985,14.7435 11.3805,15 10.5,15 8.0145,15 6,12.9855 6,10.5 6,8.0145 8.0145,6 10.5,6 c 2.4855,0 4.5,2.0145 4.5,4.5 0,0.8805 -0.257,1.699 -0.6935,2.3925 L 18,16.586 Z M 10.5,14 C 12.4295,14 14,12.43 14,10.5 14,8.57 12.4295,7 10.5,7 8.5705,7 7,8.57 7,10.5 7,12.43 8.5705,14 10.5,14 Z";
+    -fx-pref-width: 8;
+    -fx-pref-height: 8;
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
 }
