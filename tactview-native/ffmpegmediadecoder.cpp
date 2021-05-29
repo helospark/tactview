@@ -60,18 +60,13 @@ extern "C" {
 
     void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
     {
-        for(int y=0; y<height; y++)
-        {
-            for (int i = 0; i < width; ++i)
-            {
-                int id = y*pFrame->linesize[0] + i * 4;
-                frames[y * width * 4 + i * 4 + 0] = *(pFrame->data[0] + id + 2);
-                frames[y * width * 4 + i * 4 + 1] = *(pFrame->data[0] + id + 1);
-                frames[y * width * 4 + i * 4 + 2] = *(pFrame->data[0] + id + 0);
-                frames[y * width * 4 + i * 4 + 3] = *(pFrame->data[0] + id + 3);
+        if (pFrame->linesize[0] == (width * 4)) {
+            memcpy(frames, pFrame->data[0], width * height * 4);
+        } else {
+            for(int y=0; y<height; y++) {
+                memcpy(frames + (y * width * 4), pFrame->data[0] + (y * pFrame->linesize[0]),  width * 4);
             }
         }
-
     }
 
 
@@ -241,10 +236,10 @@ extern "C" {
     AVFrame* allocateFrame(int width, int height)
     {
         AVFrame* pFrameRGB=av_frame_alloc();
-        int numBytes=avpicture_get_size(AV_PIX_FMT_BGRA, width, height);
+        int numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, width, height);
 
         uint8_t* buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-        avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
+        avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_RGBA,
                        width, height);
         pFrameRGB->opaque = buffer;
         return pFrameRGB;
@@ -564,6 +559,13 @@ extern "C" {
         }
         DEBUG("Using codec " << pCodec->name << " for " << request->path);
 
+        if (pCodec->capabilities & AV_CODEC_CAP_FRAME_THREADS) {
+            INFO("Codec has frame thread level threading for file " << request->path);
+        }
+        if (pCodec->capabilities & AV_CODEC_CAP_SLICE_THREADS) {
+            INFO("Codec has frame slice level threading for file " << request->path);
+        }
+
         pCodecCtx = avcodec_alloc_context3(pCodec);
 
         if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
@@ -590,7 +592,7 @@ extern "C" {
                                  pCodecCtx->pix_fmt,
                                  request->width,
                                  request->height,
-                                 AV_PIX_FMT_BGRA,
+                                 AV_PIX_FMT_RGBA,
                                  SWS_BILINEAR,
                                  NULL,
                                  NULL,
@@ -621,7 +623,7 @@ extern "C" {
 #ifdef DEBUG_BUILD
 
 int main() {
-    char* path = "/testvideo.mp4";
+    char* path = "/opt/testvideo.mp4";
 
     MediaMetadata result = readMediaMetadata(path);
 
@@ -633,9 +635,10 @@ int main() {
     const int outHeight = result.height;
 
     long long start = time(NULL);
-    int frames = 0;
+    long startTime = 0;
+    int framesRead = 0;
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 300; ++i) {
 
         int frameToRequest = i * framesPerRequest;
 
@@ -644,7 +647,8 @@ int main() {
         request->height = outHeight;
         request->numberOfFrames = framesPerRequest;
         request->path = path;
-        request->startMicroseconds = (1.0 / result.fps * framesPerRequest) * 1000000;
+        request->startMicroseconds = startTime;
+        request->endTimeInMs = startTime + (framesPerRequest * (1.0/result.fps) * 1000000);
         request->useApproximatePosition = false;
         request->frames = new FFMpegFrame[framesPerRequest];
 
@@ -654,20 +658,23 @@ int main() {
 
         readFrames(request);
 
+        int newFramesRead = request->actualNumberOfFramesRead + framesRead;
+
+        startTime = request->endTimeInMs;
         for (int j = 0; j < framesPerRequest; ++j) {
             delete[] request->frames[j].data;
         }
 
         delete request;
-        INFO("read frames " << i * framesPerRequest << " " << (i + 1) *  framesPerRequest); 
-        frames += framesPerRequest;
+        INFO("read frames " << framesRead << " " << newFramesRead);
+        framesRead = newFramesRead;
     }
 
     long long end = time(NULL);
 
     long took = (end - start);
 
-    std::cout << ((double)frames / took) << " fps" << std::endl;
+    std::cout << ((double)framesRead / took) << " fps; took: " << took << " seconds" << std::endl;
 
 }
 #endif
