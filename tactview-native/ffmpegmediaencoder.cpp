@@ -392,14 +392,7 @@ extern "C" {
         int j, i, v;
         unsigned char *q = (unsigned char*)frame->data[0];
 
-        int copySampleFromIndex = 0;
-        for (j = 0; j <frame->nb_samples; j++) {
-            for (i = 0; i < renderContext.audioChannels; i++) {
-                for (int k = 0; k < ost->bytesPerSample; ++k) {
-                    *q++ = dataStart[copySampleFromIndex++];
-                }
-            }
-        }
+        memcpy(q, dataStart, frame->nb_samples * renderContext.audioChannels * ost->bytesPerSample);
 
         frame->pts = ost->next_pts;
         ost->next_pts  += frame->nb_samples;

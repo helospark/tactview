@@ -7,7 +7,7 @@ COMMON_HEADERS = common.h logging.h
 clean:
 	mkdir -p ../tactview-core/src/main/resources/linux-x86-64
 	rm -r ../tactview-core/src/main/resources/linux-x86-64/* || true
-	rm *.so
+	rm *.so || true
 
 ALL_TARGETS = libopencvsharpen.so libopencvlensdistort.so libgenericconvolutionmatrix.so libffmpegmediadecoder.so \
  libffmpegconinousimagequeryservice.so libavcodecaudiodecoder.so libopencvblur.so libopencvscale.so \
