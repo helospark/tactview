@@ -2,6 +2,8 @@
 #include <string.h>
 #include <iostream>
 
+#include "common.h"
+
 extern "C" {
 
     struct CopyMemoryRequest {
@@ -10,7 +12,7 @@ extern "C" {
         int size;
     };
 
-    void copyBuffer(CopyMemoryRequest* request) {
+    EXPORTED void copyBuffer(CopyMemoryRequest* request) {
         memcpy(request->to, request->from, request->size);
     }
 }

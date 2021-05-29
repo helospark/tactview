@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.it;
 
 import static com.helospark.tactview.core.it.PictureAssertions.assertFrameOfColorWithDelta;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -9,6 +10,8 @@ import java.io.IOException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.helospark.lightdi.LightDiContext;
@@ -63,8 +66,8 @@ public class SaveAndLoadIT {
         VideoClip videoClip = (VideoClip) fakeUi.dragFileToTimeline(testFile, TimelinePosition.ofSeconds(1));
         TimelineClip singleColorClip = fakeUi.dragProceduralClipToChannel("singlecolor", TimelinePosition.ofZero(), 1);
 
-        AudioVideoFragment expectedFrame1 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(0.0));
-        AudioVideoFragment expectedFrame2 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(5.0));
+        AudioVideoFragment expectedFrame1 = fakeUi.requestPreviewVideoFrameWithScale(TimelinePosition.ofSeconds(0.0), 0.5);
+        AudioVideoFragment expectedFrame2 = fakeUi.requestPreviewVideoFrameWithScale(TimelinePosition.ofSeconds(5.0), 0.5);
 
         File file = File.createTempFile("sample_save_1_" + System.currentTimeMillis(), ".tvs");
 
@@ -77,13 +80,22 @@ public class SaveAndLoadIT {
         fakeUi.clickLoadMenuItem()
                 .selectFile(file);
 
-        AudioVideoFragment actualFrame1 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(0.0));
-        AudioVideoFragment actualFrame2 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(5.0));
+        AudioVideoFragment actualFrame1 = fakeUi.requestPreviewVideoFrameWithScale(TimelinePosition.ofSeconds(0.0), 0.5);
+        AudioVideoFragment actualFrame2 = fakeUi.requestPreviewVideoFrameWithScale(TimelinePosition.ofSeconds(5.0), 0.5);
 
         IntegrationTestUtil.assertFrameEquals(actualFrame1.getVideoResult(), expectedFrame1.getVideoResult(), "Video frames not equal");
         IntegrationTestUtil.assertFrameEquals(actualFrame2.getVideoResult(), expectedFrame2.getVideoResult(), "Video frames not equal");
     }
 
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    public void testFFMPEGSSE3Crash(@DownloadedResourceName("fire.webm") File testFile) throws IOException {
+        fakeUi.dragFileToTimeline(testFile, TimelinePosition.ofSeconds(1));
+
+        fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(5.0));
+        
+        // THEN should not crash
+    }
     @Test
     public void testSaveAndLoadOfAnimatedProperties() throws IOException {
         TimelineClip addedClip = fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());

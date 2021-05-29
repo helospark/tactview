@@ -33,8 +33,29 @@ This should install all dependencies (however this script runs rarely it may hap
 
 You have to install FFmpeg, OpenCV, Cygwin, Visual Studio.
 
-_TBD on details of installing_
+FFMPEG
 
+  - Download shared build from: https://ottverse.com/ffmpeg-builds/
+  - Extract tar.gz
+  - Add the /bin path inside the downloaded folder into your PATH (required on Windows for the dynmic libraries to be found)
+  - In the build scripts it is installed at C:\lib
+
+OpenCV:
+
+  - Download from: https://sourceforge.net/projects/opencvlibrary/files/4.0.1/opencv-4.0.1-vc14_vc15.exe/download (or other version: https://sourceforge.net/projects/opencvlibrary/files/)
+  - Install exe
+  - Add /bin to your PATH, like C:\lib\opencv\build\x64\vc15\bin and C:\lib\opencv\build\bin
+  - In the build scripts it is installed at C:\lib
+
+Further requirements:
+
+  - OpenJDK: https://openjdk.java.net/install/ (currently at least Java 11)
+  - Visual Code community edition: https://visualstudio.microsoft.com/downloads/
+  - Cygwin: https://cygwin.com/install.html
+  - GIT: https://github.com/git-for-windows/git/releases/
+  - 7zip: https://www.7-zip.org/download.html
+
+Depending on the installation location and version you may need to change some variables in tactview-native/build.bat
 
 ### Docker Linux64 release environment
 
