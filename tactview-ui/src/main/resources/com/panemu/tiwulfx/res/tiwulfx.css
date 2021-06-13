@@ -1,0 +1,454 @@
+/* 
+    Document   : tiwulfx
+    Created on : Sep 23, 2012, 9:49:47 PM
+    Author     : amrullah
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+#hiddenSplitter {
+	-fx-background-color: null;
+	/*-fx-padding: 10px;*/
+}
+
+#hiddenSplitter *.split-pane-divider,
+#hiddenSplitter *.vertical-grabber, 
+#hiddenSplitter *.horizontal-grabber {
+	-fx-background-color: null;
+	-fx-border-color: null;
+	-fx-padding: 5px;
+}
+
+.propLabel{
+	-fx-text-fill: #888888;
+	-fx-font: 0.9em "Arial";
+}
+
+.valueLabel {
+	-fx-font-size: 11px;
+	/*-fx-font-weight: bold;*/
+	-fx-text-fill: #333333;
+}
+
+.table-control .table-view:focused {
+	/*remove focus glow*/
+	-fx-background-color: -fx-box-border, -fx-control-inner-background;
+	-fx-background-insets: 0, 1;
+	-fx-padding: 1;
+}
+
+
+/*.table-row-cell {
+	-fx-pref-height: 2.5em;
+}*/
+
+.table-row-cell:changed {
+	-fx-background-color: red, yellow;
+	-fx-background-insets: -1 0 0 0, 0 0 1 0;
+}
+
+.table-row-cell:empty {
+	-fx-background-color: null;
+}
+
+.table-row-cell:empty .table-cell {
+	-fx-border-width: 0px;
+}
+
+.table-cell:invalid {
+	-fx-background-color: #eed3d7, #f2dede;
+	-fx-background-insets: 0 1 1 0, 1 2 2 1;
+}
+
+
+
+.table-cell .text-input {
+	-fx-padding: 0.166667em;
+}
+.table-cell {
+	-fx-padding: 1px;
+}
+.row-browser-text-cell {
+	-fx-fill: -fx-text-inner-color;
+}
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled > .table-cell:selected .row-browser-text-cell {
+	-fx-fill: white;
+}
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled > .table-cell:hover:selected .row-browser-text-cell {
+	-fx-fill: -fx-text-inner-color;
+}
+
+.searchMenuItemLabel {
+	-fx-font-family: "Helvetica";
+	-fx-font-weight: bold;
+	-fx-text-fill: #333333;
+	-fx-effect: dropshadow( one-pass-box , white , 0, 0.0 , 0 , 1 );
+}
+
+.table-toolbar {
+	-fx-background-color: -fx-box-border, -fx-inner-border, -fx-body-color;
+	-fx-background-insets: 0, 1 1 0 1, 2 2 0 2;
+	-fx-padding: 0 3 0 1; /* 4 8 4 8 */
+	-fx-spacing: 0;
+}
+
+.table-footer {
+	-fx-background: derive(-fx-base,-30%);
+	-fx-background-color:
+		linear-gradient(to bottom, derive(-fx-base,-30%), derive(-fx-base,-60%)),
+		linear-gradient(to bottom, derive(-fx-base,65%) 2%, derive(-fx-base,-20%) 95%);
+	-fx-background-insets: 0, 0 1 1 1;
+	-fx-background-radius: 0, 0 ;
+	-fx-padding: 0.416667em 0.833em 0.416667em 0.833em;
+	-fx-spacing: 0.333em;
+	-fx-padding: 4 10 2 10;
+	-fx-border-color: -fx-box-border;
+	-fx-border-insets: -1 0 0 0;
+}
+
+.table-footer .label {
+	-fx-font: 0.9em "Arial";
+	-fx-text-fill: #333333;
+}
+
+.table-menu {
+	-fx-background-color: transparent;
+	-fx-background-radius: 10;
+	-fx-padding: 2 2 0 2;
+	-fx-alignment: center;
+	-fx-content-display: center;
+	-fx-text-alignment: center;
+}
+.table-menu:hover {
+	-fx-background-color: derive(-fx-background, -25%), derive(-fx-background, 25%);
+}
+.table-menu:focused {
+	-fx-background-color: -fx-focus-color, -fx-background;
+}
+.table-menu .arrow-button {
+	-fx-padding:0;
+}
+.table-menu .label {
+	-fx-padding:-2 0 0 0;
+}
+.table-menu .arrow {
+	-fx-shape: null;  
+	-fx-padding:0;
+}
+
+.scroll-pane {
+	-fx-background-color: null;
+}
+
+.label-separator .line {
+	-fx-border-color: derive(-fx-background, -25%) -fx-background derive(-fx-background, 40%) -fx-background;
+}
+
+.label-separator .label {
+	-fx-background-color: 
+		#090a0c,
+		linear-gradient(#38424b 0%, #1f2429 20%, #191d22 100%),
+		linear-gradient(#20262b, #191d22),
+		radial-gradient(center 50% 0%, radius 100%, rgba(114,131,148,0.9), rgba(255,255,255,0));
+	-fx-background-radius: 5,4,3,5;
+	-fx-background-insets: 0,1,2,0;
+	-fx-text-fill: white;
+	-fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
+	-fx-font-family: "Arial";
+	-fx-text-fill: linear-gradient(white, #d0d0d0);
+	-fx-font-size: 12px;
+	-fx-padding: 2 10;
+}
+
+/* ============ TOGGLE BUTTON =============================================== */
+.pill-button {
+	-fx-background-radius: 0;
+	-fx-pref-height: 2em;
+}
+
+.pill-button:disabled {
+	/*-fx-opacity: 1.0;*/
+	/*-fx-text-fill: #888888;*/
+}
+
+.pill-button-left {
+	-fx-background-radius: 3 0 0 3;
+}
+
+.pill-button-center {
+	-fx-background-insets: 0 0 -1 0, 0, 1 1 1 0, 2 2 2 0;
+}
+
+.pill-button-right {
+	-fx-background-radius: 0 3 3 0;
+	-fx-background-insets: 0 0 -1 0, 0, 1 1 1 0, 2 2 2 0;
+}
+
+.pagination-arrow {
+	-fx-background-color: -fx-mark-highlight-color, derive(-fx-base,-45%);
+	-fx-background-insets: 1 0 -1 0, 0;
+	-fx-effect: dropshadow(two-pass-box , -fx-shadow-highlight-color, 1, 0.0 , 0, 1.4);
+	-fx-padding: 0.333333em 0.166667em 0.333333em 0.166667em; /* 4 3 4 2 */
+	-fx-scale-shape: false;
+}
+
+.next-shape {
+	-fx-shape: "m 337.273,297.622 -0.016,1.069 2.724,2.639 -2.723,2.628 0.015,1.048 0.881,0 3.81,-3.685 -3.788,-3.699 z";
+}
+
+.prev-shape {
+	-fx-shape: "m 341.948,297.622 0.016,1.069 -2.724,2.639 2.723,2.628 -0.015,1.048 -0.881,0 -3.81,-3.685 3.788,-3.699 z";
+}
+
+.last-shape {
+	-fx-shape: "M337.273,297.622l-0.016,1.069l2.724,2.639l-2.723,2.628l0.015,1.048h0.881l3.81-3.685l-3.788-3.699H337.273z M343.783,297.622h-0.902l-0.015,1.069l2.724,2.639l-2.724,2.628l0.015,1.048h0.882l3.809-3.685L343.783,297.622z" ;
+}
+
+.first-shape {
+	-fx-shape: "m 347.556,297.622 0.016,1.069 -2.724,2.639 2.723,2.628 -0.015,1.048 h -0.881 l -3.81,-3.685 3.788,-3.699 h 0.903 z m -6.51,0 h 0.902 l 0.015,1.069 -2.724,2.639 2.724,2.628 -0.015,1.048 h -0.882 l -3.809,-3.685 3.789,-3.699 z";
+}
+
+.flat-button {
+	-fx-background-color: -fx-outer-border, -fx-inner-border, -fx-body-color;
+	-fx-background-radius: 0;
+	-fx-padding: 6;
+	-fx-background-insets: 0, 1 1 0 0, 2 2 1 1 ;
+	/*-fx-opacity: 0.5;*/
+}
+
+
+.flat-button:focused {
+	-fx-background-insets: -0.2 0 -0.2 -1, 1 1 1 0, 2 2 2 1, -1.4 0 -1.4 -1, 2.6 2.6 2.6 1.6;
+	-fx-background-radius: 0, 0, 0, 0, 0;
+}
+
+.combo-page:disabled {
+	-fx-opacity: 1.0;
+}
+
+.combo-page {
+	-fx-background-radius: 0;
+	-fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+	-fx-background-insets: 0 0 -1 0, 0, 1 1 1 0, 2 2 2 0;
+	-fx-font: 0.9em "Arial";
+	-fx-max-height: 2em;
+}
+
+.search-menu-item {
+	-fx-background-color: 
+		linear-gradient(#f2f2f2, #d6d6d6),
+		linear-gradient(#fcfcfc 0%, #d9d9d9 20%, #d6d6d6 100%),
+		linear-gradient(#dddddd 0%, #f6f6f6 50%);
+	-fx-background-radius: 8,7,6;
+	-fx-background-insets: 0,1,2;
+	-fx-text-fill: black;
+	-fx-font-size: 0.9em;
+	-fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
+	-fx-padding: 5;
+}
+
+.menu-item:focused .searchMenuItem .check-box {
+	-fx-text-fill: #333333;
+}
+
+.date-field {
+	-fx-skin: "com.panemu.tiwulfx.control.skin.DateFieldSkin";
+	-fx-background-color: transparent;
+}
+
+.date-field .button {
+	-fx-background-color: derive(-fx-color, -25.4%), -fx-inner-border, -fx-body-color;
+	-fx-background-insets: 1, 2, 3;
+	-fx-background-radius: 0 3 3 0 , 0 2 2 0, 0 2 2 0;
+	-fx-padding: 1 3 1 3;
+}
+
+.date-field:focused {
+	-fx-background-color: -fx-focus-color, -fx-text-box-border, -fx-control-inner-background;
+	-fx-background-insets: -0.4, 1, 2;
+	-fx-background-radius: 3.4, 2, 2;
+	-fx-prompt-text-fill: transparent;
+}
+
+
+.date-field .text-field {
+	-fx-padding: 3 20 3 5;
+}
+
+.form-control {
+
+}
+
+.dialog-root {
+	-fx-border-width: 1;
+	-fx-border-radius: 5 5 0 0;
+	-fx-border-color: #a3a3a3;
+}
+
+.dialog .header {
+	-fx-background-radius: 5 5 0 0;
+	-fx-background-insets: -1 -1 0 -1;
+	-fx-background-color: linear-gradient(#595959, #474747 37%, #343434);
+	-fx-padding: 5 68 5 68;
+	-fx-alignment: center;
+}
+
+.dialog .title {
+	-fx-text-fill: #ebebeb;
+	-fx-font-weight: bold;
+
+}
+
+.dialog .button-panel {
+	-fx-padding: 10;
+	-fx-spacing: 10;
+	-fx-background-color: linear-gradient(#e2e2e2,#e2e2e2,#eeeeee);
+	-fx-alignment: center;
+}
+
+.dialog .message-panel {
+	-fx-padding: 50 10;
+	-fx-background-color: white;
+	-fx-alignment: center;
+}
+
+.error-popup {
+	-fx-padding : 4 5 ;
+	-fx-background-color: #bd362f;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0 0 4 4;
+	-fx-border-width: 2;
+}
+
+.error-popup .label {
+	-fx-font-size: 11px;
+	-fx-text-fill: #ffffff;
+}
+
+
+.lookup-field {
+	-fx-skin: "com.panemu.tiwulfx.control.skin.LookupFieldSkin";
+	-fx-background-color: transparent;
+}
+
+.lookup-field .button {
+	-fx-padding: 0 6 0 5;
+}
+
+.type-ahead-field {
+	-fx-skin: "com.panemu.tiwulfx.control.skin.TypeAheadFieldSkin";
+	-fx-background-color: transparent;
+}
+
+.type-ahead-field .arrow {
+	-fx-background-insets: 0 0 -1 0, 0;
+	-fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
+	-fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
+	-fx-shape: "M 0 0 h 7 l -3.5 4 z";
+}
+
+.type-ahead-field .button,
+.lookup-field .button {
+    -fx-background-color: -fx-outer-border, -fx-inner-border, -fx-body-color;
+    -fx-background-insets: 1 1 1 0, 1, 2;
+    -fx-background-radius: 0 3 3 0, 0 2 2 0, 0 1 1 0;
+}
+
+/*SIDE MENU*/
+
+.side-menu-container {
+	-fx-background-image: url("/com/panemu/tiwulfx/res/image/CoarseGrid.png");
+	-fx-background-repeat: repeat;
+	-fx-background-color:
+		linear-gradient(#38424b 0%, #1f2429 20%, #191d22 100%),
+		linear-gradient(#20262b, #191d22),
+		radial-gradient(center 50% 0%, radius 100%, rgba(114,131,148,0.9), rgba(255,255,255,0));
+}
+
+.side-menu-container .titled-pane > .title {
+	-fx-background-color: transparent;
+	-fx-border-color: 
+		rgb(0, 0, 0, 0.5) transparent transparent  transparent,
+		rgb(255, 255, 255, 0.2) transparent transparent  transparent;
+	-fx-border-width: 1, 1.5;
+	-fx-border-insets: 0, 1;
+	-fx-padding: 0 0 0 -13;
+}
+
+.side-menu-container .first-menu > .title{
+	-fx-border-color: transparent, transparent;
+}
+
+.side-menu-container .titled-pane {
+	-fx-font-family: "Arial";
+	-fx-font-size: 14;
+	-fx-text-fill: rgb(255, 255, 255, 0.8);
+	-fx-effect: dropshadow( one-pass-box , rgb(0, 0, 0, 0.6), 0, 0.0 , 0 , 1 );
+}
+
+.side-menu-button {
+	-fx-background-color: transparent;
+	-fx-font-family: "Arial";
+	-fx-font-size: 14;
+	-fx-text-fill: rgb(255, 255, 255, 0.8);
+	-fx-effect: dropshadow( one-pass-box , rgb(0, 0, 0, 0.6), 0, 0.0 , 0 , 1 );
+}
+.side-menu-button:hover {
+	-fx-background-color: rgb(255, 255, 255, 0.2);
+}
+
+
+.side-menu-container .titled-pane > *.content {
+   -fx-background-color: transparent;
+	-fx-border-width: 0;
+}
+
+#side-menu-popup {
+	-fx-padding: -30 -6 -8 2;
+	-fx-border-image-source: url("/com/panemu/tiwulfx/res/image/main-popup.png");
+	-fx-border-image-slice: 34 20 12 12 fill;
+	-fx-border-image-width: 34 20 12 12;
+	-fx-border-image-repeat: stretch;
+}
+#side-menu-popup-header {
+	-fx-text-fill: white;
+}
+
+.dock-pos-indicator {
+	-fx-padding: 5;
+	-fx-hgap: 20;
+	-fx-vgap: 20;
+	-fx-shape: "M0,10 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0";
+	-fx-background-color: rgba(50, 50, 100, 0.4);
+	-fx-border-width: 40;
+	-fx-border-color: rgba(50, 50, 100, 0.2);
+}
+
+.drop-right, .drop-left, .drop-top, .drop-bottom {
+	-fx-background-color: -fx-body-color;
+	-fx-background-insets: 0;
+	-fx-background-radius: 15;
+	-fx-padding:5;
+}
+
+.drop-left {
+	-fx-graphic: url(image/left.png);
+}
+
+.drop-right {
+	-fx-graphic: url(image/right.png);
+}
+
+.drop-top {
+	-fx-graphic: url(image/top.png);
+}
+.drop-bottom {
+	-fx-graphic: url(image/bottom.png);
+}
+
+.drop-path {
+	-fx-stroke : #bd362f;
+	-fx-stroke-width: 3;
+	/*-fx-stroke-type:inside;*/
+	-fx-stroke-line-join: bevel;
+}

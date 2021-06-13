@@ -70,7 +70,7 @@
 
 #effect-view,#clip-view,#timeline-view {
     -fx-border-color: rgba(100,100,100,0.3);
-    -fx-border-insets: 2;
+    -fx-border-insets: 0;
     -fx-border-width: 1;
     -fx-border-style: solid;
 }
@@ -373,8 +373,16 @@
     -fx-opacity: 0;
 }
 
-.tab-pane {
-    -fx-tab-min-width:90px;
+.tab-pane  .tab-header-area {
+    -fx-padding: 2px 0px 2px 0px;
+}
+
+#addable-content-tab-pane {
+    -fx-tab-min-height: 18px;
+}
+
+#addable-content-tab-pane .tab-label {
+    -fx-font-size: 8pt;
 }
 
 .tab-down-button .arrow {
@@ -422,10 +430,6 @@
 
 .rectangle {
 	-fx-opacity: 1.0;
-}
-
-.timeline-clip {
-
 }
 
 .timeline-clip {
@@ -480,7 +484,7 @@
 .effect-property-group .content {
     -fx-background-color: transparent;
     -fx-border-color: rgba(10,10,10,0.2);
-    -fx-padding: 0 0 0 20
+    -fx-padding: 0 0 0 2px;
 }
 
 .size-drop-down {
@@ -562,4 +566,30 @@
     -fx-pref-height: 8;
     -fx-position-shape: true;
     -fx-scale-shape: false;
+}
+
+.detachable-tab-pane {
+    -fx-tab-min-height:11px;
+    -fx-tab-max-height:11px;
+    -fx-padding: 0px;
+    -fx-background-insets: 0;
+}
+.detachable-tab-pane > .tab-header-area .tab-label {
+    -fx-font-size: 7pt;
+}
+
+.detachable-tab-pane > .tab-header-area {
+    -fx-padding: 0px 0px 2px 0px;
+}
+
+#content-area {
+   -fx-padding: 0px;
+}
+
+#content-area .split-pane-divider {
+   -fx-padding: 0px 0px 0px 4px;
+}
+
+#property-view {
+    -fx-padding: 5px 0px 0px 5px;
 }

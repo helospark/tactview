@@ -40,8 +40,15 @@ import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
 import com.helospark.tactview.ui.javafx.tabs.TabFactory;
+import com.helospark.tactview.ui.javafx.tabs.curve.CurveEditorTab;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.common.TiwulFXUtil;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPaneLoadModel;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.LeafElement;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.SplitPaneElement;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
@@ -178,38 +185,6 @@ public class JavaFXUiMain extends Application {
         mainContentPane.setPadding(new Insets(1)); // space between vbox border and child nodes column
         mainContentPane.setDividerPositions(0.6);
 
-        SplitPane upperPane = new SplitPane();
-        upperPane.setId("upper-content-area");
-        upperPane.setMinHeight(300);
-        upperPane.setDividerPositions(0.2, 0.6, 0.2);
-
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        lightDi.getListOfBeans(TabFactory.class).stream().forEach(tabFactory -> {
-            Tab tab = tabFactory.createTabContent();
-            tabPane.getTabs().add(tab);
-        });
-        lightDi.getBean(UiMessagingService.class).register(TabActiveRequest.class, message -> {
-            tabPane.getTabs()
-                    .stream()
-                    .filter(tab -> Objects.equals(tab.getId(), message.getEditorId()))
-                    .findFirst()
-                    .ifPresent(foundTab -> tabPane.getSelectionModel().select(foundTab));
-        });
-        tabPane.getSelectionModel().selectedItemProperty()
-                .addListener((e, oldValue, newValue) -> {
-                    if (oldValue instanceof TabCloseListener) {
-                        ((TabCloseListener) oldValue).tabClosed();
-                    }
-                    if (newValue instanceof TabOpenListener) {
-                        ((TabOpenListener) newValue).tabOpened();
-                    }
-                });
-
-        VBox rightVBox = new VBox(3);
-        rightVBox.setAlignment(Pos.TOP_CENTER);
-        rightVBox.setId("clip-view");
-
         canvas = new Canvas();
         canvas.widthProperty().bind(uiProjectRepository.getPreviewWidthProperty());
         canvas.heightProperty().bind(uiProjectRepository.getPreviewHeightProperty());
@@ -219,12 +194,111 @@ public class JavaFXUiMain extends Application {
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
 
+        //        Label underVideoLabel = new Label();
+        //        underVideoLabel.setWrapText(true);
+        Tooltip tooltip = new Tooltip();
+
+        StringProperty statusTextProperty = lightDi.getBean(VideoStatusBarUpdater.class).getTextProperty();
+        tooltip.textProperty().bind(statusTextProperty);
+        tooltip.setHideOnEscape(false);
+        tooltip.setAutoHide(false);
+        tooltip.setAnchorLocation(AnchorLocation.CONTENT_TOP_LEFT);
+
+        statusTextProperty.addListener((e, oldV, newV) -> {
+            if (newV.length() > 0) {
+                Bounds canvasBottom = canvas.localToScene(canvas.getBoundsInLocal());
+                double x = canvasBottom.getMinX();
+                double y = canvasBottom.getMaxY() + 60;
+                tooltip.show(canvas, x, y);
+            } else {
+                tooltip.hide();
+            }
+        });
+        tooltip.setWrapText(true);
+
+        //        rightBorderPane.setBottom(underVideoLabel);
+
+        VBox propertyBox = effectPropertyView.getPropertyWindow();
+
+        ScrollPane propertyBoxScrollPane = createPropertyPage(propertyBox);
+        BorderPane rightBorderPane = createPreviewRightVBox();
+        TabPane tabPane = createEffectAdderTab();
+
+        VBox upperPane = new VBox();
+        upperPane.setId("upper-content-area");
+        upperPane.setMinHeight(300);
+        upperPane.setFillWidth(true);
+
+        SplitPaneElement splitPaneElement = new SplitPaneElement();
+        splitPaneElement.isVertical = false;
+        splitPaneElement.size = new double[]{0.2, 0.6, 0.2};
+        splitPaneElement.children.add(new LeafElement(List.of(new DetachableTab("Property editor", propertyBoxScrollPane))));
+        splitPaneElement.children.add(new LeafElement(List.of(new DetachableTab("Addable content", tabPane), lightDi.getBean(CurveEditorTab.class))));
+        splitPaneElement.children.add(new LeafElement(List.of(new DetachableTab("Preview", rightBorderPane))));
+        Node model = DetachableTabPane.loadModel(new DetachableTabPaneLoadModel(splitPaneElement));
+        TiwulFXUtil.setTiwulFXStyleSheet(scene);
+        upperPane.getChildren().add(model);
+
+        //        upperPane.setDividerPositions(0.2, 0.6, 0.2);
+
+        //        upperPane.getItems().add(propertyBoxScrollPane);
+        //        upperPane.getItems().add(tabPane);
+        //        upperPane.getItems().add(rightBorderPane);
+
+        VBox lower = new VBox(5);
+        lower.setPrefWidth(scene.getWidth());
+        lower.setPrefHeight(300);
+        lower.setId("timeline-view");
+
+        BorderPane timeline = uiTimeline.createTimeline(lower, root);
+        lower.getChildren().add(timeline);
+        VBox.setVgrow(timeline, Priority.ALWAYS);
+
+        mainContentPane.getItems().add(upperPane);
+        mainContentPane.getItems().add(lower);
+        mainContentPane.setOrientation(Orientation.VERTICAL);
+
+        root.setCenter(mainContentPane);
+        notificationPane.setContent(root);
+
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(lower));
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(tabPane));
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(propertyBox));
+
+        lightDi.getListOfBeans(ScenePostProcessor.class)
+                .stream()
+                .forEach(processor -> processor.postProcess(scene));
+
+        lightDi.getListOfBeans(PostInitializationArgsCallback.class)
+                .forEach(postInitCallback -> postInitCallback.call(mainArgs));
+
+        if (splashStage.isShowing()) {
+            stage.show();
+            splashStage.toFront();
+            FadeTransition fadeSplash = new FadeTransition(Duration.seconds(0.5), splasViewh);
+            fadeSplash.setDelay(Duration.millis(800));
+            fadeSplash.setFromValue(1.0);
+            fadeSplash.setToValue(0.0);
+            fadeSplash.setOnFinished(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    splashStage.hide();
+                }
+            });
+            fadeSplash.play();
+        }
+    }
+
+    private BorderPane createPreviewRightVBox() {
         ScrollPane previewScrollPane = new ScrollPane(
                 createCentered(canvas));
         previewScrollPane.setFitToWidth(true);
         previewScrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         previewScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 
+        VBox rightVBox = new VBox(3);
+        rightVBox.setAlignment(Pos.TOP_CENTER);
+        rightVBox.setId("clip-view");
         rightVBox.getChildren().add(previewScrollPane);
         AudioVisualizationComponent audioVisualazationComponent = lightDi
                 .getBean(AudioVisualizationComponent.class);
@@ -329,82 +403,42 @@ public class JavaFXUiMain extends Application {
         });
 
         BorderPane rightBorderPane = new BorderPane();
-        //        Label underVideoLabel = new Label();
-        //        underVideoLabel.setWrapText(true);
-        Tooltip tooltip = new Tooltip();
-
-        StringProperty statusTextProperty = lightDi.getBean(VideoStatusBarUpdater.class).getTextProperty();
-        tooltip.textProperty().bind(statusTextProperty);
-        tooltip.setHideOnEscape(false);
-        tooltip.setAutoHide(false);
-        tooltip.setAnchorLocation(AnchorLocation.CONTENT_TOP_LEFT);
-
-        statusTextProperty.addListener((e, oldV, newV) -> {
-            if (newV.length() > 0) {
-                Bounds canvasBottom = canvas.localToScene(canvas.getBoundsInLocal());
-                double x = canvasBottom.getMinX();
-                double y = canvasBottom.getMaxY() + 60;
-                tooltip.show(canvas, x, y);
-            } else {
-                tooltip.hide();
-            }
-        });
-        tooltip.setWrapText(true);
-
-        //        rightBorderPane.setBottom(underVideoLabel);
-
         rightBorderPane.setCenter(rightVBox);
+        return rightBorderPane;
+    }
 
-        VBox propertyBox = effectPropertyView.getPropertyWindow();
+    private TabPane createEffectAdderTab() {
+        TabPane tabPane = new TabPane();
+        tabPane.setId("addable-content-tab-pane");
+        tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+        lightDi.getListOfBeans(TabFactory.class).stream().forEach(tabFactory -> {
+            Tab tab = tabFactory.createTabContent();
+            tabPane.getTabs().add(tab);
+        });
+        lightDi.getBean(UiMessagingService.class).register(TabActiveRequest.class, message -> {
+            tabPane.getTabs()
+                    .stream()
+                    .filter(tab -> Objects.equals(tab.getId(), message.getEditorId()))
+                    .findFirst()
+                    .ifPresent(foundTab -> tabPane.getSelectionModel().select(foundTab));
+        });
+        tabPane.getSelectionModel().selectedItemProperty()
+                .addListener((e, oldValue, newValue) -> {
+                    if (oldValue instanceof TabCloseListener) {
+                        ((TabCloseListener) oldValue).tabClosed();
+                    }
+                    if (newValue instanceof TabOpenListener) {
+                        ((TabOpenListener) newValue).tabOpened();
+                    }
+                });
+        return tabPane;
+    }
+
+    private ScrollPane createPropertyPage(VBox propertyBox) {
         ScrollPane propertyBoxScrollPane = new ScrollPane(propertyBox);
         propertyBoxScrollPane.setFitToWidth(true);
         propertyBoxScrollPane.setPrefWidth(500);
-        upperPane.getItems().add(propertyBoxScrollPane);
-        upperPane.getItems().add(tabPane);
-        upperPane.getItems().add(rightBorderPane);
-
-        VBox lower = new VBox(5);
-        lower.setPrefWidth(scene.getWidth());
-        lower.setPrefHeight(300);
-        lower.setId("timeline-view");
-
-        BorderPane timeline = uiTimeline.createTimeline(lower, root);
-        lower.getChildren().add(timeline);
-        VBox.setVgrow(timeline, Priority.ALWAYS);
-
-        mainContentPane.getItems().add(upperPane);
-        mainContentPane.getItems().add(lower);
-        mainContentPane.setOrientation(Orientation.VERTICAL);
-
-        root.setCenter(mainContentPane);
-        notificationPane.setContent(root);
-
-        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(lower));
-        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(tabPane));
-        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(propertyBox));
-
-        lightDi.getListOfBeans(ScenePostProcessor.class)
-                .stream()
-                .forEach(processor -> processor.postProcess(scene));
-
-        lightDi.getListOfBeans(PostInitializationArgsCallback.class)
-                .forEach(postInitCallback -> postInitCallback.call(mainArgs));
-
-        if (splashStage.isShowing()) {
-            stage.show();
-            splashStage.toFront();
-            FadeTransition fadeSplash = new FadeTransition(Duration.seconds(0.5), splasViewh);
-            fadeSplash.setDelay(Duration.millis(800));
-            fadeSplash.setFromValue(1.0);
-            fadeSplash.setToValue(0.0);
-            fadeSplash.setOnFinished(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    splashStage.hide();
-                }
-            });
-            fadeSplash.play();
-        }
+        return propertyBoxScrollPane;
     }
 
     private void showSplash(Stage splashStage, ImageView splash) {
