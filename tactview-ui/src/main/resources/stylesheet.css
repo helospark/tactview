@@ -3,7 +3,7 @@
 	-fx-text-fill: white;
 }
   
-.timelinerow,#content-area,.dialog-root,.alert,.dialog-pane {
+.timelinerow,#content-area,.dialog-root,.alert,.dialog-pane,.detachable-tab-pane {
 	-fx-background-color: #333333;
 	-fx-background: #333333;
 }
@@ -407,7 +407,7 @@
 }
 .tab-pane .tab
 {
-    -fx-background-color: #646464;
+    -fx-background-color: #525252;
 }
 
 .tab-pane .tab:selected
@@ -580,6 +580,16 @@
 
 .detachable-tab-pane > .tab-header-area {
     -fx-padding: 0px 0px 2px 0px;
+}
+
+.detachable-tab-pane > .tab-header-area .tab:hover
+{
+    -fx-cursor: hand;
+}
+
+.detachable-tab-pane > .tab-header-area .tab
+{
+    -fx-cursor: default;
 }
 
 #content-area {

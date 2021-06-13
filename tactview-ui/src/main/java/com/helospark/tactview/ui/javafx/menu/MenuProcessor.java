@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -110,13 +112,29 @@ public class MenuProcessor {
         } else if (element instanceof SeparatorMenuElement) {
             return new javafx.scene.control.SeparatorMenuItem();
         } else {
-            MenuItem leafMenuItem = new MenuItem(element.name);
+            MenuItem leafMenuItem = createMenuItem(element);
             leafMenuItem.setOnAction(e -> element.menuContribution.onAction(e));
 
             element.menuContribution.getAccelerator().ifPresent(key -> leafMenuItem.setAccelerator(key));
 
             return leafMenuItem;
         }
+    }
+
+    private MenuItem createMenuItem(MenuElement element) {
+        MenuItem leafMenuItem = null;
+        if (element.menuContribution instanceof CheckboxMenuItemContribution) {
+            CheckMenuItem checkMenuItem = new CheckMenuItem(element.name);
+            BooleanProperty selectedProperty = ((CheckboxMenuItemContribution) element.menuContribution).getSelectedProperty();
+            selectedProperty.addListener(e -> {
+                checkMenuItem.setSelected(selectedProperty.get());
+            });
+            checkMenuItem.setSelected(selectedProperty.get());
+            leafMenuItem = checkMenuItem;
+        } else {
+            leafMenuItem = new MenuItem(element.name);
+        }
+        return leafMenuItem;
     }
 
     private MenuElement addOrGetIntermediateElementFor(List<MenuElement> menuElements, String currentPathName) {

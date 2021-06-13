@@ -30,13 +30,13 @@ import com.helospark.tactview.ui.javafx.tabs.curve.curveeditor.CurveEditor;
 import com.helospark.tactview.ui.javafx.tabs.curve.curveeditor.CurveEditorMouseRequest;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -44,8 +44,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 @Component
-public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseListener, TabOpenListener {
-    private static final String CURVE_EDITOR_ID = "curve-editor";
+public class CurveEditorTab extends DetachableTab implements ScenePostProcessor, TabCloseListener, TabOpenListener {
+    public static final String CURVE_EDITOR_ID = "curve-editor";
     private static final double samplesPerPixel = 1.0;
     private final List<CurveEditor> curveEditors;
     private final UiTimelineManager timelineManager;
@@ -81,6 +81,7 @@ public class CurveEditorTab extends Tab implements ScenePostProcessor, TabCloseL
     ///
 
     public CurveEditorTab(List<CurveEditor> curveEditors, MessagingService messagingService, UiTimelineManager timelineManager, EffectParametersRepository effectParametersRepository) {
+        super(CURVE_EDITOR_ID);
         this.curveEditors = curveEditors;
         this.timelineManager = timelineManager;
         this.messagingService = messagingService;

@@ -5,19 +5,15 @@ import static java.awt.image.BufferedImage.TYPE_INT_BGR;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.controlsfx.control.NotificationPane;
-import org.controlsfx.glyphfont.FontAwesome;
-import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.LightDiContextConfiguration;
@@ -26,23 +22,21 @@ import com.helospark.lightdi.properties.PropertySourceHolder;
 import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.plugin.PluginMainClassProviders;
 import com.helospark.tactview.core.save.DirtyRepository;
-import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.aware.MainWindowStageAware;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
-import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
-import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
-import com.helospark.tactview.ui.javafx.tabs.TabFactory;
-import com.helospark.tactview.ui.javafx.tabs.curve.CurveEditorTab;
-import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
-import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.AddableContentDockableTabFactory;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.CurveEditorDockableTabFactory;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTabFactory;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PropertyEditorDockableTabFactory;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.common.TiwulFXUtil;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane;
@@ -50,10 +44,8 @@ import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.Detac
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.LeafElement;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.SplitPaneElement;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
-import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
-import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
@@ -63,34 +55,20 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TabPane.TabClosingPolicy;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -121,8 +99,7 @@ public class JavaFXUiMain extends Application {
     volatile static boolean backBufferReady = false;
 
     static UiTimelineManager uiTimelineManager;
-    private static Canvas canvas;
-    private static Label videoTimestampLabel;
+    public static Canvas canvas;
     static UiTimeline uiTimeline;
     static UiProjectRepository uiProjectRepository;
     static PropertyView effectPropertyView;
@@ -216,34 +193,29 @@ public class JavaFXUiMain extends Application {
         });
         tooltip.setWrapText(true);
 
-        //        rightBorderPane.setBottom(underVideoLabel);
-
-        VBox propertyBox = effectPropertyView.getPropertyWindow();
-
-        ScrollPane propertyBoxScrollPane = createPropertyPage(propertyBox);
-        BorderPane rightBorderPane = createPreviewRightVBox();
-        TabPane tabPane = createEffectAdderTab();
-
-        VBox upperPane = new VBox();
+        HBox upperPane = new HBox();
         upperPane.setId("upper-content-area");
         upperPane.setMinHeight(300);
-        upperPane.setFillWidth(true);
+        upperPane.setFillHeight(true);
 
         SplitPaneElement splitPaneElement = new SplitPaneElement();
         splitPaneElement.isVertical = false;
         splitPaneElement.size = new double[]{0.2, 0.6, 0.2};
-        splitPaneElement.children.add(new LeafElement(List.of(new DetachableTab("Property editor", propertyBoxScrollPane))));
-        splitPaneElement.children.add(new LeafElement(List.of(new DetachableTab("Addable content", tabPane), lightDi.getBean(CurveEditorTab.class))));
-        splitPaneElement.children.add(new LeafElement(List.of(new DetachableTab("Preview", rightBorderPane))));
-        Node model = DetachableTabPane.loadModel(new DetachableTabPaneLoadModel(splitPaneElement));
+
+        DetachableTab propertyEditorTab = lightDi.getBean(PropertyEditorDockableTabFactory.class).createTab();
+        DetachableTab addableContentEditorTab = lightDi.getBean(AddableContentDockableTabFactory.class).createTab();
+        DetachableTab curveEditorTab = lightDi.getBean(CurveEditorDockableTabFactory.class).createTab();
+        DetachableTab previewTab = lightDi.getBean(PreviewDockableTabFactory.class).createTab();
+
+        splitPaneElement.children.add(new LeafElement(List.of(propertyEditorTab)));
+        splitPaneElement.children.add(new LeafElement(List.of(addableContentEditorTab, curveEditorTab)));
+        splitPaneElement.children.add(new LeafElement(List.of(previewTab)));
+
+        Parent model = DetachableTabPane.loadModel(new DetachableTabPaneLoadModel(splitPaneElement), lightDi.getBean(UiMessagingService.class));
+        lightDi.getBean(DockableTabRepository.class).setDockContainer(model);
+        HBox.setHgrow(model, Priority.ALWAYS);
         TiwulFXUtil.setTiwulFXStyleSheet(scene);
         upperPane.getChildren().add(model);
-
-        //        upperPane.setDividerPositions(0.2, 0.6, 0.2);
-
-        //        upperPane.getItems().add(propertyBoxScrollPane);
-        //        upperPane.getItems().add(tabPane);
-        //        upperPane.getItems().add(rightBorderPane);
 
         VBox lower = new VBox(5);
         lower.setPrefWidth(scene.getWidth());
@@ -261,9 +233,8 @@ public class JavaFXUiMain extends Application {
         root.setCenter(mainContentPane);
         notificationPane.setContent(root);
 
-        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(lower));
-        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(tabPane));
-        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(propertyBox));
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChangeDisableTabs());
+        inputModeRepository.registerInputModeChangeConsumerr(onClassChange(timeline));
 
         lightDi.getListOfBeans(ScenePostProcessor.class)
                 .stream()
@@ -289,158 +260,6 @@ public class JavaFXUiMain extends Application {
         }
     }
 
-    private BorderPane createPreviewRightVBox() {
-        ScrollPane previewScrollPane = new ScrollPane(
-                createCentered(canvas));
-        previewScrollPane.setFitToWidth(true);
-        previewScrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
-        previewScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
-
-        VBox rightVBox = new VBox(3);
-        rightVBox.setAlignment(Pos.TOP_CENTER);
-        rightVBox.setId("clip-view");
-        rightVBox.getChildren().add(previewScrollPane);
-        AudioVisualizationComponent audioVisualazationComponent = lightDi
-                .getBean(AudioVisualizationComponent.class);
-        rightVBox.getChildren().add(audioVisualazationComponent.getCanvas());
-        audioVisualazationComponent.clearCanvas();
-
-        videoTimestampLabel = new Label("00:00:00.000");
-        videoTimestampLabel.setId("video-timestamp-label");
-        HBox videoStatusBar = new HBox(10);
-        videoStatusBar.setId("video-status-bar");
-        videoStatusBar.getChildren().add(videoTimestampLabel);
-        rightVBox.getChildren().add(videoStatusBar);
-
-        UiPlaybackPreferenceRepository playbackPreferenceRepository = lightDi.getBean(UiPlaybackPreferenceRepository.class);
-
-        HBox underVideoBar = new HBox(1);
-        ToggleButton muteButton = new ToggleButton("", new Glyph("FontAwesome",
-                FontAwesome.Glyph.VOLUME_OFF));
-        muteButton.setSelected(false);
-        muteButton.setOnAction(event -> playbackPreferenceRepository.setMute(muteButton.isSelected()));
-        muteButton.setTooltip(new Tooltip("Mute"));
-
-        SingleFullImageViewController fullScreenRenderer = lightDi.getBean(SingleFullImageViewController.class);
-        Button fullscreenButton = new Button("", new Glyph("FontAwesome",
-                FontAwesome.Glyph.IMAGE));
-        fullscreenButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
-        fullscreenButton.setTooltip(new Tooltip("Show full scale preview"));
-
-        ToggleButton halfImageEffectButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.STAR_HALF_ALT));
-        halfImageEffectButton.setSelected(false);
-        halfImageEffectButton.setOnAction(e -> {
-            playbackPreferenceRepository.setHalfEffect(halfImageEffectButton.isSelected());
-            uiTimelineManager.refreshDisplay(true);
-        });
-        halfImageEffectButton.setTooltip(new Tooltip("Apply effects only on left side of preview"));
-
-        Button playButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.PLAY));
-        playButton.setOnMouseClicked(e -> uiTimelineManager.startPlayback());
-        playButton.setTooltip(new Tooltip("Play"));
-
-        Button stopButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STOP));
-        stopButton.setOnMouseClicked(e -> uiTimelineManager.stopPlayback());
-        stopButton.setTooltip(new Tooltip("Stop"));
-
-        Button jumpBackOnFrameButton = new Button("", new Glyph("FontAwesome",
-                FontAwesome.Glyph.STEP_BACKWARD));
-        jumpBackOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveBackOneFrame());
-        jumpBackOnFrameButton.setTooltip(new Tooltip("Step one frame back"));
-
-        Button jumpForwardOnFrameButton = new Button("", new Glyph("FontAwesome",
-                FontAwesome.Glyph.STEP_FORWARD));
-        jumpForwardOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveForwardOneFrame());
-        jumpForwardOnFrameButton.setTooltip(new Tooltip("Step one frame forward"));
-
-        Button jumpBackButton = new Button("", new Glyph("FontAwesome",
-                FontAwesome.Glyph.BACKWARD));
-        jumpBackButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(-10)));
-        jumpBackButton.setTooltip(new Tooltip("Step 10s back"));
-
-        Button jumpForwardButton = new Button("", new Glyph("FontAwesome",
-                FontAwesome.Glyph.FORWARD));
-        jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
-        jumpForwardButton.setTooltip(new Tooltip("Step 10s forward"));
-
-        ComboBox<String> sizeDropDown = lightDi.getBean(ScaleComboBoxFactory.class).create();
-
-        ComboBox<String> playbackSpeedDropDown = new ComboBox<>();
-        playbackSpeedDropDown.getStyleClass().add("size-drop-down");
-        playbackSpeedDropDown.getItems().add("0.5x");
-        playbackSpeedDropDown.getItems().add("0.75x");
-        playbackSpeedDropDown.getItems().add("1.0x");
-        playbackSpeedDropDown.getItems().add("1.25x");
-        playbackSpeedDropDown.getItems().add("1.5x");
-        playbackSpeedDropDown.getItems().add("2.0x");
-        playbackSpeedDropDown.getSelectionModel().select("1.0x");
-        playbackSpeedDropDown.setTooltip(new Tooltip("Playback speed"));
-        playbackSpeedDropDown.valueProperty().addListener((o, oldValue, newValue2) -> {
-            playbackPreferenceRepository.setPlaybackSpeedMultiplier(new BigDecimal(newValue2.replace("x", "")));
-        });
-
-        underVideoBar.getChildren().add(sizeDropDown);
-        underVideoBar.getChildren().add(muteButton);
-        underVideoBar.getChildren().add(halfImageEffectButton);
-        underVideoBar.getChildren().add(fullscreenButton);
-        underVideoBar.getChildren().add(jumpBackButton);
-        underVideoBar.getChildren().add(jumpBackOnFrameButton);
-        underVideoBar.getChildren().add(playButton);
-        underVideoBar.getChildren().add(stopButton);
-        underVideoBar.getChildren().add(jumpForwardOnFrameButton);
-        underVideoBar.getChildren().add(jumpForwardButton);
-        underVideoBar.getChildren().add(playbackSpeedDropDown);
-        underVideoBar.setId("video-button-bar");
-        rightVBox.getChildren().add(underVideoBar);
-
-        rightVBox.widthProperty().addListener((e, oldV, newV) -> {
-            int availableWidth = (int) (rightVBox.getWidth() - 20); // TODO: calculate magic value
-            uiProjectRepository.setPreviewAvailableWidth(availableWidth);
-        });
-        rightVBox.heightProperty().addListener((e, oldV, newV) -> {
-            int availableHeight = (int) (rightVBox.getHeight() - 100); // TODO: calculate magic value
-            uiProjectRepository.setPreviewAvailableHeight(availableHeight);
-        });
-
-        BorderPane rightBorderPane = new BorderPane();
-        rightBorderPane.setCenter(rightVBox);
-        return rightBorderPane;
-    }
-
-    private TabPane createEffectAdderTab() {
-        TabPane tabPane = new TabPane();
-        tabPane.setId("addable-content-tab-pane");
-        tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        lightDi.getListOfBeans(TabFactory.class).stream().forEach(tabFactory -> {
-            Tab tab = tabFactory.createTabContent();
-            tabPane.getTabs().add(tab);
-        });
-        lightDi.getBean(UiMessagingService.class).register(TabActiveRequest.class, message -> {
-            tabPane.getTabs()
-                    .stream()
-                    .filter(tab -> Objects.equals(tab.getId(), message.getEditorId()))
-                    .findFirst()
-                    .ifPresent(foundTab -> tabPane.getSelectionModel().select(foundTab));
-        });
-        tabPane.getSelectionModel().selectedItemProperty()
-                .addListener((e, oldValue, newValue) -> {
-                    if (oldValue instanceof TabCloseListener) {
-                        ((TabCloseListener) oldValue).tabClosed();
-                    }
-                    if (newValue instanceof TabOpenListener) {
-                        ((TabOpenListener) newValue).tabOpened();
-                    }
-                });
-        return tabPane;
-    }
-
-    private ScrollPane createPropertyPage(VBox propertyBox) {
-        ScrollPane propertyBoxScrollPane = new ScrollPane(propertyBox);
-        propertyBoxScrollPane.setFitToWidth(true);
-        propertyBoxScrollPane.setPrefWidth(500);
-        return propertyBoxScrollPane;
-    }
-
     private void showSplash(Stage splashStage, ImageView splash) {
         StackPane splashLayout = new StackPane();
         splashLayout.setStyle("-fx-background-color: transparent;");
@@ -449,24 +268,6 @@ public class JavaFXUiMain extends Application {
         splashScene.setFill(Color.TRANSPARENT);
         splashStage.setScene(splashScene);
         splashStage.show();
-    }
-
-    private Node createCentered(Canvas canvas2) {
-        GridPane outerPane = new GridPane();
-        RowConstraints row = new RowConstraints();
-        row.setPercentHeight(100);
-        row.setFillHeight(false);
-        row.setValignment(VPos.CENTER);
-        outerPane.getRowConstraints().add(row);
-
-        ColumnConstraints col = new ColumnConstraints();
-        col.setPercentWidth(100);
-        col.setFillWidth(false);
-        col.setHalignment(HPos.CENTER);
-        outerPane.getColumnConstraints().add(col);
-
-        outerPane.add(canvas2, 0, 0);
-        return outerPane;
     }
 
     private void exitApplication(ExitWithSaveService exitWithSaveService, WindowEvent event) {
@@ -478,6 +279,19 @@ public class JavaFXUiMain extends Application {
         if (!exitPerformed) {
             event.consume();
         }
+    }
+
+    private static Consumer<Boolean> onClassChangeDisableTabs() {
+        return enabled -> {
+            List<DetachableTabPane> tabRepos = lightDi.getBean(DockableTabRepository.class).findNodesNotContainingId(PreviewDockableTabFactory.ID);
+            for (var element : tabRepos) {
+                if (enabled) {
+                    element.getStyleClass().add("input-mode-enabled");
+                } else {
+                    element.getStyleClass().remove("input-mode-enabled");
+                }
+            }
+        };
     }
 
     private static Consumer<Boolean> onClassChange(Node element) {
@@ -524,7 +338,6 @@ public class JavaFXUiMain extends Application {
 
         uiTimelineManager.registerUiPlaybackConsumer(position -> uiTimeline.updateLine(position));
         uiTimelineManager.registerUiPlaybackConsumer(position -> effectPropertyView.updateValues(position));
-        uiTimelineManager.registerUiPlaybackConsumer(position -> updateTime(position));
 
         displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
         projectSizeInitializer = lightDi.getBean(ProjectSizeInitializer.class);
@@ -551,18 +364,6 @@ public class JavaFXUiMain extends Application {
     public static void main(String[] args) {
         JavaFXUiMain.mainArgs = args; // Since Javafx init does not give access to this
         launch(args);
-    }
-
-    private static void updateTime(TimelinePosition position) {
-        long wholePartOfTime = position.getSeconds().longValue();
-        long hours = wholePartOfTime / 3600;
-        long minutes = (wholePartOfTime - hours * 3600) / 60;
-        long seconds = (wholePartOfTime - hours * 3600 - minutes * 60);
-        long millis = position.getSeconds().remainder(BigDecimal.ONE).multiply(BigDecimal.valueOf(1000)).longValue();
-
-        String newLabel = String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
-
-        videoTimestampLabel.setText(newLabel);
     }
 
     public void launchUi() {

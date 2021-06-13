@@ -18,6 +18,8 @@
  */
 package com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control;
 
+import com.helospark.tactview.ui.javafx.UiMessagingService;
+
 /**
  * Factory responsible to Instantiate new DetachableTabPane when a Tab is
  * detached/docked. Extend this class then implement {@link #init(DetachableTabPane)} method.
@@ -25,9 +27,14 @@ package com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control;
  * @author amrullah
  */
 public abstract class DetachableTabPaneFactory {
+    private UiMessagingService uiMessagingService;
+
+    public DetachableTabPaneFactory(UiMessagingService uiMessagingService) {
+        this.uiMessagingService = uiMessagingService;
+    }
 
     DetachableTabPane create(DetachableTabPane source) {
-        DetachableTabPane tabPane = new DetachableTabPane();
+        DetachableTabPane tabPane = new DetachableTabPane(uiMessagingService);
         tabPane.setSceneFactory(source.getSceneFactory());
         tabPane.setStageOwnerFactory(source.getStageOwnerFactory());
         tabPane.setScope(source.getScope());

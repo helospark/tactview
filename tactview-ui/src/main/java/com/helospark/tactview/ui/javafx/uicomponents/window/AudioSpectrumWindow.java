@@ -29,7 +29,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 @Component
-@Order(8000)
+@Order(4000)
 public class AudioSpectrumWindow extends SingletonOpenableWindow implements AudioPlayedListener, SelectableMenuContribution {
     private static final int MAX_FREQUENCY = 15000;
     private static final int DEFAULT_WIDTH = 600;

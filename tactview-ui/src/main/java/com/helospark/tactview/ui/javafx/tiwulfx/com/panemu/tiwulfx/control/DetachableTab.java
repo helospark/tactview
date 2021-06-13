@@ -18,6 +18,8 @@
  */
 package com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control;
 
+import java.util.Objects;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
@@ -29,17 +31,15 @@ import javafx.scene.control.Tab;
  */
 public class DetachableTab extends Tab {
     private BooleanProperty detachable = new SimpleBooleanProperty(true);
+    private String id;
 
-    public DetachableTab() {
-        super();
+    public DetachableTab(String id) {
+        this.id = id;
     }
 
-    public DetachableTab(String string) {
-        super(string);
-    }
-
-    public DetachableTab(String text, Node content) {
+    public DetachableTab(String text, Node content, String id) {
         super(text, content);
+        this.id = id;
     }
 
     public boolean isDetachable() {
@@ -54,4 +54,21 @@ public class DetachableTab extends Tab {
         return detachable;
     }
 
+    public String getTabId() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof DetachableTab)) {
+            return false;
+        }
+        DetachableTab castOther = (DetachableTab) other;
+        return Objects.equals(id, castOther.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
