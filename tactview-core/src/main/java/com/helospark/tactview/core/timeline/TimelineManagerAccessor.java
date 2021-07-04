@@ -131,6 +131,11 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             addClip(channelToAddResourceTo, clip);
             ++channelIndex;
         }
+
+        if (clips.size() == 0) {
+            throw new RuntimeException("Unable to add any clips");
+        }
+
         return clips.get(0);
     }
 

@@ -176,9 +176,16 @@ extern "C" {
 
         AVStream* st = pFormatCtx->streams[videoStream];
 
+        long long durationInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
+
+        if (durationInMicroseconds < 0) {
+            WARN("Unable to determine duration for file " << path << " most likely metadata is missing");
+            return mediaMetadata;
+        }
+
         mediaMetadata.width = pCodecCtx->width;
         mediaMetadata.height = pCodecCtx->height;
-        mediaMetadata.lengthInMicroseconds = pFormatCtx->duration / (AV_TIME_BASE / 1000000);
+        mediaMetadata.lengthInMicroseconds = durationInMicroseconds;
         mediaMetadata.bitRate = st->codec->bit_rate;
         mediaMetadata.rotationAngle = get_rotation(st);
 

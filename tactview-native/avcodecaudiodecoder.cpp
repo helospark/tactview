@@ -94,9 +94,16 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
         AVSampleFormat sampleFormat = codec->sample_fmt;
 
+        long long durationInMicroseconds = format->duration / (AV_TIME_BASE / 1000000);
+
+        if (durationInMicroseconds < 0) {
+            WARN("Unable to determine duration for file " << path << " most likely metadata is missing");
+            return AVCodecAudioMetadataResponse();
+        }
+
         response.channels = codec->channels;
         response.sampleRate = codec->sample_rate;
-        response.lengthInMicroseconds = format->duration / (AV_TIME_BASE / 1000000);
+        response.lengthInMicroseconds = durationInMicroseconds;
         response.bitRate = codec->bit_rate;
         response.bytesPerSample = av_get_bytes_per_sample(sampleFormat);
 
