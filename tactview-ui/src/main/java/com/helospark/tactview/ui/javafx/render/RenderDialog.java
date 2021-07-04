@@ -36,6 +36,7 @@ import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.ComboBoxElement;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.TypedComboBoxElement;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 import com.helospark.tactview.ui.javafx.util.DurationFormatter;
 
@@ -89,7 +90,7 @@ public class RenderDialog {
 
     TextField startPositionTextField;
     TextField endPositionTextField;
-    ComboBox<ComboBoxElement> upscaleField;
+    ComboBox<String> upscaleField;
     VBox metadataVBox;
     ComboBox<ComboBoxElement> extensionComboBox;
 
@@ -381,7 +382,7 @@ public class RenderDialog {
                 .withFileName(fileName)
                 .withOptions(optionProviders)
                 .withIsCancelledSupplier(() -> isRenderCancelled)
-                .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem().getId()))
+                .withUpscale(new BigDecimal(upscaleField.getSelectionModel().getSelectedItem()))
                 .withMetadata(collectMetadata(metadataVBox))
                 .withSelectedExtensionType(selectedExtensionElement)
                 .withEncodedImageCallback(image -> updatePreviewConsumer(image))
@@ -504,7 +505,7 @@ public class RenderDialog {
 
                 rendererOptions.add(hbox, column * ADDITIONAL_OPTIONS_COLUMNS + 1, row, 3, 1);
                 column++;
-            } else if (optionProvider.getValidValues().isEmpty()) {
+            } else if (optionProvider.getValidValues().isEmpty() && !optionProvider.hasExamples()) {
                 TextField textField = new TextField();
                 textField.getStyleClass().add("render-dialog-option");
                 textField.setText(String.valueOf(optionProvider.getValue()));
@@ -516,6 +517,28 @@ public class RenderDialog {
                 });
 
                 rendererOptions.add(textField, column * ADDITIONAL_OPTIONS_COLUMNS + 1, row);
+            } else if (optionProvider.hasExamples()) {
+                ComboBox<TypedComboBoxElement<?>> comboBox = new ComboBox<>();
+                comboBox.getStyleClass().add("render-dialog-option");
+                comboBox.disableProperty().set(isOptionProviderDisabled(optionProvider, renderRequest));
+                Map<Object, TypedComboBoxElement<?>> comboBoxElements = new LinkedHashMap<>();
+
+                comboBox.setEditable(true);
+                optionProvider.getExamples()
+                        .stream()
+                        .forEach(a -> {
+                            var entry = new TypedComboBoxElement<>(a.getValue(), a.getTitle());
+                            comboBox.getItems().add(entry);
+                            comboBoxElements.put(a.getValue(), entry);
+                        });
+
+                comboBox.setOnAction(e -> {
+                    optionProvider.setValue(comboBox.getValue().getId());
+                    updateProvidersAfterUpdate();
+                });
+                comboBox.getSelectionModel().select(comboBoxElements.get(optionProvider.getValue()));
+
+                rendererOptions.add(comboBox, column * ADDITIONAL_OPTIONS_COLUMNS + 1, row);
             } else {
                 ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
                 comboBox.getStyleClass().add("render-dialog-option");
@@ -529,16 +552,14 @@ public class RenderDialog {
                             comboBox.getItems().add(entry);
                             comboBoxElements.put(a.getId(), entry);
                         });
-                comboBox.getSelectionModel().select(comboBoxElements.get(optionProvider.getValue().toString()));
-
                 comboBox.setOnAction(e -> {
                     optionProvider.setValue(comboBox.getValue().getId());
                     updateProvidersAfterUpdate();
                 });
+                comboBox.getSelectionModel().select(comboBoxElements.get(optionProvider.getValue().toString()));
 
                 rendererOptions.add(comboBox, column * ADDITIONAL_OPTIONS_COLUMNS + 1, row);
             }
-
             ++i;
         }
     }
@@ -572,13 +593,12 @@ public class RenderDialog {
         return result;
     }
 
-    public ComboBox<ComboBoxElement> createComboBox(List<String> values, int selectedIndex) {
-        ComboBox<ComboBoxElement> comboBox = new ComboBox<>();
+    public ComboBox<String> createComboBox(List<String> values, int selectedIndex) {
+        ComboBox<String> comboBox = new ComboBox<>();
         values
                 .stream()
                 .forEach(a -> {
-                    var entry = new ComboBoxElement(a, a);
-                    comboBox.getItems().add(entry);
+                    comboBox.getItems().add(a);
                 });
         comboBox.getSelectionModel().select(selectedIndex);
         return comboBox;

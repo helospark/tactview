@@ -81,6 +81,15 @@
     -fx-text-inner-color: white;
 }
 
+.combo-box .arrow {
+    -fx-background-color: white;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-size: 5;
+}
+
 .progress-text {
     -fx-fill:white;
 }

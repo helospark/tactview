@@ -34,6 +34,7 @@ import com.helospark.tactview.core.decoder.opencv.ImageMetadataRequest;
 import com.helospark.tactview.core.decoder.opencv.ImageMetadataResponse;
 import com.helospark.tactview.core.decoder.opencv.ImageRequest;
 import com.helospark.tactview.core.optionprovider.OptionProvider;
+import com.helospark.tactview.core.optionprovider.OptionProvider.OptionExample;
 import com.helospark.tactview.core.render.domain.FFmpegRenderThreadResult;
 import com.helospark.tactview.core.render.ffmpeg.ChapterInformation;
 import com.helospark.tactview.core.render.ffmpeg.CodecExtraDataRequest;
@@ -92,37 +93,37 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
 
         int videoBitRate = (int) renderRequest.getOptions().get("videobitrate").getValue();
 
-        LOGGER.info("Video BitRate: ", videoBitRate);
+        LOGGER.info("Video BitRate: {}", videoBitRate);
 
         int audioBitRate = (int) renderRequest.getOptions().get("audiobitrate").getValue();
-        LOGGER.info("Audio BitRate: ", audioBitRate);
+        LOGGER.info("Audio BitRate: {}", audioBitRate);
 
         int audioSampleRate = (int) renderRequest.getOptions().get("audiosamplerate").getValue();
-        LOGGER.info("Audio SampleRate: ", audioSampleRate);
+        LOGGER.info("Audio SampleRate: {}", audioSampleRate);
 
         int bytesPerSample = Integer.parseInt(renderRequest.getOptions().get("audiobytespersample").getValue().toString());
-        LOGGER.info("Audio bytes per sample: ", bytesPerSample);
+        LOGGER.info("Audio bytes per sample: {}", bytesPerSample);
 
         String audioCodec = (String) renderRequest.getOptions().get("audiocodec").getValue();
-        LOGGER.info("AudioCodec: ", audioCodec);
+        LOGGER.info("AudioCodec: {}", audioCodec);
 
         String videoCodec = (String) renderRequest.getOptions().get("videocodec").getValue();
         if (isAudioContainerForFileName(renderRequest.getFileName(), renderRequest.getSelectedExtensionType())) {
             videoCodec = NONE_VALUE;
         }
-        LOGGER.info("VideoCodec: ", videoCodec);
+        LOGGER.info("VideoCodec: {}", videoCodec);
 
         String videoPixelFormat = (String) renderRequest.getOptions().get("videoPixelFormat").getValue();
-        LOGGER.info("videoPixelFormat: ", videoPixelFormat);
+        LOGGER.info("videoPixelFormat: {}", videoPixelFormat);
 
         int numberOfChannels = Integer.parseInt(renderRequest.getOptions().get("audionumberofchannels").getValue().toString());
-        LOGGER.info("numberOfChannels: ", numberOfChannels);
+        LOGGER.info("numberOfChannels: {}", numberOfChannels);
 
         String videoPresetOrNull = (String) Optional.ofNullable(renderRequest.getOptions().get("preset")).map(a -> a.getValue()).orElse(null);
-        LOGGER.info("video preset: ", videoPresetOrNull);
+        LOGGER.info("video preset: {}", videoPresetOrNull);
 
         int threads = Integer.parseInt(renderRequest.getOptions().get("threads").getValue().toString());
-        LOGGER.info("threads: ", threads);
+        LOGGER.info("threads: {}", threads);
 
         Map<TimelinePosition, String> chapters = renderRequest.getChapters();
         LOGGER.info("chapters: {}", chapters);
@@ -447,10 +448,26 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
     @Override
     public Map<String, OptionProvider<?>> getOptionProviders(CreateValueProvidersRequest request) {
         int maximumVideoBitRate = timelineManagerAccessor.findMaximumVideoBitRate();
+        int sourceVideoBitrate = maximumVideoBitRate > 0 ? maximumVideoBitRate : 3200000;
         OptionProvider<Integer> bitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Video bitrate")
-                .withDefaultValue(maximumVideoBitRate > 0 ? maximumVideoBitRate : 3200000)
+                .withDefaultValue(sourceVideoBitrate)
                 .withIsEnabled(f -> !isAudioContainerForExtension(FilenameUtils.getExtension(f.getFileName())))
+                .withExamples(List.of(
+                        new OptionExample<>(sourceVideoBitrate, String.format("%.2f Mbps (source)", (sourceVideoBitrate / 1_000_000.0))),
+                        new OptionExample<>(45_000_000, "45 Mbps (4k 30fps YT)"),
+                        new OptionExample<>(16_000_000, "16 Mbps (1440p 30fps YT)"),
+                        new OptionExample<>(8_000_000, "8 Mbps (1080p 30fps YT)"),
+                        new OptionExample<>(5_000_000, "5 Mbps (720p 30fps YT)"),
+                        new OptionExample<>(2_500_000, "2.5 Mbps (480p 30fps YT)"),
+                        new OptionExample<>(1_000_000, "1 Mbps (360p 30fps YT)"),
+
+                        new OptionExample<>(68_000_000, "68 Mbps (4k 60fps YT)"),
+                        new OptionExample<>(24_000_000, "24 Mbps (1440p 60fps YT)"),
+                        new OptionExample<>(12_000_000, "12 Mbps (1080p 60fps YT)"),
+                        new OptionExample<>(7_500_000, "7.5 Mbps (720p 60fps YT)"),
+                        new OptionExample<>(4_000_000, "4 Mbps (480p 60fps YT)"),
+                        new OptionExample<>(1_500_000, "1.5 Mbps (360p 60fps YT)")))
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {
@@ -460,9 +477,14 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                 })
                 .build();
         int maximumAudioBitRate = timelineManagerAccessor.findMaximumAudioBitRate();
+        int sourceAudioBitrate = maximumAudioBitRate > 0 ? maximumAudioBitRate : 192000;
         OptionProvider<Integer> audioBitRateProvider = OptionProvider.integerOptionBuilder()
                 .withTitle("Audio bitrate")
-                .withDefaultValue(maximumAudioBitRate > 0 ? maximumAudioBitRate : 192000)
+                .withDefaultValue(sourceAudioBitrate)
+                .withExamples(List.of(
+                        new OptionExample<>(sourceAudioBitrate, String.format("%.0f kbps (source)", (sourceAudioBitrate / 1_000.0))),
+                        new OptionExample<>(384_000, "384 kbps (Stereo YT)"),
+                        new OptionExample<>(128_000, "128 kbps (Mono YT)")))
                 .withValidationErrorProvider(bitRate -> {
                     List<String> errors = new ArrayList<>();
                     if (bitRate < 100) {
@@ -478,6 +500,12 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                     List<String> errors = new ArrayList<>();
                     return errors;
                 })
+                .withExamples(List.of(
+                        new OptionExample<>(projectRepository.getSampleRate(), String.valueOf(projectRepository.getSampleRate()) + " (source)"),
+                        new OptionExample<>(44100, "44100 (CD)"),
+                        new OptionExample<>(8000, "8000 (Telephone) "),
+                        new OptionExample<>(22050, "22050 (AM audio) "),
+                        new OptionExample<>(96000, "96000 (DVD) ")))
                 .build();
         OptionProvider<String> audioBytesPerSampelProvider = OptionProvider.stringOptionBuilder()
                 .withTitle("Bytes/sample")

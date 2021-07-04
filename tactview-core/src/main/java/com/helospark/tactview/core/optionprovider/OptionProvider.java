@@ -22,6 +22,7 @@ public class OptionProvider<T> {
     private boolean shouldTriggerUpdate;
     private T value;
     private final T defaultValue;
+    private List<OptionExample<T>> examples = List.of();
 
     @Generated("SparkTools")
     private OptionProvider(Builder<T> builder) {
@@ -34,6 +35,7 @@ public class OptionProvider<T> {
         this.validValues = builder.validValues != null ? builder.validValues : List.of();
         this.value = builder.defaultValue;
         this.defaultValue = builder.defaultValue;
+        this.examples = builder.examples;
     }
 
     public List<ValueListElement> getValidValues() {
@@ -74,6 +76,14 @@ public class OptionProvider<T> {
 
     public boolean shouldTriggerUpdate() {
         return shouldTriggerUpdate;
+    }
+
+    public boolean hasExamples() {
+        return this.examples != null && !this.examples.isEmpty();
+    }
+
+    public List<OptionExample<T>> getExamples() {
+        return examples;
     }
 
     @Generated("SparkTools")
@@ -162,6 +172,7 @@ public class OptionProvider<T> {
         private boolean shouldTriggerUpdate;
         private T defaultValue;
         private T previousValue = null;
+        private List<OptionExample<T>> examples = List.of();
 
         private Builder(Class<T> type) {
             this.type = type;
@@ -178,6 +189,7 @@ public class OptionProvider<T> {
             this.shouldTriggerUpdate = optionProvider.shouldTriggerUpdate;
             this.defaultValue = (T) optionProvider.defaultValue;
             this.previousValue = (T) optionProvider.value;
+            this.examples = optionProvider.examples;
         }
 
         public Builder<T> withTitle(String title) {
@@ -220,6 +232,11 @@ public class OptionProvider<T> {
             return this;
         }
 
+        public Builder<T> withExamples(List<OptionExample<T>> examples) {
+            this.examples = examples;
+            return this;
+        }
+
         public OptionProvider<T> build() {
             OptionProvider<T> result = new OptionProvider<>(this);
             if (previousValue != null) {
@@ -232,6 +249,25 @@ public class OptionProvider<T> {
 
     public OptionProvider<?> deepClone() {
         return OptionProvider.builder(this).build();
+    }
+
+    public static class OptionExample<T> {
+        T value;
+        String title;
+
+        public OptionExample(T value, String title) {
+            this.value = value;
+            this.title = title;
+        }
+
+        public T getValue() {
+            return value;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
     }
 
 }
