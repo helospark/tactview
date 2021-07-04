@@ -79,6 +79,7 @@ public class DetachableTabPane extends TabPane {
 
     public DetachableTabPane(UiMessagingService uiMessagingService) {
         super();
+        this.uiMessagingService = uiMessagingService;
         getStyleClass().add("detachable-tab-pane");
         attachListeners(uiMessagingService);
     }

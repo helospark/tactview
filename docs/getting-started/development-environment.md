@@ -65,7 +65,7 @@ You only need Docker on your machine.
 
 Then you can build a Docker image that will build the release of the Tactview. You only need to do this once & when native libraries are updated.
 
-    docker build -t tactview_build:latest .
+    docker build -t helospark/tactview_build:latest .
 
 Once done you can build a release build using:
 
