@@ -10,7 +10,6 @@ import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
-import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -63,8 +62,7 @@ public class UiLoadHandler {
                 currentProjectSavedFileRepository.setCurrentSavedFile(file.getAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
-                Alert alert = alertDialogFactory.createErrorAlertWithStackTrace("Unable to load project", e);
-                alert.show();
+                alertDialogFactory.showExceptionDialog("Unable to load project", e);
             }
         }
     }

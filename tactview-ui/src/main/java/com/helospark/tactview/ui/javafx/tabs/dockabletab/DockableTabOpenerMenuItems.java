@@ -15,7 +15,6 @@ import com.helospark.tactview.ui.javafx.menu.MenuContribution;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.message.DockableTabClosedMessage;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.message.DockableTabOpenedMessage;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.tab.DockableWindowMenuContribution;
-import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -26,13 +25,16 @@ public class DockableTabOpenerMenuItems implements DynamicallyGeneratedParentMen
     private List<DockableTabFactory> dockableTabFactories;
     private UiMessagingService uiMessagingService;
     private DockableTabRepository dockableTabRepository;
+    private DockableTabFromIdFactory dockableTabFromIdFactory;
 
     private Map<String, BooleanProperty> selectedProperties = new HashMap<>();
 
-    public DockableTabOpenerMenuItems(List<DockableTabFactory> dockableTabFactories, UiMessagingService uiMessagingService, DockableTabRepository dockableTabRepository) {
+    public DockableTabOpenerMenuItems(List<DockableTabFactory> dockableTabFactories, UiMessagingService uiMessagingService, DockableTabRepository dockableTabRepository,
+            DockableTabFromIdFactory dockableTabFromIdFactory) {
         this.dockableTabFactories = dockableTabFactories;
         this.uiMessagingService = uiMessagingService;
         this.dockableTabRepository = dockableTabRepository;
+        this.dockableTabFromIdFactory = dockableTabFromIdFactory;
     }
 
     @PostConstruct
@@ -64,14 +66,7 @@ public class DockableTabOpenerMenuItems implements DynamicallyGeneratedParentMen
         BooleanProperty booleanProperty = new SimpleBooleanProperty();
         booleanProperty.set(dockableTabRepository.isTabOpen(id));
         selectedProperties.put(id, booleanProperty);
-        return new DockableWindowMenuContribution(id, id, booleanProperty, dockableTabRepository, () -> createTab(id));
+        return new DockableWindowMenuContribution(id, id, booleanProperty, dockableTabRepository, () -> dockableTabFromIdFactory.createTab(id));
     }
 
-    public DetachableTab createTab(String id) {
-        return dockableTabFactories.stream()
-                .filter(factory -> factory.doesSupport(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Cannot create tab " + id))
-                .createTab();
-    }
 }

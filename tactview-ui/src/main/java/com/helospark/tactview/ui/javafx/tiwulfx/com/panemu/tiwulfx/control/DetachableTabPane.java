@@ -676,14 +676,17 @@ public class DetachableTabPane extends TabPane {
         return pane;
     }
 
-    public DetachableTabPaneLoadModel getLoadModel(Parent pane) {
+    public static DetachableTabPaneLoadModel extractCurrentModel(Parent pane) {
         SplitPane splitPane = null;
-        for (Node child : pane.getChildrenUnmodifiable()) {
-            if (child instanceof SplitPane) {
-                splitPane = (SplitPane) child;
+        if (pane instanceof SplitPane) {
+            splitPane = (SplitPane) pane;
+        } else {
+            for (Node child : pane.getChildrenUnmodifiable()) {
+                if (child instanceof SplitPane) {
+                    splitPane = (SplitPane) child;
+                }
             }
         }
-
         if (splitPane != null) {
             SplitPaneElement element = new SplitPaneElement();
 
@@ -699,7 +702,7 @@ public class DetachableTabPane extends TabPane {
         }
     }
 
-    private List<TabPaneElement> getLoadableModelInternal(int space, SplitPane pane) {
+    private static List<TabPaneElement> getLoadableModelInternal(int space, SplitPane pane) {
         List<TabPaneElement> result = new ArrayList<>();
         String indent = "";
         for (int i = 0; i < space; ++i) {
@@ -724,6 +727,7 @@ public class DetachableTabPane extends TabPane {
                     System.out.println(indent + " - " + tab.getText());
                     tabs.add((DetachableTab) tab);
                 }
+                //((DetachableTabPane) child).childStages
                 leafElement.tabs = tabs;
                 result.add(leafElement);
 

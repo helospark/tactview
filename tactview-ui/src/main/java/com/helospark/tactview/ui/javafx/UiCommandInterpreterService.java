@@ -57,7 +57,7 @@ public class UiCommandInterpreterService implements ResettableBean {
             return synchronousSend(uiCommand);
         }).exceptionally(e -> {
             logger.error("Unable to execute command {}", uiCommand, e);
-            alertDialogFactory.createErrorAlertWithStackTrace("Unable to execute", e);
+            alertDialogFactory.showExceptionDialog("Unable to execute", e);
             return null;
         });
     }
@@ -74,7 +74,7 @@ public class UiCommandInterpreterService implements ResettableBean {
             return previousOperation;
         }).exceptionally(e -> {
             logger.error("Unable to revert command {}", e);
-            alertDialogFactory.createErrorAlertWithStackTrace("Unable to revert", e);
+            alertDialogFactory.showExceptionDialog("Unable to revert", e);
             return null;
         });
     }
@@ -91,7 +91,7 @@ public class UiCommandInterpreterService implements ResettableBean {
             return previousOperation;
         }).exceptionally(e -> {
             logger.error("Unable to redo command {}", e);
-            alertDialogFactory.createErrorAlertWithStackTrace("Unable to redo", e);
+            alertDialogFactory.showExceptionDialog("Unable to redo", e);
             return null;
         });
     }

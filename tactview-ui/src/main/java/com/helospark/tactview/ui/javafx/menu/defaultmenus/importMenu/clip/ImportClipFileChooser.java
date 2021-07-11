@@ -11,7 +11,6 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
-import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
 
 @Component
@@ -42,8 +41,7 @@ public class ImportClipFileChooser {
 
             commandInterpreterService.sendWithResult(new AddClipsCommand(clipRequest, timelineManager))
                     .exceptionally(e -> {
-                        Alert alert = alertDialogFactory.createErrorAlertWithStackTrace("Unable to add image sequence", e);
-                        alert.showAndWait();
+                        alertDialogFactory.showExceptionDialog("Unable to add image sequence", e);
 
                         return null;
                     });

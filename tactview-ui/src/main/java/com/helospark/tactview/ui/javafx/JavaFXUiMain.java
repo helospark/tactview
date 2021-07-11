@@ -58,7 +58,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.MenuBar;
@@ -210,12 +209,13 @@ public class JavaFXUiMain extends Application {
         splitPaneElement.children.add(new LeafElement(List.of(propertyEditorTab)));
         splitPaneElement.children.add(new LeafElement(List.of(addableContentEditorTab, curveEditorTab)));
         splitPaneElement.children.add(new LeafElement(List.of(previewTab)));
+        DetachableTabPaneLoadModel detachableTabPaneLoadModel = new DetachableTabPaneLoadModel(splitPaneElement);
 
-        Parent model = DetachableTabPane.loadModel(new DetachableTabPaneLoadModel(splitPaneElement), lightDi.getBean(UiMessagingService.class));
-        lightDi.getBean(DockableTabRepository.class).setDockContainer(model);
-        HBox.setHgrow(model, Priority.ALWAYS);
+        DockableTabRepository dockableTabRepository = lightDi.getBean(DockableTabRepository.class);
+        dockableTabRepository.setParentPane(upperPane);
+        dockableTabRepository.loadAndSetModelToParent(detachableTabPaneLoadModel);
+
         TiwulFXUtil.setTiwulFXStyleSheet(scene);
-        upperPane.getChildren().add(model);
 
         VBox lower = new VBox(5);
         lower.setPrefWidth(scene.getWidth());

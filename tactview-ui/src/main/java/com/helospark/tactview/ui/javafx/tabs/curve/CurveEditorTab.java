@@ -419,4 +419,8 @@ public class CurveEditorTab extends DetachableTab implements ScenePostProcessor,
         this.updateIfNeeded();
     }
 
+    @Override
+    public String getTabId() {
+        return CURVE_EDITOR_ID;
+    }
 }

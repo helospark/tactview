@@ -7,17 +7,28 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPaneLoadModel;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Tab;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 
 @Component
 public class DockableTabRepository {
     public Parent dockContainer;
+    private HBox parentPane;
+
+    private UiMessagingService uiMessagingService;
+
+    public DockableTabRepository(UiMessagingService uiMessagingService) {
+        this.uiMessagingService = uiMessagingService;
+    }
 
     public boolean isTabOpen(String id) {
         if (dockContainer == null) {
@@ -130,6 +141,21 @@ public class DockableTabRepository {
         result.addAll(directResult);
 
         return result;
+    }
+
+    public DetachableTabPaneLoadModel extractLoadModel() {
+        return DetachableTabPane.extractCurrentModel(dockContainer);
+    }
+
+    public void loadAndSetModelToParent(DetachableTabPaneLoadModel detachableTabPaneLoadModel) {
+        dockContainer = DetachableTabPane.loadModel(detachableTabPaneLoadModel, uiMessagingService);
+        HBox.setHgrow(dockContainer, Priority.ALWAYS);
+        parentPane.getChildren().clear();
+        parentPane.getChildren().add(dockContainer);
+    }
+
+    public void setParentPane(HBox upperPane) {
+        this.parentPane = upperPane;
     }
 
 }

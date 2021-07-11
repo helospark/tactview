@@ -16,7 +16,6 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
-import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 
@@ -76,8 +75,7 @@ public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem 
                     commandInterpreter.sendWithResult(command);
                 });
             } catch (Exception ex) {
-                Alert alert = alertFactory.createErrorAlertWithStackTrace("Cannot change length", ex);
-                alert.showAndWait();
+                alertFactory.showExceptionDialog("Cannot change length", ex);
 
                 logger.warn("Unable to change clip length", ex);
             }

@@ -20,7 +20,6 @@ import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -113,8 +112,7 @@ public class ImageSequenceChooserDialog {
 
             commandInterpreterService.sendWithResult(new AddClipsCommand(clipRequest, timelineManager))
                     .exceptionally(e -> {
-                        Alert alert = alertDialogFactory.createErrorAlertWithStackTrace("Unable to add image sequence", e);
-                        alert.showAndWait();
+                        alertDialogFactory.showExceptionDialog("Unable to add image sequence", e);
 
                         return null;
                     }).thenAccept(a -> {
