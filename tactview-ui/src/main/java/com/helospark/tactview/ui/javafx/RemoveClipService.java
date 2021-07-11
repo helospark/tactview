@@ -6,17 +6,21 @@ import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveClipCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.RippleRemoveClipCommand;
 
 @Component
 public class RemoveClipService {
     private UiCommandInterpreterService commandInterpreterService;
     private TimelineManagerAccessor timelineManager;
+    private MessagingService messagingService;
 
-    public RemoveClipService(UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager) {
+    public RemoveClipService(UiCommandInterpreterService commandInterpreterService, TimelineManagerAccessor timelineManager, MessagingService messagingService) {
         this.commandInterpreterService = commandInterpreterService;
         this.timelineManager = timelineManager;
+        this.messagingService = messagingService;
     }
 
     public void removeClip(String clipId) {
@@ -32,6 +36,10 @@ public class RemoveClipService {
 
     private RemoveClipCommand createCommand(String clipId) {
         return new RemoveClipCommand(timelineManager, clipId);
+    }
+
+    public void rippleDeleteClips(List<String> clipIds) {
+        commandInterpreterService.sendWithResult(new RippleRemoveClipCommand(timelineManager, messagingService, clipIds));
     }
 
 }

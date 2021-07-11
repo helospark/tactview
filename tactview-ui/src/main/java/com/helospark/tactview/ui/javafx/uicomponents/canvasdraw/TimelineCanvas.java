@@ -393,7 +393,7 @@ public class TimelineCanvas {
 
         canvas.setOnMouseClicked(event -> {
             Optional<TimelineUiCacheElement> optionalElement = findElementAt(event.getX(), event.getY());
-            if (optionalElement.isPresent() && event.isStillSincePress()) {
+            if (optionalElement.isPresent() && event.isStillSincePress() && event.getButton().equals(MouseButton.PRIMARY)) {
                 TimelineUiCacheElement element = optionalElement.get();
                 selectElementOnClick(event, element);
                 redraw(true);

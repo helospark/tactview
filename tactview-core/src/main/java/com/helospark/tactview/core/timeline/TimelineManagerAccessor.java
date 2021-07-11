@@ -1114,4 +1114,16 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
         return allElements;
     }
+
+    public List<TimelineClip> findClipsRightFromPositionIgnoring(TimelinePosition position, List<String> excludedClipIds) {
+        List<TimelineClip> result = new ArrayList<>();
+        for (var channel : this.getChannels()) {
+            for (var clip : channel.getAllClips()) {
+                if (clip.getInterval().getStartPosition().isGreaterOrEqualToThan(position) && !excludedClipIds.contains(clip.getId())) {
+                    result.add(clip);
+                }
+            }
+        }
+        return result;
+    }
 }

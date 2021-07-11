@@ -91,6 +91,16 @@ public class StandardClipContextMenuChainItemConfiguration {
     }
 
     @Bean
+    @Order(109)
+    public ClipContextMenuChainItem rippleDeleteMenuItem(RemoveClipService removeClipService) {
+        return alwaysSupportedContextMenuItem(request -> {
+            MenuItem deleteClipMenuItem = new MenuItem("Ripple delete");
+            deleteClipMenuItem.setOnAction(e -> removeClipService.rippleDeleteClips(request.getAllClips().stream().map(a -> a.getId()).collect(Collectors.toList())));
+            return deleteClipMenuItem;
+        });
+    }
+
+    @Bean
     @Order(0)
     public ClipContextMenuChainItem scaleToFrameMenuItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager, ProjectRepository projectRepository,
             @Qualifier("scaleEffect") EffectFactory scaleFactory, EffectFactoryChain effectFactoryChain) {

@@ -119,6 +119,11 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     removeClipService.removeClips(selectedNodeRepository.getSelectedClipIds());
                     removeEffectService.removeEffects(selectedNodeRepository.getSelectedEffectIds());
                 }), disabledFocusedNodeClass);
+        keyCombinationRepository.registerGlobalKeyFilters(KeyCode.X,
+                useHandler("Ripple delete selected", event -> {
+                    removeClipService.rippleDeleteClips(selectedNodeRepository.getSelectedClipIds());
+                    removeEffectService.removeEffects(selectedNodeRepository.getSelectedEffectIds());
+                }), disabledFocusedNodeClass);
     }
 
     private KeyCodeCombination on(KeyCode code) {

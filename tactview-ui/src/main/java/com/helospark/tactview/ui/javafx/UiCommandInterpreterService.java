@@ -13,10 +13,12 @@ import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 @Component
 public class UiCommandInterpreterService implements ResettableBean {
     private DirtyRepository dirtyRepository;
+    private AlertDialogFactory alertDialogFactory;
 
     @Slf4j
     private Logger logger;
@@ -26,9 +28,10 @@ public class UiCommandInterpreterService implements ResettableBean {
 
     private int historySize;
 
-    public UiCommandInterpreterService(DirtyRepository dirtyRepository, @Value("${commandinterpreter.history.size}") int redoSize) {
+    public UiCommandInterpreterService(DirtyRepository dirtyRepository, @Value("${commandinterpreter.history.size}") int redoSize, AlertDialogFactory alertDialogFactory) {
         this.dirtyRepository = dirtyRepository;
-        this.historySize = 20;
+        this.historySize = redoSize;
+        this.alertDialogFactory = alertDialogFactory;
     }
 
     public <T extends UiCommand> T synchronousSend(T uiCommand) {
@@ -54,6 +57,7 @@ public class UiCommandInterpreterService implements ResettableBean {
             return synchronousSend(uiCommand);
         }).exceptionally(e -> {
             logger.error("Unable to execute command {}", uiCommand, e);
+            alertDialogFactory.createErrorAlertWithStackTrace("Unable to execute", e);
             return null;
         });
     }
@@ -70,6 +74,7 @@ public class UiCommandInterpreterService implements ResettableBean {
             return previousOperation;
         }).exceptionally(e -> {
             logger.error("Unable to revert command {}", e);
+            alertDialogFactory.createErrorAlertWithStackTrace("Unable to revert", e);
             return null;
         });
     }
@@ -86,6 +91,7 @@ public class UiCommandInterpreterService implements ResettableBean {
             return previousOperation;
         }).exceptionally(e -> {
             logger.error("Unable to redo command {}", e);
+            alertDialogFactory.createErrorAlertWithStackTrace("Unable to redo", e);
             return null;
         });
     }
