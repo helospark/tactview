@@ -1126,4 +1126,26 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
         return result;
     }
+
+    public List<TimelineClip> resolveClipIdsWithAllLinkedClip(List<String> clipIds) {
+        Set<String> idsToResolve = new HashSet<>(clipIds);
+        Set<String> newIds = new HashSet<>();
+
+        do {
+            newIds = new HashSet<>();
+            for (var clip : idsToResolve) {
+                List<String> linkedClips = linkClipRepository.getLinkedClips(clip);
+                for (var linkClip : linkedClips) {
+                    if (!idsToResolve.contains(linkClip)) {
+                        newIds.add(linkClip);
+                        idsToResolve.add(linkClip);
+                    }
+                }
+            }
+        } while (!newIds.isEmpty());
+
+        return idsToResolve.stream()
+                .flatMap(a -> findClipById(a).stream())
+                .collect(Collectors.toList());
+    }
 }

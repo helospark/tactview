@@ -10,6 +10,7 @@ import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.MoveClipRequest;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -21,22 +22,26 @@ import com.helospark.tactview.core.timeline.message.NotificationMessage;
 import com.helospark.tactview.core.timeline.message.NotificationMessage.Level;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 public class RippleRemoveClipCommand implements UiCommand {
     private TimelineManagerAccessor timelineManager;
     private MessagingService messagingService;
+    private LinkClipRepository linkedClipReposiros;
 
     private List<String> clipIds;
+    private TimelineEditMode timelineEditMode;
 
     private MultiValuedMap<TimelineChannel, TimelineClip> removedClips = new ArrayListValuedHashMap<>();
     private List<TimelineClip> movedClips = new ArrayList<>();
     private TimelinePosition moveDistance;
     private boolean rippleDeletePerformed = false;
 
-    public RippleRemoveClipCommand(TimelineManagerAccessor timelineManager, MessagingService messagingService, List<String> clipIds) {
+    public RippleRemoveClipCommand(TimelineManagerAccessor timelineManager, MessagingService messagingService, List<String> clipIds, TimelineEditMode timelineEditMode) {
         this.timelineManager = timelineManager;
         this.messagingService = messagingService;
         this.clipIds = clipIds;
+        this.timelineEditMode = timelineEditMode;
     }
 
     @Override
@@ -63,7 +68,7 @@ public class RippleRemoveClipCommand implements UiCommand {
             }
         }
 
-        List<TimelineClip> clipsToMoveBack = timelineManager.findClipsRightFromPositionIgnoring(positionToDelete, clipIds);
+        List<TimelineClip> clipsToMoveBack = findClipsToRipple(clipsToRemove, positionToDelete);
 
         if (!checkIfRippleDeleteCanBePerformed(clipsToRemove, maxLengthOfClip, clipsToMoveBack)) {
             return;
@@ -94,6 +99,30 @@ public class RippleRemoveClipCommand implements UiCommand {
 
         }
         rippleDeletePerformed = true;
+    }
+
+    private List<TimelineClip> findClipsToRipple(List<TimelineClip> clipsToRemove, TimelinePosition positionToDelete) {
+        List<TimelineClip> clipsToMoveBack = timelineManager.findClipsRightFromPositionIgnoring(positionToDelete, clipIds);
+
+        if (timelineEditMode.equals(TimelineEditMode.SINGLE_CHANNEL_RIPPLE)) {
+            Set<String> channelsToRipple = findAllChannelsForClips(clipsToRemove);
+
+            clipsToMoveBack = clipsToMoveBack.stream()
+                    .filter(clip -> channelsToRipple.contains(getChannelIdForClip(clip)))
+                    .collect(Collectors.toList());
+        }
+        return clipsToMoveBack;
+    }
+
+    private String getChannelIdForClip(TimelineClip clip) {
+        return timelineManager.findChannelForClipId(clip.getId()).get().getId();
+    }
+
+    private Set<String> findAllChannelsForClips(List<TimelineClip> clipsToRemove) {
+        return clipsToRemove.stream()
+                .flatMap(clip -> timelineManager.findChannelForClipId(clip.getId()).stream())
+                .map(channel -> channel.getId())
+                .collect(Collectors.toSet());
     }
 
     private boolean checkIfRippleDeleteCanBePerformed(List<TimelineClip> clipsToRemove, TimelineLength maxLengthOfClip, List<TimelineClip> clipsToMoveBack) {

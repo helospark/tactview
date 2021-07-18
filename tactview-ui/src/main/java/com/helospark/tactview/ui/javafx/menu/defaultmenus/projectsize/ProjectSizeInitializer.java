@@ -29,7 +29,7 @@ public class ProjectSizeInitializer {
         int previewWidth = (int) (scale * width);
         int previewHeight = (int) (scale * height);
         uiProjectRepository.setScaleFactor(scale);
-        uiProjectRepository.setAlignedPreviewSize(previewWidth, previewHeight, projectRepository.getWidth());
+        uiProjectRepository.setAlignedPreviewSize(previewWidth, previewHeight, projectRepository.getWidth(), projectRepository.getHeight());
         uiProjectRepository.setAspectRatio(aspectRatio);
         messagingService.sendAsyncMessage(new RegenerateAllImagePatternsMessage());
         messagingService.sendAsyncMessage(new DropCachesMessage());

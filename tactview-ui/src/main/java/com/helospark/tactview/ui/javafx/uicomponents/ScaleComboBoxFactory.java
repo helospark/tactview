@@ -68,7 +68,7 @@ public class ScaleComboBoxFactory {
             previewHeight = (int) (height * scale);
         }
 
-        uiProjectRepository.setAlignedPreviewSize(previewWidth, previewHeight, projectRepository.getWidth());
+        uiProjectRepository.setAlignedPreviewSize(previewWidth, previewHeight, projectRepository.getWidth(), projectRepository.getHeight());
         Platform.runLater(() -> {
             uiTimelineManager.refresh();
         });

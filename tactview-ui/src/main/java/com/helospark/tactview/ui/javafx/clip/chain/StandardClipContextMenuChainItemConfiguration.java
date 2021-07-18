@@ -20,6 +20,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddScaleCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveEffectCommand;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 import javafx.scene.control.MenuItem;
 
@@ -95,7 +96,8 @@ public class StandardClipContextMenuChainItemConfiguration {
     public ClipContextMenuChainItem rippleDeleteMenuItem(RemoveClipService removeClipService) {
         return alwaysSupportedContextMenuItem(request -> {
             MenuItem deleteClipMenuItem = new MenuItem("Ripple delete");
-            deleteClipMenuItem.setOnAction(e -> removeClipService.rippleDeleteClips(request.getAllClips().stream().map(a -> a.getId()).collect(Collectors.toList())));
+            deleteClipMenuItem
+                    .setOnAction(e -> removeClipService.rippleDeleteClips(request.getAllClips().stream().map(a -> a.getId()).collect(Collectors.toList()), TimelineEditMode.ALL_CHANNEL_RIPPLE));
             return deleteClipMenuItem;
         });
     }

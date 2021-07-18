@@ -22,11 +22,11 @@ import com.helospark.tactview.ui.javafx.key.KeyCombinationRepository.GlobalFilte
 import com.helospark.tactview.ui.javafx.key.ShortcutExecutedEvent;
 import com.helospark.tactview.ui.javafx.key.StandardGlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
-import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditModeRepository;
 import com.helospark.tactview.ui.javafx.save.UiSaveHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
-import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -39,35 +39,33 @@ import javafx.stage.Stage;
 
 @Component
 public class GlobalKeyCombinationAttacher implements ScenePostProcessor, ContextAware, MainWindowStageAware {
-    private UiCommandInterpreterService commandInterpreter;
     private KeyCombinationRepository keyCombinationRepository;
     private SelectedNodeRepository selectedNodeRepository;
     private RemoveClipService removeClipService;
     private RemoveEffectService removeEffectService;
     private ClipCutService clipCutService;
     private UiTimelineManager uiTimelineManager;
-    private CopyPasteRepository copyPasteRepository;
     private LightDiContext context;
-    private PropertyView propertyView;
+    private TimelineEditModeRepository editModeRepository;
 
     private Scene scene;
 
-    public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter, KeyCombinationRepository keyCombinationRepository, SelectedNodeRepository selectedNodeRepository,
+    public GlobalKeyCombinationAttacher(UiCommandInterpreterService commandInterpreter,
+            KeyCombinationRepository keyCombinationRepository,
+            SelectedNodeRepository selectedNodeRepository,
             RemoveClipService removeClipService,
-            RemoveEffectService removeEffectService, ClipCutService clipCutService,
-            CopyPasteRepository copyPasteRepository,
+            RemoveEffectService removeEffectService,
+            ClipCutService clipCutService,
             UiTimelineManager uiTimelineManager,
             UiSaveHandler uiSaveHandler,
-            PropertyView propertyView) {
-        this.commandInterpreter = commandInterpreter;
+            TimelineEditModeRepository editModeRepository) {
         this.keyCombinationRepository = keyCombinationRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.removeClipService = removeClipService;
         this.removeEffectService = removeEffectService;
         this.clipCutService = clipCutService;
         this.uiTimelineManager = uiTimelineManager;
-        this.propertyView = propertyView;
-        this.copyPasteRepository = copyPasteRepository;
+        this.editModeRepository = editModeRepository;
     }
 
     @Override
@@ -116,12 +114,16 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                 }), disabledFocusedNodeClass);
         keyCombinationRepository.registerGlobalKeyFilters(KeyCode.DELETE,
                 useHandler("Delete selected", event -> {
-                    removeClipService.removeClips(selectedNodeRepository.getSelectedClipIds());
+                    if (editModeRepository.isRippleDeleteEnabled()) {
+                        removeClipService.rippleDeleteClips(selectedNodeRepository.getSelectedClipIds(), editModeRepository.getMode());
+                    } else {
+                        removeClipService.removeClips(selectedNodeRepository.getSelectedClipIds());
+                    }
                     removeEffectService.removeEffects(selectedNodeRepository.getSelectedEffectIds());
                 }), disabledFocusedNodeClass);
         keyCombinationRepository.registerGlobalKeyFilters(KeyCode.X,
                 useHandler("Ripple delete selected", event -> {
-                    removeClipService.rippleDeleteClips(selectedNodeRepository.getSelectedClipIds());
+                    removeClipService.rippleDeleteClips(selectedNodeRepository.getSelectedClipIds(), TimelineEditMode.ALL_CHANNEL_RIPPLE);
                     removeEffectService.removeEffects(selectedNodeRepository.getSelectedEffectIds());
                 }), disabledFocusedNodeClass);
     }

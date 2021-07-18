@@ -10,6 +10,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveClipCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RippleRemoveClipCommand;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 @Component
 public class RemoveClipService {
@@ -31,15 +32,19 @@ public class RemoveClipService {
         List<RemoveClipCommand> commands = clipIds.stream()
                 .map(clipId -> createCommand(clipId))
                 .collect(Collectors.toList());
-        commandInterpreterService.sendWithResult(new CompositeCommand(commands));
+        if (commands.size() > 0) {
+            commandInterpreterService.sendWithResult(new CompositeCommand(commands));
+        }
     }
 
     private RemoveClipCommand createCommand(String clipId) {
         return new RemoveClipCommand(timelineManager, clipId);
     }
 
-    public void rippleDeleteClips(List<String> clipIds) {
-        commandInterpreterService.sendWithResult(new RippleRemoveClipCommand(timelineManager, messagingService, clipIds));
+    public void rippleDeleteClips(List<String> clipIds, TimelineEditMode timelineEditProperty) {
+        if (clipIds.size() > 0) {
+            commandInterpreterService.sendWithResult(new RippleRemoveClipCommand(timelineManager, messagingService, clipIds, timelineEditProperty));
+        }
     }
 
 }

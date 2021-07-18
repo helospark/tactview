@@ -119,7 +119,7 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
     }
 
     // For performance reason it is preferable to have the video width divisable by 16
-    public void setAlignedPreviewSize(int previewWidthToSet, int previewHeightToSet, int fullWidth) {
+    public void setAlignedPreviewSize(int previewWidthToSet, int previewHeightToSet, int fullWidth, int fullHeight) {
         int previewWidthModulo = previewWidthToSet % 16;
         if (previewWidthModulo != 0) {
             double multiplier = 0.0;
@@ -132,11 +132,11 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
             }
 
             previewHeightToSet = (int) (previewHeightToSet * multiplier);
-
         }
         this.setPreviewWidth(previewWidthToSet);
-        this.setPreviewHeight(previewHeightToSet);
-        this.setScaleFactor((double) previewWidthToSet / fullWidth);
+        double scale = (double) previewWidthToSet / fullWidth;
+        this.setPreviewHeight((int) (fullHeight * scale));
+        this.setScaleFactor(scale);
     }
 
 }

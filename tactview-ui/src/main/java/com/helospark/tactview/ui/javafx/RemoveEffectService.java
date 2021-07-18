@@ -27,8 +27,10 @@ public class RemoveEffectService {
         List<RemoveEffectCommand> commands = effectIds.stream()
                 .map(a -> new RemoveEffectCommand(timelineManager, a))
                 .collect(Collectors.toList());
-        CompositeCommand compositeCommand = new CompositeCommand(commands);
-        commandInterpreterService.sendWithResult(compositeCommand);
+        if (commands.size() > 0) {
+            CompositeCommand compositeCommand = new CompositeCommand(commands);
+            commandInterpreterService.sendWithResult(compositeCommand);
+        }
     }
 
 }

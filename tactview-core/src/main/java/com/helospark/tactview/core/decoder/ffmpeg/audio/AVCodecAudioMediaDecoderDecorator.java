@@ -25,6 +25,7 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.cacheable.Cacheable;
 
 @Component
 public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
@@ -162,6 +163,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     }
 
     @Override
+    @Cacheable
     public AudioMediaMetadata readMetadata(File file) {
         AVCodecAudioMetadataResponse readMetadata = implementation.readMetadata(file.getAbsolutePath());
         return AudioMediaMetadata.builder()

@@ -218,11 +218,12 @@
     -fx-stroke-width: 1px;
 }
 
-.loop-button-enabled>* {
+.loop-button.loop-button-enabled>* {
     -fx-text-fill: rgba(0,230,255,0.95);
 }
-.loop-button-enabled {
-    -fx-text-fill: rgba(0,230,255,0.95);
+
+.loop-button {
+    -fx-text-fill: white;
 }
 
 .timeline-title-bar>.separator {
@@ -611,4 +612,12 @@
 
 #property-view {
     -fx-padding: 5px 0px 0px 5px;
+}
+
+.edit-type-button>* {
+    -fx-text-fill: rgba(150,150,150,0.95);
+}
+
+.edit-type-button.menu-button-button-enabled>* {
+    -fx-text-fill: rgba(0,230,255,0.95);
 }
