@@ -15,7 +15,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.DuplicateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.MoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveGapCommand;
-import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditModeRepository;
 
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
@@ -27,11 +27,14 @@ public class ChannelContextMenuAppender {
     private TimelineManagerAccessor timelineManager;
     private UiCommandInterpreterService commandInterpreterService;
     private UiMessagingService messagingService;
+    private TimelineEditModeRepository timelineEditModeRepository;
 
-    public ChannelContextMenuAppender(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, UiMessagingService messagingService) {
+    public ChannelContextMenuAppender(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, UiMessagingService messagingService,
+            TimelineEditModeRepository timelineEditModeRepository) {
         this.timelineManager = timelineManager;
         this.commandInterpreterService = commandInterpreterService;
         this.messagingService = messagingService;
+        this.timelineEditModeRepository = timelineEditModeRepository;
     }
 
     public void addContextMenu(Node node, String channelId) {
@@ -132,7 +135,7 @@ public class ChannelContextMenuAppender {
         if (!clipsToRight.isEmpty()) {
             MenuItem removeGapMenuItem = new MenuItem("Remove gap");
             removeGapMenuItem.setOnAction(e -> {
-                commandInterpreterService.sendWithResult(new RemoveGapCommand(timelineManager, messagingService, position, channelIndex, TimelineEditMode.NORMAL));
+                commandInterpreterService.sendWithResult(new RemoveGapCommand(timelineManager, messagingService, position, channelIndex, timelineEditModeRepository.getMode()));
             });
             menu.getItems().add(removeGapMenuItem);
         }

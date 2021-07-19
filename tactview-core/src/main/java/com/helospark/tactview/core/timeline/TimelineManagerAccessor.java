@@ -1116,11 +1116,11 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     }
 
     public TreeSet<TimelineClip> findClipsRightFromPositionIgnoring(TimelinePosition position, List<String> excludedClipIds) {
-        List<Integer> channels = new ArrayList<>();
-        for (int i = 0; i < channels.size(); ++i) {
-            channels.add(i);
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < this.getChannels().size(); ++i) {
+            result.add(i);
         }
-        return findClipsRightFromPositionAndOnChannelIgnoring(position, channels, excludedClipIds);
+        return findClipsRightFromPositionAndOnChannelIgnoring(position, result, excludedClipIds);
     }
 
     public TreeSet<TimelineClip> findClipsRightFromPositionAndOnChannelIgnoring(TimelinePosition position, List<Integer> channelIndices, List<String> excludedClipIds) {
