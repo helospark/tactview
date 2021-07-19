@@ -1,14 +1,21 @@
 package com.helospark.tactview.ui.javafx.uicomponents.channelcontextmenu;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.TreeSet;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.commands.impl.CreateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.DuplicateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.MoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveChannelCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.RemoveGapCommand;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
@@ -19,14 +26,16 @@ import javafx.scene.control.SeparatorMenuItem;
 public class ChannelContextMenuAppender {
     private TimelineManagerAccessor timelineManager;
     private UiCommandInterpreterService commandInterpreterService;
+    private UiMessagingService messagingService;
 
-    public ChannelContextMenuAppender(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService) {
+    public ChannelContextMenuAppender(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, UiMessagingService messagingService) {
         this.timelineManager = timelineManager;
         this.commandInterpreterService = commandInterpreterService;
+        this.messagingService = messagingService;
     }
 
     public void addContextMenu(Node node, String channelId) {
-        ContextMenu contextMenu = createContextMenu(channelId);
+        ContextMenu contextMenu = createContextMenu(channelId, Optional.empty());
 
         node.setOnContextMenuRequested(event -> {
             contextMenu.show(node.getScene().getWindow(), event.getScreenX(), event.getScreenY());
@@ -34,8 +43,13 @@ public class ChannelContextMenuAppender {
         });
     }
 
-    public ContextMenu createContextMenu(String channelId) {
+    public ContextMenu createContextMenu(String channelId, Optional<TimelinePosition> position) {
         ContextMenu contextMenu = new ContextMenu();
+
+        if (position.isPresent()) {
+            int channelIndex = timelineManager.findChannelIndexByChannelId(channelId).orElse(0);
+            addRemoveGapCommandMenuItemIfNeeded(position.get(), channelIndex, contextMenu);
+        }
 
         contextMenu.getItems().add(createMoveChannelUpMenuItem(channelId));
         contextMenu.getItems().add(createMoveChannelDownMenuItem(channelId));
@@ -49,6 +63,7 @@ public class ChannelContextMenuAppender {
         contextMenu.getItems().add(new SeparatorMenuItem());
 
         contextMenu.getItems().add(deleteChannelMenuItem(channelId));
+
         return contextMenu;
     }
 
@@ -110,6 +125,17 @@ public class ChannelContextMenuAppender {
             }
         });
         return menuItem;
+    }
+
+    private void addRemoveGapCommandMenuItemIfNeeded(TimelinePosition position, int channelIndex, ContextMenu menu) {
+        TreeSet<TimelineClip> clipsToRight = timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(position, List.of(channelIndex), List.of());
+        if (!clipsToRight.isEmpty()) {
+            MenuItem removeGapMenuItem = new MenuItem("Remove gap");
+            removeGapMenuItem.setOnAction(e -> {
+                commandInterpreterService.sendWithResult(new RemoveGapCommand(timelineManager, messagingService, position, channelIndex, TimelineEditMode.NORMAL));
+            });
+            menu.getItems().add(removeGapMenuItem);
+        }
     }
 
 }

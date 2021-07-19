@@ -404,7 +404,8 @@ public class TimelineCanvas {
                     } else if (event.getButton().equals(MouseButton.SECONDARY)) {
                         Optional<TimelineChannel> channel = findChannelAtPosition(event.getX(), event.getY());
                         if (channel.isPresent()) {
-                            ContextMenu contextMenu = channelContextMenuAppender.createContextMenu(channel.get().getId());
+                            TimelinePosition position = TimelinePosition.ofSeconds(mapCanvasPixelToTime(event.getX()));
+                            ContextMenu contextMenu = channelContextMenuAppender.createContextMenu(channel.get().getId(), Optional.of(position));
                             contextMenu.show(canvas.getScene().getWindow(), event.getScreenX(), event.getScreenY());
                         }
                     }

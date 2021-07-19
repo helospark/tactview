@@ -1115,11 +1115,33 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return allElements;
     }
 
-    public List<TimelineClip> findClipsRightFromPositionIgnoring(TimelinePosition position, List<String> excludedClipIds) {
-        List<TimelineClip> result = new ArrayList<>();
-        for (var channel : this.getChannels()) {
+    public TreeSet<TimelineClip> findClipsRightFromPositionIgnoring(TimelinePosition position, List<String> excludedClipIds) {
+        List<Integer> channels = new ArrayList<>();
+        for (int i = 0; i < channels.size(); ++i) {
+            channels.add(i);
+        }
+        return findClipsRightFromPositionAndOnChannelIgnoring(position, channels, excludedClipIds);
+    }
+
+    public TreeSet<TimelineClip> findClipsRightFromPositionAndOnChannelIgnoring(TimelinePosition position, List<Integer> channelIndices, List<String> excludedClipIds) {
+        TreeSet<TimelineClip> result = new TreeSet<>((a, b) -> a.getInterval().getStartPosition().compareTo(b.getInterval().getStartPosition()));
+        for (int channelIndex : channelIndices) {
+            var channel = getChannels().get(channelIndex);
             for (var clip : channel.getAllClips()) {
                 if (clip.getInterval().getStartPosition().isGreaterOrEqualToThan(position) && !excludedClipIds.contains(clip.getId())) {
+                    result.add(clip);
+                }
+            }
+        }
+        return result;
+    }
+
+    public TreeSet<TimelineClip> findClipLeftOfPositionOnChannels(TimelinePosition position, List<Integer> channelIndices, List<String> excludedClipIds) {
+        TreeSet<TimelineClip> result = new TreeSet<>((a, b) -> a.getInterval().getEndPosition().compareTo(b.getInterval().getEndPosition()));
+        for (int channelIndex : channelIndices) {
+            var channel = getChannels().get(channelIndex);
+            for (var clip : channel.getAllClips()) {
+                if (clip.getInterval().getEndPosition().isLessOrEqualToThan(position) && !excludedClipIds.contains(clip.getId())) {
                     result.add(clip);
                 }
             }
@@ -1148,4 +1170,5 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 .flatMap(a -> findClipById(a).stream())
                 .collect(Collectors.toList());
     }
+
 }

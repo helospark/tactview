@@ -10,7 +10,6 @@ import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
-import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.MoveClipRequest;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -27,7 +26,6 @@ import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEdit
 public class RippleRemoveClipCommand implements UiCommand {
     private TimelineManagerAccessor timelineManager;
     private MessagingService messagingService;
-    private LinkClipRepository linkedClipReposiros;
 
     private List<String> clipIds;
     private TimelineEditMode timelineEditMode;
@@ -102,7 +100,7 @@ public class RippleRemoveClipCommand implements UiCommand {
     }
 
     private List<TimelineClip> findClipsToRipple(List<TimelineClip> clipsToRemove, TimelinePosition positionToDelete) {
-        List<TimelineClip> clipsToMoveBack = timelineManager.findClipsRightFromPositionIgnoring(positionToDelete, clipIds);
+        List<TimelineClip> clipsToMoveBack = new ArrayList<>(timelineManager.findClipsRightFromPositionIgnoring(positionToDelete, clipIds));
 
         if (timelineEditMode.equals(TimelineEditMode.SINGLE_CHANNEL_RIPPLE)) {
             Set<String> channelsToRipple = findAllChannelsForClips(clipsToRemove);
