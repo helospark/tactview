@@ -6,6 +6,8 @@ import java.util.List;
 public class LeafElement extends TabPaneElement {
     public List<DetachableTab> tabs = new ArrayList<>();
 
+    public List<DetachableTabWindow> childWindows = new ArrayList<>();
+
     public LeafElement(List<DetachableTab> tabs) {
         super("leaf");
         this.tabs = tabs;

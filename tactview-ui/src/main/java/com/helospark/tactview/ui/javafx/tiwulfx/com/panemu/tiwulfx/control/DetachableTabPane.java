@@ -17,8 +17,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.message.DockableTabClosedMessage;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.message.DockableTabOpenedMessage;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.common.TiwulFXUtil;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -529,7 +531,7 @@ public class DetachableTabPane extends TabPane {
         node.setOnDragDone((DragEvent event) -> {
             if (DRAGGED_TAB != null && DRAGGED_TAB.getTabPane() == null) {
                 DetachableTab tab = DRAGGED_TAB;
-                childStages.add(new TabStage(tab));
+                childStages.add(new TabStage(tab, this));
             }
             if (DRAG_SOURCE.getScene() != null && DRAG_SOURCE.getScene().getWindow() instanceof TabStage) {
                 TabStage stage = (TabStage) DRAG_SOURCE.getScene().getWindow();
@@ -636,18 +638,28 @@ public class DetachableTabPane extends TabPane {
         }
     }
 
-    public static Parent loadModel(DetachableTabPaneLoadModel model, UiMessagingService uiMessagingService) {
+    public static Parent loadModel(DetachableTabPaneLoadModel model, UiMessagingService uiMessagingService, StylesheetAdderService stylesheetAdderService) {
         TabPaneElement rootElement = model.root;
 
-        Parent result = loadModelRecursive(rootElement, uiMessagingService);
+        Parent result = loadModelRecursive(rootElement, uiMessagingService, stylesheetAdderService);
 
         return result;
     }
 
-    private static Parent loadModelRecursive(TabPaneElement rootElement, UiMessagingService uiMessagingService) {
+    private static Parent loadModelRecursive(TabPaneElement rootElement, UiMessagingService uiMessagingService, StylesheetAdderService stylesheetAdderService) {
         if (rootElement instanceof LeafElement) {
-            DetachableTabPane pane = createDetachableTabPane(uiMessagingService);
-            pane.getTabs().addAll(((LeafElement) rootElement).tabs);
+            LeafElement leafElement = (LeafElement) rootElement;
+
+            DetachableTabPane pane = createDetachableTabPaneWithTabs(uiMessagingService, leafElement);
+
+            for (var childWindow : leafElement.childWindows) {
+                DetachableTabPane childTabPane = createDetachableTabPaneWithTabs(uiMessagingService, childWindow.pane);
+                TabStage childWindowStage = pane.new TabStage(childTabPane, childWindow.x, childWindow.y, childWindow.width, childWindow.height);
+                TiwulFXUtil.setTiwulFXStyleSheet(childWindowStage.getScene());
+                stylesheetAdderService.setDefaultStyleSheetForDialog(childWindowStage, childWindowStage.getScene().getRoot());
+                pane.childStages.add(childWindowStage);
+            }
+
             return pane;
         } else if (rootElement instanceof SplitPaneElement) {
             SplitPaneElement splutPaneElementsd = (SplitPaneElement) rootElement;
@@ -655,7 +667,7 @@ public class DetachableTabPane extends TabPane {
 
             List<TabPaneElement> splitPaneElement = splutPaneElementsd.children;
             for (var itemElement : splitPaneElement) {
-                items.add(loadModelRecursive(itemElement, uiMessagingService));
+                items.add(loadModelRecursive(itemElement, uiMessagingService, stylesheetAdderService));
             }
 
             SplitPane pane = createSplitPane();
@@ -670,6 +682,12 @@ public class DetachableTabPane extends TabPane {
         }
     }
 
+    private static DetachableTabPane createDetachableTabPaneWithTabs(UiMessagingService uiMessagingService, LeafElement leafElement) {
+        DetachableTabPane pane = createDetachableTabPane(uiMessagingService);
+        pane.getTabs().addAll(leafElement.tabs);
+        return pane;
+    }
+
     private static DetachableTabPane createDetachableTabPane(UiMessagingService uiMessagingService) {
         DetachableTabPane pane = new DetachableTabPane(uiMessagingService);
         pane.setSide(SIDE);
@@ -677,6 +695,23 @@ public class DetachableTabPane extends TabPane {
     }
 
     public static DetachableTabPaneLoadModel extractCurrentModel(Parent pane) {
+        SplitPane splitPane = findSplitPane(pane);
+        if (splitPane != null) {
+            SplitPaneElement element = new SplitPaneElement();
+
+            boolean isVertical = splitPane.getOrientation().equals(Orientation.VERTICAL);
+            double[] dividerPositions = splitPane.getDividerPositions();
+            element.children.addAll(getLoadableModelInternal(splitPane));
+            element.isVertical = isVertical;
+            element.size = dividerPositions;
+
+            return new DetachableTabPaneLoadModel(element);
+        } else {
+            return null;
+        }
+    }
+
+    private static SplitPane findSplitPane(Parent pane) {
         SplitPane splitPane = null;
         if (pane instanceof SplitPane) {
             splitPane = (SplitPane) pane;
@@ -687,54 +722,65 @@ public class DetachableTabPane extends TabPane {
                 }
             }
         }
-        if (splitPane != null) {
-            SplitPaneElement element = new SplitPaneElement();
-
-            boolean isVertical = splitPane.getOrientation().equals(Orientation.VERTICAL);
-            double[] dividerPositions = splitPane.getDividerPositions();
-            element.children.addAll(getLoadableModelInternal(0, splitPane));
-            element.isVertical = isVertical;
-            element.size = dividerPositions;
-
-            return new DetachableTabPaneLoadModel(element);
-        } else {
-            return null;
-        }
+        return splitPane;
     }
 
-    private static List<TabPaneElement> getLoadableModelInternal(int space, SplitPane pane) {
+    private static List<TabPaneElement> getLoadableModelInternal(SplitPane pane) {
         List<TabPaneElement> result = new ArrayList<>();
-        String indent = "";
-        for (int i = 0; i < space; ++i) {
-            indent += " ";
-        }
-        System.out.println(indent + pane);
+
         for (Node child : pane.getItems()) {
             if (child instanceof SplitPane) {
                 SplitPaneElement childElement = new SplitPaneElement();
                 SplitPane splitPane = (SplitPane) child;
                 boolean isVertical = splitPane.getOrientation().equals(Orientation.VERTICAL);
                 double[] dividerPositions = splitPane.getDividerPositions();
-                childElement.children.addAll(getLoadableModelInternal(space + 2, splitPane));
+                childElement.children.addAll(getLoadableModelInternal(splitPane));
                 childElement.isVertical = isVertical;
                 childElement.size = dividerPositions;
                 result.add(childElement);
             } else if (child instanceof DetachableTabPane) {
-                LeafElement leafElement = new LeafElement();
-                List<DetachableTab> tabs = new ArrayList<>();
-                System.out.println(indent + "---");
-                for (Tab tab : ((DetachableTabPane) child).getTabs()) {
-                    System.out.println(indent + " - " + tab.getText());
-                    tabs.add((DetachableTab) tab);
-                }
-                //((DetachableTabPane) child).childStages
-                leafElement.tabs = tabs;
+                DetachableTabPane detachableTabPane = (DetachableTabPane) child;
+                LeafElement leafElement = loadDetachableTabPane(detachableTabPane);
                 result.add(leafElement);
-
-                System.out.println(indent + "---");
             }
         }
         return result;
+    }
+
+    private static LeafElement loadDetachableTabPane(DetachableTabPane detachableTabPane) {
+        LeafElement leafElement = new LeafElement();
+        for (Tab tab : detachableTabPane.getTabs()) {
+            leafElement.tabs.add((DetachableTab) tab);
+        }
+        for (var window : detachableTabPane.childStages) {
+            DetachableTabWindow detachableTabWindow = new DetachableTabWindow();
+            detachableTabWindow.x = window.getX();
+            detachableTabWindow.y = window.getY();
+            detachableTabWindow.width = window.getWidth();
+            detachableTabWindow.height = window.getHeight();
+            detachableTabWindow.pane = loadDetachableTabPane(window.tabPane);
+            leafElement.childWindows.add(detachableTabWindow);
+        }
+        return leafElement;
+    }
+
+    public static void close(Parent parentPane) {
+        SplitPane splitPane = findSplitPane(parentPane);
+        if (splitPane != null) {
+            closeRecursive(splitPane);
+        }
+    }
+
+    private static void closeRecursive(SplitPane pane) {
+        for (Node child : pane.getItems()) {
+            if (child instanceof SplitPane) {
+                closeRecursive((SplitPane) child);
+            } else if (child instanceof DetachableTabPane) {
+                for (var window : ((DetachableTabPane) child).childStages) {
+                    window.close();
+                }
+            }
+        }
     }
 
     /**
@@ -841,7 +887,7 @@ public class DetachableTabPane extends TabPane {
     };
 
     public TabStage openStage(DetachableTab tab) {
-        TabStage tabStage = new TabStage(tab);
+        TabStage tabStage = new TabStage(tab, this);
         childStages.add(tabStage);
         return tabStage;
     }
@@ -850,14 +896,14 @@ public class DetachableTabPane extends TabPane {
 
         private final DetachableTabPane tabPane;
 
-        public TabStage(final DetachableTab tab) {
+        public TabStage(final DetachableTab tab, DetachableTabPane detachableTabPane) {
             super();
             tabPane = detachableTabPaneFactory.create(DetachableTabPane.this);
             initOwner(stageOwnerFactory.call(this));
             Scene scene = sceneFactory.call(tabPane);
 
-            scene.getStylesheets().addAll(this.getScene().getStylesheets());
-            scene.getRoot().getStylesheets().addAll(this.getScene().getRoot().getStylesheets());
+            scene.getStylesheets().addAll(detachableTabPane.getScene().getStylesheets());
+            scene.getRoot().getStylesheets().addAll(detachableTabPane.getScene().getRoot().getStylesheets());
             setScene(scene);
 
             //			if (TiwulFXUtil.isMac()) {
@@ -879,9 +925,25 @@ public class DetachableTabPane extends TabPane {
             }
         }
 
+        public TabStage(DetachableTabPane tabPane, double x, double y, double width, double height) {
+            this.tabPane = tabPane;
+            initOwner(stageOwnerFactory.call(this));
+            Scene scene = sceneFactory.call(tabPane);
+
+            scene.getStylesheets().addAll(tabPane.getScene().getStylesheets());
+            scene.getRoot().getStylesheets().addAll(tabPane.getScene().getRoot().getStylesheets());
+            setScene(scene);
+            setX(x);
+            setY(y);
+            setWidth(width);
+            setHeight(height);
+            show();
+        }
+
     }
 
     public List<TabStage> getChildStages() {
         return childStages;
     }
+
 }

@@ -105,11 +105,19 @@ public class StylesheetAdderService {
         setTactviewIconForStage(stage);
     }
 
+    public void setDefaultStyleSheetForDialog(Stage stage, Parent parent) {
+        styleDialog(stage, parent, "stylesheet.css");
+    }
+
     public void addStyleSheets(Parent parent, String... cssFiles) {
         parent.getStylesheets().addAll(cssFiles);
         List<String> cssFileList = Arrays.asList(cssFiles);
         mapping.put(parent, cssFileList);
         watchFilesIfNeeded(cssFileList);
+    }
+
+    public void setDefaultStylesheets(Parent parent) {
+        addStyleSheets(parent, "stylesheet.css");
     }
 
 }

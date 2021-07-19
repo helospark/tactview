@@ -27,6 +27,7 @@ import com.helospark.lightdi.annotation.Order;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
+import com.helospark.tactview.ui.javafx.layout.DefaultLayoutProvider;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SeparatorMenuContribution;
@@ -114,6 +115,14 @@ public class DefaultWindowMenuItemConfiguration {
                 LOGGER.error("Unable to load layout", e1);
             }
 
+        });
+    }
+
+    @Bean
+    @Order(3999)
+    public SelectableMenuContribution resetLayoutMenuItem(MessagingService messagingService, DefaultLayoutProvider defaultLayoutProvider) {
+        return new DefaultMenuContribution(List.of(WINDOW_MENU_ITEM, "Reset layout"), e -> {
+            dockableTabRepository.loadAndSetModelToParent(defaultLayoutProvider.provideDefaultLayout());
         });
     }
 

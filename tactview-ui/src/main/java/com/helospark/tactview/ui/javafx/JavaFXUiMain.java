@@ -25,6 +25,7 @@ import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.util.jpaplugin.JnaLightDiPlugin;
 import com.helospark.tactview.ui.javafx.aware.MainWindowStageAware;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
+import com.helospark.tactview.ui.javafx.layout.DefaultLayoutProvider;
 import com.helospark.tactview.ui.javafx.menu.MenuProcessor;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.ProjectSizeInitializer;
 import com.helospark.tactview.ui.javafx.render.RenderDialogOpener;
@@ -33,16 +34,10 @@ import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
-import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.AddableContentDockableTabFactory;
-import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.CurveEditorDockableTabFactory;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTabFactory;
-import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PropertyEditorDockableTabFactory;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.common.TiwulFXUtil;
-import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPaneLoadModel;
-import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.LeafElement;
-import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.SplitPaneElement;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
@@ -197,23 +192,10 @@ public class JavaFXUiMain extends Application {
         upperPane.setMinHeight(300);
         upperPane.setFillHeight(true);
 
-        SplitPaneElement splitPaneElement = new SplitPaneElement();
-        splitPaneElement.isVertical = false;
-        splitPaneElement.size = new double[]{0.2, 0.6, 0.2};
-
-        DetachableTab propertyEditorTab = lightDi.getBean(PropertyEditorDockableTabFactory.class).createTab();
-        DetachableTab addableContentEditorTab = lightDi.getBean(AddableContentDockableTabFactory.class).createTab();
-        DetachableTab curveEditorTab = lightDi.getBean(CurveEditorDockableTabFactory.class).createTab();
-        DetachableTab previewTab = lightDi.getBean(PreviewDockableTabFactory.class).createTab();
-
-        splitPaneElement.children.add(new LeafElement(List.of(propertyEditorTab)));
-        splitPaneElement.children.add(new LeafElement(List.of(addableContentEditorTab, curveEditorTab)));
-        splitPaneElement.children.add(new LeafElement(List.of(previewTab)));
-        DetachableTabPaneLoadModel detachableTabPaneLoadModel = new DetachableTabPaneLoadModel(splitPaneElement);
-
+        DetachableTabPaneLoadModel layoutToLoad = lightDi.getBean(DefaultLayoutProvider.class).provideDefaultLayout();
         DockableTabRepository dockableTabRepository = lightDi.getBean(DockableTabRepository.class);
         dockableTabRepository.setParentPane(upperPane);
-        dockableTabRepository.loadAndSetModelToParent(detachableTabPaneLoadModel);
+        dockableTabRepository.loadAndSetModelToParent(layoutToLoad);
 
         TiwulFXUtil.setTiwulFXStyleSheet(scene);
 
