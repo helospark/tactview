@@ -1171,4 +1171,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 .collect(Collectors.toList());
     }
 
+    public List<Integer> getAllChannelIndices() {
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < this.getChannels().size(); ++i) {
+            result.add(i);
+        }
+        return result;
+    }
+
 }

@@ -1,12 +1,19 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.google.common.collect.Streams;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AddClipRequest;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -22,6 +29,8 @@ import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditModeRepository;
 
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -39,13 +48,14 @@ public class TimelineDragAndDropHandler {
     private SelectedNodeRepository selectedNodeRepository;
     private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
     private UiTimelineManager uiTimelineManager;
+    private TimelineEditModeRepository timelineEditModeRepository;
 
     @Slf4j
     private Logger logger;
 
     public TimelineDragAndDropHandler(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
             DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository,
-            UiTimelineManager uiTimelineManager) {
+            UiTimelineManager uiTimelineManager, TimelineEditModeRepository timelineEditModeRepository) {
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
         this.timelineState = timelineState;
@@ -53,6 +63,7 @@ public class TimelineDragAndDropHandler {
         this.selectedNodeRepository = selectedNodeRepository;
         this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
         this.uiTimelineManager = uiTimelineManager;
+        this.timelineEditModeRepository = timelineEditModeRepository;
     }
 
     public AddClipRequest addClipRequest(String channelId, List<File> dbFiles, String dbString, double currentX) {
@@ -77,21 +88,44 @@ public class TimelineDragAndDropHandler {
     }
 
     public void moveClip(String channelId, boolean revertable, TimelinePosition position) {
-        ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
-        if (currentlyDraggedEffect != null) {
-            String clipId = currentlyDraggedEffect.getClipId().get(0);
+        ClipDragInformation currentlyDraggedClip = dragRepository.currentlyDraggedClip();
+        if (currentlyDraggedClip != null) {
+            String clipId = currentlyDraggedClip.getClipId().get(0);
 
             if (position.isLessThan(TimelinePosition.ofZero())) {
                 position = TimelinePosition.ofZero();
             }
 
+            Set<String> clipIds = new HashSet<>(selectedNodeRepository.getSelectedClipIds());
+            Set<TimelineClip> rippleElements = new HashSet<>();
+
+            TimelinePosition leftestPosition = Streams.concat(clipIds.stream(), Stream.of(clipId))
+                    .flatMap(clip -> timelineManager.findClipById(clip).stream())
+                    .sorted((clip1, clip2) -> clip1.getInterval().getStartPosition().compareTo(clip2.getInterval().getStartPosition()))
+                    .findFirst()
+                    .map(a -> a.getInterval().getStartPosition())
+                    .get();
+
+            if (timelineEditModeRepository.getMode().equals(TimelineEditMode.ALL_CHANNEL_RIPPLE)) {
+                rippleElements.addAll(timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(leftestPosition, timelineManager.getAllChannelIndices(), List.of()));
+            } else if (timelineEditModeRepository.getMode().equals(TimelineEditMode.SINGLE_CHANNEL_RIPPLE)) {
+                List<Integer> channels = Streams.concat(clipIds.stream(), Stream.of(clipId))
+                        .flatMap(clip -> timelineManager.findChannelForClipId(clip).stream())
+                        .flatMap(channel -> timelineManager.findChannelIndexByChannelId(channel.getId()).stream())
+                        .collect(Collectors.toList());
+                rippleElements.addAll(timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(leftestPosition, channels, List.of()));
+            }
+
+            rippleElements.stream()
+                    .forEach(element -> clipIds.add(element.getId()));
+
             ClipMovedCommand command = ClipMovedCommand.builder()
                     .withIsRevertable(revertable)
                     .withClipId(clipId)
-                    .withAdditionalClipIds(selectedNodeRepository.getSelectedClipIds())
+                    .withAdditionalClipIds(new ArrayList<>(clipIds))
                     .withNewPosition(position)
-                    .withPreviousPosition(currentlyDraggedEffect.getOriginalPosition())
-                    .withOriginalChannelId(currentlyDraggedEffect.getOriginalChannelId())
+                    .withPreviousPosition(currentlyDraggedClip.getOriginalPosition())
+                    .withOriginalChannelId(currentlyDraggedClip.getOriginalChannelId())
                     .withNewChannelId(channelId)
                     .withTimelineManager(timelineManager)
                     .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))

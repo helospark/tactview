@@ -79,18 +79,8 @@ public class JavaFXUiMain extends Application {
 
     static LightDiContext lightDi;
 
-    static BufferedImage bufferedImage;
-
     private Stage splashStage;
     private ImageView splasViewh;
-
-    int frames = 0;
-    long currentTime = System.currentTimeMillis();
-    static int second = 0;
-
-    static List<BufferedImage> images = new ArrayList<>(30);
-    static List<BufferedImage> backBuffer = new ArrayList<>(30);
-    volatile static boolean backBufferReady = false;
 
     static UiTimelineManager uiTimelineManager;
     public static Canvas canvas;
@@ -165,8 +155,6 @@ public class JavaFXUiMain extends Application {
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
 
-        //        Label underVideoLabel = new Label();
-        //        underVideoLabel.setWrapText(true);
         Tooltip tooltip = new Tooltip();
 
         StringProperty statusTextProperty = lightDi.getBean(VideoStatusBarUpdater.class).getTextProperty();
