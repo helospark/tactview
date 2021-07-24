@@ -32,7 +32,7 @@ public class StandardClipContextMenuChainItemConfiguration {
     public ClipContextMenuChainItem copyMenuItem(CopyPasteRepository copyPasteRepository) {
         return alwaysSupportedContextMenuItem(request -> {
             MenuItem copyClip = new MenuItem("Copy");
-            copyClip.setOnAction(e -> copyPasteRepository.copyClip(request.getPrimaryClip().getId()));
+            copyClip.setOnAction(e -> copyPasteRepository.copyClip(List.of(request.getPrimaryClip().getId())));
             return copyClip;
         });
     }

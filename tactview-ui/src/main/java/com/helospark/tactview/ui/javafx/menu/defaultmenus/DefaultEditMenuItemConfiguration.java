@@ -57,8 +57,7 @@ public class DefaultEditMenuItemConfiguration {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Copy"), event -> {
             List<String> selectedClipIds = selectedNodeRepository.getSelectedClipIds();
             if (selectedClipIds.size() > 0) { // copy ony the first for now
-                String selectedClipId = selectedClipIds.get(0);
-                copyPasteRepository.copyClip(selectedClipId);
+                copyPasteRepository.copyClip(selectedClipIds);
             } else {
                 List<String> selectedEffects = selectedNodeRepository.getSelectedEffectIds();
                 if (selectedEffects.size() > 0) {

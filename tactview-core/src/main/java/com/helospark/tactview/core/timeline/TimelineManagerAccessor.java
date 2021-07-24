@@ -938,7 +938,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     public void addExistingClip(AddExistingClipRequest request) {
         TimelineChannel channel = request.getChannel();
         TimelineClip clip = request.getClipToAdd();
-        TimelinePosition position = channel.findPositionWhereIntervalWithLengthCanBeInserted(clip.getInterval().getLength());
+        TimelinePosition position = request.getPosition()
+                .orElseGet(() -> channel.findPositionWhereIntervalWithLengthCanBeInserted(clip.getInterval().getLength()));
         clip.setInterval(clip.getInterval().butMoveStartPostionTo(position));
         addClip(request.getChannel(), clip);
     }
@@ -1177,6 +1178,19 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             result.add(i);
         }
         return result;
+    }
+
+    public List<TimelineClip> resolveClipIdsToClips(List<String> clipIds) {
+        return clipIds.stream()
+                .flatMap(clipId -> this.findClipById(clipId).stream())
+                .collect(Collectors.toList());
+    }
+
+    public Optional<TimelinePosition> findMinimumPosition(List<TimelineClip> clips) {
+        return clips.stream()
+                .sorted((a, b) -> a.getInterval().getStartPosition().compareTo(b.getInterval().getStartPosition()))
+                .findFirst()
+                .map(a -> a.getInterval().getStartPosition());
     }
 
 }

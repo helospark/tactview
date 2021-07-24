@@ -1,6 +1,8 @@
 package com.helospark.tactview.ui.javafx.repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
@@ -11,6 +13,7 @@ import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddExistingClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.AddExistingEffectCommand;
@@ -31,14 +34,31 @@ public class CopyPasteRepository {
         this.commandInterpreter = commandInterpreter;
     }
 
-    public void copyClip(String clipId) {
-        TimelineChannel timelineChannel = timelineManager.findChannelForClipId(clipId).orElse(null);
-        TimelineClip timelineClip = timelineManager.findClipById(clipId)
-                .map(clip -> clip.cloneClip(CloneRequestMetadata.ofDefault())) // clone here, so changes will not affect the pasted clip
-                .orElse(null);
-        if (timelineChannel != null && timelineClip != null) {
-            clipboardContent = new ClipCopyPasteDomain(timelineClip, timelineChannel);
+    public void copyClip(List<String> clipIds) {
+        if (clipIds.size() == 0) {
+            return;
         }
+        List<TimelineClip> clips = timelineManager.resolveClipIdsToClips(clipIds);
+        TimelinePosition minimumPosition = timelineManager.findMinimumPosition(clips).get();
+
+        TimelinePosition relativeEndPosition = clips.stream()
+                .map(a -> a.getInterval().getEndPosition().subtract(minimumPosition))
+                .sorted((a, b) -> b.compareTo(a))
+                .findFirst()
+                .get();
+
+        List<ClipCopyPasteDomain.CopiedClipData> copiedData = new ArrayList<>();
+        for (var clipId : clipIds) {
+            TimelineChannel timelineChannel = timelineManager.findChannelForClipId(clipId).orElse(null);
+            TimelineClip timelineClip = timelineManager.findClipById(clipId)
+                    .map(clip -> clip.cloneClip(CloneRequestMetadata.ofDefault())) // clone here, so changes will not affect the pasted clip
+                    .orElse(null);
+            if (timelineChannel != null && timelineClip != null) {
+                TimelinePosition relativePosition = timelineClip.getInterval().getStartPosition().subtract(minimumPosition);
+                copiedData.add(new ClipCopyPasteDomain.CopiedClipData(timelineClip, timelineChannel, relativePosition));
+            }
+        }
+        clipboardContent = new ClipCopyPasteDomain(copiedData, relativeEndPosition);
     }
 
     public void copyEffect(String selectedEffect) {
@@ -127,13 +147,19 @@ public class CopyPasteRepository {
     }
 
     private void pasteClip() {
-        AddExistingClipRequest request = AddExistingClipRequest.builder()
-                .withChannel(((ClipCopyPasteDomain) clipboardContent).timelineChannel)
-                .withClipToAdd(((ClipCopyPasteDomain) clipboardContent).clipboardContent.cloneClip(CloneRequestMetadata.ofDefault())) // multiple ctrl+v
-                .build();
-        AddExistingClipsCommand addClipCommand = new AddExistingClipsCommand(request, timelineManager);
-
-        commandInterpreter.sendWithResult(addClipCommand);
+        TimelinePosition positionToInsertClipsTo = timelineManager.findEndPosition();
+        ClipCopyPasteDomain clipCopyPasteDomain = (ClipCopyPasteDomain) clipboardContent;
+        List<AddExistingClipsCommand> commands = new ArrayList<>();
+        for (var element : clipCopyPasteDomain.copiedData) {
+            AddExistingClipRequest request = AddExistingClipRequest.builder()
+                    .withChannel(element.timelineChannel)
+                    .withClipToAdd(element.clipboardContent.cloneClip(CloneRequestMetadata.ofDefault())) // multiple ctrl+v
+                    .withPosition(Optional.of(positionToInsertClipsTo.add(element.relativeOffset)))
+                    .build();
+            AddExistingClipsCommand addClipCommand = new AddExistingClipsCommand(request, timelineManager);
+            commands.add(addClipCommand);
+        }
+        commandInterpreter.sendWithResult(new CompositeCommand(commands));
     }
 
     public boolean isEffectOnClipboard() {
