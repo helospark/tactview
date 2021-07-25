@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.tabs.dockabletab;
 
+import static com.helospark.tactview.ui.javafx.tabs.dockabletab.OpenDetachableTabTarget.MAIN_WINDOW;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -91,20 +93,62 @@ public class DockableTabRepository {
         return false;
     }
 
-    public void openTab(DetachableTab tab) {
+    public void openTab(OpenTabRequest request) {
+        var tab = request.tabToOpen;
         Optional<DetachableTabPane> optionalTabPane = findTabpaneOpenInternal(dockContainer, tab.getTabId());
         if (optionalTabPane.isEmpty()) {
-            Set<Node> tabPanes = dockContainer.lookupAll(".detachable-tab-pane");
-            if (tabPanes.size() > 0) {
-                DetachableTabPane planeToAddTab = tabPanes.stream()
-                        .filter(a -> a instanceof DetachableTabPane)
-                        .findFirst()
-                        .map(a -> (DetachableTabPane) a)
-                        .get();
+
+            if (request.target.equals(OpenDetachableTabTarget.MAIN_WINDOW)) {
+                DetachableTabPane planeToAddTab;
+                if (request.sameTabPaneAs.isPresent()) {
+                    planeToAddTab = findTabPaneWithId(request.sameTabPaneAs.get()).orElseGet(() -> findMainStageTabPane());
+                } else {
+                    planeToAddTab = findMainStageTabPane();
+                }
                 planeToAddTab.getTabs().add(tab);
                 planeToAddTab.getSelectionModel().select(tab);
+            } else {
+                DetachableTabPane mainStage = findMainStageTabPane();
+                mainStage.openStage(tab);
             }
         }
+    }
+
+    private DetachableTabPane findMainStageTabPane() {
+        Set<Node> tabPanes = dockContainer.lookupAll(".detachable-tab-pane");
+        return tabPanes.stream()
+                .filter(a -> a instanceof DetachableTabPane)
+                .findFirst()
+                .map(a -> (DetachableTabPane) a)
+                .get();
+    }
+
+    private Optional<DetachableTabPane> findTabPaneWithId(String tabId) {
+        Set<Node> tabPanes = dockContainer.lookupAll(".detachable-tab-pane");
+        Optional<DetachableTabPane> result = tabPanes.stream()
+                .filter(a -> a instanceof DetachableTabPane)
+                .filter(a -> isTabWithIdInTabPane((DetachableTabPane) a, tabId))
+                .findFirst()
+                .map(a -> (DetachableTabPane) a);
+
+        // Handle tabpane in windows
+        return result;
+    }
+
+    private boolean isTabWithIdInTabPane(DetachableTabPane tabPane, String tabId) {
+        return tabPane.getTabs()
+                .stream()
+                .filter(tab -> ((DetachableTab) tab).getTabId().equals(tabId))
+                .findFirst()
+                .isPresent();
+    }
+
+    public void openTab(DetachableTab tab) {
+        OpenTabRequest request = OpenTabRequest.builder()
+                .withTabToOpen(tab)
+                .withTarget(MAIN_WINDOW)
+                .build();
+        openTab(request);
     }
 
     public List<DetachableTabPane> findNodesNotContainingId(String id) {
@@ -163,6 +207,55 @@ public class DockableTabRepository {
 
     public void setParentPane(HBox upperPane) {
         this.parentPane = upperPane;
+    }
+
+    public boolean isTabVisibleWithId(String id) {
+        return isTabOpen(id); // TODO: check if tab is selected
+    }
+
+    public static class OpenTabRequest {
+        DetachableTab tabToOpen;
+        OpenDetachableTabTarget target;
+        Optional<String> sameTabPaneAs;
+
+        private OpenTabRequest(Builder builder) {
+            this.tabToOpen = builder.tabToOpen;
+            this.target = builder.target;
+            this.sameTabPaneAs = builder.sameTabPaneAs;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static final class Builder {
+            private DetachableTab tabToOpen;
+            private OpenDetachableTabTarget target;
+            private Optional<String> sameTabPaneAs = Optional.empty();
+
+            private Builder() {
+            }
+
+            public Builder withTabToOpen(DetachableTab tabToOpen) {
+                this.tabToOpen = tabToOpen;
+                return this;
+            }
+
+            public Builder withTarget(OpenDetachableTabTarget target) {
+                this.target = target;
+                return this;
+            }
+
+            public Builder withSameTabPaneAs(Optional<String> sameTabPaneAs) {
+                this.sameTabPaneAs = sameTabPaneAs;
+                return this;
+            }
+
+            public OpenTabRequest build() {
+                return new OpenTabRequest(this);
+            }
+        }
+
     }
 
 }

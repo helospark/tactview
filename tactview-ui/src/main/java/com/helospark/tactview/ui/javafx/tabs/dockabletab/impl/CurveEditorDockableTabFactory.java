@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.tabs.dockabletab.impl;
 
+import java.util.Optional;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.ui.javafx.tabs.curve.CurveEditorTab;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
@@ -27,4 +29,8 @@ public class CurveEditorDockableTabFactory extends AbstractCachingDockableTabFac
         return CurveEditorTab.CURVE_EDITOR_ID;
     }
 
+    @Override
+    public Optional<String> getPreferredNextTo() {
+        return Optional.of(AddableContentDockableTabFactory.ID);
+    }
 }

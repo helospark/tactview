@@ -35,6 +35,7 @@ public class DetachableTab extends Tab {
 
     public DetachableTab(String id) {
         this.id = id;
+        super.setId(id);
     }
 
     public DetachableTab(String text, Node content, String id) {

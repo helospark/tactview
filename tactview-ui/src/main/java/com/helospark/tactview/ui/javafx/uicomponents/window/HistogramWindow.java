@@ -12,23 +12,24 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.util.MathUtil;
-import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
 
-import javafx.event.ActionEvent;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 @Component
 @Order(4003)
-public class HistogramWindow extends SingletonOpenableWindow implements DisplayUpdatedListener, SelectableMenuContribution {
+public class HistogramWindow extends DetachableTab implements DisplayUpdatedListener {
+    public static final String ID = "histogram-tab";
     private static final int DEFAULT_WIDTH = 500;
     private static final int DEFAULT_HEIGHT = 300;
 
@@ -41,10 +42,19 @@ public class HistogramWindow extends SingletonOpenableWindow implements DisplayU
         COLOR_MAPPERS.put("blue", color -> (color.blue));
     }
 
+    private DockableTabRepository dockableTabRepository;
+
     private Canvas canvas;
 
-    private Image previouslyDisplayedImage;
+    private Image previouslyDisplayedImage = new WritableImage(10, 10);
     private ToggleGroup group;
+
+    public HistogramWindow(DockableTabRepository dockableTabRepository) {
+        super(ID);
+        this.dockableTabRepository = dockableTabRepository;
+
+        this.openTab();
+    }
 
     @Override
     public void displayUpdated(DisplayUpdatedRequest request) {
@@ -53,7 +63,7 @@ public class HistogramWindow extends SingletonOpenableWindow implements DisplayU
     }
 
     private void updateDisplayWithPreviousImageIfRequired() {
-        if (!isWindowOpen) {
+        if (!dockableTabRepository.isTabVisibleWithId(ID)) {
             return;
         }
         Image javafxImage = previouslyDisplayedImage;
@@ -103,12 +113,10 @@ public class HistogramWindow extends SingletonOpenableWindow implements DisplayU
         return COLOR_MAPPERS.get(((RadioButton) group.getSelectedToggle()).getId());
     }
 
-    @Override
-    protected Scene createScene() {
+    protected void openTab() {
         BorderPane borderPane = new BorderPane();
 
         canvas = new Canvas(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        canvas.widthProperty().bind(borderPane.widthProperty());
 
         borderPane.setCenter(canvas);
 
@@ -131,37 +139,15 @@ public class HistogramWindow extends SingletonOpenableWindow implements DisplayU
         HBox hbox = new HBox();
         hbox.getChildren().addAll(radioButtons);
         borderPane.setTop(hbox);
+        canvas.widthProperty().bind(borderPane.widthProperty().subtract(10));
+        canvas.heightProperty().bind(borderPane.heightProperty().subtract(10).subtract(hbox.heightProperty()));
 
-        return new Scene(borderPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    }
+        canvas.widthProperty().addListener(e -> this.updateCanvasWithImage(previouslyDisplayedImage));
+        canvas.heightProperty().addListener(e -> this.updateCanvasWithImage(previouslyDisplayedImage));
 
-    @Override
-    public void open() {
-        super.open();
-
-        if (previouslyDisplayedImage != null) {
-            updateCanvasWithImage(previouslyDisplayedImage);
-        }
-    }
-
-    @Override
-    public String getWindowId() {
-        return "Histogram";
-    }
-
-    @Override
-    public List<String> getPath() {
-        return List.of("Window", "Histogram");
-    }
-
-    @Override
-    public void onAction(ActionEvent event) {
-        this.open();
-    }
-
-    @Override
-    protected boolean isResizable() {
-        return true;
+        this.setContent(borderPane);
+        this.updateCanvasWithImage(previouslyDisplayedImage);
+        this.setText("Histogram");
     }
 
 }

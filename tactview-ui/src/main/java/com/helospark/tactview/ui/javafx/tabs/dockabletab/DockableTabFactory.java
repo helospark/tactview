@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.tabs.dockabletab;
 
+import java.util.Optional;
+
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 
 public interface DockableTabFactory {
@@ -9,5 +11,13 @@ public interface DockableTabFactory {
     public boolean doesSupport(String id);
 
     public String getId();
+
+    public default OpenDetachableTabTarget getPreferredMode() {
+        return OpenDetachableTabTarget.MAIN_WINDOW;
+    }
+
+    public default Optional<String> getPreferredNextTo() {
+        return Optional.empty();
+    }
 
 }

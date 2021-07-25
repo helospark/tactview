@@ -51,7 +51,7 @@ public class DockableTabOpenerMenuItems implements DynamicallyGeneratedParentMen
 
     @Override
     public List<String> getPath() {
-        return List.of("Window", "View");
+        return List.of("Window", "Views");
     }
 
     @Override
@@ -66,7 +66,7 @@ public class DockableTabOpenerMenuItems implements DynamicallyGeneratedParentMen
         BooleanProperty booleanProperty = new SimpleBooleanProperty();
         booleanProperty.set(dockableTabRepository.isTabOpen(id));
         selectedProperties.put(id, booleanProperty);
-        return new DockableWindowMenuContribution(id, id, booleanProperty, dockableTabRepository, () -> dockableTabFromIdFactory.createTab(id));
+        return new DockableWindowMenuContribution(id, id, booleanProperty, dockableTabRepository, () -> dockableTabFromIdFactory.createTab(id), a.getPreferredMode(), a.getPreferredNextTo());
     }
 
 }

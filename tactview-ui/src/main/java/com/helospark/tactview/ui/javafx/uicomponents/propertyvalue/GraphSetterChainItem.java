@@ -16,6 +16,7 @@ import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.GraphingComponent;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.GraphingDialog;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.factory.GraphingComponentFactory;
@@ -34,6 +35,7 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
     private MessagingService messagingService;
     private StylesheetAdderService stylesheetAdderService;
     private NameToIdRepository nameToIdRepository;
+    private DockableTabRepository dockableTabRepository;
 
     private Scene scene;
 
@@ -41,7 +43,8 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
 
     public GraphSetterChainItem(UiCommandInterpreterService commandInterpreter,
             EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, GraphingDialog graphingDialog, EffectGraphAccessor effectGraphAccessor,
-            MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories, StylesheetAdderService stylesheetAdderService, NameToIdRepository nameToIdRepository) {
+            MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories, StylesheetAdderService stylesheetAdderService, NameToIdRepository nameToIdRepository,
+            DockableTabRepository dockableTabRepository) {
         super(GraphProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
@@ -52,6 +55,7 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
         this.menuItemFactories = menuItemFactories;
         this.stylesheetAdderService = stylesheetAdderService;
         this.nameToIdRepository = nameToIdRepository;
+        this.dockableTabRepository = dockableTabRepository;
     }
 
     @Override
@@ -82,7 +86,8 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
                 .build();
 
         button.setOnMouseClicked(event -> {
-            graphingDialog.open(graphingProvider);
+            dockableTabRepository.openTab(graphingDialog);
+            graphingDialog.showProvider(graphingProvider);
         });
 
         return result;

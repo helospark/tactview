@@ -17,7 +17,7 @@ import javafx.scene.control.TabPane.TabClosingPolicy;
 
 @Component
 public class AddableContentDockableTabFactory extends AbstractCachingDockableTabFactory {
-    private static final String ID = "addable-content";
+    public static final String ID = "addable-content";
     private LightDiContext lightDi;
 
     public AddableContentDockableTabFactory(LightDiContext lightDi) {

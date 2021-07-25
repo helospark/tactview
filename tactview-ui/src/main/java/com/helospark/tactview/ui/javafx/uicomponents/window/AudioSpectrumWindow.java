@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx.uicomponents.window;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
@@ -8,16 +9,14 @@ import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.util.MathUtil;
-import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckBox;
@@ -29,25 +28,34 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 @Component
-@Order(4000)
-public class AudioSpectrumWindow extends SingletonOpenableWindow implements AudioPlayedListener, SelectableMenuContribution {
+public class AudioSpectrumWindow extends DetachableTab implements AudioPlayedListener {
+    public static final String AUDIO_SPECTURM_ID = "audio-spectrum-tab";
     private static final int MAX_FREQUENCY = 15000;
     private static final int DEFAULT_WIDTH = 600;
     private static final int DEFAULT_HEIGHT = 255;
     private static final int LABEL_HEIGHT = 20;
     private static final int AVG_SIZE = 3;
 
+    private DockableTabRepository dockableTabRepository;
+
     private FastFourierTransformer fastFourierTransformer = new FastFourierTransformer(DftNormalization.UNITARY);
 
     private Canvas canvas;
     private CheckBox logCheckbox;
 
-    private AudioFrameResult previousAudioFrame;
+    private AudioFrameResult previousAudioFrame = new AudioFrameResult(List.of(ByteBuffer.allocate(100)), 22100, 1);
+
+    public AudioSpectrumWindow(DockableTabRepository dockableTabRepository) {
+        super(AUDIO_SPECTURM_ID);
+        this.dockableTabRepository = dockableTabRepository;
+
+        this.openTab();
+    }
 
     @Override
     public void onAudioPlayed(AudioPlayedRequest request) {
         this.previousAudioFrame = request.getAudioFrameResult().onHeapCopy();
-        if (!isWindowOpen) {
+        if (!dockableTabRepository.isTabOpen(AUDIO_SPECTURM_ID) || canvas == null) {
             return;
         }
 
@@ -71,10 +79,7 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
         Platform.runLater(() -> {
             GraphicsContext graphics = canvas.getGraphicsContext2D();
 
-            graphics.setFill(Color.BLACK);
-            graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            graphics.setFill(new javafx.scene.paint.Color(0.3, 0.8, 0.3, 0.1));
-            graphics.setGlobalBlendMode(BlendMode.SRC_OVER);
+            clearCanvas(graphics);
 
             for (int i = 0; i < fftMagnitudes.length; i += AVG_SIZE) {
                 Color color = Color.WHITE;
@@ -109,6 +114,13 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
                 graphics.fillRect(i * xScaler, 0, 0.5, canvas.getHeight() - LABEL_HEIGHT);
             }
         });
+    }
+
+    private void clearCanvas(GraphicsContext graphics) {
+        graphics.setFill(Color.BLACK);
+        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        graphics.setFill(new javafx.scene.paint.Color(0.3, 0.8, 0.3, 0.1));
+        graphics.setGlobalBlendMode(BlendMode.SRC_OVER);
     }
 
     private double computeTextWidth(Font font, String text) {
@@ -164,60 +176,30 @@ public class AudioSpectrumWindow extends SingletonOpenableWindow implements Audi
         return i;
     }
 
-    @Override
-    protected Scene createScene() {
+    public void openTab() {
         BorderPane borderPane = new BorderPane();
 
         canvas = new Canvas(DEFAULT_WIDTH, DEFAULT_HEIGHT + LABEL_HEIGHT - 19); // TODO: 19 = topBox.getHeight()
-        canvas.widthProperty().bind(borderPane.widthProperty());
 
         VBox topBox = new VBox();
         logCheckbox = new CheckBox("Logarithmic");
         logCheckbox.selectedProperty().addListener(e -> {
             updateCanvasWithAudioFragment(previousAudioFrame);
         });
+        canvas.widthProperty().addListener(e -> updateCanvasWithAudioFragment(previousAudioFrame));
+        canvas.heightProperty().addListener(e -> updateCanvasWithAudioFragment(previousAudioFrame));
 
         topBox.getChildren().add(logCheckbox);
 
         borderPane.setCenter(canvas);
         borderPane.setTop(topBox);
+        canvas.widthProperty().bind(borderPane.widthProperty().subtract(10));
+        canvas.heightProperty().bind(borderPane.heightProperty().subtract(topBox.getHeight()).subtract(20));
 
-        return new Scene(borderPane, DEFAULT_WIDTH, DEFAULT_HEIGHT + LABEL_HEIGHT);
-    }
+        this.setContent(borderPane);
+        updateCanvasWithAudioFragment(previousAudioFrame);
 
-    @Override
-    public void open() {
-        super.open();
-
-        if (previousAudioFrame != null) {
-            updateCanvasWithAudioFragment(previousAudioFrame);
-        }
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        this.isWindowOpen = false;
-    }
-
-    @Override
-    public String getWindowId() {
-        return "audiospectrum";
-    }
-
-    @Override
-    public List<String> getPath() {
-        return List.of("Window", "Audio spectrum");
-    }
-
-    @Override
-    public void onAction(ActionEvent event) {
-        this.open();
-    }
-
-    @Override
-    protected boolean isResizable() {
-        return false;
+        setText("Audio spectrum");
     }
 
 }
