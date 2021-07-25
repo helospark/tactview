@@ -77,13 +77,23 @@ public class DetachableTabPane extends TabPane {
     private List<Double> lstTabPoint = new ArrayList<>();
     private boolean closeIfEmpty = false;
 
-    private UiMessagingService uiMessagingService;
-
     public DetachableTabPane(UiMessagingService uiMessagingService) {
-        super();
-        this.uiMessagingService = uiMessagingService;
         getStyleClass().add("detachable-tab-pane");
         attachListeners(uiMessagingService);
+
+        detachableTabPaneFactory = new DetachableTabPaneFactory(uiMessagingService) {
+            @Override
+            protected void init(DetachableTabPane a) {
+            }
+
+            @Override
+            DetachableTabPane create(DetachableTabPane source) {
+                DetachableTabPane result = super.create(source);
+                result.setSide(SIDE);
+                return result;
+            }
+
+        };
     }
 
     private Button btnTop;
@@ -685,6 +695,13 @@ public class DetachableTabPane extends TabPane {
     private static DetachableTabPane createDetachableTabPaneWithTabs(UiMessagingService uiMessagingService, LeafElement leafElement) {
         DetachableTabPane pane = createDetachableTabPane(uiMessagingService);
         pane.getTabs().addAll(leafElement.tabs);
+        // Workaround for strange issue when resetting layout 2 tabs can be selected at once on the same TabPane, something it should be impossible 
+        // normally, I guess it has to do with reusing tabs.
+        // We have to select all element to remove the selection from other tabs.
+        for (int i = 0; i < pane.getTabs().size(); ++i) {
+            pane.getSelectionModel().clearAndSelect(i);
+        }
+        pane.getSelectionModel().clearAndSelect(0);
         return pane;
     }
 
@@ -765,20 +782,24 @@ public class DetachableTabPane extends TabPane {
     }
 
     public static void close(Parent parentPane) {
+        List<DetachableTabPane> tabPanes = new ArrayList<>();
         SplitPane splitPane = findSplitPane(parentPane);
         if (splitPane != null) {
-            closeRecursive(splitPane);
+            closeRecursive(splitPane, tabPanes);
         }
+        tabPanes.stream()
+                .forEach(pane -> pane.getTabs().clear());
     }
 
-    private static void closeRecursive(SplitPane pane) {
+    private static void closeRecursive(SplitPane pane, List<DetachableTabPane> tabPanes) {
         for (Node child : pane.getItems()) {
             if (child instanceof SplitPane) {
-                closeRecursive((SplitPane) child);
+                closeRecursive((SplitPane) child, tabPanes);
             } else if (child instanceof DetachableTabPane) {
                 for (var window : ((DetachableTabPane) child).childStages) {
                     window.close();
                 }
+                tabPanes.add(((DetachableTabPane) child));
             }
         }
     }
@@ -841,19 +862,7 @@ public class DetachableTabPane extends TabPane {
         }
     };
 
-    private DetachableTabPaneFactory detachableTabPaneFactory = new DetachableTabPaneFactory(uiMessagingService) {
-        @Override
-        protected void init(DetachableTabPane a) {
-        }
-
-        @Override
-        DetachableTabPane create(DetachableTabPane source) {
-            DetachableTabPane result = super.create(source);
-            result.setSide(SIDE);
-            return result;
-        }
-
-    };
+    private DetachableTabPaneFactory detachableTabPaneFactory;
 
     public DetachableTabPaneFactory getDetachableTabPaneFactory() {
         return detachableTabPaneFactory;

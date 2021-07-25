@@ -364,7 +364,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
 
         TimelinePosition relativeMove = newPosition.subtract(originalInterval.getStartPosition());
-        int relativeChannelMove = findChannelIndex(newChannelId).orElseThrow() - findChannelIndex(originalChannel.getId()).orElseThrow();
+        int relativeChannelMove = calculateRelativeChannelMove(newChannelId, originalChannel, linkedClips);
         Optional<ClosesIntervalChannel> finalSpecialPositionUsed = specialPositionUsed;
 
         synchronized (timelineChannelsState.fullLock) {
@@ -374,13 +374,13 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                         .allMatch(clip -> {
                             int currentIndex = findChannelIndexForClipId(clip.getId()).get() + relativeChannelMove;
 
-                            if (currentIndex < timelineChannelsState.channels.size()) {
+                            if (currentIndex < 0 || currentIndex >= timelineChannelsState.channels.size()) {
+                                return false;
+                            } else {
                                 TimelineChannel movedChannel = timelineChannelsState.channels.get(currentIndex);
                                 TimelineInterval clipCurrentInterval = clip.getInterval();
                                 TimelineInterval clipNewInterval = clipCurrentInterval.butAddOffset(relativeMove);
                                 return movedChannel.canAddResourceAtExcluding(clipNewInterval, linkedClipIds);
-                            } else {
-                                return true;
                             }
                         });
 
@@ -453,6 +453,21 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             }
         }
         return true;
+    }
+
+    private int calculateRelativeChannelMove(String newChannelId, TimelineChannel originalChannel, List<TimelineClip> linkedClips) {
+        int relativeChannelMove = findChannelIndex(newChannelId).orElseThrow() - findChannelIndex(originalChannel.getId()).orElseThrow();
+        List<Integer> newChannelIndices = linkedClips.stream()
+                .map(clip -> findChannelIndexForClipId(clip.getId()).get() + relativeChannelMove)
+                .sorted()
+                .collect(Collectors.toList());
+        int result = relativeChannelMove;
+        if (newChannelIndices.get(0) < 0) {
+            result = relativeChannelMove - newChannelIndices.get(0);
+        } else if (newChannelIndices.get(newChannelIndices.size() - 1) >= timelineChannelsState.channels.size()) {
+            result = relativeChannelMove + (timelineChannelsState.channels.size() - newChannelIndices.get(newChannelIndices.size() - 1) - 1);
+        }
+        return result;
     }
 
     private TimelinePosition getNewPositionBasedOnFPS(TimelinePosition newPosition) {
