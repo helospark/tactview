@@ -49,7 +49,7 @@ extern "C"
       std::vector<cv::Mat> matChannels;
 
 // TODO: Causes crash on Apple
-#ifndef __APPLE_
+#ifndef __APPLE__
       if (request->enableEdgeBlur && request->edgeBlurRadius > 0) {
          int width = request->edgeBlurRadius;
          Mat element = getStructuringElement( MORPH_ELLIPSE,

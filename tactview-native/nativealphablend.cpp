@@ -23,7 +23,7 @@ extern "C"
     }
 
     EXPORTED void normalAlphablend(AlphaBlendRequest* request)  {
-        bool isGlobalAlphaFullOpaque = (abs(request->alpha - 1.0) < 0.0001);
+        bool isGlobalAlphaFullOpaque = (fabs(request->alpha - 1.0) < 0.0001);
         for (int y = 0; y < request->height; ++y) {
             for (int x = 0; x < request->width; ++x) {
                 int pixel = y * request->width + x;
