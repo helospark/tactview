@@ -39,6 +39,7 @@ import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.clip.ClipContextMenuFactory;
@@ -51,6 +52,7 @@ import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
+import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragAdder;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragInformation;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
@@ -71,10 +73,12 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.VPos;
 import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Control;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.image.Image;
 import javafx.scene.input.DragEvent;
@@ -91,7 +95,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
 @Component
-public class TimelineCanvas {
+public class TimelineCanvas implements ScenePostProcessor {
     public static final Logger LOGGER = LoggerFactory.getLogger(TimelineCanvas.class);
 
     public static final double DRAG_SCROLL_THRESHOLD = 25;
@@ -123,6 +127,7 @@ public class TimelineCanvas {
     private BorderPane resultPane;
     private ScrollBar rightBar;
     private ScrollBar bottomBar;
+    private Scene scene;
 
     private boolean isLoadingInprogress = false;
     private CollisionRectangle selectionBox = null;
@@ -309,6 +314,9 @@ public class TimelineCanvas {
         });
 
         canvas.setOnMousePressed(event -> {
+            if (scene.getFocusOwner() instanceof Control) {
+                JavaFXUiMain.canvas.requestFocus(); // remove focus from any control element
+            }
             double position = mapCanvasPixelToTime(event.getX());
             double currentX = position;
             Optional<TimelineUiCacheElement> optionalElement = findElementAt(event.getX(), event.getY());
@@ -1272,5 +1280,10 @@ public class TimelineCanvas {
     static enum TimelineUiCacheType {
         CLIP,
         EFFECT
+    }
+
+    @Override
+    public void postProcess(Scene scene) {
+        this.scene = scene;
     }
 }

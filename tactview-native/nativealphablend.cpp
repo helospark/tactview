@@ -1,4 +1,5 @@
 #include "common.h"
+#include <cmath>
 
 extern "C"
 {

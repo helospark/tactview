@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
+import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -30,7 +31,8 @@ import com.helospark.tactview.ui.javafx.uicomponents.ClipCutService;
 
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Control;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination.Modifier;
@@ -89,12 +91,15 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                 }));
         keyCombinationRepository.registerKeyCombination(on(ESCAPE),
                 useHandler("Exit everything ongoing", event -> {
+                    if (scene.getFocusOwner() instanceof Control) {
+                        JavaFXUiMain.canvas.requestFocus(); // remove focus from any control element
+                    }
                     context.getListOfBeans(CleanableMode.class)
                             .stream()
                             .forEach(cleanable -> cleanable.clean());
                 }));
 
-        Set<Class<? extends Node>> disabledFocusedNodeClass = Set.of(TextField.class);
+        Set<Class<? extends Node>> disabledFocusedNodeClass = Set.of(TextInputControl.class);
         keyCombinationRepository.registerGlobalKeyFilters(LEFT,
                 useHandler("Back one frame", event -> {
                     uiTimelineManager.moveBackOneFrame();

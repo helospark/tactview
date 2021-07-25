@@ -48,6 +48,8 @@ extern "C"
 
       std::vector<cv::Mat> matChannels;
 
+// TODO: Causes crash on Apple
+#ifndef __APPLE_
       if (request->enableEdgeBlur && request->edgeBlurRadius > 0) {
          int width = request->edgeBlurRadius;
          Mat element = getStructuringElement( MORPH_ELLIPSE,
@@ -56,8 +58,8 @@ extern "C"
          //cv::dilate(filtered, filtered, element);
          cv::blur(filtered, filtered, cv::Size(width, width));
       }
+#endif
       cv::Mat mask = ~filtered;
-
 
       if (request->spillRemovalEnabled) {
         for(int i=0; i<rgbMat.rows; i++) {
