@@ -94,14 +94,14 @@ public class NonIntersectingIntervalList<T extends IntervalAware> implements Ite
             return false;
         }
         this.remove((T) clip);
-        if (canAddInterval(newInterval)) {
-            clip.setInterval(newInterval);
-            this.addInterval((T) clip);
-            return true;
-        } else {
-            this.addInterval((T) clip);
-            return false;
-        }
+        //        if (canAddInterval(newInterval)) {
+        clip.setInterval(newInterval);
+        this.addInterval((T) clip);
+        return true;
+        //        } else {
+        //            this.addInterval((T) clip);
+        //            return false;
+        //        }
     }
 
     public void removeAll(List<T> intersections) {

@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -217,6 +218,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             channel.removeClip(clipId);
         }
         messagingService.sendMessage(new ClipRemovedMessage(clipId, originalInterval));
+    }
+
+    public void removeClipWithoutMessage(String clipId) {
+        TimelineChannel channel = findChannelForClipId(clipId)
+                .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
+        channel.removeClip(clipId);
     }
 
     @Override
@@ -455,6 +462,14 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return true;
     }
 
+    public void addExistingClipAsMove(String channelId, TimelineClip clip, TimelineInterval originalInterval) {
+        TimelineChannel channel = findChannelWithId(channelId).get();
+        channel.addResource(clip);
+        messagingService.sendMessage(
+                new ClipMovedMessage(clip.getId(), clip.getInterval().getStartPosition(), channel.getId(), Optional.empty(), originalInterval, clip.getGlobalInterval(),
+                        false));
+    }
+
     private int calculateRelativeChannelMove(String newChannelId, TimelineChannel originalChannel, List<TimelineClip> linkedClips) {
         int relativeChannelMove = findChannelIndex(newChannelId).orElseThrow() - findChannelIndex(originalChannel.getId()).orElseThrow();
         List<Integer> newChannelIndices = linkedClips.stream()
@@ -617,13 +632,13 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         if (useSpecialPoints) {
             List<String> excludedIds = new ArrayList<>();
             excludedIds.add(clip.getId());
-            excludedIds.addAll(resizeClipRequest.getOtherClips());
+            excludedIds.addAll(resizeClipRequest.getIgnoredSpecialSuggestionClips());
             clip.getEffects()
                     .stream()
                     .map(effect -> effect.getId())
                     .forEach(effectId -> excludedIds.add(effectId));
 
-            resizeClipRequest.getOtherClips()
+            resizeClipRequest.getIgnoredSpecialSuggestionClips()
                     .stream()
                     .flatMap(a -> findClipById(a).stream())
                     .flatMap(a -> a.getEffects().stream())
@@ -654,7 +669,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 })
                 .collect(Collectors.toList());
 
-        boolean success = channel.resizeClip(clip, left, globalPosition);
+        boolean success = channel.resizeClip(clip, left, globalPosition, resizeClipRequest.getIgnoreIntersection());
         if (success) {
             TimelineClip renewedClip = findClipById(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
             ClipResizedMessage clipResizedMessage = ClipResizedMessage.builder()
@@ -1140,7 +1155,10 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     }
 
     public TreeSet<TimelineClip> findClipsRightFromPositionAndOnChannelIgnoring(TimelinePosition position, List<Integer> channelIndices, List<String> excludedClipIds) {
-        TreeSet<TimelineClip> result = new TreeSet<>((a, b) -> a.getInterval().getStartPosition().compareTo(b.getInterval().getStartPosition()));
+        TreeSet<TimelineClip> result = new TreeSet<>((a, b) -> {
+            int intervalResult = a.getInterval().getStartPosition().compareTo(b.getInterval().getStartPosition());
+            return intervalResult == 0 ? a.getId().compareTo(b.getId()) : intervalResult;
+        });
         for (int channelIndex : channelIndices) {
             var channel = getChannels().get(channelIndex);
             for (var clip : channel.getAllClips()) {
@@ -1206,6 +1224,16 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 .sorted((a, b) -> a.getInterval().getStartPosition().compareTo(b.getInterval().getStartPosition()))
                 .findFirst()
                 .map(a -> a.getInterval().getStartPosition());
+    }
+
+    public Set<Integer> findChannelIndicesForClips(Collection<String> clipsIds) {
+        return clipsIds.stream()
+                .flatMap(a -> findChannelIndexForClipId(a).stream())
+                .collect(Collectors.toSet());
+    }
+
+    public Object getFullLock() {
+        return timelineChannelsState.fullLock;
     }
 
 }

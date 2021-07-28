@@ -1,15 +1,22 @@
 package com.helospark.tactview.ui.javafx.commands.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.MoveClipRequest;
 import com.helospark.tactview.core.timeline.ResizeClipRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
+import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 public class ClipResizedCommand implements UiCommand {
     private TimelineManagerAccessor timelineManager;
@@ -19,6 +26,8 @@ public class ClipResizedCommand implements UiCommand {
     private boolean left;
 
     private TimelinePosition originalPosition;
+    private Set<MovedClip> clipsToMove = Set.of();
+    private TimelinePosition lengthToJump;
 
     private boolean revertable;
 
@@ -26,6 +35,8 @@ public class ClipResizedCommand implements UiCommand {
     private boolean moreResizeExpected;
     private TimelineLength maximumJumpLength;
     private TimelineLength minimumSize;
+
+    private TimelineEditMode timelineEditMode;
 
     @Generated("SparkTools")
     private ClipResizedCommand(Builder builder) {
@@ -39,30 +50,73 @@ public class ClipResizedCommand implements UiCommand {
         this.maximumJumpLength = builder.maximumJumpLength;
         this.moreResizeExpected = builder.moreResizeExpected;
         this.minimumSize = builder.minimumSize;
+        this.timelineEditMode = builder.timelineEditMode;
     }
 
     @Override
     public void execute() {
-        TimelinePosition newPosition = null;
-        for (int i = 0; i < clipIds.size(); ++i) {
-            String clipId = clipIds.get(i);
-            TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No clip found"));
+        synchronized (timelineManager.getFullLock()) {
 
-            ResizeClipRequest request = ResizeClipRequest.builder()
-                    .withClip(clip)
-                    .withLeft(left)
-                    .withUseSpecialPoints(i == 0 && useSpecialPoints)
-                    .withPosition(i == 0 ? position : newPosition)
-                    .withMaximumJumpLength(maximumJumpLength)
-                    .withMoreResizeExpected(moreResizeExpected)
-                    .withMinimumSize(minimumSize)
-                    .withOtherClipsResized(clipIds)
-                    .build();
+            if (!timelineEditMode.equals(TimelineEditMode.NORMAL)) {
+                List<Integer> channels;
+                if (timelineEditMode.equals(TimelineEditMode.SINGLE_CHANNEL_RIPPLE)) {
+                    channels = new ArrayList<>(timelineManager.findChannelIndicesForClips(clipIds));
+                } else {
+                    channels = timelineManager.getAllChannelIndices();
+                }
+                TimelinePosition firstEndPosition = timelineManager.findClipById(clipIds.get(0)).get().getInterval().getEndPosition();
 
-            timelineManager.resizeClip(request);
+                clipsToMove = timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(firstEndPosition, channels, List.of())
+                        .stream()
+                        .map(a -> new MovedClip(a, timelineManager.findChannelForClipId(a.getId()).get().getId()))
+                        .collect(Collectors.toSet());
 
-            if (i == 0) {
-                newPosition = left ? clip.getUnmodifiedInterval().getStartPosition() : clip.getUnmodifiedInterval().getEndPosition();
+            }
+
+            TimelinePosition newPosition = null;
+            for (int i = 0; i < clipIds.size(); ++i) {
+                String clipId = clipIds.get(i);
+                TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No clip found"));
+                TimelineInterval originalInterval = clip.getInterval();
+
+                List<String> ignoredSuggestions = new ArrayList<>();
+                ignoredSuggestions.addAll(clipIds);
+                clipsToMove.stream()
+                        .map(a -> a.clip.getId())
+                        .forEach(a -> ignoredSuggestions.add(a));
+
+                ResizeClipRequest request = ResizeClipRequest.builder()
+                        .withClip(clip)
+                        .withLeft(left)
+                        .withUseSpecialPoints(i == 0 && useSpecialPoints)
+                        .withPosition(i == 0 ? position : newPosition)
+                        .withMaximumJumpLength(maximumJumpLength)
+                        .withMoreResizeExpected(moreResizeExpected)
+                        .withMinimumSize(minimumSize)
+                        .withIgnoredSpecialSuggestionClips(ignoredSuggestions)
+                        .withIgnoreIntersection(clipsToMove.stream().map(a -> a.clip).collect(Collectors.toList()))
+                        .build();
+
+                timelineManager.resizeClip(request);
+
+                if (i == 0) {
+                    newPosition = left ? clip.getUnmodifiedInterval().getStartPosition() : clip.getUnmodifiedInterval().getEndPosition();
+                    lengthToJump = clip.getInterval().getEndPosition().subtract(originalInterval.getEndPosition());
+                }
+            }
+
+            if (clipsToMove.size() > 0 && !left) { // TODO: implement ripple when resizing to left
+                TimelineClip firstClipToMove = clipsToMove.stream().findFirst().get().clip;
+                MoveClipRequest moveClipRequest = MoveClipRequest.builder()
+                        .withAdditionalClipIds(clipsToMove.stream().map(a -> a.clip.getId()).collect(Collectors.toList()))
+                        .withAdditionalSpecialPositions(List.of())
+                        .withClipId(firstClipToMove.getId())
+                        .withEnableJumpingToSpecialPosition(false)
+                        .withMoreMoveExpected(false)
+                        .withNewChannelId(timelineManager.findChannelForClipId(firstClipToMove.getId()).get().getId())
+                        .withNewPosition(firstClipToMove.getInterval().getStartPosition().add(lengthToJump))
+                        .build();
+                timelineManager.moveClip(moveClipRequest);
             }
         }
     }
@@ -82,6 +136,20 @@ public class ClipResizedCommand implements UiCommand {
 
             timelineManager.resizeClip(request);
         }
+
+        if (clipsToMove.size() > 0) {
+            TimelineClip firstClipToMove = clipsToMove.stream().findFirst().get().clip;
+            MoveClipRequest moveClipRequest = MoveClipRequest.builder()
+                    .withAdditionalClipIds(clipsToMove.stream().map(a -> a.clip.getId()).collect(Collectors.toList()))
+                    .withAdditionalSpecialPositions(List.of())
+                    .withClipId(firstClipToMove.getId())
+                    .withEnableJumpingToSpecialPosition(false)
+                    .withMoreMoveExpected(false)
+                    .withNewChannelId(timelineManager.findChannelForClipId(firstClipToMove.getId()).get().getId())
+                    .withNewPosition(firstClipToMove.getInterval().getStartPosition().subtract(lengthToJump))
+                    .build();
+            timelineManager.moveClip(moveClipRequest);
+        }
     }
 
     @Override
@@ -92,8 +160,33 @@ public class ClipResizedCommand implements UiCommand {
     @Override
     public String toString() {
         return "ClipResizedCommand [timelineManager=" + timelineManager + ", clipIds=" + clipIds + ", position=" + position + ", left=" + left + ", originalPosition=" + originalPosition
-                + ", revertable=" + revertable + ", useSpecialPoints=" + useSpecialPoints + ", moreResizeExpected=" + moreResizeExpected + ", maximumJumpLength=" + maximumJumpLength + ", minimumSize="
-                + minimumSize + "]";
+                + ", clipsToMove=" + clipsToMove + ", lengthToJump=" + lengthToJump + ", revertable=" + revertable + ", useSpecialPoints=" + useSpecialPoints + ", moreResizeExpected="
+                + moreResizeExpected + ", maximumJumpLength=" + maximumJumpLength + ", minimumSize=" + minimumSize + ", timelineEditMode=" + timelineEditMode + "]";
+    }
+
+    static class MovedClip {
+        TimelineClip clip;
+        String channel;
+
+        public MovedClip(TimelineClip clip, String channel) {
+            this.clip = clip;
+            this.channel = channel;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof MovedClip)) {
+                return false;
+            }
+            MovedClip castOther = (MovedClip) other;
+            return Objects.equals(clip, castOther.clip) && Objects.equals(channel, castOther.channel);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(clip, channel);
+        }
+
     }
 
     @Generated("SparkTools")
@@ -113,6 +206,7 @@ public class ClipResizedCommand implements UiCommand {
         private boolean moreResizeExpected;
         private TimelineLength maximumJumpLength;
         private TimelineLength minimumSize;
+        private TimelineEditMode timelineEditMode = TimelineEditMode.NORMAL;
 
         private Builder() {
         }
@@ -164,6 +258,11 @@ public class ClipResizedCommand implements UiCommand {
 
         public Builder withMinimumSize(TimelineLength minimumSize) {
             this.minimumSize = minimumSize;
+            return this;
+        }
+
+        public Builder withTimelineEditMode(TimelineEditMode timelineEditMode) {
+            this.timelineEditMode = timelineEditMode;
             return this;
         }
 

@@ -1,9 +1,8 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.Generated;
 
 public class ResizeClipRequest {
     private TimelineClip clip;
@@ -13,7 +12,20 @@ public class ResizeClipRequest {
     private TimelineLength minimumSize;
     private boolean useSpecialPoints;
     private boolean moreResizeExpected;
-    private List<String> otherClips;
+    private List<String> ignoredSpecialSuggestionClips;
+    private List<TimelineClip> ignoreIntersection;
+
+    private ResizeClipRequest(Builder builder) {
+        this.clip = builder.clip;
+        this.left = builder.left;
+        this.position = builder.position;
+        this.maximumJumpLength = builder.maximumJumpLength;
+        this.minimumSize = builder.minimumSize;
+        this.useSpecialPoints = builder.useSpecialPoints;
+        this.moreResizeExpected = builder.moreResizeExpected;
+        this.ignoredSpecialSuggestionClips = builder.ignoredSpecialSuggestionClips;
+        this.ignoreIntersection = builder.ignoreIntersection;
+    }
 
     public TimelineClip getClip() {
         return clip;
@@ -43,38 +55,34 @@ public class ResizeClipRequest {
         return moreResizeExpected;
     }
 
-    public List<String> getOtherClips() {
-        return otherClips;
+    public List<String> getIgnoredSpecialSuggestionClips() {
+        return ignoredSpecialSuggestionClips;
     }
 
-    @Generated("SparkTools")
-    private ResizeClipRequest(Builder builder) {
-        this.clip = builder.clip;
-        this.left = builder.left;
-        this.position = builder.position;
-        this.maximumJumpLength = builder.maximumJumpLength;
-        this.useSpecialPoints = builder.useSpecialPoints;
-        this.moreResizeExpected = builder.moreResizeExpected;
-        this.minimumSize = builder.minimumSize;
-        this.otherClips = builder.otherClips;
+    public List<TimelineClip> getIgnoreIntersection() {
+        return ignoreIntersection;
     }
 
-    @Generated("SparkTools")
+    @Override
+    public String toString() {
+        return "ResizeClipRequest [clip=" + clip + ", left=" + left + ", position=" + position + ", maximumJumpLength=" + maximumJumpLength + ", minimumSize=" + minimumSize + ", useSpecialPoints="
+                + useSpecialPoints + ", moreResizeExpected=" + moreResizeExpected + ", otherClips=" + ignoredSpecialSuggestionClips + ", ignoreIntersection=" + ignoreIntersection + "]";
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    @Generated("SparkTools")
     public static final class Builder {
         private TimelineClip clip;
         private boolean left;
         private TimelinePosition position;
         private TimelineLength maximumJumpLength;
+        private TimelineLength minimumSize;
         private boolean useSpecialPoints;
         private boolean moreResizeExpected;
-        private TimelineLength minimumSize;
-        private List<String> otherClips = List.of();
-
+        private List<String> ignoredSpecialSuggestionClips = Collections.emptyList();
+        private List<TimelineClip> ignoreIntersection = Collections.emptyList();
         private Builder() {
         }
 
@@ -113,8 +121,13 @@ public class ResizeClipRequest {
             return this;
         }
 
-        public Builder withOtherClipsResized(List<String> otherClips) {
-            this.otherClips = otherClips;
+        public Builder withIgnoredSpecialSuggestionClips(List<String> ignoredSpecialSuggestionClips) {
+            this.ignoredSpecialSuggestionClips = ignoredSpecialSuggestionClips;
+            return this;
+        }
+
+        public Builder withIgnoreIntersection(List<TimelineClip> ignoreIntersection) {
+            this.ignoreIntersection = ignoreIntersection;
             return this;
         }
 

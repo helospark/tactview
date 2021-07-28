@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -553,6 +554,20 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     public boolean effectSupported(StatelessEffect effect) {
         return false;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof TimelineClip)) {
+            return false;
+        }
+        TimelineClip castOther = (TimelineClip) other;
+        return Objects.equals(id, castOther.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 }

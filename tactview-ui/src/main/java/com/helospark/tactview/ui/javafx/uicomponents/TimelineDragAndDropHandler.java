@@ -154,6 +154,7 @@ public class TimelineDragAndDropHandler {
                     .withMinimumSize(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MINIMUM_CLIP_SIZE).getSeconds()))
                     .withMoreResizeExpected(!revertable)
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
+                    .withTimelineEditMode(timelineEditModeRepository.getMode())
                     .build();
             commandInterpreter.sendWithResult(command);
         }

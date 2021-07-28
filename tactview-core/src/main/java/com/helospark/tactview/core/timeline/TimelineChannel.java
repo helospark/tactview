@@ -150,11 +150,14 @@ public class TimelineChannel {
         return Optional.empty();
     }
 
-    public boolean resizeClip(TimelineClip clip, boolean left, TimelinePosition position) {
+    public boolean resizeClip(TimelineClip clip, boolean left, TimelinePosition position, List<TimelineClip> ignoredOtherClips) {
         TimelineInterval newInterval = clip.getIntervalAfterRescaleTo(left, position);
 
+        List<TimelineClip> ignoredIds = new ArrayList<>();
+        ignoredIds.add(clip);
+        ignoredIds.addAll(ignoredOtherClips);
         synchronized (fullChannelLock) {
-            if (clips.canAddIntervalAtExcluding(newInterval, List.of(clip))) {
+            if (clips.canAddIntervalAtExcluding(newInterval, ignoredIds)) {
                 clip.resize(left, newInterval);
                 return clips.resize(clip, newInterval);
             } else {
