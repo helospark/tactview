@@ -12,25 +12,34 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.hotkey.HotKeyRemapWindow;
+import com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository;
+import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SeparatorMenuContribution;
+import com.helospark.tactview.ui.javafx.plugin.RestartDialogOpener;
 import com.helospark.tactview.ui.javafx.preferences.PreferencesPage;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
+import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 
 @Configuration
-public class DefaultEditMenuItemConfiguration {
+public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     public static final String EDIT_ROOT = "_Edit";
     public static final String SELECT_ROOT = "_Select";
     public static final String JUMP_ROOT = "_Jump";
     public static final String CHAPTER_ROOT = "_Chapter";
+
+    private Scene scene;
 
     @Bean
     @Order(1000)
@@ -241,9 +250,29 @@ public class DefaultEditMenuItemConfiguration {
     }
 
     @Bean
+    @Order(1980)
+    public SeparatorMenuContribution beforePreferencesSeparatorContribution() {
+        return new SeparatorMenuContribution(List.of(EDIT_ROOT));
+    }
+
+    @Bean
+    @Order(1999)
+    public SelectableMenuContribution hotKeyContributionMenuItem(PreferencesPage preferencesPage, HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService,
+            RestartDialogOpener restartDialogOpener, CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, "Hot keys"), event -> {
+            new HotKeyRemapWindow(hotKeyRepository, stylesheetAdderService, restartDialogOpener).open(scene);
+        });
+    }
+
+    @Bean
     @Order(2000)
     public SelectableMenuContribution preferencesContributionMenuItem(PreferencesPage preferencesPage) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Preferences"), event -> preferencesPage.open());
+    }
+
+    @Override
+    public void postProcess(Scene scene) {
+        this.scene = scene;
     }
 
 }

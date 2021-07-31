@@ -621,3 +621,30 @@
 .edit-type-button.menu-button-button-enabled>* {
     -fx-text-fill: rgba(0,230,255,0.95);
 }
+
+.key-code-text {
+    -fx-padding: 2px;
+    -fx-background-color: white;
+    -fx-text-fill: black;
+    -fx-background-radius: 3px;
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 2, 3, 1, 1);
+}
+
+.key-code-container {
+    -fx-padding:4px;
+}
+
+.key-code-container-plus {
+    -fx-padding:6px 1px 6px 3px;
+}
+
+.dialog-root {
+    -fx-text-fill: #a1a1a1;
+}
+
+.hot-key-grid {
+    -fx-border-width: 0px 0px 1px 0px;
+    -fx-border-color: #555;
+    -fx-border-style: hidden hidden dashed hidden;
+    -fx-padding: 0px 0px 0px 3px;
+}

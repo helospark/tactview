@@ -7,6 +7,7 @@ import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.ui.javafx.ProjectInitializer;
+import com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.DynamicallyGeneratedParentMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.MenuContribution;
@@ -29,21 +30,29 @@ public class DefaultFileMenuItemConfiguration {
     private static final String IMPORT_SUBMENU_ITEM = "Import";
     public static final String FILE_ROOT = "_File";
 
+    private HotKeyRepository hotKeyRepository;
+
+    public DefaultFileMenuItemConfiguration(HotKeyRepository hotKeyRepository) {
+        this.hotKeyRepository = hotKeyRepository;
+    }
+
     @Bean
     @Order(-10)
     public SelectableMenuContribution newContributionMenuItem(ProjectInitializer projectInitializer, ExitWithSaveService exitWithSaveService) {
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("newProject", new KeyCodeCombination(KeyCode.N, KeyCodeCombination.CONTROL_DOWN), "New project").getCombination();
         return new DefaultMenuContribution(List.of(FILE_ROOT, "_New"), event -> {
             exitWithSaveService.optionallySaveAndThenRun(() -> {
                 projectInitializer.clearAndInitialize();
             });
 
-        }, new KeyCodeCombination(KeyCode.N, KeyCodeCombination.CONTROL_DOWN));
+        }, combination);
     }
 
     @Bean
     @Order(0)
     public SelectableMenuContribution loadContributionMenuItem(UiLoadHandler loadHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Load"), event -> loadHandler.load(), new KeyCodeCombination(KeyCode.O, KeyCodeCombination.CONTROL_DOWN));
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("loadProject", new KeyCodeCombination(KeyCode.O, KeyCodeCombination.CONTROL_DOWN), "Load project").getCombination();
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Load"), event -> loadHandler.load(), combination);
     }
 
     @Bean
@@ -83,14 +92,17 @@ public class DefaultFileMenuItemConfiguration {
     @Bean
     @Order(20)
     public SelectableMenuContribution saveContributionMenuItem(UiSaveHandler saveHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Save"), event -> saveHandler.save(), new KeyCodeCombination(KeyCode.S, KeyCodeCombination.CONTROL_DOWN));
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("saveProject", new KeyCodeCombination(KeyCode.S, KeyCodeCombination.CONTROL_DOWN), "Save project").getCombination();
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "_Save"), event -> saveHandler.save(), combination);
     }
 
     @Bean
     @Order(30)
     public SelectableMenuContribution saveAsContributionMenuItem(UiSaveHandler saveHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "Save _As"), event -> saveHandler.saveAs(),
-                new KeyCodeCombination(KeyCode.S, KeyCodeCombination.CONTROL_DOWN, KeyCodeCombination.SHIFT_DOWN));
+        KeyCodeCombination combination = hotKeyRepository
+                .registerOrGetHotKey("saveProjectAs", new KeyCodeCombination(KeyCode.S, KeyCodeCombination.CONTROL_DOWN, KeyCodeCombination.SHIFT_DOWN), "Save project as").getCombination();
+
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "Save _As"), event -> saveHandler.saveAs(), combination);
     }
 
     @Bean
@@ -132,12 +144,13 @@ public class DefaultFileMenuItemConfiguration {
     @Bean
     @Order(200)
     public SelectableMenuContribution exitContributionMenuItem(ExitWithSaveService exitWithSaveService) {
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("quit", new KeyCodeCombination(KeyCode.Q, KeyCodeCombination.CONTROL_DOWN), "Quit project").getCombination();
         return new DefaultMenuContribution(List.of(FILE_ROOT, "E_xit"), event -> {
             exitWithSaveService.optionallySaveAndThenRun(() -> {
                 Platform.exit();
                 System.exit(0);
             });
-        }, new KeyCodeCombination(KeyCode.Q, KeyCodeCombination.CONTROL_DOWN));
+        }, combination);
     }
 
 }
