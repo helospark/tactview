@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx.menu.defaultmenus;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.Optional;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
+import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
@@ -31,6 +33,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 
 @Configuration
 public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
@@ -39,7 +42,12 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     public static final String JUMP_ROOT = "_Jump";
     public static final String CHAPTER_ROOT = "_Chapter";
 
+    private HotKeyRepository hotKeyRepository;
     private Scene scene;
+
+    public DefaultEditMenuItemConfiguration(HotKeyRepository hotKeyRepository) {
+        this.hotKeyRepository = hotKeyRepository;
+    }
 
     @Bean
     @Order(1000)
@@ -191,6 +199,57 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     }
 
     @Bean
+    @Order(1904)
+    public SelectableMenuContribution jumpToBeginningMenuItem(UiTimelineManager timelineManager, TimelineState timelineState) {
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("jumpToBeginning", new KeyCodeCombination(KeyCode.HOME, KeyCombination.CONTROL_DOWN), "Jump to timeline beginning")
+                .getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to timeline beginning"), event -> {
+            timelineManager.jumpAbsolute(BigDecimal.ZERO);
+        }, combination);
+    }
+
+    @Bean
+    @Order(1905)
+    public SelectableMenuContribution jumpToEndMenuItem(UiTimelineManager uiTimelineManager, TimelineState timelineState, TimelineManagerAccessor timelineManagerAccessor) {
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("jumpToEnd", new KeyCodeCombination(KeyCode.END, KeyCombination.CONTROL_DOWN), "Jump to timeline end").getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to timeline end"), event -> {
+            TimelinePosition endPosition = timelineManagerAccessor.findEndPosition();
+            uiTimelineManager.jumpAbsolute(endPosition.getSeconds());
+        }, combination);
+    }
+
+    @Bean
+    @Order(1906)
+    public SelectableMenuContribution jumpToBeginningOfCurrentClipMenuItem(UiTimelineManager uiTimelineManager, TimelineManagerAccessor timelineManager,
+            SelectedNodeRepository selectedNodeRepository) {
+        KeyCodeCombination combination = hotKeyRepository
+                .registerOrGetHotKey("jumpToClipBeginning", new KeyCodeCombination(KeyCode.COMMA, KeyCombination.CONTROL_DOWN), "Jump to beginning of selected clip")
+                .getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to beginning of selected clip"), event -> {
+            Optional<String> primaryClip = selectedNodeRepository.getPrimarySelectedClip();
+            if (primaryClip.isPresent()) {
+                Optional<TimelineClip> clip = timelineManager.findClipById(primaryClip.get());
+                uiTimelineManager.jumpAbsolute(clip.get().getInterval().getStartPosition().getSeconds());
+            }
+        }, combination);
+    }
+
+    @Bean
+    @Order(1907)
+    public SelectableMenuContribution jumpToEndOfCurrentClipMenuItem(UiTimelineManager uiTimelineManager, TimelineManagerAccessor timelineManager,
+            SelectedNodeRepository selectedNodeRepository) {
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("jumpToClipEnd", new KeyCodeCombination(KeyCode.PERIOD, KeyCombination.CONTROL_DOWN), "Jump to end of selected clip")
+                .getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to end of selected clip"), event -> {
+            Optional<String> primaryClip = selectedNodeRepository.getPrimarySelectedClip();
+            if (primaryClip.isPresent()) {
+                Optional<TimelineClip> clip = timelineManager.findClipById(primaryClip.get());
+                uiTimelineManager.jumpAbsolute(clip.get().getInterval().getEndPosition().getSeconds());
+            }
+        }, combination);
+    }
+
+    @Bean
     @Order(1950)
     public SelectableMenuContribution addChapterMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, ChapterRepository chapterRepository) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Add chapter at current position"), event -> {
@@ -259,7 +318,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     @Order(1999)
     public SelectableMenuContribution hotKeyContributionMenuItem(PreferencesPage preferencesPage, HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService,
             RestartDialogOpener restartDialogOpener, CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
-        return new DefaultMenuContribution(List.of(EDIT_ROOT, "Hot keys"), event -> {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, "Hotkeys"), event -> {
             new HotKeyRemapWindow(hotKeyRepository, stylesheetAdderService, restartDialogOpener).open(scene);
         });
     }

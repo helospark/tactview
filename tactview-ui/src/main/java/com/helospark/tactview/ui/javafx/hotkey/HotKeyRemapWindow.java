@@ -16,6 +16,8 @@ import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
@@ -160,9 +162,7 @@ public class HotKeyRemapWindow {
         }
     }
 
-    private HBox createButtonBar() {
-        HBox buttonBar = new HBox();
-
+    private ButtonBar createButtonBar() {
         Button closeButton = new Button("Close without save");
         closeButton.setOnAction(e -> stage.close());
 
@@ -178,9 +178,15 @@ public class HotKeyRemapWindow {
             restartDialogOpener.confirmRestart("Hotkeys saved, restart to take effect");
         });
 
-        buttonBar.getChildren().addAll(closeButton, saveButton, saveAndRestartButton);
+        ButtonBar result = new ButtonBar();
 
-        return buttonBar;
+        ButtonBar.setButtonData(closeButton, ButtonData.LEFT);
+        ButtonBar.setButtonData(saveButton, ButtonData.OK_DONE);
+        ButtonBar.setButtonData(saveAndRestartButton, ButtonData.RIGHT);
+
+        result.getButtons().addAll(closeButton, saveButton, saveAndRestartButton);
+
+        return result;
     }
 
     private Node getCombinationNode(KeyCodeCombination combination) {
