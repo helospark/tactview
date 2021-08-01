@@ -27,7 +27,7 @@ import javafx.scene.Scene;
 
 @Component
 public class PreferencesPage implements ScenePostProcessor {
-    TypeReference<HashMap<String, String>> typeRef = new TypeReference<HashMap<String, String>>() {
+    TypeReference<HashMap<String, String>> typeRef = new TypeReference<>() {
     };
 
     private PreferenceValueBeanPostProcessor preferenceValueBeanPostProcessor;
@@ -116,8 +116,8 @@ public class PreferencesPage implements ScenePostProcessor {
 
         public GroupTreeElement(String groupName) {
             this.groupName = groupName;
-            options = new LinkedHashMap<String, TreeOptions>();
-            children = new LinkedHashMap<String, PreferencesPage.GroupTreeElement>();
+            options = new LinkedHashMap<>();
+            children = new LinkedHashMap<>();
         }
 
     }

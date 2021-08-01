@@ -119,6 +119,8 @@ public class TimelineDragAndDropHandler {
             rippleElements.stream()
                     .forEach(element -> clipIds.add(element.getId()));
 
+            boolean useSpecialPoints = timelineEditModeRepository.isMagnetEditModeEnabled(currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY));
+
             ClipMovedCommand command = ClipMovedCommand.builder()
                     .withIsRevertable(revertable)
                     .withClipId(clipId)
@@ -128,7 +130,7 @@ public class TimelineDragAndDropHandler {
                     .withOriginalChannelId(currentlyDraggedClip.getOriginalChannelId())
                     .withNewChannelId(channelId)
                     .withTimelineManager(timelineManager)
-                    .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
+                    .withEnableJumpingToSpecialPosition(useSpecialPoints)
                     .withMoreMoveExpected(!revertable)
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                     .withAdditionalPositions(List.of(uiTimelineManager.getCurrentPosition()))
@@ -143,6 +145,8 @@ public class TimelineDragAndDropHandler {
         if (currentlyDraggedEffect != null) {
             List<String> clipId = currentlyDraggedEffect.getClipId();
 
+            boolean useSpecialPoints = timelineEditModeRepository.isMagnetEditModeEnabled(currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY));
+
             ClipResizedCommand command = ClipResizedCommand.builder()
                     .withClipIds(clipId)
                     .withLeft(dragRepository.getDragDirection().equals(DragRepository.DragDirection.LEFT))
@@ -150,7 +154,7 @@ public class TimelineDragAndDropHandler {
                     .withOriginalPosition(currentlyDraggedEffect.getOriginalPosition())
                     .withRevertable(revertable)
                     .withTimelineManager(timelineManager)
-                    .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
+                    .withUseSpecialPoints(useSpecialPoints)
                     .withMinimumSize(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MINIMUM_CLIP_SIZE).getSeconds()))
                     .withMoreResizeExpected(!revertable)
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
@@ -185,11 +189,13 @@ public class TimelineDragAndDropHandler {
             return;
         }
 
+        boolean useSpecialPoints = timelineEditModeRepository.isMagnetEditModeEnabled(currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY));
+
         EffectResizedCommand resizedCommand = EffectResizedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
                 .withLeft(dragDirection.equals(DragDirection.LEFT))
                 .withMoreResizeExpected(!revertable)
-                .withUseSpecialPoints(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
+                .withUseSpecialPoints(useSpecialPoints)
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                 .withGlobalPosition(position)
                 .withOriginalPosition(draggedEffect.getOriginalPosition())
@@ -204,6 +210,8 @@ public class TimelineDragAndDropHandler {
     public void moveEffect(TimelinePosition position, boolean revertable) {
         EffectDragInformation draggedEffect = dragRepository.currentEffectDragInformation();
 
+        boolean useSpecialPoints = timelineEditModeRepository.isMagnetEditModeEnabled(currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY));
+
         EffectMovedCommand command = EffectMovedCommand.builder()
                 .withEffectId(draggedEffect.getEffectId())
                 .withOriginalClipId(draggedEffect.getClipId())
@@ -211,7 +219,7 @@ public class TimelineDragAndDropHandler {
                 .withRevertable(revertable)
                 .withOriginalPosition(draggedEffect.getOriginalPosition())
                 .withTimelineManager(timelineManager)
-                .withEnableJumpingToSpecialPosition(!currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY))
+                .withEnableJumpingToSpecialPosition(useSpecialPoints)
                 .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(20).getSeconds()))
                 .withMoreMoveExpected(!revertable)
                 .withAdditionalSpecialPositions(List.of(uiTimelineManager.getCurrentPosition()))

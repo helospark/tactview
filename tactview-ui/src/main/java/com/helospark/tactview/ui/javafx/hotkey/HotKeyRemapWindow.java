@@ -21,6 +21,7 @@ import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -49,6 +50,7 @@ public class HotKeyRemapWindow {
 
     private Stage stage;
     private BorderPane pane;
+    private TextField searchTextField;
 
     private Optional<String> editingId = Optional.empty();
     private Set<KeyCode> pressedKeys = new HashSet<>();
@@ -62,6 +64,12 @@ public class HotKeyRemapWindow {
     public Scene createScene() {
         pane = new BorderPane();
         pane.getStyleClass().add("dialog-root");
+
+        searchTextField = new TextField();
+        searchTextField.setPromptText("Search");
+        searchTextField.textProperty().addListener(e -> reloadContent());
+
+        pane.setTop(searchTextField);
 
         pane.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
             KeyCode keycode = e.getCode();
@@ -115,6 +123,8 @@ public class HotKeyRemapWindow {
         VBox vbox = new VBox();
         vbox.setPrefWidth(DIALOG_WIDTH);
 
+        String searchFor = searchTextField.getText().toUpperCase();
+
         for (var entry : hotKeyRepository.getKeyDescriptors().entrySet()) {
             GridPane subGridPane = new GridPane();
             subGridPane.prefWidthProperty().bind(vbox.widthProperty());
@@ -127,18 +137,23 @@ public class HotKeyRemapWindow {
             ColumnConstraints col3 = new ColumnConstraints();
             col3.setPercentWidth(20);
 
+            Node combinationNode = getCombination(entry);
+
             subGridPane.getColumnConstraints().addAll(col1, col2, col3);
             subGridPane.add(new Label(entry.getValue().getName()), 0, 0);
-            subGridPane.add(getCombination(entry), 1, 0);
-            Button changeButton = new Button("Change");
+            subGridPane.add(combinationNode, 1, 0);
 
+            Button changeButton = new Button("Change");
             changeButton.setOnAction(a -> {
                 editingId = Optional.ofNullable(entry.getKey());
             });
-
             subGridPane.add(changeButton, 2, 0);
 
-            vbox.getChildren().add(subGridPane);
+            if (searchFor.isBlank() ||
+                    entry.getValue().getName().toUpperCase().contains(searchFor) ||
+                    getTextFromNode(combinationNode).toUpperCase().contains(searchFor)) {
+                vbox.getChildren().add(subGridPane);
+            }
         }
 
         ScrollPane scrollPane = new ScrollPane(vbox);
@@ -192,14 +207,14 @@ public class HotKeyRemapWindow {
     private Node getCombinationNode(KeyCodeCombination combination) {
         HBox hbox = new HBox();
 
-        if (combination.getShift().equals(ModifierValue.DOWN)) {
-            hbox.getChildren().add(createKeyNode("shift"));
-        }
         if (combination.getControl().equals(ModifierValue.DOWN)) {
             hbox.getChildren().add(createKeyNode("ctrl"));
         }
         if (combination.getAlt().equals(ModifierValue.DOWN)) {
             hbox.getChildren().add(createKeyNode("alt"));
+        }
+        if (combination.getShift().equals(ModifierValue.DOWN)) {
+            hbox.getChildren().add(createKeyNode("shift"));
         }
         if (!combination.getCode().equals(NO_KEYCODE_DEFINED)) {
             hbox.getChildren().add(createKeyNode(combination.getCode().getName()));
@@ -213,6 +228,18 @@ public class HotKeyRemapWindow {
         }
 
         return hbox;
+    }
+
+    private String getTextFromNode(Node node) {
+        Set<Node> labels = node.lookupAll(".label");
+        String result = "";
+
+        for (var label : labels) {
+            if (label instanceof Label) {
+                result += ((Label) label).getText();
+            }
+        }
+        return result;
     }
 
     private Node createKeyNode(String string) {
@@ -230,6 +257,7 @@ public class HotKeyRemapWindow {
         stage.setResizable(false);
         stylesheetAdderService.setDefaultStyleSheetForDialog(stage, pane);
         stage.initModality(APPLICATION_MODAL);
+        stage.setTitle("Remap hotkeys");
         stage.show();
     }
 

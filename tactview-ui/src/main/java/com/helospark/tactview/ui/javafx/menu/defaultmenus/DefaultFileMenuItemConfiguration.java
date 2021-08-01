@@ -144,7 +144,7 @@ public class DefaultFileMenuItemConfiguration {
     @Bean
     @Order(200)
     public SelectableMenuContribution exitContributionMenuItem(ExitWithSaveService exitWithSaveService) {
-        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("quit", new KeyCodeCombination(KeyCode.Q, KeyCodeCombination.CONTROL_DOWN), "Quit project").getCombination();
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("quit", new KeyCodeCombination(KeyCode.Q, KeyCodeCombination.CONTROL_DOWN), "Exit").getCombination();
         return new DefaultMenuContribution(List.of(FILE_ROOT, "E_xit"), event -> {
             exitWithSaveService.optionallySaveAndThenRun(() -> {
                 Platform.exit();

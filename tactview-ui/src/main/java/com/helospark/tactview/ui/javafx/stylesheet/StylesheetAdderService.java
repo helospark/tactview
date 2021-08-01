@@ -106,7 +106,7 @@ public class StylesheetAdderService {
     }
 
     public void setDefaultStyleSheetForDialog(Stage stage, Parent parent) {
-        styleDialog(stage, parent, "stylesheet.css");
+        styleDialog(stage, parent, getStyleSheets().toArray(new String[0]));
     }
 
     public void addStyleSheets(Parent parent, String... cssFiles) {
@@ -117,7 +117,11 @@ public class StylesheetAdderService {
     }
 
     public void setDefaultStylesheets(Parent parent) {
-        addStyleSheets(parent, "stylesheet.css");
+        addStyleSheets(parent, getStyleSheets().toArray(new String[0]));
+    }
+
+    public List<String> getStyleSheets() {
+        return List.of("stylesheet.css");
     }
 
 }

@@ -29,6 +29,7 @@ import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
+import com.helospark.tactview.ui.javafx.uicomponents.UiCutHandler;
 
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -37,6 +38,7 @@ import javafx.scene.input.KeyCombination;
 
 @Configuration
 public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
+    private static final String CUT_MENU_ITEM = "Cut";
     public static final String EDIT_ROOT = "_Edit";
     public static final String SELECT_ROOT = "_Select";
     public static final String JUMP_ROOT = "_Jump";
@@ -250,8 +252,42 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     }
 
     @Bean
+    @Order(1910)
+    public SelectableMenuContribution cutAllAtCurrentPositionMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, UiCutHandler uiCutHandler) {
+        String title = "Cut at current position";
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("cutAllAtCurrentPosition", new KeyCodeCombination(KeyCode.K, KeyCodeCombination.CONTROL_DOWN), title)
+                .getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, CUT_MENU_ITEM, title), event -> {
+            uiCutHandler.cutAllAtCurrentPosition();
+        }, combination);
+    }
+
+    @Bean
+    @Order(1911)
+    public SelectableMenuContribution cutSelectedUntilCurrent(AlertDialogFactory dialogFactory, TimelineState timelineState, UiCutHandler uiCutHandler) {
+        String title = "Set selected startpoint";
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("cutSelectedUntilCursor", new KeyCodeCombination(KeyCode.I, KeyCodeCombination.CONTROL_DOWN), title)
+                .getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, CUT_MENU_ITEM, title), event -> {
+            uiCutHandler.cutSelectedUntilCursor(true);
+        }, combination);
+    }
+
+    @Bean
+    @Order(1911)
+    public SelectableMenuContribution cutSelectedAtCurrent(AlertDialogFactory dialogFactory, TimelineState timelineState, UiCutHandler uiCutHandler) {
+        String title = "Set selected endpoint";
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("cutSelectedAtCursor", new KeyCodeCombination(KeyCode.O, KeyCodeCombination.CONTROL_DOWN), title)
+                .getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, CUT_MENU_ITEM, title), event -> {
+            uiCutHandler.cutSelectedUntilCursor(false);
+        }, combination);
+    }
+
+    @Bean
     @Order(1950)
     public SelectableMenuContribution addChapterMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, ChapterRepository chapterRepository) {
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("addChapter", new KeyCodeCombination(KeyCode.P, KeyCodeCombination.CONTROL_DOWN), "Add chapter").getCombination();
         return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Add chapter at current position"), event -> {
             TimelinePosition position = timelineState.getPlaybackPosition();
 
@@ -260,7 +296,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
             if (result.isPresent()) {
                 chapterRepository.addChapter(position, result.get());
             }
-        }, new KeyCodeCombination(KeyCode.O, KeyCodeCombination.CONTROL_DOWN));
+        }, combination);
     }
 
     @Bean

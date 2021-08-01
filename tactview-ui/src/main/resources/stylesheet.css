@@ -189,7 +189,7 @@
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 3, 0.0 , 0 , 1 );
 }
 
-#video-button-bar .button:hover {
+#video-button-bar .button:hover  .toggle-button:hover {
     -fx-background-color: 
         #333333,
         linear-gradient(#000000 50%, white 100%),
@@ -326,10 +326,7 @@
     -fx-text-fill: #aaa;
 }
 
-
-/** tmp **/
-
-.button {
+.button, .toggle-button {
     -fx-background-color: 
         #555555,
         linear-gradient(#111111 50%, #777 100%),
@@ -339,7 +336,7 @@
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 3, 0.0 , 0 , 1 );
 }
 
-.button:hover {
+.button:hover, .toggle-button:hover {
     -fx-background-color: 
         #333333,
         linear-gradient(#0f0f0f 50%, #999999 100%),
@@ -353,9 +350,7 @@
         radial-gradient(center 50% -40%, radius 200%, #000000 45%, rgba(150,150,150,0) 50%);
 }
 
-
-
-.toggle-button {
+#video-button-bar .toggle-button {
     -fx-background-color: 
         #555555,
         linear-gradient(#111111 50%, white 100%),
@@ -365,14 +360,14 @@
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 3, 0.0 , 0 , 1 );
 }
 
-.toggle-button:hover {
+#video-button-bar .toggle-button:hover {
     -fx-background-color: 
         #333333,
         linear-gradient(#000000 50%, white 100%),
         radial-gradient(center 50% -40%, radius 200%, #222222 45%, rgba(230,230,230,0) 50%);
 }
 
-.toggle-button:selected {
+#video-button-bar .toggle-button:selected {
     -fx-background-color: 
         #333333,
         linear-gradient(#000000 70%, white 100%),
@@ -619,6 +614,10 @@
 }
 
 .edit-type-button.menu-button-button-enabled>* {
+    -fx-text-fill: rgba(0,230,255,0.95);
+}
+
+.toggle-button:selected>* {
     -fx-text-fill: rgba(0,230,255,0.95);
 }
 
