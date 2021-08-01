@@ -911,6 +911,10 @@ public class DetachableTabPane extends TabPane {
             initOwner(stageOwnerFactory.call(this));
             Scene scene = sceneFactory.call(tabPane);
 
+            this.setOnCloseRequest(e -> {
+                childStages.remove(this);
+            });
+
             scene.getStylesheets().addAll(detachableTabPane.getScene().getStylesheets());
             scene.getRoot().getStylesheets().addAll(detachableTabPane.getScene().getRoot().getStylesheets());
             setScene(scene);

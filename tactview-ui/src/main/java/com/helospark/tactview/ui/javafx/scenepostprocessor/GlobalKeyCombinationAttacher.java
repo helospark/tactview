@@ -100,8 +100,8 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         hotKeyRepository.registerOrGetHotKey(EXIT_EVERYTHING, on(ESCAPE), "Exit everything ongoing");
         hotKeyRepository.registerOrGetHotKey(BACK_ONE_FRAME, on(LEFT), "Back one frame");
         hotKeyRepository.registerOrGetHotKey(FORWARD_ONE_FRAME, on(KeyCode.RIGHT), "Forward one frame");
-        hotKeyRepository.registerOrGetHotKey(BACK10S, on(KeyCode.PAGE_UP), "Back 10s");
-        hotKeyRepository.registerOrGetHotKey(FORWARD10S, on(KeyCode.PAGE_DOWN), "Forward 10s");
+        hotKeyRepository.registerOrGetHotKey(BACK10S, on(KeyCode.PAGE_DOWN), "Back 10s");
+        hotKeyRepository.registerOrGetHotKey(FORWARD10S, on(KeyCode.PAGE_UP), "Forward 10s");
         hotKeyRepository.registerOrGetHotKey(DELETE, on(KeyCode.DELETE), "Delete selected");
         hotKeyRepository.registerOrGetHotKey(RIPPLE_DELETE, on(KeyCode.X), RIPPLE_DELETE);
 
