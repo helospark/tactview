@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
@@ -108,10 +110,12 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     @Bean
     @Order(1800)
     public SelectableMenuContribution selectAllClipsContextMenuItem(SelectedNodeRepository selectedNodeRepository, TimelineManagerAccessor timelineManager) {
+        KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("selectAllClips", new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN), "Select all clips").getCombination();
+
         return new DefaultMenuContribution(List.of(EDIT_ROOT, SELECT_ROOT, "_All clips"), event -> {
             selectedNodeRepository.clearAllSelectedItems();
             selectedNodeRepository.addSelectedClips(timelineManager.getAllClipIds());
-        });
+        }, combination);
     }
 
     @Bean
@@ -150,7 +154,24 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
                 }
             }
 
+            selectedNodeRepository.clearAllSelectedItems();
             selectedNodeRepository.addSelectedClips(clipsIds);
+        });
+    }
+
+    @Bean
+    @Order(1803)
+    public SelectableMenuContribution selectClipsUnderPlayheadMenuItem(SelectedNodeRepository selectedNodeRepository, TimelineManagerAccessor timelineManager, UiTimelineManager uiTimelineManager) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, SELECT_ROOT, "Clips under playhead"), event -> {
+            TimelinePosition position = uiTimelineManager.getCurrentPosition();
+            List<String> newSelectedClips = timelineManager.getAllClipIds()
+                    .stream()
+                    .flatMap(a -> timelineManager.findClipById(a).stream())
+                    .filter(a -> a.getInterval().intersects(TimelineInterval.ofPoint(position)))
+                    .map(a -> a.getId())
+                    .collect(Collectors.toList());
+
+            selectedNodeRepository.addSelectedClips(newSelectedClips);
         });
     }
 

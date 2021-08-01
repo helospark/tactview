@@ -14,7 +14,6 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditModeRepository;
@@ -64,27 +63,22 @@ public class UiCutHandler {
                 .filter(a -> a.getInterval().contains(currentPosition))
                 .collect(Collectors.toList());
 
-        List<ClipResizedCommand> commands = elementsToCut.stream()
-                .map(clipToResize -> createClipResizeCommand(currentPosition, clipToResize, isLeft))
-                .collect(Collectors.toList());
-        if (commands.size() > 0) {
-            commandInterpreter.sendWithResult(new CompositeCommand(commands));
+        if (elementsToCut.size() > 0) {
+            ClipResizedCommand command = ClipResizedCommand.builder()
+                    .withClipIds(elementsToCut.stream().map(a -> a.getId()).collect(Collectors.toList()))
+                    .withLeft(isLeft)
+                    .withUseSpecialPoints(false)
+                    .withPosition(currentPosition)
+                    .withMoreResizeExpected(false)
+                    .withOriginalPosition(isLeft ? elementsToCut.get(0).getInterval().getStartPosition() : elementsToCut.get(0).getInterval().getEndPosition())
+                    .withRevertable(true)
+                    .withTimelineEditMode(timelineEditModeRepository.getMode())
+                    .withTimelineManager(timelineManager)
+                    .build();
+            commandInterpreter.sendWithResult(command);
         } else {
             messagingService.sendMessage(new NotificationMessage("No selected clips intersecting the playhead", "Unable to cut", Level.WARNING));
         }
     }
 
-    private ClipResizedCommand createClipResizeCommand(TimelinePosition currentPosition, TimelineClip clipToResize, boolean isLeft) {
-        return ClipResizedCommand.builder()
-                .withClipIds(List.of(clipToResize.getId()))
-                .withLeft(isLeft)
-                .withUseSpecialPoints(false)
-                .withPosition(currentPosition)
-                .withMoreResizeExpected(false)
-                .withOriginalPosition(isLeft ? clipToResize.getInterval().getStartPosition() : clipToResize.getInterval().getEndPosition())
-                .withRevertable(true)
-                .withTimelineEditMode(timelineEditModeRepository.getMode())
-                .withTimelineManager(timelineManager)
-                .build();
-    }
 }

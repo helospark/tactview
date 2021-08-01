@@ -570,4 +570,9 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         return Objects.hash(id);
     }
 
+    @Override
+    public String toString() {
+        return "TimelineClip [getClass()=" + getClass() + ", id=" + id + ", getInterval()=" + getInterval() + ", type=" + type + ", renderOffset=" + renderOffset + "]";
+    }
+
 }

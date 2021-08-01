@@ -335,7 +335,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                                     .stream()
                                     .filter(a -> {
                                         TimelinePosition relativeMove = a.getClipPosition().subtract(currentClip.getInterval().getStartPosition());
-                                        boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove);
+                                        boolean allClipsCanBePlaced = allLinkedClipsCanBeMoved(linkedClips, relativeMove, ignoredIds);
                                         return allClipsCanBePlaced;
                                     })
                                     .forEach(a -> {
@@ -516,12 +516,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return linkedClipIds;
     }
 
-    private boolean allLinkedClipsCanBeMoved(List<TimelineClip> linkedClips, TimelinePosition relativeMove) {
+    private boolean allLinkedClipsCanBeMoved(List<TimelineClip> linkedClips, TimelinePosition relativeMove, Collection<String> ignoredIds) {
         boolean clipItemMatch = linkedClips.stream()
                 .allMatch(clip -> {
                     TimelineChannel currentChannel = findChannelForClipId(clip.getId()).orElseThrow();
                     TimelineInterval newClipInterval = clip.getInterval().butAddOffset(relativeMove);
-                    return currentChannel.canAddResourceAtExcluding(newClipInterval, clip.getId());
+                    return currentChannel.canAddResourceAtExcluding(newClipInterval, ignoredIds);
                 });
 
         return clipItemMatch;

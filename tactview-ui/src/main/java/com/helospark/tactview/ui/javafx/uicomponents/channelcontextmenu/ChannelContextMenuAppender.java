@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -15,6 +16,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.DuplicateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.MoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveGapCommand;
+import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditModeRepository;
 
 import javafx.scene.Node;
@@ -28,13 +30,15 @@ public class ChannelContextMenuAppender {
     private UiCommandInterpreterService commandInterpreterService;
     private UiMessagingService messagingService;
     private TimelineEditModeRepository timelineEditModeRepository;
+    private SelectedNodeRepository selectedNodeRepository;
 
     public ChannelContextMenuAppender(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, UiMessagingService messagingService,
-            TimelineEditModeRepository timelineEditModeRepository) {
+            TimelineEditModeRepository timelineEditModeRepository, SelectedNodeRepository selectedNodeRepository) {
         this.timelineManager = timelineManager;
         this.commandInterpreterService = commandInterpreterService;
         this.messagingService = messagingService;
         this.timelineEditModeRepository = timelineEditModeRepository;
+        this.selectedNodeRepository = selectedNodeRepository;
     }
 
     public void addContextMenu(Node node, String channelId) {
@@ -65,9 +69,25 @@ public class ChannelContextMenuAppender {
 
         contextMenu.getItems().add(new SeparatorMenuItem());
 
+        contextMenu.getItems().add(selectClipsInTabsMenuItem(channelId));
+
+        contextMenu.getItems().add(new SeparatorMenuItem());
+
         contextMenu.getItems().add(deleteChannelMenuItem(channelId));
 
         return contextMenu;
+    }
+
+    private MenuItem selectClipsInTabsMenuItem(String channelId) {
+        MenuItem menuItem = new MenuItem("Select clips on channel");
+        menuItem.setOnAction(e -> {
+            Optional<TimelineChannel> currentChannelIndex = timelineManager.findChannelWithId(channelId);
+            if (currentChannelIndex.isPresent()) {
+                selectedNodeRepository.clearAllSelectedItems();
+                selectedNodeRepository.addSelectedClips(currentChannelIndex.get().getAllClipId());
+            }
+        });
+        return menuItem;
     }
 
     private MenuItem createMoveChannelUpMenuItem(String channelId) {
