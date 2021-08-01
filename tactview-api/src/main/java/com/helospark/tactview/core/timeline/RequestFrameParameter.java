@@ -1,21 +1,20 @@
 package com.helospark.tactview.core.timeline;
 
-import javax.annotation.Generated;
-
 public class RequestFrameParameter {
     private TimelinePosition position;
     private int width;
     private int height;
     private boolean useApproximatePosition;
     private boolean lowResolutionPreview;
+    private double scale;
 
-    @Generated("SparkTools")
     private RequestFrameParameter(Builder builder) {
         this.position = builder.position;
         this.width = builder.width;
         this.height = builder.height;
         this.useApproximatePosition = builder.useApproximatePosition;
         this.lowResolutionPreview = builder.lowResolutionPreview;
+        this.scale = builder.scale;
     }
 
     public TimelinePosition getPosition() {
@@ -38,19 +37,21 @@ public class RequestFrameParameter {
         return lowResolutionPreview;
     }
 
-    @Generated("SparkTools")
+    public double getScale() {
+        return scale;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    @Generated("SparkTools")
     public static final class Builder {
         private TimelinePosition position;
         private int width;
         private int height;
         private boolean useApproximatePosition;
         private boolean lowResolutionPreview;
-
+        private double scale;
         private Builder() {
         }
 
@@ -76,6 +77,11 @@ public class RequestFrameParameter {
 
         public Builder withLowResolutionPreview(boolean lowResolutionPreview) {
             this.lowResolutionPreview = lowResolutionPreview;
+            return this;
+        }
+
+        public Builder withScale(double scale) {
+            this.scale = scale;
             return this;
         }
 

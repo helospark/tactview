@@ -2,8 +2,10 @@ package com.helospark.tactview.core.decoder;
 
 import javax.annotation.Generated;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.helospark.tactview.core.timeline.TimelineLength;
 
+@JsonDeserialize(builder = AudioMediaMetadata.Builder.class)
 public class AudioMediaMetadata extends MediaMetadata {
     protected int sampleRate;
     protected int bytesPerSample;

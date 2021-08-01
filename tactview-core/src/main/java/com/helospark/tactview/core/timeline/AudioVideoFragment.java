@@ -26,7 +26,7 @@ public class AudioVideoFragment {
         freeAudioResult();
     }
 
-    private void freeVideoResult() {
+    public void freeVideoResult() {
         if (videoResult != null) {
             GlobalMemoryManagerAccessor.memoryManager.returnBuffer(videoResult.getBuffer());
         }

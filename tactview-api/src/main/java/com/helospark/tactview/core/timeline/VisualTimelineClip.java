@@ -78,6 +78,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withHeight(height)
                 .withUseApproximatePosition(request.useApproximatePosition())
                 .withLowResolutionPreview(request.isLowResolutionPreview())
+                .withScale(scale)
                 .build();
 
         ReadOnlyClipImage frameResult = requestFrame(frameRequest);

@@ -9,13 +9,16 @@ import java.util.stream.Collectors;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
+import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
+import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.ReplaceTimelineWithSubtimelineCommand;
 import com.helospark.tactview.ui.javafx.hotkey.HotKeyRemapWindow;
 import com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository;
 import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
@@ -367,12 +370,27 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1980)
-    public SeparatorMenuContribution beforePreferencesSeparatorContribution() {
+    public SeparatorMenuContribution beforeSubtimelineSeparatorContribution() {
         return new SeparatorMenuContribution(List.of(EDIT_ROOT));
     }
 
     @Bean
-    @Order(1999)
+    @Order(2000)
+    public SelectableMenuContribution createSubtimelineFromCurrentProject(UiCommandInterpreterService commandInterpreter, SubtimelineFromTimelineFactory subtimelineFromTimelineFactory,
+            TimelineManagerAccessor timelineManagerAccessor, LinkClipRepository linkClipRepository) {
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, "Subtimeline", "Create subtimeline from project"), event -> {
+            commandInterpreter.sendWithResult(new ReplaceTimelineWithSubtimelineCommand(subtimelineFromTimelineFactory, timelineManagerAccessor, linkClipRepository));
+        });
+    }
+
+    @Bean
+    @Order(2500)
+    public SeparatorMenuContribution afterSubtimelineSeparator() {
+        return new SeparatorMenuContribution(List.of(EDIT_ROOT));
+    }
+
+    @Bean
+    @Order(5000)
     public SelectableMenuContribution hotKeyContributionMenuItem(PreferencesPage preferencesPage, HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService,
             RestartDialogOpener restartDialogOpener, CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "Hotkeys"), event -> {
@@ -381,7 +399,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     }
 
     @Bean
-    @Order(2000)
+    @Order(5010)
     public SelectableMenuContribution preferencesContributionMenuItem(PreferencesPage preferencesPage) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Preferences"), event -> preferencesPage.open());
     }
