@@ -61,7 +61,7 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         }
     }
 
-    private static SubtimelineVisualMetadata readMetadata(JsonNode savedClip, LoadMetadata loadMetadata) {
+    public static SubtimelineVisualMetadata readMetadata(JsonNode savedClip, LoadMetadata loadMetadata) {
         try {
             var reader = loadMetadata.getObjectMapperUsed().readerFor(SubtimelineVisualMetadata.class);
             return reader.readValue(savedClip.get("metadata"));

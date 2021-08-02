@@ -106,6 +106,12 @@ public class DefaultFileMenuItemConfiguration {
     }
 
     @Bean
+    @Order(32)
+    public SelectableMenuContribution saveProjectAsTemplate(UiSaveHandler saveHandler) {
+        return new DefaultMenuContribution(List.of(FILE_ROOT, "Template", "Save _As template"), event -> saveHandler.saveAsTemplate());
+    }
+
+    @Bean
     @Order(35)
     public SeparatorMenuContribution afterSaveSeparatorMenuItem(UiLoadHandler loadHandler) {
         return new SeparatorMenuContribution(List.of(FILE_ROOT));

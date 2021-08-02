@@ -10,6 +10,7 @@ import com.helospark.tactview.core.persistentstate.PersistentState;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.save.SaveRequest;
+import com.helospark.tactview.core.save.TemplateSaveHandler;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.save.QuerySaveFilenameService.QuerySaveFileNameRequest;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
@@ -17,6 +18,7 @@ import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 @Component
 public class UiSaveHandler {
     private SaveAndLoadHandler saveAndLoadHandler;
+    private TemplateSaveHandler templateSaveHandler;
     private CurrentProjectSavedFileRepository currentProjectSavedFileRepository;
     private DirtyRepository dirtyRepository;
     private AlertDialogFactory alertDialogFactory;
@@ -28,13 +30,14 @@ public class UiSaveHandler {
     String lastOpenedDirectoryName;
 
     public UiSaveHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, DirtyRepository dirtyRepository,
-            QuerySaveFilenameService querySaveFilenameService, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository) {
+            QuerySaveFilenameService querySaveFilenameService, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository, TemplateSaveHandler templateSaveHandler) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.dirtyRepository = dirtyRepository;
         this.querySaveFilenameService = querySaveFilenameService;
         this.alertDialogFactory = alertDialogFactory;
         this.recentlyAccessedRepository = recentlyAccessedRepository;
+        this.templateSaveHandler = templateSaveHandler;
     }
 
     public boolean save() {
@@ -101,6 +104,24 @@ public class UiSaveHandler {
             saveAndLoadHandler.save(createSaveRequest(resultFilePath));
             dirtyRepository.setDirty(false);
             recentlyAccessedRepository.addNewRecentlySavedElement(resultFile);
+        }
+    }
+
+    public void saveAsTemplate() {
+        QuerySaveFileNameRequest request = QuerySaveFileNameRequest.builder()
+                .withInitialDirectory(lastOpenedDirectoryName)
+                .withTitle("Save Project as template")
+                .build();
+        Optional<String> fileName = querySaveFilenameService.queryUserAboutFileName(request);
+        if (fileName.isPresent()) {
+            String resultFilePath = fileName.get();
+            if (!resultFilePath.endsWith(".tvt")) {
+                resultFilePath += ".tvt";
+            }
+            File resultFile = new File(resultFilePath);
+            lastOpenedDirectoryName = resultFile.getParentFile().getAbsolutePath();
+            templateSaveHandler.save(createSaveRequest(resultFilePath));
+            dirtyRepository.setDirty(false);
         }
     }
 

@@ -62,7 +62,7 @@ public class SubtimelineAudioClip extends AudibleTimelineClip {
 
     }
 
-    private static AudioMediaMetadata readMetadata(JsonNode savedClip, LoadMetadata loadMetadata) {
+    public static AudioMediaMetadata readMetadata(JsonNode savedClip, LoadMetadata loadMetadata) {
         try {
             var reader = loadMetadata.getObjectMapperUsed().readerFor(AudioMediaMetadata.class);
             return reader.readValue(savedClip.get("metadata"));
