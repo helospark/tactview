@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorF
 import com.helospark.tactview.core.timeline.subtimeline.audio.SubtimelineAudioClip;
 import com.helospark.tactview.core.timeline.subtimeline.loadhelper.LoadData;
 import com.helospark.tactview.core.timeline.subtimeline.loadhelper.SubtimelineLoadFileService;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class SubtimelineVisualClipFactory implements ClipFactory {
@@ -20,10 +21,12 @@ public class SubtimelineVisualClipFactory implements ClipFactory {
 
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
     private SubtimelineLoadFileService subtimelineLoadFileService;
+    private MessagingService messagingService;
 
-    public SubtimelineVisualClipFactory(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineLoadFileService subtimelineLoadFileService) {
+    public SubtimelineVisualClipFactory(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineLoadFileService subtimelineLoadFileService, MessagingService messagingService) {
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
         this.subtimelineLoadFileService = subtimelineLoadFileService;
+        this.messagingService = messagingService;
     }
 
     @Override
@@ -41,7 +44,7 @@ public class SubtimelineVisualClipFactory implements ClipFactory {
     public TimelineClip createClip(AddClipRequest request) {
         LoadData loadData = subtimelineLoadFileService.getLoadData(request, TemplateSaveHandler.VIDEO_TRACK_NODE);
 
-        return new SubtimelineVisualClip(timelineManagerAccessorFactory, loadData.tree, loadData.loadMetadata).cloneClip(CloneRequestMetadata.ofDefault());
+        return new SubtimelineVisualClip(timelineManagerAccessorFactory, messagingService, loadData.tree, loadData.loadMetadata).cloneClip(CloneRequestMetadata.ofDefault());
     }
 
     @Override
@@ -51,7 +54,7 @@ public class SubtimelineVisualClipFactory implements ClipFactory {
 
     @Override
     public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
-        return new SubtimelineVisualClip(timelineManagerAccessorFactory, savedClip, loadMetadata);
+        return new SubtimelineVisualClip(timelineManagerAccessorFactory, messagingService, savedClip, loadMetadata);
     }
 
 }

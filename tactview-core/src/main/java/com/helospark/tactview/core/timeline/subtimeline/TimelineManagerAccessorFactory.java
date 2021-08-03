@@ -16,7 +16,6 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class TimelineManagerAccessorFactory {
-    private final MessagingService messagingService = new DummyMessagingService();
     private final ClipFactoryChain clipFactoryChain;
     private final EffectFactoryChain effectFactoryChain;
     private final LinkClipRepository linkClipRepository;
@@ -27,7 +26,8 @@ public class TimelineManagerAccessorFactory {
     private final FrameExtender frameExtender;
 
     public TimelineManagerAccessorFactory(ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
-            LongProcessRequestor longProcessRequestor, ProjectRepository projectRepository, FrameBufferMerger frameBufferMerger, AudioBufferMerger audioBufferMerger, FrameExtender frameExtender) {
+            LongProcessRequestor longProcessRequestor, ProjectRepository projectRepository, FrameBufferMerger frameBufferMerger, AudioBufferMerger audioBufferMerger, FrameExtender frameExtender,
+            MessagingService messagingService) {
         this.clipFactoryChain = clipFactoryChain;
         this.effectFactoryChain = effectFactoryChain;
         this.linkClipRepository = linkClipRepository;
@@ -38,14 +38,14 @@ public class TimelineManagerAccessorFactory {
         this.frameExtender = frameExtender;
     }
 
-    public TimelineManagerAccessor createAccessor(TimelineChannelsState timelineState) {
+    public TimelineManagerAccessor createAccessor(TimelineChannelsState timelineState, MessagingService messagingService) {
         TimelineManagerAccessor result = new TimelineManagerAccessor(messagingService, clipFactoryChain, effectFactoryChain, linkClipRepository, timelineState, longProcessRequestor,
                 projectRepository);
         result.postConstruct();
         return result;
     }
 
-    public TimelineManagerRenderService createRenderService(TimelineChannelsState timelineState, TimelineManagerAccessor accessor) {
+    public TimelineManagerRenderService createRenderService(TimelineChannelsState timelineState, TimelineManagerAccessor accessor, MessagingService messagingService) {
         return new TimelineManagerRenderService(frameBufferMerger, audioBufferMerger, projectRepository, frameExtender, timelineState, accessor);
     }
 

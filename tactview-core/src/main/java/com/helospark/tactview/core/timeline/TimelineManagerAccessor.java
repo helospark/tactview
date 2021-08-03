@@ -42,6 +42,8 @@ import com.helospark.tactview.core.timeline.message.EffectDescriptorsAdded;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
+import com.helospark.tactview.core.timeline.subtimeline.AfterClipAddedListener;
+import com.helospark.tactview.core.timeline.subtimeline.ClipContainingClip;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -144,6 +146,9 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         synchronized (channelToAddResourceTo.getFullChannelLock()) {
             if (channelToAddResourceTo.canAddResourceAt(clip.getInterval())) {
                 channelToAddResourceTo.addResource(clip);
+                if (clip instanceof AfterClipAddedListener) {
+                    ((AfterClipAddedListener) clip).afterClipAdded();
+                }
             } else {
                 List<TimelineInterval> intersectingIntervals = channelToAddResourceTo.getAllClips()
                         .computeIntersectingIntervals(clip.getInterval())
@@ -157,7 +162,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
 
     }
 
-    private void sendClipAndEffectMessages(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
+    public void sendClipAndEffectMessages(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
         List<ValueProviderDescriptor> descriptors = clip.getDescriptors(); // must call before sending clip added message to initialize descriptors
         messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
         messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), descriptors, clip));
@@ -228,12 +233,23 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
 
     @Override
     public Optional<TimelineClip> findClipById(String id) {
-        return timelineChannelsState.channels
+        Optional<TimelineClip> directResult = timelineChannelsState.channels
                 .stream()
                 .map(channel -> channel.findClipById(id))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst();
+
+        if (directResult.isPresent()) {
+            return directResult;
+        } else {
+            return timelineChannelsState.channels.stream()
+                    .flatMap(a -> a.getAllClips().stream())
+                    .filter(a -> a instanceof ClipContainingClip)
+                    .map(a -> (ClipContainingClip) a)
+                    .flatMap(a -> a.findClipById(id).stream())
+                    .findFirst();
+        }
     }
 
     public Optional<TimelineChannel> findChannelForClipId(String id) {

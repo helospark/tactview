@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.subtimeline.audio.SubtimelineAudioCl
 import com.helospark.tactview.core.timeline.subtimeline.video.SubtimelineVisualClip;
 import com.helospark.tactview.core.timeline.subtimeline.video.SubtimelineVisualClipFactory;
 import com.helospark.tactview.core.timeline.subtimeline.video.SubtimelineVisualMetadata;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class SubtimelineFromTimelineFactory {
@@ -20,13 +21,15 @@ public class SubtimelineFromTimelineFactory {
     private TimelineManagerAccessor timelineManager;
     private TimelineChannelsState timelineChannelsState;
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
+    private MessagingService messagingService;
 
     public SubtimelineFromTimelineFactory(ProjectRepository projectRepository, TimelineManagerAccessor timelineManager, TimelineChannelsState timelineChannelsState,
-            TimelineManagerAccessorFactory timelineManagerAccessorFactory) {
+            TimelineManagerAccessorFactory timelineManagerAccessorFactory, MessagingService messagingService) {
         this.projectRepository = projectRepository;
         this.timelineManager = timelineManager;
         this.timelineChannelsState = timelineChannelsState;
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
+        this.messagingService = messagingService;
     }
 
     public SubtimelineVisualClip createSubtimelineVideoClipFromCurrentTimeline() {
@@ -38,7 +41,8 @@ public class SubtimelineFromTimelineFactory {
                 .withLength(length)
                 .build();
 
-        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, TimelinePosition.ofZero(),
+        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, messagingService,
+                TimelinePosition.ofZero(),
                 length);
 
         result.setCreatorFactoryId(SubtimelineVisualClipFactory.ID);
@@ -56,7 +60,8 @@ public class SubtimelineFromTimelineFactory {
                 .withSampleRate(projectRepository.getBytesPerSample())
                 .build();
 
-        SubtimelineAudioClip result = new SubtimelineAudioClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, TimelinePosition.ofZero(),
+        SubtimelineAudioClip result = new SubtimelineAudioClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, messagingService,
+                TimelinePosition.ofZero(),
                 length);
         result.setCreatorFactoryId(SubtimelineAudioClipFactory.ID);
         return result;

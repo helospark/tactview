@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.subtimeline.video;
 
 import java.util.Map;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
@@ -20,20 +21,27 @@ import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.subtimeline.AfterClipAddedListener;
+import com.helospark.tactview.core.timeline.subtimeline.ClipContainingClip;
+import com.helospark.tactview.core.timeline.subtimeline.DelayedMessagingService;
 import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorFactory;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
-public class SubtimelineVisualClip extends VisualTimelineClip {
+public class SubtimelineVisualClip extends VisualTimelineClip implements ClipContainingClip, AfterClipAddedListener {
     private TimelineManagerAccessor timelineManagerAccessor;
     private TimelineManagerRenderService timelineManagerRenderService;
     private TimelineChannelsState timelineState;
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
+    private DelayedMessagingService delayedMessagingService;
 
-    public SubtimelineVisualClip(SubtimelineVisualMetadata metadata, TimelineChannelsState timelineState, TimelineManagerAccessorFactory timelineManagerAccessorFactory, TimelinePosition position,
+    public SubtimelineVisualClip(SubtimelineVisualMetadata metadata, TimelineChannelsState timelineState, TimelineManagerAccessorFactory timelineManagerAccessorFactory,
+            MessagingService messagingService, TimelinePosition position,
             TimelineLength length) {
         super(metadata, new TimelineInterval(position, length), TimelineClipType.IMAGE);
+        delayedMessagingService = new DelayedMessagingService(messagingService);
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
-        this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineState);
-        this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor);
+        this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineState, delayedMessagingService);
+        this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor, delayedMessagingService);
         this.timelineState = timelineState;
         this.mediaMetadata = metadata;
     }
@@ -41,18 +49,20 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
     public SubtimelineVisualClip(SubtimelineVisualClip clip, CloneRequestMetadata cloneRequestMetadata) {
         super(clip, cloneRequestMetadata);
         this.timelineState = clip.timelineState.deepClone(cloneRequestMetadata);
+        this.delayedMessagingService = clip.delayedMessagingService;
         this.timelineManagerAccessorFactory = clip.timelineManagerAccessorFactory;
-        this.timelineManagerAccessor = clip.timelineManagerAccessorFactory.createAccessor(this.timelineState);
-        this.timelineManagerRenderService = clip.timelineManagerAccessorFactory.createRenderService(this.timelineState, timelineManagerAccessor);
+        this.timelineManagerAccessor = clip.timelineManagerAccessorFactory.createAccessor(this.timelineState, delayedMessagingService);
+        this.timelineManagerRenderService = clip.timelineManagerAccessorFactory.createRenderService(this.timelineState, timelineManagerAccessor, delayedMessagingService);
     }
 
-    public SubtimelineVisualClip(TimelineManagerAccessorFactory timelineManagerAccessorFactory, JsonNode savedClip, LoadMetadata loadMetadata) {
+    public SubtimelineVisualClip(TimelineManagerAccessorFactory timelineManagerAccessorFactory, MessagingService messagingService, JsonNode savedClip, LoadMetadata loadMetadata) {
         super(readMetadata(savedClip, loadMetadata), savedClip, loadMetadata);
         this.timelineState = new TimelineChannelsState();
+        delayedMessagingService = new DelayedMessagingService(messagingService);
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
-        this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineState);
-        this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor);
+        this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineState, delayedMessagingService);
+        this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor, delayedMessagingService);
 
         try {
             timelineManagerAccessor.loadFrom(savedClip, loadMetadata);
@@ -108,6 +118,21 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
     @Override
     public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
         return new SubtimelineVisualClip(this, cloneRequestMetadata);
+    }
+
+    @Override
+    public Optional<TimelineClip> findClipById(String id) {
+        return this.timelineManagerAccessor.findClipById(id);
+    }
+
+    @Override
+    public void afterClipAdded() {
+        delayedMessagingService.stopDelay();
+        for (var channel : this.timelineState.getChannels()) {
+            for (var clip : channel.getAllClips()) {
+                timelineManagerAccessor.sendClipAndEffectMessages(channel, clip);
+            }
+        }
     }
 
 }

@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorFactory;
 import com.helospark.tactview.core.timeline.subtimeline.loadhelper.LoadData;
 import com.helospark.tactview.core.timeline.subtimeline.loadhelper.SubtimelineLoadFileService;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class SubtimelineAudioClipFactory implements ClipFactory {
@@ -19,10 +20,12 @@ public class SubtimelineAudioClipFactory implements ClipFactory {
 
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
     private SubtimelineLoadFileService subtimelineLoadFileService;
+    private MessagingService messagingService;
 
-    public SubtimelineAudioClipFactory(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineLoadFileService subtimelineLoadFileService) {
+    public SubtimelineAudioClipFactory(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineLoadFileService subtimelineLoadFileService, MessagingService messagingService) {
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
         this.subtimelineLoadFileService = subtimelineLoadFileService;
+        this.messagingService = messagingService;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class SubtimelineAudioClipFactory implements ClipFactory {
     public TimelineClip createClip(AddClipRequest request) {
         LoadData loadData = subtimelineLoadFileService.getLoadData(request, TemplateSaveHandler.AUDIO_TRACK_NODE);
 
-        return new SubtimelineAudioClip(timelineManagerAccessorFactory, loadData.tree, loadData.loadMetadata).cloneClip(CloneRequestMetadata.ofDefault());
+        return new SubtimelineAudioClip(timelineManagerAccessorFactory, messagingService, loadData.tree, loadData.loadMetadata).cloneClip(CloneRequestMetadata.ofDefault());
     }
 
     @Override
@@ -50,7 +53,7 @@ public class SubtimelineAudioClipFactory implements ClipFactory {
 
     @Override
     public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
-        return new SubtimelineAudioClip(timelineManagerAccessorFactory, savedClip, loadMetadata);
+        return new SubtimelineAudioClip(timelineManagerAccessorFactory, messagingService, savedClip, loadMetadata);
     }
 
 }
