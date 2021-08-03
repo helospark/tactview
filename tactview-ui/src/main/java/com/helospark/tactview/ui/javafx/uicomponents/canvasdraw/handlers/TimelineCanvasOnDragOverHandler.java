@@ -9,6 +9,7 @@ import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -80,7 +81,8 @@ public class TimelineCanvasOnDragOverHandler {
                 try {
                     AddClipsCommand result = commandInterpreter.synchronousSend(new AddClipsCommand(addClipRequest, timelineAccessor));
                     String addedClipId = result.getAddedClipId();
-                    ClipDragInformation clipDragInformation = new ClipDragInformation(result.getRequestedPosition(), List.of(addedClipId), channelId, 0);
+                    TimelineInterval originalInterval = timelineAccessor.findClipById(addedClipId).get().getInterval();
+                    ClipDragInformation clipDragInformation = new ClipDragInformation(result.getRequestedPosition(), List.of(addedClipId), channelId, 0, originalInterval);
                     dragRepository.onClipDragged(clipDragInformation);
                     db.clear();
                 } catch (Exception e1) {
@@ -120,8 +122,10 @@ public class TimelineCanvasOnDragOverHandler {
                     timelineDragAndDropHandler.moveClip(channelId, finished, newX);
                 } else {
                     TimelinePosition newX = position;
-                    timelineDragAndDropHandler.resizeClip(newX, finished);
+                    TimelinePosition relativeMove = position.subtract(dragRepository.currentlyDraggedClip().getLastPosition());
+                    timelineDragAndDropHandler.resizeClip(newX, finished, relativeMove);
                 }
+                dragRepository.currentlyDraggedClip().setLastPosition(position);
                 return true;
             } else if (dragRepository.currentEffectDragInformation() != null) {
                 if (dragRepository.isResizing()) {

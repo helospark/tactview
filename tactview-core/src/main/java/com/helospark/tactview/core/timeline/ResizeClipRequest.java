@@ -14,6 +14,7 @@ public class ResizeClipRequest {
     private boolean moreResizeExpected;
     private List<String> ignoredSpecialSuggestionClips;
     private List<TimelineClip> ignoreIntersection;
+    private boolean keepLeftSideOfClipAtSamePlace;
 
     private ResizeClipRequest(Builder builder) {
         this.clip = builder.clip;
@@ -25,6 +26,7 @@ public class ResizeClipRequest {
         this.moreResizeExpected = builder.moreResizeExpected;
         this.ignoredSpecialSuggestionClips = builder.ignoredSpecialSuggestionClips;
         this.ignoreIntersection = builder.ignoreIntersection;
+        this.keepLeftSideOfClipAtSamePlace = builder.keepLeftSideOfClipAtSamePlace;
     }
 
     public TimelineClip getClip() {
@@ -63,10 +65,15 @@ public class ResizeClipRequest {
         return ignoreIntersection;
     }
 
+    public boolean getKeepLeftSideOfClipAtSamePlace() {
+        return keepLeftSideOfClipAtSamePlace;
+    }
+
     @Override
     public String toString() {
         return "ResizeClipRequest [clip=" + clip + ", left=" + left + ", position=" + position + ", maximumJumpLength=" + maximumJumpLength + ", minimumSize=" + minimumSize + ", useSpecialPoints="
-                + useSpecialPoints + ", moreResizeExpected=" + moreResizeExpected + ", otherClips=" + ignoredSpecialSuggestionClips + ", ignoreIntersection=" + ignoreIntersection + "]";
+                + useSpecialPoints + ", moreResizeExpected=" + moreResizeExpected + ", ignoredSpecialSuggestionClips=" + ignoredSpecialSuggestionClips + ", ignoreIntersection=" + ignoreIntersection
+                + ", keepLeftSideOfClipAtSamePlace=" + keepLeftSideOfClipAtSamePlace + "]";
     }
 
     public static Builder builder() {
@@ -83,6 +90,7 @@ public class ResizeClipRequest {
         private boolean moreResizeExpected;
         private List<String> ignoredSpecialSuggestionClips = Collections.emptyList();
         private List<TimelineClip> ignoreIntersection = Collections.emptyList();
+        private boolean keepLeftSideOfClipAtSamePlace;
         private Builder() {
         }
 
@@ -128,6 +136,11 @@ public class ResizeClipRequest {
 
         public Builder withIgnoreIntersection(List<TimelineClip> ignoreIntersection) {
             this.ignoreIntersection = ignoreIntersection;
+            return this;
+        }
+
+        public Builder withKeepLeftSideOfClipAtSamePlace(boolean keepLeftSideOfClipAtSamePlace) {
+            this.keepLeftSideOfClipAtSamePlace = keepLeftSideOfClipAtSamePlace;
             return this;
         }
 

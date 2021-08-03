@@ -113,4 +113,8 @@ public class TimelineLength implements SecondsAware {
         return this.getSeconds().subtract(length.getSeconds()).abs().compareTo(epsilon) < 0;
     }
 
+    public TimelineLength subtract(TimelineLength other) {
+        return new TimelineLength(this.getSeconds().subtract(other.getSeconds()));
+    }
+
 }

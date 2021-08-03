@@ -140,7 +140,7 @@ public class TimelineDragAndDropHandler {
         }
     }
 
-    public void resizeClip(TimelinePosition position, boolean revertable) {
+    public void resizeClip(TimelinePosition position, boolean revertable, TimelinePosition relativeMove) {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
             List<String> clipId = currentlyDraggedEffect.getClipId();
@@ -152,6 +152,7 @@ public class TimelineDragAndDropHandler {
                     .withLeft(dragRepository.getDragDirection().equals(DragRepository.DragDirection.LEFT))
                     .withPosition(position)
                     .withOriginalPosition(currentlyDraggedEffect.getOriginalPosition())
+                    .withOriginalInterval(currentlyDraggedEffect.getOriginalInterval())
                     .withRevertable(revertable)
                     .withTimelineManager(timelineManager)
                     .withUseSpecialPoints(useSpecialPoints)
@@ -159,6 +160,7 @@ public class TimelineDragAndDropHandler {
                     .withMoreResizeExpected(!revertable)
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                     .withTimelineEditMode(timelineEditModeRepository.getMode())
+                    .withRelativeMove(relativeMove)
                     .build();
             commandInterpreter.sendWithResult(command);
         }

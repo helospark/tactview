@@ -71,6 +71,7 @@ public class UiCutHandler {
                     .withPosition(currentPosition)
                     .withMoreResizeExpected(false)
                     .withOriginalPosition(isLeft ? elementsToCut.get(0).getInterval().getStartPosition() : elementsToCut.get(0).getInterval().getEndPosition())
+                    .withOriginalInterval(elementsToCut.get(0).getGlobalInterval())
                     .withRevertable(true)
                     .withTimelineEditMode(timelineEditModeRepository.getMode())
                     .withTimelineManager(timelineManager)

@@ -150,8 +150,13 @@ public class TimelineChannel {
         return Optional.empty();
     }
 
-    public boolean resizeClip(TimelineClip clip, boolean left, TimelinePosition position, List<TimelineClip> ignoredOtherClips) {
+    public boolean resizeClip(TimelineClip clip, boolean left, TimelinePosition position, List<TimelineClip> ignoredOtherClips, boolean keepLeftSideOfClipAtTheSamePlace) {
+        TimelineInterval originalInterval = clip.getInterval();
         TimelineInterval newInterval = clip.getIntervalAfterRescaleTo(left, position);
+
+        if (left && keepLeftSideOfClipAtTheSamePlace) {
+            newInterval = newInterval.butMoveStartPostionTo(originalInterval.getStartPosition());
+        }
 
         List<TimelineClip> ignoredIds = new ArrayList<>();
         ignoredIds.add(clip);

@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.repository.drag;
 
 import java.util.List;
 
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
 public class ClipDragInformation {
@@ -9,12 +10,16 @@ public class ClipDragInformation {
     private List<String> clipId;
     private String originalChannelId;
     private double anchorPointX;
+    private TimelinePosition lastPosition;
+    private TimelineInterval originalInterval;
 
-    public ClipDragInformation(TimelinePosition originalPosition, List<String> clipId, String originalChannelId, double anchorPointX) {
+    public ClipDragInformation(TimelinePosition originalPosition, List<String> clipId, String originalChannelId, double anchorPointX, TimelineInterval originalInterval) {
         this.originalPosition = originalPosition;
         this.clipId = clipId;
         this.originalChannelId = originalChannelId;
         this.anchorPointX = anchorPointX;
+        this.lastPosition = originalPosition;
+        this.originalInterval = originalInterval;
 
     }
 
@@ -32,6 +37,18 @@ public class ClipDragInformation {
 
     public double getAnchorPointX() {
         return anchorPointX;
+    }
+
+    public TimelinePosition getLastPosition() {
+        return lastPosition;
+    }
+
+    public void setLastPosition(TimelinePosition lastPosition) {
+        this.lastPosition = lastPosition;
+    }
+
+    public TimelineInterval getOriginalInterval() {
+        return originalInterval;
     }
 
 }

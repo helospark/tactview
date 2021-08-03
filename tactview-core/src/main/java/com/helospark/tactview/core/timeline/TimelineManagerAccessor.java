@@ -669,7 +669,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 })
                 .collect(Collectors.toList());
 
-        boolean success = channel.resizeClip(clip, left, globalPosition, resizeClipRequest.getIgnoreIntersection());
+        boolean success = channel.resizeClip(clip, left, globalPosition, resizeClipRequest.getIgnoreIntersection(), resizeClipRequest.getKeepLeftSideOfClipAtSamePlace());
         if (success) {
             TimelineClip renewedClip = findClipById(clip.getId()).orElseThrow(() -> new IllegalArgumentException("No such clip"));
             ClipResizedMessage clipResizedMessage = ClipResizedMessage.builder()

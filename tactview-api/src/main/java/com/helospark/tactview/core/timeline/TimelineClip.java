@@ -544,7 +544,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     protected void resizeAsCut(boolean left, TimelineInterval position) {
         if (left) {
-            TimelinePosition relativeMove = this.getInterval().getStartPosition().subtract(position.getStartPosition());
+            TimelinePosition relativeMove = position.getLength().subtract(this.getInterval().getLength()).toPosition();
             renderOffset = renderOffset.toPosition().subtract(relativeMove).toLength();
             if (renderOffset.lessThan(TimelineLength.ofZero())) {
                 renderOffset = TimelineLength.ofZero();

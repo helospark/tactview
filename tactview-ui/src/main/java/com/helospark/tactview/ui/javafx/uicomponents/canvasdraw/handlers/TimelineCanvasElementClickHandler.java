@@ -37,10 +37,11 @@ public class TimelineCanvasElementClickHandler {
                 boolean resizingLeft = isResizingLeft(element, event.getX());
                 TimelinePosition originalPosition = resizingLeft ? clip.getGlobalInterval().getStartPosition() : clip.getGlobalInterval().getEndPosition();
                 List<String> clipIds = timelineAccessor.findLinkedClipsWithSameInterval(element.elementId);
-                ClipDragInformation clipDragInformation = new ClipDragInformation(originalPosition, clipIds, channelId, currentX - clipPositionAsDouble);
+                ClipDragInformation clipDragInformation = new ClipDragInformation(originalPosition, clipIds, channelId, currentX - clipPositionAsDouble, clip.getGlobalInterval());
                 dragRepository.onClipResizing(clipDragInformation, resizingLeft ? DragDirection.LEFT : DragDirection.RIGHT);
             } else {
-                ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), List.of(element.elementId), channelId, currentX - clipPositionAsDouble);
+                ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), List.of(element.elementId), channelId, currentX - clipPositionAsDouble,
+                        clip.getGlobalInterval());
                 dragRepository.onClipDragged(clipDragInformation);
             }
         } else {

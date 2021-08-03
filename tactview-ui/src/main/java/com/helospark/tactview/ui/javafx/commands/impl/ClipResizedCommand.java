@@ -26,8 +26,10 @@ public class ClipResizedCommand implements UiCommand {
     private boolean left;
 
     private TimelinePosition originalPosition;
+    private TimelineInterval originalInterval;
     private Set<MovedClip> clipsToMove = Set.of();
     private TimelinePosition lengthToJump;
+    private TimelinePosition relativeMove;
 
     private boolean revertable;
 
@@ -51,22 +53,33 @@ public class ClipResizedCommand implements UiCommand {
         this.moreResizeExpected = builder.moreResizeExpected;
         this.minimumSize = builder.minimumSize;
         this.timelineEditMode = builder.timelineEditMode;
+        this.relativeMove = builder.relativeMove;
+        this.originalInterval = builder.originalInterval;
+
+        if (relativeMove == null) {
+            relativeMove = position.subtract(originalPosition);
+        }
     }
 
     @Override
     public void execute() {
         synchronized (timelineManager.getFullLock()) {
-
-            if (!timelineEditMode.equals(TimelineEditMode.NORMAL)) {
+            boolean isAnyRippleModeEnabled = !timelineEditMode.equals(TimelineEditMode.NORMAL);
+            if (isAnyRippleModeEnabled) {
                 List<Integer> channels;
                 if (timelineEditMode.equals(TimelineEditMode.SINGLE_CHANNEL_RIPPLE)) {
                     channels = new ArrayList<>(timelineManager.findChannelIndicesForClips(clipIds));
                 } else {
                     channels = timelineManager.getAllChannelIndices();
                 }
-                TimelinePosition firstEndPosition = timelineManager.findClipById(clipIds.get(0)).get().getInterval().getEndPosition();
-
-                clipsToMove = timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(firstEndPosition, channels, List.of())
+                TimelineInterval intervalOfFirstClip = timelineManager.findClipById(clipIds.get(0)).get().getInterval();
+                TimelinePosition ripplePosition;
+                if (left) {
+                    ripplePosition = intervalOfFirstClip.getStartPosition();
+                } else {
+                    ripplePosition = intervalOfFirstClip.getEndPosition();
+                }
+                clipsToMove = timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(ripplePosition, channels, clipIds)
                         .stream()
                         .map(a -> new MovedClip(a, timelineManager.findChannelForClipId(a.getId()).get().getId()))
                         .collect(Collectors.toSet());
@@ -77,7 +90,7 @@ public class ClipResizedCommand implements UiCommand {
             for (int i = 0; i < clipIds.size(); ++i) {
                 String clipId = clipIds.get(i);
                 TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No clip found"));
-                TimelineInterval originalInterval = clip.getInterval();
+                TimelineInterval originalIntervalInternal = clip.getInterval();
 
                 List<String> ignoredSuggestions = new ArrayList<>();
                 ignoredSuggestions.addAll(clipIds);
@@ -85,27 +98,43 @@ public class ClipResizedCommand implements UiCommand {
                         .map(a -> a.clip.getId())
                         .forEach(a -> ignoredSuggestions.add(a));
 
+                TimelinePosition positionToUse;
+                boolean leftRippleModePositionEnabled = left && isAnyRippleModeEnabled && relativeMove != null;
+                if (i == 0) {
+                    if (leftRippleModePositionEnabled) {
+                        positionToUse = clip.getInterval().getStartPosition().add(relativeMove);
+                    } else {
+                        positionToUse = position;
+                    }
+                } else {
+                    positionToUse = newPosition;
+                }
                 ResizeClipRequest request = ResizeClipRequest.builder()
                         .withClip(clip)
                         .withLeft(left)
-                        .withUseSpecialPoints(i == 0 && useSpecialPoints)
-                        .withPosition(i == 0 ? position : newPosition)
+                        .withUseSpecialPoints(i == 0 && useSpecialPoints && !leftRippleModePositionEnabled)
+                        .withPosition(positionToUse)
                         .withMaximumJumpLength(maximumJumpLength)
                         .withMoreResizeExpected(moreResizeExpected)
                         .withMinimumSize(minimumSize)
                         .withIgnoredSpecialSuggestionClips(ignoredSuggestions)
                         .withIgnoreIntersection(clipsToMove.stream().map(a -> a.clip).collect(Collectors.toList()))
+                        .withKeepLeftSideOfClipAtSamePlace(leftRippleModePositionEnabled) // TODO: it's not ideal that the ripple logic is split between 2 places
                         .build();
 
                 timelineManager.resizeClip(request);
 
                 if (i == 0) {
-                    newPosition = left ? clip.getUnmodifiedInterval().getStartPosition() : clip.getUnmodifiedInterval().getEndPosition();
+                    if (leftRippleModePositionEnabled) {
+                        newPosition = positionToUse; // No special position enabled, so it's ok
+                    } else {
+                        newPosition = left ? clip.getUnmodifiedInterval().getStartPosition() : clip.getUnmodifiedInterval().getEndPosition();
+                    }
                     lengthToJump = clip.getInterval().getEndPosition().subtract(originalInterval.getEndPosition());
                 }
             }
 
-            if (clipsToMove.size() > 0 && !left) { // TODO: implement ripple when resizing to left
+            if (clipsToMove.size() > 0) {
                 TimelineClip firstClipToMove = clipsToMove.stream().findFirst().get().clip;
                 MoveClipRequest moveClipRequest = MoveClipRequest.builder()
                         .withAdditionalClipIds(clipsToMove.stream().map(a -> a.clip.getId()).collect(Collectors.toList()))
@@ -123,15 +152,30 @@ public class ClipResizedCommand implements UiCommand {
 
     @Override
     public void revert() {
+        boolean isAnyRippleModeEnabled = !timelineEditMode.equals(TimelineEditMode.NORMAL);
+        TimelinePosition lengthToJumpToUse = lengthToJump;
         for (var clipId : clipIds) {
             TimelineClip clip = timelineManager.findClipById(clipId).orElseThrow(() -> new IllegalArgumentException("No clip found"));
             TimelinePosition previousPosition = originalPosition;
+
+            boolean wasLeftRipple = left && isAnyRippleModeEnabled;
+
+            TimelinePosition positionToUse = previousPosition;
+            if (wasLeftRipple) {
+                TimelineLength intervalSizeDiff = clip.getGlobalInterval().getLength().subtract(originalInterval.getLength());
+                positionToUse = positionToUse.add(intervalSizeDiff.toPosition());
+                lengthToJumpToUse = intervalSizeDiff.toPosition().negate();
+            } else {
+                lengthToJumpToUse = originalInterval.getEndPosition().subtract(clip.getInterval().getEndPosition());
+            }
 
             ResizeClipRequest request = ResizeClipRequest.builder()
                     .withClip(clip)
                     .withLeft(left)
                     .withUseSpecialPoints(false)
-                    .withPosition(previousPosition)
+                    .withPosition(positionToUse)
+                    .withKeepLeftSideOfClipAtSamePlace(wasLeftRipple)
+                    .withIgnoreIntersection(clipsToMove.stream().map(a -> a.clip).collect(Collectors.toList()))
                     .build();
 
             timelineManager.resizeClip(request);
@@ -146,7 +190,7 @@ public class ClipResizedCommand implements UiCommand {
                     .withEnableJumpingToSpecialPosition(false)
                     .withMoreMoveExpected(false)
                     .withNewChannelId(timelineManager.findChannelForClipId(firstClipToMove.getId()).get().getId())
-                    .withNewPosition(firstClipToMove.getInterval().getStartPosition().subtract(lengthToJump))
+                    .withNewPosition(firstClipToMove.getInterval().getStartPosition().add(lengthToJumpToUse))
                     .build();
             timelineManager.moveClip(moveClipRequest);
         }
@@ -201,6 +245,8 @@ public class ClipResizedCommand implements UiCommand {
         private TimelinePosition position;
         private boolean left;
         private TimelinePosition originalPosition;
+        private TimelineInterval originalInterval;
+        private TimelinePosition relativeMove;
         private boolean revertable;
         private boolean useSpecialPoints;
         private boolean moreResizeExpected;
@@ -233,6 +279,16 @@ public class ClipResizedCommand implements UiCommand {
 
         public Builder withOriginalPosition(TimelinePosition originalPosition) {
             this.originalPosition = originalPosition;
+            return this;
+        }
+
+        public Builder withOriginalInterval(TimelineInterval originalInterval) {
+            this.originalInterval = originalInterval;
+            return this;
+        }
+
+        public Builder withRelativeMove(TimelinePosition relativeMove) {
+            this.relativeMove = relativeMove;
             return this;
         }
 
