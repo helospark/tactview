@@ -33,7 +33,7 @@ public class MirrorLineEffect extends StatelessVideoEffect {
 
     public MirrorLineEffect(MirrorLineEffect mirrorLineEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(mirrorLineEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(mirrorLineEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(mirrorLineEffect, this, cloneRequestMetadata);
     }
 
     public MirrorLineEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

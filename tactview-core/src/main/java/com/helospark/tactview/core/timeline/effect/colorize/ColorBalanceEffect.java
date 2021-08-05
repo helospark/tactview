@@ -64,7 +64,7 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
 
     public ColorBalanceEffect(ColorBalanceEffect colorBalance, CloneRequestMetadata cloneRequestMetadata) {
         super(colorBalance, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(colorBalance, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(colorBalance, this, cloneRequestMetadata);
     }
 
     public ColorBalanceEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BrignessContrastService brignessContrastService2,

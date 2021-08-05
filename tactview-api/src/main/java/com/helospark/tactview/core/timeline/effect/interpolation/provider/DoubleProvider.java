@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
@@ -104,7 +105,7 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
 
     @Override
     public EffectInterpolator getInterpolatorClone() {
-        return interpolator.deepClone();
+        return interpolator.deepClone(CloneRequestMetadata.fullCopy());
     }
 
     @Override
@@ -118,8 +119,8 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
     }
 
     @Override
-    public DoubleProvider deepClone() {
-        DoubleProvider result = new DoubleProvider(min, max, interpolator.deepClone());
+    public DoubleProvider deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        DoubleProvider result = new DoubleProvider(min, max, interpolator.deepClone(cloneRequestMetadata));
         result.sizeFunction = sizeFunction;
         return result;
     }
@@ -154,6 +155,11 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
 
     public BigDecimal integrateUntil(TimelinePosition start, TimelineLength end, BigDecimal max) {
         return interpolator.integrateUntil(start, end, max);
+    }
+
+    @Override
+    public DoubleProvider deepClone(CloneRequestMetadata cloneRequestMetadata) {
+        return (DoubleProvider) super.deepClone(cloneRequestMetadata);
     }
 
 }

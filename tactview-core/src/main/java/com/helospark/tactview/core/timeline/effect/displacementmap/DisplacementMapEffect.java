@@ -37,7 +37,7 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
 
     public DisplacementMapEffect(DisplacementMapEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public DisplacementMapEffect(JsonNode node, LoadMetadata loadMetadata, DisplacementMapService displacementService) {

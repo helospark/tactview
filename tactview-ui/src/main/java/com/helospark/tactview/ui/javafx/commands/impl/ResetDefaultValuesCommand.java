@@ -7,6 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
@@ -33,7 +34,7 @@ public class ResetDefaultValuesCommand implements UiCommand {
 
             for (var a : children) {
                 String id = a.getId();
-                EffectInterpolator clonedInterpolator = a.getInterpolator().deepClone();
+                EffectInterpolator clonedInterpolator = a.getInterpolator().deepClone(CloneRequestMetadata.fullCopy());
 
                 previousInterpolatorClones.put(id, clonedInterpolator);
 
@@ -42,7 +43,7 @@ public class ResetDefaultValuesCommand implements UiCommand {
 
             EffectInterpolator previousInterpolator = previousValue.getInterpolator();
             if (previousInterpolator != null) {
-                previousInterpolatorClones.put(descriptorId, previousInterpolator.deepClone());
+                previousInterpolatorClones.put(descriptorId, previousInterpolator.deepClone(CloneRequestMetadata.fullCopy()));
             } else {
                 LOGGER.error("No previous value present for interpolator");
             }

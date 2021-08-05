@@ -25,7 +25,7 @@ public class FrameHoldEffect extends StatelessVideoEffect {
 
     public FrameHoldEffect(FrameHoldEffect ghostingEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(ghostingEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(ghostingEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(ghostingEffect, this, cloneRequestMetadata);
     }
 
     public FrameHoldEffect(JsonNode node, LoadMetadata loadMetadata) {

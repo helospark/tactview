@@ -25,7 +25,7 @@ public class PivotPointValueProviderEffect extends StatelessValueProviderEffect 
 
     public PivotPointValueProviderEffect(PivotPointValueProviderEffect pivotPointValueProviderEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(pivotPointValueProviderEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(pivotPointValueProviderEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(pivotPointValueProviderEffect, this, cloneRequestMetadata);
     }
 
     @Override

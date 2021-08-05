@@ -41,7 +41,7 @@ public class CheckerBoardProceduralClip extends ProceduralVisualClip {
 
     public CheckerBoardProceduralClip(CheckerBoardProceduralClip checkerBoardProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(checkerBoardProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(checkerBoardProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(checkerBoardProceduralClip, this, cloneRequestMetadata);
     }
 
     public CheckerBoardProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

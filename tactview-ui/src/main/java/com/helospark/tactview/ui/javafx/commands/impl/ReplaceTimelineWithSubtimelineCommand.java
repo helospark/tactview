@@ -3,13 +3,13 @@ package com.helospark.tactview.ui.javafx.commands.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
 import com.helospark.tactview.core.timeline.subtimeline.audio.SubtimelineAudioClip;
 import com.helospark.tactview.core.timeline.subtimeline.video.SubtimelineVisualClip;
@@ -23,24 +23,20 @@ public class ReplaceTimelineWithSubtimelineCommand implements UiCommand {
     private List<ChannelClipPair> clipsRemoved = new ArrayList<>();
     private List<String> addedIds = new ArrayList<>();
 
+    private Set<ExposedDescriptorDescriptor> exposedDescriptors;
+
     public ReplaceTimelineWithSubtimelineCommand(SubtimelineFromTimelineFactory subtimelineFromTimelineFactory, TimelineManagerAccessor timelineManagerAccessor,
-            LinkClipRepository linkClipRepository) {
+            LinkClipRepository linkClipRepository, Set<ExposedDescriptorDescriptor> exposedDescriptors) {
         this.subtimelineFromTimelineFactory = subtimelineFromTimelineFactory;
         this.timelineManagerAccessor = timelineManagerAccessor;
         this.linkClipRepository = linkClipRepository;
+        this.exposedDescriptors = exposedDescriptors;
     }
 
     @Override
     public void execute() {
         synchronized (timelineManagerAccessor.getFullLock()) {
-            Set<String> asd = this.timelineManagerAccessor.getChannels()
-                    .stream()
-                    .flatMap(a -> a.getAllClips().stream())
-                    .flatMap(a -> a.getDescriptors().stream())
-                    .map(a -> a.getKeyframeableEffect().getId())
-                    .collect(Collectors.toSet());
-
-            SubtimelineVisualClip newVideoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(asd);
+            SubtimelineVisualClip newVideoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(exposedDescriptors);
             SubtimelineAudioClip newAudioClip = subtimelineFromTimelineFactory.createSubtimelineAudioClipFromCurrentTimeline();
 
             for (var id : timelineManagerAccessor.getAllClipIds()) {

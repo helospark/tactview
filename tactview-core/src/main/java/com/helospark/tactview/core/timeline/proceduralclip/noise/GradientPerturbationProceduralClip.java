@@ -42,7 +42,7 @@ public class GradientPerturbationProceduralClip extends ProceduralVisualClip {
 
     public GradientPerturbationProceduralClip(GradientPerturbationProceduralClip noiseProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(noiseProceduralEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(noiseProceduralEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(noiseProceduralEffect, this, cloneRequestMetadata);
     }
 
     public GradientPerturbationProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, PerturbationNoiseService perturbationNoiseService) {

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Arrays;
 import java.util.List;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
@@ -48,8 +49,8 @@ public class LineProvider extends CompositeKeyframeableEffect<InterpolationLine>
     }
 
     @Override
-    public KeyframeableEffect<InterpolationLine> deepClone() {
-        return new LineProvider(startPointProvider.deepClone(), endPointProvider.deepClone());
+    public KeyframeableEffect<InterpolationLine> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        return new LineProvider((PointProvider) startPointProvider.deepClone(cloneRequestMetadata), (PointProvider) endPointProvider.deepClone(cloneRequestMetadata));
     }
 
     @Override

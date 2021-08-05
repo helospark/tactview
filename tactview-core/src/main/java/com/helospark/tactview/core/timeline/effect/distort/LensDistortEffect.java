@@ -37,7 +37,7 @@ public class LensDistortEffect extends StatelessVideoEffect {
 
     public LensDistortEffect(LensDistortEffect lensDistortEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(lensDistortEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this, cloneRequestMetadata);
     }
 
     public LensDistortEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedLensDistort lensDistortImplementation) {

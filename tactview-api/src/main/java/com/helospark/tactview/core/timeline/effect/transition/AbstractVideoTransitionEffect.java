@@ -31,7 +31,7 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
 
     public AbstractVideoTransitionEffect(AbstractVideoTransitionEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, AbstractVideoTransitionEffect.class);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, AbstractVideoTransitionEffect.class, cloneRequestMetadata);
     }
 
     public AbstractVideoTransitionEffect(JsonNode node, LoadMetadata loadMetadata) {

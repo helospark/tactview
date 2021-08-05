@@ -43,7 +43,7 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
     public RectangleProceduralClip(RectangleProceduralClip gradientProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(gradientProceduralEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(gradientProceduralEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(gradientProceduralEffect, this, cloneRequestMetadata);
     }
 
     public RectangleProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

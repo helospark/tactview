@@ -42,7 +42,7 @@ public class LinearGradientTransition extends AbstractVideoTransitionEffect {
 
     public LinearGradientTransition(LinearGradientTransition whiteFlashTransition, CloneRequestMetadata cloneRequestMetadata) {
         super(whiteFlashTransition, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this, cloneRequestMetadata);
     }
 
     public LinearGradientTransition(JsonNode node, LoadMetadata loadMetadata, LinearGradientService linearGradientService, LayerMaskApplier layerMaskApplier,

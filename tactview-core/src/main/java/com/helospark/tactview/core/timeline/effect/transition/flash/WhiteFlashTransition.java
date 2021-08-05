@@ -28,7 +28,7 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
 
     public WhiteFlashTransition(WhiteFlashTransition whiteFlashTransition, CloneRequestMetadata cloneRequestMetadata) {
         super(whiteFlashTransition, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this, cloneRequestMetadata);
     }
 
     public WhiteFlashTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {

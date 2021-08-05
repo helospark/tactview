@@ -29,7 +29,7 @@ public class ColorizeEffect extends StatelessVideoEffect {
 
     public ColorizeEffect(ColorizeEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public ColorizeEffect(JsonNode node, LoadMetadata loadMetadata, ColorizeService colorizeService2) {

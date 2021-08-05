@@ -38,7 +38,7 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
 
     public SingleColorProceduralClip(SingleColorProceduralClip singleColorProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(singleColorProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(singleColorProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(singleColorProceduralClip, this, cloneRequestMetadata);
     }
 
     public SingleColorProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

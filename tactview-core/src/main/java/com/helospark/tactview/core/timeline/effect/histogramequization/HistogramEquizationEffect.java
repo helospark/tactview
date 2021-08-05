@@ -36,7 +36,7 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
 
     public HistogramEquizationEffect(HistogramEquizationEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public HistogramEquizationEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVHistogramEquizerImplementation implementation2) {

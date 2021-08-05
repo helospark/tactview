@@ -33,7 +33,7 @@ public class PolarCoordinateEffect extends StatelessVideoEffect {
 
     public PolarCoordinateEffect(PolarCoordinateEffect polarCoordinateEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(polarCoordinateEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(polarCoordinateEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(polarCoordinateEffect, this, cloneRequestMetadata);
     }
 
     public PolarCoordinateEffect(JsonNode node, LoadMetadata loadMetadata, PolarService polarService) {

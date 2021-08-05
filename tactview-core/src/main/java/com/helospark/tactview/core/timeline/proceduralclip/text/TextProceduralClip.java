@@ -32,7 +32,7 @@ public class TextProceduralClip extends AbstractTextProceduralClip {
 
     public TextProceduralClip(TextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(textProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this, cloneRequestMetadata);
     }
 
     @Override

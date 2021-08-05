@@ -31,7 +31,7 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
 
     public ProceduralSquareWaveAudioClip(ProceduralSquareWaveAudioClip soundClip, CloneRequestMetadata cloneRequestMetadata) {
         super(soundClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(soundClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(soundClip, this, cloneRequestMetadata);
     }
 
     public ProceduralSquareWaveAudioClip(AudioMediaMetadata metadata, JsonNode savedClip, LoadMetadata loadMetadata) {

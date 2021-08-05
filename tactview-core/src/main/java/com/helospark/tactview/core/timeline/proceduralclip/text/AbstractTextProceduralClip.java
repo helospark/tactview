@@ -65,7 +65,7 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
 
     public AbstractTextProceduralClip(AbstractTextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(textProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this, AbstractTextProceduralClip.class);
+        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this, AbstractTextProceduralClip.class, cloneRequestMetadata);
     }
 
     public AbstractTextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {

@@ -34,7 +34,7 @@ public class PencilSketchEffect extends StatelessVideoEffect {
 
     public PencilSketchEffect(PencilSketchEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public PencilSketchEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVPencilSketchImplementation implementation2) {

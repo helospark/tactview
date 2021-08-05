@@ -48,7 +48,7 @@ public class DrawnPolygonProceduralClip extends ProceduralVisualClip {
 
     public DrawnPolygonProceduralClip(DrawnPolygonProceduralClip cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public DrawnPolygonProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {

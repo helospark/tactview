@@ -47,7 +47,7 @@ public class BlendEffect extends StatelessVideoEffect {
 
     public BlendEffect(BlendEffect blendEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(blendEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(blendEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(blendEffect, this, cloneRequestMetadata);
     }
 
     public BlendEffect(JsonNode node, LoadMetadata loadMetadata, List<BlendModeStrategy> strategies2, ScaleService scaleService2, IndependentPixelOperation independentPixelOperation2) {

@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+
 public class ReflectionUtilTest {
 
     @Test
@@ -15,7 +17,7 @@ public class ReflectionUtilTest {
         SimpleTest result = new SimpleTest();
 
         // WHEN
-        ReflectionUtil.copyOrCloneFieldFromTo(simpleTest, result);
+        ReflectionUtil.copyOrCloneFieldFromTo(simpleTest, result, CloneRequestMetadata.fullCopy());
 
         // THEN
         assertTrue(simpleTest.immutable == result.immutable);
@@ -45,7 +47,7 @@ public class ReflectionUtilTest {
         }
 
         @Override
-        public MyCloneable deepClone() {
+        public MyCloneable deepClone(CloneRequestMetadata cloneRequestMetadata) {
             return new MyCloneable(object.get(0));
         }
 

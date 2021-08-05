@@ -49,7 +49,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
 
     public DropShadowEffect(DropShadowEffect dropShadowEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(dropShadowEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this, cloneRequestMetadata);
     }
 
     public DropShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BlurService blurService2, ScaleService scaleService) {

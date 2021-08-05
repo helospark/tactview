@@ -28,7 +28,7 @@ public class GammaEffect extends StatelessVideoEffect {
 
     public GammaEffect(GammaEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public GammaEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations) {

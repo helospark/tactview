@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
@@ -85,7 +86,7 @@ public class RandomDoubleInterpolator implements DoubleInterpolator {
     }
 
     @Override
-    public RandomDoubleInterpolator deepClone() {
+    public RandomDoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         RandomDoubleInterpolator result = new RandomDoubleInterpolator(min, max, changeScale);
         result.repeatableRandom = repeatableRandom;
         return result;

@@ -39,7 +39,7 @@ public class CircleTransition extends AbstractVideoTransitionEffect {
 
     public CircleTransition(CircleTransition whiteFlashTransition, CloneRequestMetadata cloneRequestMetadata) {
         super(whiteFlashTransition, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this, cloneRequestMetadata);
     }
 
     public CircleTransition(JsonNode node, LoadMetadata loadMetadata, RadialGradientService radialGradientService, LayerMaskApplier layerMaskApplier,

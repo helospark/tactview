@@ -48,7 +48,7 @@ public class PolygonMaskEffect extends StatelessVideoEffect {
 
     public PolygonMaskEffect(PolygonMaskEffect polygonMaskEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(polygonMaskEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(polygonMaskEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(polygonMaskEffect, this, cloneRequestMetadata);
     }
 
     @Override

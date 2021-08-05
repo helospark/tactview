@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
@@ -102,7 +103,7 @@ public class BezierPolygonProvider extends KeyframeableEffect<List<BezierPolygon
     }
 
     @Override
-    public KeyframeableEffect<List<BezierPolygonPoint>> deepClone() {
+    public KeyframeableEffect<List<BezierPolygonPoint>> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
         return new BezierPolygonProvider(useKeyframes, new ArrayList<>(defaultValues), new TreeMap<>(values), interpolatorImplementation);
     }
 

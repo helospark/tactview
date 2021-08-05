@@ -8,6 +8,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
@@ -80,7 +81,7 @@ public class PercentAwareMultiKeyframeBasedDoubleInterpolator extends MultiKeyfr
     }
 
     @Override
-    public MultiKeyframeBasedDoubleInterpolator deepClone() {
+    public MultiKeyframeBasedDoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         TreeMap<TimelinePosition, Double> newValues = new TreeMap<>(values);
         UnivariateInterpolator newInterpolatorImplementation = interpolatorImplementation;
         MultiKeyframeBasedDoubleInterpolator result = new PercentAwareMultiKeyframeBasedDoubleInterpolator(defaultValue, length);

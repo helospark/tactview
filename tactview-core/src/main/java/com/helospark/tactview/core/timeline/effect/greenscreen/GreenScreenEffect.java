@@ -43,7 +43,7 @@ public class GreenScreenEffect extends StatelessVideoEffect {
 
     public GreenScreenEffect(GreenScreenEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public GreenScreenEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVGreenScreenImplementation openCVGreenScreenImplementation) {

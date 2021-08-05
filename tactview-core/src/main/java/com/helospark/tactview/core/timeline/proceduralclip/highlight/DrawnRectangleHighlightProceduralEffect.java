@@ -49,7 +49,7 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
 
     public DrawnRectangleHighlightProceduralEffect(DrawnRectangleHighlightProceduralEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public DrawnRectangleHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {

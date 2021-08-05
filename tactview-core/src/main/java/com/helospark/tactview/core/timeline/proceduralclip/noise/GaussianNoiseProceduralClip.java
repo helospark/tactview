@@ -36,7 +36,7 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
 
     public GaussianNoiseProceduralClip(GaussianNoiseProceduralClip gaussianNoiseProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(gaussianNoiseProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(gaussianNoiseProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(gaussianNoiseProceduralClip, this, cloneRequestMetadata);
     }
 
     public GaussianNoiseProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {

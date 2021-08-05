@@ -66,7 +66,7 @@ public class CausticProceduralClip extends ProceduralVisualClip {
 
     public CausticProceduralClip(CausticProceduralClip proceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(proceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(proceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(proceduralClip, this, cloneRequestMetadata);
     }
 
     public CausticProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

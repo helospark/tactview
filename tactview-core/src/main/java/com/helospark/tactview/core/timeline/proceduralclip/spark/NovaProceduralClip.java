@@ -44,7 +44,7 @@ public class NovaProceduralClip extends ProceduralVisualClip {
 
     public NovaProceduralClip(NovaProceduralClip novaProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(novaProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(novaProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(novaProceduralClip, this, cloneRequestMetadata);
     }
 
     public NovaProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

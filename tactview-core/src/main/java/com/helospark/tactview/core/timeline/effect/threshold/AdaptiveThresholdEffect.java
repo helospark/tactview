@@ -31,7 +31,7 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
 
     public AdaptiveThresholdEffect(AdaptiveThresholdEffect adaptiveThresholdEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(adaptiveThresholdEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(adaptiveThresholdEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(adaptiveThresholdEffect, this, cloneRequestMetadata);
     }
 
     public AdaptiveThresholdEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVThresholdImplementation openCVThresholdImplementation) {

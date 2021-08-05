@@ -30,7 +30,7 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
 
     public BlurTransition(BlurTransition cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public BlurTransition(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedGaussianBlur blurImplementation) {

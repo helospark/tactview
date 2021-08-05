@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator;
 
 import java.math.BigDecimal;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 
@@ -13,7 +14,7 @@ public interface DoubleInterpolator extends EffectInterpolator {
     public Double valueAt(TimelinePosition position);
 
     @Override
-    public abstract DoubleInterpolator deepClone();
+    public abstract DoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata);
 
     public default BigDecimal integrate(TimelinePosition from, TimelinePosition to) {
         TimelinePosition currentPosition = from;

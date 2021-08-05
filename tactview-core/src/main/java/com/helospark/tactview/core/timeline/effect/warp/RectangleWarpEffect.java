@@ -37,7 +37,7 @@ public class RectangleWarpEffect extends StatelessVideoEffect {
 
     public RectangleWarpEffect(RectangleWarpEffect rectangleWarpEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(rectangleWarpEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(rectangleWarpEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(rectangleWarpEffect, this, cloneRequestMetadata);
     }
 
     public RectangleWarpEffect(JsonNode node, LoadMetadata loadMetadata, Simple2DRasterizer simple2dRasterizer) {

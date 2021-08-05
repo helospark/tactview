@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.DesSerFactory;
 
@@ -91,7 +92,7 @@ public class StepStringInterpolator implements StringInterpolator {
     }
 
     @Override
-    public StepStringInterpolator deepClone() {
+    public StepStringInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         TreeMap<TimelinePosition, String> newValues = new TreeMap<>(values);
         StepStringInterpolator result = new StepStringInterpolator(defaultValue);
         result.values = newValues;

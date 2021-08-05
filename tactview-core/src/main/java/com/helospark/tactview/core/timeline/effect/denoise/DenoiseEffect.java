@@ -33,7 +33,7 @@ public class DenoiseEffect extends StatelessVideoEffect {
 
     public DenoiseEffect(DenoiseEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public DenoiseEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedDenoiseEffect openCVBasedDenoiseEffect2) {

@@ -34,7 +34,7 @@ public class MedianEffect extends StatelessVideoEffect {
 
     public MedianEffect(MedianEffect medianEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(medianEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(medianEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(medianEffect, this, cloneRequestMetadata);
     }
 
     public MedianEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

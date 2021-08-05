@@ -30,7 +30,7 @@ public class MozaicEffect extends StatelessVideoEffect {
 
     public MozaicEffect(MozaicEffect mozaicEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(mozaicEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(mozaicEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(mozaicEffect, this, cloneRequestMetadata);
     }
 
     public MozaicEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

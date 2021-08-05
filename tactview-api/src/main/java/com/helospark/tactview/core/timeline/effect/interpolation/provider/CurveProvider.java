@@ -9,6 +9,7 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
@@ -115,10 +116,10 @@ public class CurveProvider extends CompositeKeyframeableEffect<KeyFrameInfo> imp
     }
 
     @Override
-    public CurveProvider deepClone() {
+    public CurveProvider deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
         List<PointProvider> clonePointProviders = new ArrayList<>();
         for (var element : curvePoints) {
-            clonePointProviders.add(element.deepClone());
+            clonePointProviders.add((PointProvider) element.deepClone(cloneRequestMetadata));
         }
         CurveProvider result = new CurveProvider(minX, maxX, minY, maxY, clonePointProviders);
         result.isUsingKeyframes = this.isUsingKeyframes;

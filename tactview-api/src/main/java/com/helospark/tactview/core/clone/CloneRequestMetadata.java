@@ -29,7 +29,9 @@ public class CloneRequestMetadata {
         if (internalIdMapping.containsKey(previousId)) {
             return internalIdMapping.get(previousId);
         } else {
-            return UUID.randomUUID().toString();
+            String newId = UUID.randomUUID().toString();
+            internalIdMapping.put(previousId, newId);
+            return newId;
         }
     }
 

@@ -42,7 +42,7 @@ public class ExtendClipWithBlurredImage extends StatelessVideoEffect {
 
     public ExtendClipWithBlurredImage(ExtendClipWithBlurredImage extendClipWithBlurredImage, CloneRequestMetadata cloneRequestMetadata) {
         super(extendClipWithBlurredImage, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(extendClipWithBlurredImage, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(extendClipWithBlurredImage, this, cloneRequestMetadata);
     }
 
     public ExtendClipWithBlurredImage(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2, BlurService blurService2, ScaleService scaleService2) {

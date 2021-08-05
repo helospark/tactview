@@ -66,7 +66,7 @@ public class ParticleSystemProceduralClip extends ProceduralVisualClip {
 
     public ParticleSystemProceduralClip(CloneRequestMetadata cloneRequestMetadata, ParticleSystemProceduralClip particleSystemProceduralClip) {
         super(particleSystemProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(particleSystemProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(particleSystemProceduralClip, this, cloneRequestMetadata);
     }
 
     public ParticleSystemProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata) {

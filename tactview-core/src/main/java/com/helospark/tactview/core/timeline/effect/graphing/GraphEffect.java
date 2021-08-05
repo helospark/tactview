@@ -30,7 +30,7 @@ public class GraphEffect extends StatelessVideoEffect {
 
     public GraphEffect(GraphEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata, EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public GraphEffect(JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory, EffectGraphAccessorMessageSender effectGraphAccessor) {

@@ -31,7 +31,7 @@ public class ScaleEffect extends StatelessVideoEffect {
 
     public ScaleEffect(ScaleEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public ScaleEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2) {

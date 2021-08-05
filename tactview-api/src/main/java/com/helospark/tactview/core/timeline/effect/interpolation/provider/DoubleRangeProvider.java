@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Arrays;
 import java.util.List;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
@@ -57,8 +58,8 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange
     }
 
     @Override
-    public KeyframeableEffect<DoubleRange> deepClone() {
-        return new DoubleRangeProvider(lowEndProvider.deepClone(), highEndProvider.deepClone());
+    public KeyframeableEffect<DoubleRange> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        return new DoubleRangeProvider((DoubleProvider) lowEndProvider.deepClone(cloneRequestMetadata), (DoubleProvider) highEndProvider.deepClone(cloneRequestMetadata));
     }
 
     @Override

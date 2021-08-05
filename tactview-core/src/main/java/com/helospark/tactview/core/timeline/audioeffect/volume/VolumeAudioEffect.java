@@ -24,7 +24,7 @@ public class VolumeAudioEffect extends StatelessAudioEffect {
 
     public VolumeAudioEffect(VolumeAudioEffect volumeAudioEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(volumeAudioEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(volumeAudioEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(volumeAudioEffect, this, cloneRequestMetadata);
     }
 
     public VolumeAudioEffect(JsonNode node, LoadMetadata loadMetadata) {

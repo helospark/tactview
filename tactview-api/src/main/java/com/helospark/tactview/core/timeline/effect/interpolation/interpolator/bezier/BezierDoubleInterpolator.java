@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
@@ -120,7 +121,7 @@ public class BezierDoubleInterpolator extends KeyframeSupportingDoubleInterpolat
     }
 
     @Override
-    public BezierDoubleInterpolator deepClone() {
+    public BezierDoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         BezierDoubleInterpolator result = new BezierDoubleInterpolator(values);
         result.defaultValue = defaultValue;
         result.useKeyframes = useKeyframes;

@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.repository.dynamicvalue;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
@@ -15,7 +16,7 @@ public class DynamicValueDoubleInterpolator implements DoubleInterpolator {
     }
 
     @Override
-    public DynamicValueDoubleInterpolator deepClone() {
+    public DynamicValueDoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         return new DynamicValueDoubleInterpolator(effect);
     }
 

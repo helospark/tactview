@@ -31,7 +31,7 @@ public class AutoWhiteBalanceEffect extends StatelessVideoEffect {
 
     public AutoWhiteBalanceEffect(AutoWhiteBalanceEffect maximumRgbEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(maximumRgbEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(maximumRgbEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(maximumRgbEffect, this, cloneRequestMetadata);
     }
 
     public AutoWhiteBalanceEffect(JsonNode node, LoadMetadata loadMetadata, ColorTemperatureService colorTemperatureService) {

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Bean;
@@ -15,6 +16,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
+import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -25,9 +27,11 @@ import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.menu.DefaultMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.menu.SeparatorMenuContribution;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.subtimeline.SubtimelineSelectWindow;
 import com.helospark.tactview.ui.javafx.plugin.RestartDialogOpener;
 import com.helospark.tactview.ui.javafx.preferences.PreferencesPage;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
+import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.save.UiLoadHandler;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
@@ -377,9 +381,14 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     @Bean
     @Order(2000)
     public SelectableMenuContribution createSubtimelineFromCurrentProject(UiCommandInterpreterService commandInterpreter, SubtimelineFromTimelineFactory subtimelineFromTimelineFactory,
-            TimelineManagerAccessor timelineManagerAccessor, LinkClipRepository linkClipRepository) {
+            TimelineManagerAccessor timelineManagerAccessor, LinkClipRepository linkClipRepository, NameToIdRepository nameToIdRepository, StylesheetAdderService stylesheetAdderService) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "Subtimeline", "Create subtimeline from project"), event -> {
-            commandInterpreter.sendWithResult(new ReplaceTimelineWithSubtimelineCommand(subtimelineFromTimelineFactory, timelineManagerAccessor, linkClipRepository));
+            SubtimelineSelectWindow window = new SubtimelineSelectWindow(timelineManagerAccessor, nameToIdRepository, stylesheetAdderService);
+            Set<ExposedDescriptorDescriptor> result = window.open();
+
+            if (window.isSuccessful()) {
+                commandInterpreter.sendWithResult(new ReplaceTimelineWithSubtimelineCommand(subtimelineFromTimelineFactory, timelineManagerAccessor, linkClipRepository, result));
+            }
         });
     }
 

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.io.File;
 import java.util.Map;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
@@ -44,8 +45,8 @@ public class FileProvider extends KeyframeableEffect<String> {
     }
 
     @Override
-    public KeyframeableEffect<String> deepClone() {
-        return new FileProvider(extension, stringInterpolator.deepClone());
+    public KeyframeableEffect<String> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        return new FileProvider(extension, stringInterpolator.deepClone(cloneRequestMetadata));
     }
 
     public String getExtension() {

@@ -37,7 +37,7 @@ public class GridProceduralClip extends ProceduralVisualClip {
 
     public GridProceduralClip(GridProceduralClip gridProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(gridProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(gridProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(gridProceduralClip, this, cloneRequestMetadata);
     }
 
     public GridProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata) {

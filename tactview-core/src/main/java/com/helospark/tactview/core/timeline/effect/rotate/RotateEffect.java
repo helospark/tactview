@@ -28,7 +28,7 @@ public class RotateEffect extends StatelessVideoEffect {
 
     public RotateEffect(RotateEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public RotateEffect(JsonNode node, LoadMetadata loadMetadata, RotateService rotateService) {

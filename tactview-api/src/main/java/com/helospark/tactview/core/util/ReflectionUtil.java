@@ -9,24 +9,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 
 public class ReflectionUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtil.class);
 
-    public static <T> void copyOrCloneFieldFromTo(T from, T to, Class<? super T> inputClass) {
+    public static <T> void copyOrCloneFieldFromTo(T from, T to, Class<? super T> inputClass, CloneRequestMetadata cloneRequestMetadata) {
         Arrays.stream(inputClass.getDeclaredFields())
                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
                 .filter(field -> !Modifier.isFinal(field.getModifiers()))
-                .forEach(field -> copyField(to, from, inputClass, field));
+                .forEach(field -> copyField(to, from, inputClass, field, cloneRequestMetadata));
     }
 
-    public static <T> void copyOrCloneFieldFromTo(T from, T to) {
-        copyOrCloneFieldFromTo(from, to, (Class<? super T>) to.getClass());
+    public static <T> void copyOrCloneFieldFromTo(T from, T to, CloneRequestMetadata cloneRequestMetadata) {
+        copyOrCloneFieldFromTo(from, to, (Class<? super T>) to.getClass(), cloneRequestMetadata);
     }
 
     @SuppressWarnings("rawtypes")
-    private static void copyField(Object to, Object from, Class<?> inputClass, Field fromField) {
+    private static void copyField(Object to, Object from, Class<?> inputClass, Field fromField, CloneRequestMetadata cloneRequestMetadata) {
         try {
             Field toField = inputClass.getDeclaredField(fromField.getName());
             toField.setAccessible(true);
@@ -34,7 +35,7 @@ public class ReflectionUtil {
 
             Object fieldValue = fromField.get(from);
             if (fieldValue instanceof StatefulCloneable) {
-                Object clonedValue = ((StatefulCloneable) fieldValue).deepClone();
+                Object clonedValue = ((StatefulCloneable) fieldValue).deepClone(cloneRequestMetadata);
                 toField.set(to, clonedValue);
             } else {
                 toField.set(to, fieldValue);

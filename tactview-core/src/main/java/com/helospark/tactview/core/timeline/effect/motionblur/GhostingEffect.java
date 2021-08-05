@@ -39,7 +39,7 @@ public class GhostingEffect extends StatelessVideoEffect {
 
     public GhostingEffect(GhostingEffect ghostingEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(ghostingEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(ghostingEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(ghostingEffect, this, cloneRequestMetadata);
     }
 
     public GhostingEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {

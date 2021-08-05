@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
 import com.helospark.tactview.core.timeline.subtimeline.audio.SubtimelineAudioClip;
 import com.helospark.tactview.core.timeline.subtimeline.video.SubtimelineVisualClip;
@@ -30,11 +31,11 @@ public class TemplateSaveAndLoadHandler extends AbstractSaveHandler {
 
     @Override
     protected void queryAdditionalDataToSave(Map<String, Object> result, SaveMetadata saveMetadata) {
-        Set<String> asd = this.timelineManagerAccessor.getChannels()
+        Set<ExposedDescriptorDescriptor> asd = this.timelineManagerAccessor.getChannels()
                 .stream()
                 .flatMap(a -> a.getAllClips().stream())
                 .flatMap(a -> a.getDescriptors().stream())
-                .map(a -> a.getKeyframeableEffect().getId())
+                .map(a -> ExposedDescriptorDescriptor.builder().withId(a.getKeyframeableEffect().getId()).build())
                 .collect(Collectors.toSet());
 
         SubtimelineVisualClip videoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(asd);

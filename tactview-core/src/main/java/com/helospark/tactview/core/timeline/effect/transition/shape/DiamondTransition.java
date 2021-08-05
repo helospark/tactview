@@ -42,7 +42,7 @@ public class DiamondTransition extends AbstractVideoTransitionEffect {
 
     public DiamondTransition(DiamondTransition whiteFlashTransition, CloneRequestMetadata cloneRequestMetadata) {
         super(whiteFlashTransition, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(whiteFlashTransition, this, cloneRequestMetadata);
     }
 
     public DiamondTransition(JsonNode node, LoadMetadata loadMetadata, PolygonRenderService polygonRenderService, LayerMaskApplier layerMaskApplier,

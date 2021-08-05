@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
@@ -54,7 +55,7 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
     public EffectInterpolator getInterpolatorClone() {
         EffectInterpolator interpolator = getInterpolator();
         if (interpolator != null) {
-            return interpolator.deepClone();
+            return interpolator.deepClone(CloneRequestMetadata.fullCopy());
         } else {
             return null;
         }
@@ -69,7 +70,17 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
     }
 
     @Override
-    public abstract KeyframeableEffect deepClone();
+    public KeyframeableEffect deepClone(CloneRequestMetadata cloneRequestMetadata) {
+        KeyframeableEffect result = deepCloneInternal(cloneRequestMetadata);
+        if (cloneRequestMetadata.isDeepCloneId()) {
+            result.id = this.id;
+        } else {
+            result.id = cloneRequestMetadata.generateOrGetIdFromPrevious(id);
+        }
+        return result;
+    }
+
+    public abstract KeyframeableEffect deepCloneInternal(CloneRequestMetadata cloneRequestMetadata);
 
     public boolean supportsKeyframes() {
         return false;

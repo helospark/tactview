@@ -25,7 +25,7 @@ public class DesaturizeEffect extends StatelessVideoEffect {
 
     public DesaturizeEffect(DesaturizeEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public DesaturizeEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations2) {

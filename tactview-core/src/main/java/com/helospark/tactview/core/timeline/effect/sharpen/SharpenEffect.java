@@ -37,7 +37,7 @@ public class SharpenEffect extends StatelessVideoEffect {
 
     public SharpenEffect(SharpenEffect sharpenEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(sharpenEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(sharpenEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(sharpenEffect, this, cloneRequestMetadata);
     }
 
     @Override

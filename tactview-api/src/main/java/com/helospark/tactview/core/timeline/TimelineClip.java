@@ -61,8 +61,8 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         this.renderOffset = clip.renderOffset;
         this.creatorFactoryId = clip.creatorFactoryId;
 
-        this.timeScaleProvider = clip.timeScaleProvider.deepClone();
-        this.changeClipLengthProvider = clip.changeClipLengthProvider.deepClone();
+        this.timeScaleProvider = clip.timeScaleProvider.deepClone(cloneRequestMetadata);
+        this.changeClipLengthProvider = clip.changeClipLengthProvider.deepClone(cloneRequestMetadata);
 
         this.effectChannels = new ArrayList<>(effectChannels.size());
         for (int i = 0; i < clip.effectChannels.size(); ++i) {

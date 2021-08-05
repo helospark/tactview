@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
@@ -77,7 +78,7 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
     }
 
     @Override
-    public MixedDoubleInterpolator deepClone() {
+    public MixedDoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         MixedDoubleInterpolator result = new MixedDoubleInterpolator(values);
         result.defaultValue = defaultValue;
         result.useKeyframes = useKeyframes;

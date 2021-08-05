@@ -29,7 +29,7 @@ public class ChannelCopyProceduralClip extends ProceduralVisualClip {
 
     public ChannelCopyProceduralClip(ChannelCopyProceduralClip channelCopyProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(channelCopyProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(channelCopyProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(channelCopyProceduralClip, this, cloneRequestMetadata);
     }
 
     public ChannelCopyProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata) {

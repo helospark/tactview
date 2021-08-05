@@ -34,7 +34,7 @@ public class ShearEffect extends StatelessVideoEffect {
 
     public ShearEffect(ShearEffect lensDistortEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(lensDistortEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this, cloneRequestMetadata);
     }
 
     public ShearEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

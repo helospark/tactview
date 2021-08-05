@@ -54,7 +54,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public VisualTimelineClip(VisualTimelineClip clip, CloneRequestMetadata cloneRequestMetadata) {
         super(clip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(clip, this, VisualTimelineClip.class);
+        ReflectionUtil.copyOrCloneFieldFromTo(clip, this, VisualTimelineClip.class, cloneRequestMetadata);
     }
 
     public VisualTimelineClip(VisualMediaMetadata metadata, JsonNode savedClip, LoadMetadata loadMetadata) {

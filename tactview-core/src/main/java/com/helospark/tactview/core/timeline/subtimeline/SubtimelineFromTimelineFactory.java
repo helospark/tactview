@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.subtimeline;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
@@ -31,7 +32,7 @@ public class SubtimelineFromTimelineFactory {
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
     }
 
-    public SubtimelineVisualClip createSubtimelineVideoClipFromCurrentTimeline(Set<String> descriptorIds) {
+    public SubtimelineVisualClip createSubtimelineVideoClipFromCurrentTimeline(Set<ExposedDescriptorDescriptor> exposedDescriptors) {
         TimelineLength length = timelineManager.findEndPosition().toLength();
         SubtimelineVisualMetadata metadata = SubtimelineVisualMetadata.builder()
                 .withWidth(projectRepository.getWidth())
@@ -40,7 +41,13 @@ public class SubtimelineFromTimelineFactory {
                 .withLength(length)
                 .build();
 
-        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, descriptorIds,
+        CloneRequestMetadata cloneMetadata = CloneRequestMetadata.ofDefault();
+        TimelineChannelsState clonedState = timelineChannelsState.deepClone(cloneMetadata);
+        Set<ExposedDescriptorDescriptor> fixedExposedDescriptors = exposedDescriptors.stream()
+                .map(a -> a.butWithId(cloneMetadata.getPreviousId(a.getId())))
+                .collect(Collectors.toSet());
+
+        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, clonedState, timelineManagerAccessorFactory, fixedExposedDescriptors,
                 TimelinePosition.ofZero(),
                 length);
 

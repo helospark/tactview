@@ -26,7 +26,7 @@ public class InvertEffect extends StatelessVideoEffect {
 
     public InvertEffect(InvertEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public InvertEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperations) {

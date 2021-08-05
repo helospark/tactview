@@ -36,7 +36,7 @@ public class CurvesEffect extends StatelessVideoEffect {
 
     public CurvesEffect(CurvesEffect curves, CloneRequestMetadata cloneRequestMetadata) {
         super(curves, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(curves, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(curves, this, cloneRequestMetadata);
     }
 
     public CurvesEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

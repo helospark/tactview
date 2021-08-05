@@ -51,7 +51,7 @@ public class LineProceduralClip extends ProceduralVisualClip {
 
     public LineProceduralClip(LineProceduralClip lineProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(lineProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(lineProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(lineProceduralClip, this, cloneRequestMetadata);
     }
 
     public LineProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider) {

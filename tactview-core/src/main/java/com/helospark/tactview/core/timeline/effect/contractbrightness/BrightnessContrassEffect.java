@@ -28,7 +28,7 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
 
     public BrightnessContrassEffect(BrightnessContrassEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public BrightnessContrassEffect(JsonNode node, LoadMetadata loadMetadata, BrignessContrastService brignessContrastService2) {

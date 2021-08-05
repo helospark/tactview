@@ -35,7 +35,7 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
     public StatelessVideoEffect(StatelessVideoEffect effect, CloneRequestMetadata cloneRequestMetadata) {
         super(effect, cloneRequestMetadata);
 
-        ReflectionUtil.copyOrCloneFieldFromTo(effect, this, StatelessVideoEffect.class);
+        ReflectionUtil.copyOrCloneFieldFromTo(effect, this, StatelessVideoEffect.class, cloneRequestMetadata);
     }
 
     public StatelessVideoEffect(JsonNode node, LoadMetadata loadMetadata) {

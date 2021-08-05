@@ -65,7 +65,7 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
 
     public NoiseProceduralClip(NoiseProceduralClip noiseProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(noiseProceduralEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(noiseProceduralEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(noiseProceduralEffect, this, cloneRequestMetadata);
     }
 
     public NoiseProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

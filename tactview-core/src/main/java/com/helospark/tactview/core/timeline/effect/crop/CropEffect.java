@@ -37,7 +37,7 @@ public class CropEffect extends StatelessVideoEffect {
 
     public CropEffect(CropEffect cropEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(cropEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cropEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cropEffect, this, cloneRequestMetadata);
     }
 
     public CropEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation2) {

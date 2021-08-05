@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
@@ -45,9 +46,9 @@ public class RectangleProvider extends CompositeKeyframeableEffect<Rectangle> {
     }
 
     @Override
-    public KeyframeableEffect<Rectangle> deepClone() {
+    public KeyframeableEffect<Rectangle> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
         List<PointProvider> clonedList = pointProviders.stream()
-                .map(a -> a.deepClone())
+                .map(a -> a.deepClone(cloneRequestMetadata))
                 .collect(Collectors.toList());
         return new RectangleProvider(clonedList, sizeFunction);
     }

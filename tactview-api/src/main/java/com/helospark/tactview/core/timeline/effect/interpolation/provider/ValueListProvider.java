@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
@@ -58,8 +59,8 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
     }
 
     @Override
-    public ValueListProvider<T> deepClone() {
-        return new ValueListProvider<>(new ArrayList<>(elements.values()), stringInterpolator.deepClone());
+    public ValueListProvider<T> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        return new ValueListProvider<>(new ArrayList<>(elements.values()), stringInterpolator.deepClone(cloneRequestMetadata));
     }
 
     @Override

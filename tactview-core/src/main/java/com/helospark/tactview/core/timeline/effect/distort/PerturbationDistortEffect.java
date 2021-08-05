@@ -50,7 +50,7 @@ public class PerturbationDistortEffect extends StatelessVideoEffect {
 
     public PerturbationDistortEffect(PerturbationDistortEffect lensDistortEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(lensDistortEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this, cloneRequestMetadata);
     }
 
     public PerturbationDistortEffect(JsonNode node, LoadMetadata loadMetadata, PerturbationNoiseService perturbationNoiseService, DisplacementMapService displacementService) {

@@ -39,7 +39,7 @@ public class BlurEffect extends StatelessVideoEffect {
 
     public BlurEffect(BlurEffect blurEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(blurEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this, cloneRequestMetadata);
     }
 
     public BlurEffect(JsonNode node, LoadMetadata loadMetadata, BlurService blurService2) {

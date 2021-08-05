@@ -27,7 +27,7 @@ public class CartoonEffect extends StatelessVideoEffect {
 
     public CartoonEffect(CartoonEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public CartoonEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVCartoonEffectImplementation implementation2) {

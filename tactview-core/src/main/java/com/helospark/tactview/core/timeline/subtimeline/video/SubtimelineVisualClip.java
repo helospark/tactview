@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.subtimeline.video;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorFactory;
 
 public class SubtimelineVisualClip extends VisualTimelineClip {
@@ -35,9 +37,10 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
     private TimelineChannelsState timelineState;
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
 
-    private Set<String> enabledDescriptors = new HashSet<>();
+    private Set<ExposedDescriptorDescriptor> enabledDescriptors = new HashSet<>();
 
-    public SubtimelineVisualClip(SubtimelineVisualMetadata metadata, TimelineChannelsState timelineState, TimelineManagerAccessorFactory timelineManagerAccessorFactory, Set<String> descriptorIds,
+    public SubtimelineVisualClip(SubtimelineVisualMetadata metadata, TimelineChannelsState timelineState, TimelineManagerAccessorFactory timelineManagerAccessorFactory,
+            Set<ExposedDescriptorDescriptor> descriptorIds,
             TimelinePosition position,
             TimelineLength length) {
         super(metadata, new TimelineInterval(position, length), TimelineClipType.IMAGE);
@@ -57,8 +60,8 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         this.timelineManagerRenderService = clip.timelineManagerAccessorFactory.createRenderService(this.timelineState, timelineManagerAccessor);
 
         if (!cloneRequestMetadata.isDeepCloneId()) {
-            enabledDescriptors = enabledDescriptors.stream()
-                    .map(a -> cloneRequestMetadata.getPreviousId(a))
+            enabledDescriptors = clip.enabledDescriptors.stream()
+                    .map(a -> a.butWithId(cloneRequestMetadata.getPreviousId(a.getId())))
                     .collect(Collectors.toSet());
         }
     }
@@ -72,7 +75,7 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
 
         try {
             timelineManagerAccessor.loadFrom(savedClip, loadMetadata);
-            ObjectReader reader = loadMetadata.getObjectMapperUsed().readerFor(new TypeReference<Set<String>>() {
+            ObjectReader reader = loadMetadata.getObjectMapperUsed().readerFor(new TypeReference<Set<ExposedDescriptorDescriptor>>() {
             });
             this.enabledDescriptors = reader.readValue(savedClip.get("exposedDescriptors"));
         } catch (Exception e) {
@@ -141,14 +144,26 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         for (var channel : this.timelineManagerAccessor.getChannels()) {
             for (var clip : channel.getAllClips()) {
                 for (var descriptor : clip.getDescriptors()) {
-                    if (enabledDescriptors.contains(descriptor.getKeyframeableEffect().getId())) {
-                        result.add(descriptor);
+                    Optional<ExposedDescriptorDescriptor> enabledDescriptorProperty = findDescriptorById(descriptor.getKeyframeableEffect().getId());
+                    if (enabledDescriptorProperty.isPresent()) {
+                        ValueProviderDescriptor newDescriptor = ValueProviderDescriptor.builderFrom(descriptor)
+                                .withName(Optional.ofNullable(enabledDescriptorProperty.get().getName()).orElse(descriptor.getName()))
+                                .withGroup(Optional.ofNullable(enabledDescriptorProperty.get().getGroup()).orElse(clip.getClass().getSimpleName() + " " + descriptor.getGroup() + " properties"))
+                                .build();
+                        result.add(newDescriptor);
                     }
                 }
             }
         }
 
         return result;
+    }
+
+    private Optional<ExposedDescriptorDescriptor> findDescriptorById(String id) {
+        return enabledDescriptors
+                .stream()
+                .filter(a -> a.getId().equals(id))
+                .findFirst();
     }
 
 }

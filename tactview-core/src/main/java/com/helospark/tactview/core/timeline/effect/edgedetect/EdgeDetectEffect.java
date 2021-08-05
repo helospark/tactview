@@ -33,7 +33,7 @@ public class EdgeDetectEffect extends StatelessVideoEffect {
 
     public EdgeDetectEffect(EdgeDetectEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public EdgeDetectEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVEdgeDetectImplementation openCVEdgeDetectImplementation) {

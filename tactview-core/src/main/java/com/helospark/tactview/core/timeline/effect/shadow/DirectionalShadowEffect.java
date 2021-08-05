@@ -36,7 +36,7 @@ public class DirectionalShadowEffect extends StatelessVideoEffect {
 
     public DirectionalShadowEffect(DirectionalShadowEffect dropShadowEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(dropShadowEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(dropShadowEffect, this, cloneRequestMetadata);
     }
 
     public DirectionalShadowEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

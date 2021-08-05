@@ -24,7 +24,7 @@ public class MaximumRgbEffect extends StatelessVideoEffect {
 
     public MaximumRgbEffect(MaximumRgbEffect maximumRgbEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(maximumRgbEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(maximumRgbEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(maximumRgbEffect, this, cloneRequestMetadata);
     }
 
     public MaximumRgbEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

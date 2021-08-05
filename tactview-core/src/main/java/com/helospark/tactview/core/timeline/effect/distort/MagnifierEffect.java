@@ -41,7 +41,7 @@ public class MagnifierEffect extends StatelessVideoEffect {
 
     public MagnifierEffect(MagnifierEffect lensDistortEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(lensDistortEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this, cloneRequestMetadata);
     }
 
     public MagnifierEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

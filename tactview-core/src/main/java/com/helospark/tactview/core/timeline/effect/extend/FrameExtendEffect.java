@@ -24,7 +24,7 @@ public class FrameExtendEffect extends StatelessVideoEffect {
 
     public FrameExtendEffect(FrameExtendEffect frameExtendRequest, CloneRequestMetadata cloneRequestMetadata) {
         super(frameExtendRequest, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(frameExtendRequest, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(frameExtendRequest, this, cloneRequestMetadata);
     }
 
     public FrameExtendEffect(JsonNode node, LoadMetadata loadMetadata, FrameExtender frameExtender) {

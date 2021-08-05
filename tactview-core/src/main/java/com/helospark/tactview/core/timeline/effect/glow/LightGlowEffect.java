@@ -41,7 +41,7 @@ public class LightGlowEffect extends StatelessVideoEffect {
 
     public LightGlowEffect(LightGlowEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public LightGlowEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVBasedGaussianBlur blurImplementation, IndependentPixelOperation independentPixelOperation) {

@@ -33,7 +33,7 @@ public class RadialBlurEffect extends StatelessVideoEffect {
 
     public RadialBlurEffect(RadialBlurEffect blurEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(blurEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this, cloneRequestMetadata);
     }
 
     public RadialBlurEffect(JsonNode node, LoadMetadata loadMetadata, RadialBlurService radialBlurService) {

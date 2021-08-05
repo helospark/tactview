@@ -53,7 +53,7 @@ public class BezierMaskEffect extends StatelessVideoEffect {
 
     public BezierMaskEffect(BezierMaskEffect polygonMaskEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(polygonMaskEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(polygonMaskEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(polygonMaskEffect, this, cloneRequestMetadata);
     }
 
     @Override

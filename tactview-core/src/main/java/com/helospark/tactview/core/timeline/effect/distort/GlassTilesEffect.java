@@ -41,7 +41,7 @@ public class GlassTilesEffect extends StatelessVideoEffect {
 
     public GlassTilesEffect(GlassTilesEffect lensDistortEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(lensDistortEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(lensDistortEffect, this, cloneRequestMetadata);
     }
 
     public GlassTilesEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

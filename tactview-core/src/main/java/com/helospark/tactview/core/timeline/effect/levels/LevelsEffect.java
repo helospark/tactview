@@ -37,7 +37,7 @@ public class LevelsEffect extends StatelessVideoEffect {
 
     public LevelsEffect(LevelsEffect levelsEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(levelsEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(levelsEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(levelsEffect, this, cloneRequestMetadata);
     }
 
     public LevelsEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation) {

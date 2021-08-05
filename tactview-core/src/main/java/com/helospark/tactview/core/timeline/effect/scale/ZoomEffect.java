@@ -44,7 +44,7 @@ public class ZoomEffect extends StatelessVideoEffect {
 
     public ZoomEffect(ZoomEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public ZoomEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService2, FrameExtender frameExtender, IndependentPixelOperation independentPixelOperation) {

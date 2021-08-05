@@ -54,7 +54,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
 
     public StabilizeVideoEffect(StabilizeVideoEffect blurEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(blurEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this, cloneRequestMetadata);
     }
 
     public StabilizeVideoEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVStabilizeVideoService openCVStabilizeVideoService, ProjectRepository projectRepository) {

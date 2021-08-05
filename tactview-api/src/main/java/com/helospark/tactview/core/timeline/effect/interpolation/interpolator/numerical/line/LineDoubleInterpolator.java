@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.n
 
 import java.math.BigDecimal;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
@@ -33,7 +34,7 @@ public class LineDoubleInterpolator implements DoubleInterpolator {
     }
 
     @Override
-    public DoubleInterpolator deepClone() {
+    public DoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         return new LineDoubleInterpolator(tangent, startValue);
     }
 

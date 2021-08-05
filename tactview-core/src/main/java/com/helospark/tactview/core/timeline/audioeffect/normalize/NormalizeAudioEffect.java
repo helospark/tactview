@@ -33,7 +33,7 @@ public class NormalizeAudioEffect extends StatelessAudioEffect implements LongPr
 
     public NormalizeAudioEffect(NormalizeAudioEffect volumeAudioEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(volumeAudioEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(volumeAudioEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(volumeAudioEffect, this, cloneRequestMetadata);
     }
 
     public NormalizeAudioEffect(JsonNode node, LoadMetadata loadMetadata) {

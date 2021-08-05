@@ -50,7 +50,7 @@ public class AsciiArtEffect extends StatelessVideoEffect {
 
     public AsciiArtEffect(AsciiArtEffect blurEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(blurEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this, cloneRequestMetadata);
     }
 
     public AsciiArtEffect(JsonNode node, LoadMetadata loadMetadata, ByteBufferToImageConverter byteBufferToImageConverter,

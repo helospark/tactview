@@ -30,7 +30,7 @@ public class SepiaEffect extends StatelessVideoEffect {
 
     public SepiaEffect(SepiaEffect sepiaEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(sepiaEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(sepiaEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(sepiaEffect, this, cloneRequestMetadata);
     }
 
     @Override

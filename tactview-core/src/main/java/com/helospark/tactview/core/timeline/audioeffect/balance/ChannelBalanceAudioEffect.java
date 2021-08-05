@@ -28,7 +28,7 @@ public class ChannelBalanceAudioEffect extends StatelessAudioEffect {
 
     public ChannelBalanceAudioEffect(ChannelBalanceAudioEffect volumeAudioEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(volumeAudioEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(volumeAudioEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(volumeAudioEffect, this, cloneRequestMetadata);
     }
 
     public ChannelBalanceAudioEffect(JsonNode node, LoadMetadata loadMetadata, ProjectRepository projectRepository) {

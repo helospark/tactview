@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Arrays;
 import java.util.List;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
@@ -56,8 +57,8 @@ public class PointProvider extends CompositeKeyframeableEffect<Point> {
     }
 
     @Override
-    public PointProvider deepClone() {
-        return new PointProvider(xProvider.deepClone(), yProvider.deepClone());
+    public PointProvider deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        return new PointProvider(xProvider.deepClone(cloneRequestMetadata), yProvider.deepClone(cloneRequestMetadata));
     }
 
     @Override
@@ -73,6 +74,11 @@ public class PointProvider extends CompositeKeyframeableEffect<Point> {
     public static PointProvider of(double x, double y) {
         return new PointProvider(new DoubleProvider(new BezierDoubleInterpolator(x)),
                 new DoubleProvider(new BezierDoubleInterpolator(y)));
+    }
+
+    @Override
+    public PointProvider deepClone(CloneRequestMetadata cloneRequestMetadata) {
+        return (PointProvider) super.deepClone(cloneRequestMetadata);
     }
 
 }

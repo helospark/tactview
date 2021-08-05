@@ -647,3 +647,16 @@
     -fx-border-style: hidden hidden dashed hidden;
     -fx-padding: 0px 0px 0px 3px;
 }
+
+.subtimeline-descriptor-properties-box {
+    -fx-spacing: 10px;
+}
+
+.subtimeline-descriptor-properties-grid {
+    -fx-vgap: 5px;
+    -fx-padding: 10px;
+}
+
+.subtimeline-descriptor-properties-grid > .check-box {
+    -fx-padding: 0px 7px;
+}

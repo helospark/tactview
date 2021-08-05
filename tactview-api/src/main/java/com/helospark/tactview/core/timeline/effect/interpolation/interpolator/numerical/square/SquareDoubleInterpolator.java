@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.n
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
@@ -85,7 +86,7 @@ public class SquareDoubleInterpolator implements DoubleInterpolator {
     }
 
     @Override
-    public DoubleInterpolator deepClone() {
+    public DoubleInterpolator deepClone(CloneRequestMetadata cloneRequestMetadata) {
         return SquareDoubleInterpolator.builder()
                 .withMaxValue(maxValue)
                 .withMinValue(minValue)

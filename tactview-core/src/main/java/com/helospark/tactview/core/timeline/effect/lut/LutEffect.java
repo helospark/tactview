@@ -48,7 +48,7 @@ public class LutEffect extends StatelessVideoEffect {
 
     public LutEffect(LutEffect lutEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(lutEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(lutEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(lutEffect, this, cloneRequestMetadata);
     }
 
     public LutEffect(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation, LutProviderService lutProviderService, List<String> dropinLocations) {

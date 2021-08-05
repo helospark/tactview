@@ -51,7 +51,7 @@ public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip 
 
     public DrawnEllipseHighlightProceduralEffect(DrawnEllipseHighlightProceduralEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public DrawnEllipseHighlightProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DrawLineService drawLineService, BresenhemPixelProvider bresenhemPixelProvider2) {

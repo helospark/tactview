@@ -36,7 +36,7 @@ public class ErodeDilateEffect extends StatelessVideoEffect {
 
     public ErodeDilateEffect(ErodeDilateEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public ErodeDilateEffect(JsonNode node, LoadMetadata loadMetadata, OpenCVErodeDilateImplementation openCVErodeDilateImplementation) {

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 import java.util.Collections;
 import java.util.Map;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
@@ -79,8 +80,8 @@ public class IntegerProvider extends KeyframeableEffect<Number> {
     }
 
     @Override
-    public IntegerProvider deepClone() {
-        IntegerProvider result = new IntegerProvider(min, max, interpolator.deepClone());
+    public IntegerProvider deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        IntegerProvider result = new IntegerProvider(min, max, interpolator.deepClone(cloneRequestMetadata));
         return result;
     }
 

@@ -45,7 +45,7 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
 
     public RadialGradientProceduralEffect(RadialGradientProceduralEffect gradientProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(gradientProceduralEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(gradientProceduralEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(gradientProceduralEffect, this, cloneRequestMetadata);
     }
 
     public RadialGradientProceduralEffect(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, RadialGradientService radialGradientService) {

@@ -43,7 +43,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
 
     public LayerMaskEffect(LayerMaskEffect layerMaskEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(layerMaskEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(layerMaskEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(layerMaskEffect, this, cloneRequestMetadata);
     }
 
     public LayerMaskEffect(JsonNode node, LoadMetadata loadMetadata, LayerMaskApplier layerMaskApplier2, List<LayerMaskAlphaCalculator> calculators2) {

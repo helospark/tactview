@@ -35,7 +35,7 @@ public class GraphProceduralClip extends ProceduralVisualClip {
 
     public GraphProceduralClip(GraphProceduralClip proceuduralClip, CloneRequestMetadata cloneRequestMetadata, EffectGraphAccessorMessageSender effectGraphAccessor) {
         super(proceuduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(proceuduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(proceuduralClip, this, cloneRequestMetadata);
     }
 
     public GraphProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, DefaultGraphArrangementFactory defaultGraphArrangementFactory,

@@ -46,7 +46,7 @@ public class BezierPolygonProceduralClip extends ProceduralVisualClip {
 
     public BezierPolygonProceduralClip(BezierPolygonProceduralClip polygonProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(polygonProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(polygonProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(polygonProceduralClip, this, cloneRequestMetadata);
     }
 
     @Override

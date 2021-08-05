@@ -43,7 +43,7 @@ public class PolygonProceduralClip extends ProceduralVisualClip {
 
     public PolygonProceduralClip(PolygonProceduralClip polygonProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(polygonProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(polygonProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(polygonProceduralClip, this, cloneRequestMetadata);
     }
 
     @Override

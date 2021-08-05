@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.EffectAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
@@ -45,7 +46,7 @@ public class GraphProvider extends KeyframeableEffect<EffectGraph> {
     }
 
     @Override
-    public GraphProvider deepClone() {
+    public GraphProvider deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
         return new GraphProvider(effectGraph.deepClone());
     }
 

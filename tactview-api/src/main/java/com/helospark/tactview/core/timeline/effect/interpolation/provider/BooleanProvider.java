@@ -1,5 +1,6 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
@@ -47,8 +48,8 @@ public class BooleanProvider extends KeyframeableEffect<Boolean> {
     }
 
     @Override
-    public BooleanProvider deepClone() {
-        return new BooleanProvider(doubleInterpolator.deepClone());
+    public BooleanProvider deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+        return new BooleanProvider(doubleInterpolator.deepClone(cloneRequestMetadata));
     }
 
     @Override
@@ -80,4 +81,10 @@ public class BooleanProvider extends KeyframeableEffect<Boolean> {
     public EffectInterpolator getInterpolator() {
         return doubleInterpolator;
     }
+
+    @Override
+    public BooleanProvider deepClone(CloneRequestMetadata cloneRequestMetadata) {
+        return (BooleanProvider) super.deepClone(cloneRequestMetadata);
+    }
+
 }

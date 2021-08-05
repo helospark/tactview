@@ -36,7 +36,7 @@ public class StopWatchTextProceduralClip extends AbstractTextProceduralClip {
 
     public StopWatchTextProceduralClip(StopWatchTextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
         super(textProceduralClip, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this, cloneRequestMetadata);
     }
 
     @Override

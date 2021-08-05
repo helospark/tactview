@@ -33,7 +33,7 @@ public class WhipPanTransition extends AbstractVideoTransitionEffect {
 
     public WhipPanTransition(WhipPanTransition cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public WhipPanTransition(JsonNode node, LoadMetadata loadMetadata, IndependentPixelOperation independentPixelOperation, BlurService blurService) {

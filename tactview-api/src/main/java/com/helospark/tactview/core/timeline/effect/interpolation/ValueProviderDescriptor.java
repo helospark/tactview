@@ -19,7 +19,6 @@ public class ValueProviderDescriptor {
     private Optional<Function<TimelinePosition, Boolean>> enabledIf;
     private Optional<String> group;
 
-    @Generated("SparkTools")
     private ValueProviderDescriptor(Builder builder) {
         this.name = builder.name;
         this.keyframeableEffect = builder.keyframeableEffect;
@@ -64,9 +63,12 @@ public class ValueProviderDescriptor {
                 + renderHints + ", enabledIf=" + enabledIf + ", group=" + group + "]";
     }
 
-    @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
+    }
+
+    public static Builder builderFrom(ValueProviderDescriptor valueProviderDescriptor) {
+        return new Builder(valueProviderDescriptor);
     }
 
     @Generated("SparkTools")
@@ -80,6 +82,16 @@ public class ValueProviderDescriptor {
         private Optional<String> group = Optional.empty();
 
         private Builder() {
+        }
+
+        private Builder(ValueProviderDescriptor valueProviderDescriptor) {
+            this.name = valueProviderDescriptor.name;
+            this.keyframeableEffect = valueProviderDescriptor.keyframeableEffect;
+            this.activePredicate = valueProviderDescriptor.activePredicate;
+            this.showPredicate = valueProviderDescriptor.showPredicate;
+            this.renderHints = valueProviderDescriptor.renderHints;
+            this.enabledIf = valueProviderDescriptor.enabledIf;
+            this.group = valueProviderDescriptor.group;
         }
 
         public Builder withName(String name) {

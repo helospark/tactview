@@ -30,7 +30,7 @@ public class LinearBlurEffect extends StatelessVideoEffect {
 
     public LinearBlurEffect(LinearBlurEffect blurEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(blurEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(blurEffect, this, cloneRequestMetadata);
     }
 
     public LinearBlurEffect(JsonNode node, LoadMetadata loadMetadata, LinearBlurService linearBlurService) {

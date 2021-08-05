@@ -57,7 +57,7 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
 
     public OrthogonalTransformationEffect(OrthogonalTransformationEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public OrthogonalTransformationEffect(JsonNode node, LoadMetadata loadMetadata, ScaleService scaleService, RotateService rotateService, FrameExtender frameExtender) {

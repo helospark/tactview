@@ -42,7 +42,7 @@ public class LinearGradientProceduralClip extends ProceduralVisualClip {
 
     public LinearGradientProceduralClip(LinearGradientProceduralClip linearProceduralEffect, CloneRequestMetadata cloneRequestMetadata) {
         super(linearProceduralEffect, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(linearProceduralEffect, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(linearProceduralEffect, this, cloneRequestMetadata);
     }
 
     public LinearGradientProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, LinearGradientService linearGradientService) {

@@ -34,7 +34,7 @@ public class FloodFillEffect extends StatelessVideoEffect {
 
     public FloodFillEffect(FloodFillEffect cloneFrom, CloneRequestMetadata cloneRequestMetadata) {
         super(cloneFrom, cloneRequestMetadata);
-        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this);
+        ReflectionUtil.copyOrCloneFieldFromTo(cloneFrom, this, cloneRequestMetadata);
     }
 
     public FloodFillEffect(JsonNode node, LoadMetadata loadMetadata) {
