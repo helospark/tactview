@@ -85,8 +85,8 @@ public class SubtimelineAudioClip extends AudibleTimelineClip {
                 .withAudioLength(Optional.of(audioRequest.getLength()))
                 .withAudioSampleRate(Optional.of(audioRequest.getSampleRate()))
                 .withPosition(audioRequest.getPosition())
-                .withNeedSound(false)
-                .withNeedVideo(true)
+                .withNeedSound(true)
+                .withNeedVideo(false)
                 .withPreviewWidth(800) // TODO: find why these dummy values are needed
                 .withPreviewHeight(600)
                 .build();

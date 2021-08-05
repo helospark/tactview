@@ -10,7 +10,7 @@ import com.helospark.tactview.core.persistentstate.PersistentState;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.save.SaveRequest;
-import com.helospark.tactview.core.save.TemplateSaveHandler;
+import com.helospark.tactview.core.save.TemplateSaveAndLoadHandler;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.save.QuerySaveFilenameService.QuerySaveFileNameRequest;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
@@ -18,7 +18,7 @@ import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 @Component
 public class UiSaveHandler {
     private SaveAndLoadHandler saveAndLoadHandler;
-    private TemplateSaveHandler templateSaveHandler;
+    private TemplateSaveAndLoadHandler templateSaveHandler;
     private CurrentProjectSavedFileRepository currentProjectSavedFileRepository;
     private DirtyRepository dirtyRepository;
     private AlertDialogFactory alertDialogFactory;
@@ -30,7 +30,7 @@ public class UiSaveHandler {
     String lastOpenedDirectoryName;
 
     public UiSaveHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, DirtyRepository dirtyRepository,
-            QuerySaveFilenameService querySaveFilenameService, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository, TemplateSaveHandler templateSaveHandler) {
+            QuerySaveFilenameService querySaveFilenameService, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository, TemplateSaveAndLoadHandler templateSaveHandler) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.dirtyRepository = dirtyRepository;

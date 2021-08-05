@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.save.LoadMetadata;
-import com.helospark.tactview.core.save.TemplateSaveHandler;
+import com.helospark.tactview.core.save.TemplateSaveAndLoadHandler;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
@@ -32,7 +32,7 @@ public class SubtimelineLoadFileService {
             File rootDirectory = new File(tmpDir, "tactview_save_" + System.currentTimeMillis());
             ZipUtil.unpack(new File(request.getFile().getAbsolutePath()), rootDirectory);
 
-            File fileName = new File(rootDirectory.getAbsolutePath(), TemplateSaveHandler.TEMPLATE_FILE_NAME);
+            File fileName = new File(rootDirectory.getAbsolutePath(), TemplateSaveAndLoadHandler.TEMPLATE_FILE_NAME);
 
             String content = new String(Files.readAllBytes(Paths.get(fileName.getAbsolutePath())), StandardCharsets.UTF_8);
 

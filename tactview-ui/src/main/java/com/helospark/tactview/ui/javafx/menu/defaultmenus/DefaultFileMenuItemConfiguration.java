@@ -26,6 +26,7 @@ import javafx.scene.input.KeyCodeCombination;
 
 @Configuration
 public class DefaultFileMenuItemConfiguration {
+    private static final String TEMPLATE = "Template";
     private static final String LOAD_RECENT_MENU_ITEM = "Load _recent";
     private static final String IMPORT_SUBMENU_ITEM = "Import";
     public static final String FILE_ROOT = "_File";
@@ -108,7 +109,13 @@ public class DefaultFileMenuItemConfiguration {
     @Bean
     @Order(32)
     public SelectableMenuContribution saveProjectAsTemplate(UiSaveHandler saveHandler) {
-        return new DefaultMenuContribution(List.of(FILE_ROOT, "Template", "Save _As template"), event -> saveHandler.saveAsTemplate());
+        return new DefaultMenuContribution(List.of(FILE_ROOT, TEMPLATE, "Save _As template"), event -> saveHandler.saveAsTemplate());
+    }
+
+    @Bean
+    @Order(33)
+    public SelectableMenuContribution loadTemplateAsProjectMenuItem(UiLoadHandler loadHandler) {
+        return new DefaultMenuContribution(List.of(FILE_ROOT, TEMPLATE, "_Load template as project"), event -> loadHandler.loadTemplate());
     }
 
     @Bean

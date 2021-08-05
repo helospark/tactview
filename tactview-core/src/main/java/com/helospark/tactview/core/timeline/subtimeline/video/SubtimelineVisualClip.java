@@ -50,7 +50,6 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         super(readMetadata(savedClip, loadMetadata), savedClip, loadMetadata);
         this.timelineState = new TimelineChannelsState();
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
-        this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
         this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineState);
         this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor);
 
@@ -108,6 +107,10 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
     @Override
     public TimelineClip cloneClip(CloneRequestMetadata cloneRequestMetadata) {
         return new SubtimelineVisualClip(this, cloneRequestMetadata);
+    }
+
+    public TimelineManagerAccessor getTimelineManagerAccessorInternal() {
+        return timelineManagerAccessor;
     }
 
 }
