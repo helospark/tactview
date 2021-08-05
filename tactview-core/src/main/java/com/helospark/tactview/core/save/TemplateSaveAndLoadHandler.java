@@ -1,6 +1,8 @@
 package com.helospark.tactview.core.save;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.LightDiContext;
@@ -28,7 +30,14 @@ public class TemplateSaveAndLoadHandler extends AbstractSaveHandler {
 
     @Override
     protected void queryAdditionalDataToSave(Map<String, Object> result, SaveMetadata saveMetadata) {
-        SubtimelineVisualClip videoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline();
+        Set<String> asd = this.timelineManagerAccessor.getChannels()
+                .stream()
+                .flatMap(a -> a.getAllClips().stream())
+                .flatMap(a -> a.getDescriptors().stream())
+                .map(a -> a.getKeyframeableEffect().getId())
+                .collect(Collectors.toSet());
+
+        SubtimelineVisualClip videoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(asd);
         SubtimelineAudioClip audioClip = subtimelineFromTimelineFactory.createSubtimelineAudioClipFromCurrentTimeline();
 
         result.put(VIDEO_TRACK_NODE, videoClip.generateSavedContent(saveMetadata));

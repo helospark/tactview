@@ -1,8 +1,14 @@
 package com.helospark.tactview.core.timeline.subtimeline.video;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -19,6 +25,7 @@ import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorFactory;
 
@@ -28,7 +35,10 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
     private TimelineChannelsState timelineState;
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
 
-    public SubtimelineVisualClip(SubtimelineVisualMetadata metadata, TimelineChannelsState timelineState, TimelineManagerAccessorFactory timelineManagerAccessorFactory, TimelinePosition position,
+    private Set<String> enabledDescriptors = new HashSet<>();
+
+    public SubtimelineVisualClip(SubtimelineVisualMetadata metadata, TimelineChannelsState timelineState, TimelineManagerAccessorFactory timelineManagerAccessorFactory, Set<String> descriptorIds,
+            TimelinePosition position,
             TimelineLength length) {
         super(metadata, new TimelineInterval(position, length), TimelineClipType.IMAGE);
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
@@ -36,6 +46,7 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor);
         this.timelineState = timelineState;
         this.mediaMetadata = metadata;
+        this.enabledDescriptors = descriptorIds;
     }
 
     public SubtimelineVisualClip(SubtimelineVisualClip clip, CloneRequestMetadata cloneRequestMetadata) {
@@ -44,6 +55,12 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         this.timelineManagerAccessorFactory = clip.timelineManagerAccessorFactory;
         this.timelineManagerAccessor = clip.timelineManagerAccessorFactory.createAccessor(this.timelineState);
         this.timelineManagerRenderService = clip.timelineManagerAccessorFactory.createRenderService(this.timelineState, timelineManagerAccessor);
+
+        if (!cloneRequestMetadata.isDeepCloneId()) {
+            enabledDescriptors = enabledDescriptors.stream()
+                    .map(a -> cloneRequestMetadata.getPreviousId(a))
+                    .collect(Collectors.toSet());
+        }
     }
 
     public SubtimelineVisualClip(TimelineManagerAccessorFactory timelineManagerAccessorFactory, JsonNode savedClip, LoadMetadata loadMetadata) {
@@ -55,6 +72,9 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
 
         try {
             timelineManagerAccessor.loadFrom(savedClip, loadMetadata);
+            ObjectReader reader = loadMetadata.getObjectMapperUsed().readerFor(new TypeReference<Set<String>>() {
+            });
+            this.enabledDescriptors = reader.readValue(savedClip.get("exposedDescriptors"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -74,6 +94,7 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         this.timelineManagerAccessor.generateSavedContent(savedContent, saveMetadata);
 
         savedContent.put("metadata", this.getMediaMetadata());
+        savedContent.put("exposedDescriptors", enabledDescriptors);
     }
 
     @Override
@@ -111,6 +132,23 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
 
     public TimelineManagerAccessor getTimelineManagerAccessorInternal() {
         return timelineManagerAccessor;
+    }
+
+    @Override
+    public List<ValueProviderDescriptor> getDescriptorsInternal() {
+        List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
+
+        for (var channel : this.timelineManagerAccessor.getChannels()) {
+            for (var clip : channel.getAllClips()) {
+                for (var descriptor : clip.getDescriptors()) {
+                    if (enabledDescriptors.contains(descriptor.getKeyframeableEffect().getId())) {
+                        result.add(descriptor);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
 }

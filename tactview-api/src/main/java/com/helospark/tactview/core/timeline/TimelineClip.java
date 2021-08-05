@@ -54,7 +54,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
         if (cloneRequestMetadata.isDeepCloneId()) {
             this.id = clip.id;
         } else {
-            this.id = UUID.randomUUID().toString();
+            this.id = cloneRequestMetadata.generateOrGetIdFromPrevious(clip.id);
         }
         this.interval = clip.interval;
         this.type = clip.type;

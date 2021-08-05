@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline.subtimeline;
 
+import java.util.Set;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
@@ -29,7 +31,7 @@ public class SubtimelineFromTimelineFactory {
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
     }
 
-    public SubtimelineVisualClip createSubtimelineVideoClipFromCurrentTimeline() {
+    public SubtimelineVisualClip createSubtimelineVideoClipFromCurrentTimeline(Set<String> descriptorIds) {
         TimelineLength length = timelineManager.findEndPosition().toLength();
         SubtimelineVisualMetadata metadata = SubtimelineVisualMetadata.builder()
                 .withWidth(projectRepository.getWidth())
@@ -38,7 +40,8 @@ public class SubtimelineFromTimelineFactory {
                 .withLength(length)
                 .build();
 
-        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, TimelinePosition.ofZero(),
+        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, descriptorIds,
+                TimelinePosition.ofZero(),
                 length);
 
         result.setCreatorFactoryId(SubtimelineVisualClipFactory.ID);

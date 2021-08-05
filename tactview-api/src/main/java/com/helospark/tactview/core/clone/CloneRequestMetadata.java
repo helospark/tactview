@@ -33,4 +33,12 @@ public class CloneRequestMetadata {
         }
     }
 
+    public String getPreviousId(String previousId) {
+        String newId = internalIdMapping.get(previousId);
+        if (newId == null) {
+            throw new RuntimeException("Cannot map id " + previousId);
+        }
+        return newId;
+    }
+
 }

@@ -2,6 +2,8 @@ package com.helospark.tactview.ui.javafx.commands.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.LinkClipRepository;
@@ -31,7 +33,14 @@ public class ReplaceTimelineWithSubtimelineCommand implements UiCommand {
     @Override
     public void execute() {
         synchronized (timelineManagerAccessor.getFullLock()) {
-            SubtimelineVisualClip newVideoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline();
+            Set<String> asd = this.timelineManagerAccessor.getChannels()
+                    .stream()
+                    .flatMap(a -> a.getAllClips().stream())
+                    .flatMap(a -> a.getDescriptors().stream())
+                    .map(a -> a.getKeyframeableEffect().getId())
+                    .collect(Collectors.toSet());
+
+            SubtimelineVisualClip newVideoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(asd);
             SubtimelineAudioClip newAudioClip = subtimelineFromTimelineFactory.createSubtimelineAudioClipFromCurrentTimeline();
 
             for (var id : timelineManagerAccessor.getAllClipIds()) {
