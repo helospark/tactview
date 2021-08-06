@@ -10,6 +10,7 @@ import com.helospark.tactview.core.save.LoadRequest;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.save.TemplateSaveAndLoadHandler;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
+import com.helospark.tactview.ui.javafx.ProjectInitializer;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
 import javafx.stage.FileChooser;
@@ -24,11 +25,13 @@ public class UiLoadHandler {
     private AlertDialogFactory alertDialogFactory;
     private RecentlyAccessedRepository recentlyAccessedRepository;
     private TemplateSaveAndLoadHandler templateSaveAndLoadHandler;
+    private ProjectInitializer projectInitializer;
 
     private UiSaveHandler uiSaveHandler;
 
     public UiLoadHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, @Value("${autosave.directory}") File autosaveRootDirectory,
-            UiSaveHandler uiSaveHandler, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository, TemplateSaveAndLoadHandler templateSaveAndLoadHandler) {
+            UiSaveHandler uiSaveHandler, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository, TemplateSaveAndLoadHandler templateSaveAndLoadHandler,
+            ProjectInitializer projectInitializer) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.autosaveRootDirectory = autosaveRootDirectory;
@@ -36,6 +39,7 @@ public class UiLoadHandler {
         this.alertDialogFactory = alertDialogFactory;
         this.recentlyAccessedRepository = recentlyAccessedRepository;
         this.templateSaveAndLoadHandler = templateSaveAndLoadHandler;
+        this.projectInitializer = projectInitializer;
     }
 
     public void load() {
@@ -43,6 +47,7 @@ public class UiLoadHandler {
     }
 
     public void loadFile(File file) {
+        projectInitializer.clearState();
         saveAndLoadHandler.load(new LoadRequest(file.getAbsolutePath()));
         recentlyAccessedRepository.addNewRecentlySavedElement(file);
         currentProjectSavedFileRepository.setCurrentSavedFile(file.getAbsolutePath());
@@ -62,6 +67,7 @@ public class UiLoadHandler {
         if (file != null) {
             try {
                 uiSaveHandler.lastOpenedDirectoryName = file.getParentFile().getAbsolutePath();
+                projectInitializer.clearState();
                 loadHandler.load(new LoadRequest(file.getAbsolutePath()));
                 recentlyAccessedRepository.addNewRecentlySavedElement(file);
                 currentProjectSavedFileRepository.setCurrentSavedFile(file.getAbsolutePath());

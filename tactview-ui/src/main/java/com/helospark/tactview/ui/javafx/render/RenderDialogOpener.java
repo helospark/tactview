@@ -4,8 +4,8 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
-import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
+import com.helospark.tactview.core.timeline.marker.MarkerRepository;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
@@ -21,11 +21,11 @@ public class RenderDialogOpener {
     private AlertDialogFactory alertDialogFactory;
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private ScaleService scaleService;
-    private ChapterRepository chapterRepository;
+    private MarkerRepository chapterRepository;
 
     public RenderDialogOpener(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
             StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter,
-            ScaleService scaleService, ChapterRepository chapterRepository) {
+            ScaleService scaleService, MarkerRepository chapterRepository) {
         this.renderService = renderService;
         this.projectRepository = projectRepository;
         this.messagingService = messagingService;

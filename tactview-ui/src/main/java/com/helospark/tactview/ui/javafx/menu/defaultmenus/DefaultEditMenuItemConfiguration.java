@@ -16,7 +16,7 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
+import com.helospark.tactview.core.timeline.marker.MarkerRepository;
 import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -314,7 +314,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1950)
-    public SelectableMenuContribution addChapterMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, ChapterRepository chapterRepository) {
+    public SelectableMenuContribution addChapterMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, MarkerRepository chapterRepository) {
         KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("addChapter", new KeyCodeCombination(KeyCode.P, KeyCodeCombination.CONTROL_DOWN), "Add chapter").getCombination();
         return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Add chapter at current position"), event -> {
             TimelinePosition position = timelineState.getPlaybackPosition();
@@ -329,29 +329,29 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1951)
-    public SelectableMenuContribution removeAllChaptersMenuItem(ChapterRepository chapterRepository) {
+    public SelectableMenuContribution removeAllChaptersMenuItem(MarkerRepository chapterRepository) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Remove all chapters"), event -> {
-            chapterRepository.removeAllChapters();
+            chapterRepository.removeAllMarkers();
         });
     }
 
     @Bean
     @Order(1952)
-    public SelectableMenuContribution exportAsYoutubeChapterMenuItem(ChapterRepository chapterRepository, AlertDialogFactory alertDialogFactory) {
+    public SelectableMenuContribution exportAsYoutubeChapterMenuItem(MarkerRepository chapterRepository, AlertDialogFactory alertDialogFactory) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, CHAPTER_ROOT, "Show as Youtube chapter"), event -> {
             String result = "";
             String errors = "";
             int numberOfChapters = 0;
 
             TimelinePosition previousPosition = null;
-            if (chapterRepository.getChapters().get(TimelinePosition.ofZero()) == null) {
+            if (chapterRepository.getMarkers().get(TimelinePosition.ofZero()) == null) {
                 result += "00:00 Intro\n";
                 errors += "[WARN] No chapter is defined in position 00:00, added intro chapter at 0\n";
                 previousPosition = TimelinePosition.ofZero();
                 ++numberOfChapters;
             }
 
-            for (var chapter : chapterRepository.getChapters().entrySet()) {
+            for (var chapter : chapterRepository.getMarkers().entrySet()) {
                 long allSeconds = chapter.getKey().getSeconds().longValue();
                 long minutes = allSeconds / 60;
                 long seconds = allSeconds % 60;

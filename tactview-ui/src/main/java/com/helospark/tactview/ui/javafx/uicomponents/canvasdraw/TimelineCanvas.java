@@ -23,8 +23,8 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
-import com.helospark.tactview.core.timeline.chapter.ChaptersChangedMessage;
+import com.helospark.tactview.core.timeline.marker.MarkerRepository;
+import com.helospark.tactview.core.timeline.marker.MarkersChangedMessage;
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
@@ -59,6 +59,8 @@ import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers.Timelin
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers.TimelineCanvasElementClickHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers.TimelineCanvasOnDragOverHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers.TimelineCanvasOnDragOverHandler.TimelineCanvasOnDragOverHandlerRequest;
+import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers.TimelineCanvasTimelineHeaderClickHandler;
+import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers.TimelineCanvasTimelineHeaderClickHandler.TimelineCanvasTimelineHeaderClickHandlerRequest;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.PatternIntervalAware;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.TimelinePatternChangedMessage;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.TimelinePatternRepository;
@@ -74,7 +76,9 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Control;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -103,11 +107,12 @@ public class TimelineCanvas implements ScenePostProcessor {
     private UiTimelineManager uiTimelineManager;
     private NameToIdRepository nameToIdRepository;
     private ScheduledExecutorService scheduledExecutorService;
-    private ChapterRepository chapterRepository;
+    private MarkerRepository markerRepository;
     private TimelineCanvasClickHandler timelineCanvasClickHandler;
     private TimelineCanvasContextMenuRequestedHandler timelineCanvasContextMenuRequestedHandler;
     private TimelineCanvasOnDragOverHandler timelineCanvasOnDragOverHandler;
     private TimelineCanvasElementClickHandler timelineCanvasElementClickHandler;
+    private TimelineCanvasTimelineHeaderClickHandler timelineCanvasTimelineHeaderClickHandler;
 
     private BorderPane resultPane;
     private ScrollBar rightBar;
@@ -115,6 +120,8 @@ public class TimelineCanvas implements ScenePostProcessor {
     private Scene scene;
 
     private CollisionRectangle selectionBox = null;
+    private Tooltip tooltip = null;
+    private TimelinePosition lastMarkerShownPosition;
 
     private List<TimelineUiCacheElement> cachedVisibleElements = new ArrayList<>();
     private Image previouslyCachedImage = null;
@@ -126,8 +133,9 @@ public class TimelineCanvas implements ScenePostProcessor {
             SelectedNodeRepository selectedNodeRepository,
             UiTimelineManager uiTimelineManager, TimelineCanvasContextMenuRequestedHandler timelineCanvasContextMenuRequestedHandler,
             NameToIdRepository nameToIdRepository, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
-            ChapterRepository chapterRepository, TimelineCanvasClickHandler timelineCanvasClickHandler,
-            TimelineCanvasOnDragOverHandler timelineCanvasOnDragOverHandler, TimelineCanvasElementClickHandler timelineCanvasElementClickHandler) {
+            MarkerRepository markerRepository, TimelineCanvasClickHandler timelineCanvasClickHandler,
+            TimelineCanvasOnDragOverHandler timelineCanvasOnDragOverHandler, TimelineCanvasElementClickHandler timelineCanvasElementClickHandler,
+            TimelineCanvasTimelineHeaderClickHandler timelineCanvasTimelineHeaderClickHandler) {
         this.timelineAccessor = timelineAccessor;
         this.timelineState = timelineState;
         this.timelinePatternRepository = timelinePatternRepository;
@@ -137,11 +145,12 @@ public class TimelineCanvas implements ScenePostProcessor {
         this.uiTimelineManager = uiTimelineManager;
         this.nameToIdRepository = nameToIdRepository;
         this.scheduledExecutorService = scheduledExecutorService;
-        this.chapterRepository = chapterRepository;
+        this.markerRepository = markerRepository;
         this.timelineCanvasClickHandler = timelineCanvasClickHandler;
         this.timelineCanvasContextMenuRequestedHandler = timelineCanvasContextMenuRequestedHandler;
         this.timelineCanvasOnDragOverHandler = timelineCanvasOnDragOverHandler;
         this.timelineCanvasElementClickHandler = timelineCanvasElementClickHandler;
+        this.timelineCanvasTimelineHeaderClickHandler = timelineCanvasTimelineHeaderClickHandler;
     }
 
     @PostConstruct
@@ -182,7 +191,7 @@ public class TimelineCanvas implements ScenePostProcessor {
         messagingService.register(ClipSelectionChangedMessage.class, message -> {
             redraw(true);
         });
-        messagingService.register(ChaptersChangedMessage.class, message -> {
+        messagingService.register(MarkersChangedMessage.class, message -> {
             redraw(false);
         });
 
@@ -286,12 +295,16 @@ public class TimelineCanvas implements ScenePostProcessor {
         });
 
         canvas.setOnMouseMoved(event -> {
-            onMouseMoved(event.getX(), event.getY());
+            onMouseMoved(event.getX(), event.getY(), event);
             if (!event.isPrimaryButtonDown()) {
                 dragRepository.clean();
                 timelineState.getMoveSpecialPointLineProperties().setEnabled(false);
                 selectionBox = null;
             }
+        });
+
+        canvas.setOnMouseExited(event -> {
+            closeTooltip();
         });
 
         canvas.setOnMousePressed(event -> {
@@ -303,7 +316,13 @@ public class TimelineCanvas implements ScenePostProcessor {
             Optional<TimelineUiCacheElement> optionalElement = findElementAt(event.getX(), event.getY());
 
             if (event.getY() < TIMELINE_TIMESCALE_HEIGHT) {
-                uiTimelineManager.jumpAbsolute(BigDecimal.valueOf(position));
+                TimelineCanvasTimelineHeaderClickHandlerRequest timelineCanvasTimelineHeaderClickHandlerRequest = TimelineCanvasTimelineHeaderClickHandlerRequest.builder()
+                        .withEvent(event)
+                        .withPosition(TimelinePosition.ofSeconds(position))
+                        .withParentWindow(canvas.getScene().getWindow())
+                        .build();
+
+                timelineCanvasTimelineHeaderClickHandler.onHeaderClick(timelineCanvasTimelineHeaderClickHandlerRequest);
             } else if (event.isPrimaryButtonDown() && dragRepository.getInitialX() == -1 && optionalElement.isPresent()) {
                 timelineCanvasElementClickHandler.onElementClick(event, currentX, optionalElement.get());
             } else {
@@ -432,7 +451,15 @@ public class TimelineCanvas implements ScenePostProcessor {
         dragRepository.clean();
         selectionBox = null;
         timelineState.disableSpecialPointLineProperties();
+        closeTooltip();
         redraw(false);
+    }
+
+    private void closeTooltip() {
+        if (tooltip != null) {
+            tooltip.hide();
+            tooltip = null;
+        }
     }
 
     private void scrollVerticallyWhenDraggingNearEdge(double y) {
@@ -532,8 +559,9 @@ public class TimelineCanvas implements ScenePostProcessor {
         return result;
     }
 
-    private void onMouseMoved(double x, double y) {
+    private void onMouseMoved(double x, double y, MouseEvent event) {
         Optional<TimelineUiCacheElement> optionalElement = findElementAt(x, y);
+
         if (optionalElement.isPresent()) {
             var element = optionalElement.get();
             boolean isResizing = timelineCanvasElementClickHandler.isResizing(element, x);
@@ -545,6 +573,33 @@ public class TimelineCanvas implements ScenePostProcessor {
             }
         } else {
             canvas.setCursor(null);
+        }
+
+        if (y < TIMELINE_TIMESCALE_HEIGHT) {
+            boolean success = false;
+            for (var marker : markerRepository.getMarkers().entrySet()) {
+                double markerPosition = timelineState.secondsToPixelsWithZoom(marker.getKey());
+                double mousePosition = x;
+
+                if (Math.abs(markerPosition - mousePosition) < 5) {
+                    if (tooltip != null && marker.getKey().equals(lastMarkerShownPosition)) {
+                        success = true;
+                        break;
+                    } else
+                        closeTooltip();
+                    tooltip = new Tooltip(marker.getValue().describe());
+                    Point2D sceneCoordinates = canvas.localToScene(markerPosition, TIMELINE_TIMESCALE_HEIGHT);
+                    tooltip.show(canvas, sceneCoordinates.getX(), sceneCoordinates.getY());
+                    lastMarkerShownPosition = marker.getKey();
+                    success = true;
+                    break;
+                }
+            }
+            if (!success) {
+                closeTooltip();
+            }
+        } else {
+            closeTooltip();
         }
 
     }
@@ -906,8 +961,27 @@ public class TimelineCanvas implements ScenePostProcessor {
     }
 
     private void drawChapterLines() {
-        for (var chapter : chapterRepository.getChapters().entrySet()) {
-            drawVerticalLineAtPosition(chapter.getKey(), Color.GREENYELLOW);
+        for (var chapter : markerRepository.getMarkers().entrySet()) {
+            Color colorToUse = null;
+            switch (chapter.getValue().getType()) {
+                case CHAPTER :
+                    colorToUse = Color.GREENYELLOW;
+                    break;
+                case GENERAL :
+                    colorToUse = Color.SIENNA;
+                    break;
+                case INPOINT :
+                    colorToUse = Color.GREEN;
+                    break;
+                case OUTPOINT :
+                    colorToUse = Color.RED;
+                    break;
+                default :
+                    colorToUse = Color.PINK;
+                    break;
+            }
+
+            drawVerticalLineAtPosition(chapter.getKey(), colorToUse);
         }
     }
 

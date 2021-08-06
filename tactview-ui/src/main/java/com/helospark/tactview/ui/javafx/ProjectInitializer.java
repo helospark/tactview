@@ -29,6 +29,15 @@ public class ProjectInitializer {
     }
 
     public void clearAndInitialize() {
+        clearState();
+
+        for (int i = 0; i < 8; ++i) {
+            commandInterpreter.synchronousSend(new CreateChannelCommand(timelineManager, LAST_INDEX));
+        }
+
+    }
+
+    public void clearState() {
         diContext.getListOfBeans(ResettableBean.class)
                 .stream()
                 .forEach(bean -> bean.resetDefaults());
@@ -36,15 +45,9 @@ public class ProjectInitializer {
         timelineManager.getChannels()
                 .stream()
                 .forEach(channel -> timelineManager.removeChannel(channel.getId()));
-
-        for (int i = 0; i < 8; ++i) {
-            commandInterpreter.synchronousSend(new CreateChannelCommand(timelineManager, LAST_INDEX));
-        }
-
         dirtyRepository.setDirty(false);
 
         uiTimelineManager.jumpAbsolute(BigDecimal.ZERO);
-
     }
 
 }

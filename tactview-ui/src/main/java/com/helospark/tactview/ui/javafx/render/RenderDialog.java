@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.joda.time.Period;
@@ -26,11 +27,12 @@ import com.helospark.tactview.core.render.helper.HandledExtensionValueElement;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.core.timeline.chapter.ChapterRepository;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleRequest;
 import com.helospark.tactview.core.timeline.effect.scale.service.ScaleService;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.marker.MarkerRepository;
+import com.helospark.tactview.core.timeline.marker.markers.ChapterMarker;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
@@ -82,7 +84,7 @@ public class RenderDialog {
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private ScaleService scaleService;
     private RenderServiceChain renderService;
-    private ChapterRepository chapterRepository;
+    private MarkerRepository chapterRepository;
 
     TextField fileNameTextField;
     GridPane rendererOptions;
@@ -105,7 +107,7 @@ public class RenderDialog {
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
             StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter,
-            ScaleService scaleService, ChapterRepository chapterRepository) {
+            ScaleService scaleService, MarkerRepository chapterRepository) {
         this.projectRepository = projectRepository;
         this.alertDialogFactory = alertDialogFactory;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
@@ -372,6 +374,10 @@ public class RenderDialog {
             fileName += selectedExtensionElement.extension;
         }
 
+        Map<TimelinePosition, String> markers = chapterRepository.getMarkersOfType(ChapterMarker.class).entrySet()
+                .stream()
+                .collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue().getName()));
+
         return RenderRequest.builder()
                 .withWidth(resolutionField.getResolutionWidth())
                 .withHeight(resolutionField.getResolutionHeight())
@@ -386,7 +392,7 @@ public class RenderDialog {
                 .withMetadata(collectMetadata(metadataVBox))
                 .withSelectedExtensionType(selectedExtensionElement)
                 .withEncodedImageCallback(image -> updatePreviewConsumer(image))
-                .withChapters(chapterRepository.getChapters())
+                .withChapters(markers)
                 .build();
     }
 
