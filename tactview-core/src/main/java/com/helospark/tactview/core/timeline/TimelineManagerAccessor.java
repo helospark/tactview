@@ -1236,4 +1236,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return timelineChannelsState.fullLock;
     }
 
+    public Optional<TimelineChannel> findChannelOnIndex(Integer channelId) {
+        if (channelId >= 0 && channelId < timelineChannelsState.channels.size()) {
+            return Optional.ofNullable(this.timelineChannelsState.channels.get(channelId));
+        } else {
+            return Optional.empty();
+        }
+    }
+
 }

@@ -12,6 +12,8 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipToLeftCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipToRightCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.service.MoveByUnitService;
+import com.helospark.tactview.ui.javafx.commands.impl.service.MoveByUnitService.Direction;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
@@ -19,6 +21,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextInputDialog;
 
 @Component
@@ -28,13 +31,15 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
     private TimelineManagerAccessor timelineManagerAccessor;
     private AlertDialogFactory alertDialogFactory;
     private StylesheetAdderService stylesheetAdderService;
+    private MoveByUnitService moveByUnitService;
 
     public MoveToContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManagerAccessor, AlertDialogFactory alertDialogFactory,
-            StylesheetAdderService stylesheetAdderService) {
+            StylesheetAdderService stylesheetAdderService, MoveByUnitService moveByUnitService) {
         this.commandInterpreter = commandInterpreter;
         this.timelineManagerAccessor = timelineManagerAccessor;
         this.alertDialogFactory = alertDialogFactory;
         this.stylesheetAdderService = stylesheetAdderService;
+        this.moveByUnitService = moveByUnitService;
     }
 
     @Override
@@ -45,8 +50,19 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
         menu.getItems().add(createMoveToLeftMenuItem(request));
         menu.getItems().add(createMoveToRightMenuItem(request));
         menu.getItems().add(createMoveRelativeMenuItem(request));
+        menu.getItems().add(new SeparatorMenuItem());
+        menu.getItems().add(createMoveLeftOneFrameMenuItem(request, "left one frame", Direction.LEFT));
+        menu.getItems().add(createMoveLeftOneFrameMenuItem(request, "right one frame", Direction.RIGHT));
+        menu.getItems().add(createMoveLeftOneFrameMenuItem(request, "up one channel", Direction.UP));
+        menu.getItems().add(createMoveLeftOneFrameMenuItem(request, "down one channel", Direction.DOWN));
 
         return menu;
+    }
+
+    private MenuItem createMoveLeftOneFrameMenuItem(ClipContextMenuChainItemRequest request, String title, Direction direction) {
+        MenuItem menuItem = new MenuItem(title);
+        menuItem.setOnAction(e -> moveByUnitService.moveByOneUnit(direction));
+        return menuItem;
     }
 
     private MenuItem createMoveToPositionMenuItem(ClipContextMenuChainItemRequest request) {

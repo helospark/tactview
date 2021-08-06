@@ -17,6 +17,7 @@ import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.aware.MainWindowStageAware;
+import com.helospark.tactview.ui.javafx.commands.impl.service.MoveByUnitService;
 import com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository;
 import com.helospark.tactview.ui.javafx.key.GlobalShortcutHandler;
 import com.helospark.tactview.ui.javafx.key.KeyCombinationRepository;
@@ -36,12 +37,14 @@ import javafx.scene.control.Control;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyCombination.Modifier;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 @Component
 public class GlobalKeyCombinationAttacher implements ScenePostProcessor, ContextAware, MainWindowStageAware {
+    private static final String MOVE_FORWARD_ONE_FRAME = "moveForwardOneFrame";
     private static final String RIPPLE_DELETE = "Ripple delete";
     private static final String DELETE = "delete";
     private static final String FORWARD10S = "forward10s";
@@ -60,6 +63,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     private LightDiContext context;
     private TimelineEditModeRepository editModeRepository;
     private HotKeyRepository hotKeyRepository;
+    private MoveByUnitService moveByUnitService;
 
     private Scene scene;
 
@@ -72,7 +76,8 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
             UiTimelineManager uiTimelineManager,
             UiSaveHandler uiSaveHandler,
             TimelineEditModeRepository editModeRepository,
-            HotKeyRepository hotKeyRepository) {
+            HotKeyRepository hotKeyRepository,
+            MoveByUnitService moveByUnitService) {
         this.keyCombinationRepository = keyCombinationRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.removeClipService = removeClipService;
@@ -81,6 +86,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         this.uiTimelineManager = uiTimelineManager;
         this.editModeRepository = editModeRepository;
         this.hotKeyRepository = hotKeyRepository;
+        this.moveByUnitService = moveByUnitService;
     }
 
     @Override
@@ -129,6 +135,8 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     uiTimelineManager.moveForwardOneFrame();
                 }), disabledFocusedNodeClass);
 
+        registerMoveByOneUnit(disabledFocusedNodeClass);
+
         keyCombinationRepository.registerGlobalKeyFilters(hotKeyRepository.getHotKeyById(BACK10S),
                 useHandler(event -> {
                     uiTimelineManager.jumpRelative(BigDecimal.valueOf(10));
@@ -150,6 +158,32 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                 useHandler(event -> {
                     removeClipService.rippleDeleteClips(selectedNodeRepository.getSelectedClipIds(), TimelineEditMode.ALL_CHANNEL_RIPPLE);
                     removeEffectService.removeEffects(selectedNodeRepository.getSelectedEffectIds());
+                }), disabledFocusedNodeClass);
+    }
+
+    private void registerMoveByOneUnit(Set<Class<? extends Node>> disabledFocusedNodeClass) {
+        keyCombinationRepository.registerGlobalKeyFilters(
+                hotKeyRepository.registerOrGetHotKey("moveForwardOneFrame", new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.CONTROL_DOWN), "Move selected forward one frame"),
+                useHandler(event -> {
+                    moveByUnitService.moveByOneUnit(MoveByUnitService.Direction.RIGHT);
+                }), disabledFocusedNodeClass);
+
+        keyCombinationRepository.registerGlobalKeyFilters(
+                hotKeyRepository.registerOrGetHotKey("moveBackwardOneFrame", new KeyCodeCombination(KeyCode.LEFT, KeyCombination.CONTROL_DOWN), "Move selected backward one frame"),
+                useHandler(event -> {
+                    moveByUnitService.moveByOneUnit(MoveByUnitService.Direction.LEFT);
+                }), disabledFocusedNodeClass);
+
+        keyCombinationRepository.registerGlobalKeyFilters(
+                hotKeyRepository.registerOrGetHotKey("moveDownOneChannel", new KeyCodeCombination(KeyCode.DOWN, KeyCombination.CONTROL_DOWN), "Move selected down one channel"),
+                useHandler(event -> {
+                    moveByUnitService.moveByOneUnit(MoveByUnitService.Direction.DOWN);
+                }), disabledFocusedNodeClass);
+
+        keyCombinationRepository.registerGlobalKeyFilters(
+                hotKeyRepository.registerOrGetHotKey("moveUpOneChannel", new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN), "Move selected up one channel"),
+                useHandler(event -> {
+                    moveByUnitService.moveByOneUnit(MoveByUnitService.Direction.UP);
                 }), disabledFocusedNodeClass);
     }
 
