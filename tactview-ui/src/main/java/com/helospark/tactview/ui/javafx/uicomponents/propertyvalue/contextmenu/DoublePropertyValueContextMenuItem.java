@@ -7,8 +7,8 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.InterpolatorChangedCommand;
 
@@ -31,7 +31,7 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
 
     @Override
     public boolean supports(PropertyValueContextMenuRequest request) {
-        return request.valueProvider instanceof DoubleProvider;
+        return request.valueProvider.getInterpolator() instanceof DoubleInterpolator;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class DoublePropertyValueContextMenuItem implements PropertyValueContextM
     private Menu createInterpolators(String id) {
         Menu menu = new Menu("Change interpolator");
 
-        Object currentInterpolator = effectParametersRepository.getCurrentInterpolator(id);
+        Object currentInterpolator = effectParametersRepository.getCurrentInterpolatorClone(id);
 
         List<DoubleInterpolatorFactory> interpolators = context.getListOfBeans(DoubleInterpolatorFactory.class);
 

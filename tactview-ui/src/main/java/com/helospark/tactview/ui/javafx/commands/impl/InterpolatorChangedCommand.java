@@ -21,7 +21,7 @@ public class InterpolatorChangedCommand implements UiCommand {
 
     @Override
     public void execute() {
-        currentInterpolator = effectParametersRepository.getCurrentInterpolator(descriptorId);
+        currentInterpolator = effectParametersRepository.getCurrentInterpolatorClone(descriptorId);
         effectParametersRepository.changeInterpolator(descriptorId, newInterpolatorId);
     }
 

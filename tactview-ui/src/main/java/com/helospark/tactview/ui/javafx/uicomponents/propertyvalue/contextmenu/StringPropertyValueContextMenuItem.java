@@ -7,8 +7,8 @@ import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.stringinterpolator.StringInterpolatorFactory;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.InterpolatorChangedCommand;
 
@@ -30,7 +30,7 @@ public class StringPropertyValueContextMenuItem implements PropertyValueContextM
 
     @Override
     public boolean supports(PropertyValueContextMenuRequest request) {
-        return request.valueProvider.keyframesEnabled() && request.valueProvider instanceof StringProvider;
+        return request.valueProvider.keyframesEnabled() && request.valueProvider.getInterpolator() instanceof StringInterpolator;
     }
 
     @Override

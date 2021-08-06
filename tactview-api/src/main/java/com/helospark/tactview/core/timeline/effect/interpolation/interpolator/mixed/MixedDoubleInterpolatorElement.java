@@ -31,4 +31,8 @@ public class MixedDoubleInterpolatorElement {
         return new MixedDoubleInterpolatorElement(newValue, easeFunction);
     }
 
+    public MixedDoubleInterpolatorElement deepClone() {
+        return new MixedDoubleInterpolatorElement(value, easeFunction);
+    }
+
 }

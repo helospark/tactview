@@ -30,7 +30,6 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ef
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.stringinterpolator.StringInterpolatorFactory;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.core.timeline.message.AbstractDescriptorsAddedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
@@ -229,26 +228,31 @@ public class EffectParametersRepository {
         return valueToChange != null && valueToChange.effect.isKeyframe(positionToLocal(position, valueToChange));
     }
 
-    public Object getCurrentInterpolator(String descriptorId) {
+    public Object getCurrentInterpolatorClone(String descriptorId) {
         EffectStore effectStore = allEffectIdToEffectMap.get(descriptorId);
         return effectStore.effect.getInterpolatorClone();
     }
 
+    public Object getCurrentInterpolator(String descriptorId) {
+        EffectStore effectStore = allEffectIdToEffectMap.get(descriptorId);
+        return effectStore.effect.getInterpolator();
+    }
+
     public void changeInterpolator(String descriptorId, String newInterpolatorId) {
-        KeyframeableEffect previousInterpolator = allEffectIdToEffectMap.get(descriptorId).effect;
-        if (previousInterpolator instanceof DoubleProvider) {
+        KeyframeableEffect previousProvider = allEffectIdToEffectMap.get(descriptorId).effect;
+        if (previousProvider.getInterpolator() instanceof DoubleInterpolator) {
             DoubleInterpolator interpolator = doubleInterpolatorFactories.stream()
                     .filter(factory -> factory.doesSuppert(newInterpolatorId))
                     .findFirst()
                     .orElseThrow()
-                    .createInterpolator((DoubleProvider) previousInterpolator);
+                    .createInterpolator(previousProvider, (DoubleInterpolator) previousProvider.getInterpolator());
             changeInterpolatorToInstance(descriptorId, interpolator);
-        } else if (previousInterpolator instanceof StringProvider) {
+        } else if (previousProvider instanceof StringProvider) {
             StringInterpolator interpolator = stringInterpolatorFactories.stream()
                     .filter(factory -> factory.doesSuppert(newInterpolatorId))
                     .findFirst()
                     .orElseThrow()
-                    .createInterpolator((StringProvider) previousInterpolator);
+                    .createInterpolator((StringProvider) previousProvider);
             changeInterpolatorToInstance(descriptorId, interpolator);
         }
         // TODO: do the rest for other interpolators

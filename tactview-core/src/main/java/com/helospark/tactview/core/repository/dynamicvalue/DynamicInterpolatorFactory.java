@@ -1,13 +1,13 @@
 package com.helospark.tactview.core.repository.dynamicvalue;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.DoubleInterpolatorFactory;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
 public class DynamicInterpolatorFactory implements DoubleInterpolatorFactory {
 
     @Override
-    public DoubleInterpolator createInterpolator(DoubleProvider previousInterpolator) {
+    public DoubleInterpolator createInterpolator(KeyframeableEffect<?> previousInterpolator, DoubleInterpolator doubleInterpolator) {
         // TODO Auto-generated method stub
         return null;
     }

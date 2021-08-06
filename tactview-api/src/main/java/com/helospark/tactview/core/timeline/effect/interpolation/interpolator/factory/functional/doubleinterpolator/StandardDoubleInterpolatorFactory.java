@@ -1,16 +1,16 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
 public class StandardDoubleInterpolatorFactory<T extends DoubleInterpolator> implements DoubleInterpolatorFactory {
     private String id;
-    private Function<DoubleProvider, T> supplier;
+    private BiFunction<KeyframeableEffect<?>, DoubleInterpolator, T> supplier;
     private Class<T> createdType;
 
-    public StandardDoubleInterpolatorFactory(String id, Class<T> createdType, Function<DoubleProvider, T> supplier) {
+    public StandardDoubleInterpolatorFactory(String id, Class<T> createdType, BiFunction<KeyframeableEffect<?>, DoubleInterpolator, T> supplier) {
         this.id = id;
         this.supplier = supplier;
         this.createdType = createdType;
@@ -18,8 +18,8 @@ public class StandardDoubleInterpolatorFactory<T extends DoubleInterpolator> imp
     }
 
     @Override
-    public DoubleInterpolator createInterpolator(DoubleProvider previousInterpolator) {
-        return supplier.apply(previousInterpolator);
+    public DoubleInterpolator createInterpolator(KeyframeableEffect<?> previousInterpolator, DoubleInterpolator doubleInterpolator) {
+        return supplier.apply(previousInterpolator, doubleInterpolator);
     }
 
     @Override

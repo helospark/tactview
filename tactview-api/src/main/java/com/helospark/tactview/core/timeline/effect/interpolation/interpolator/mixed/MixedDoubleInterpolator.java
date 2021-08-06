@@ -21,19 +21,30 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
     protected TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> initialValues;
     protected double initialDefaultValue;
 
+    private EaseFunction defaultEaseFunction = EaseFunction.LINEAR;
+
     public MixedDoubleInterpolator(Double singleDefaultValue) {
         this.values = new TreeMap<>();
         this.defaultValue = singleDefaultValue;
 
-        this.initialValues = new TreeMap<>(values);
+        this.initialValues = cloneMap(values);
         this.initialDefaultValue = defaultValue;
     }
 
     public MixedDoubleInterpolator(TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> values) {
-        this.values = new TreeMap<>(values);
+        this.values = cloneMap(values);
 
-        this.initialValues = new TreeMap<>(values);
+        this.initialValues = cloneMap(this.values);
         this.initialDefaultValue = defaultValue;
+    }
+
+    private TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> cloneMap(TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> values) {
+        TreeMap<TimelinePosition, MixedDoubleInterpolatorElement> result = new TreeMap<>();
+
+        values.entrySet().stream()
+                .forEach(entry -> result.put(entry.getKey(), entry.getValue().deepClone()));
+
+        return result;
     }
 
     @Override
@@ -82,6 +93,7 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
         MixedDoubleInterpolator result = new MixedDoubleInterpolator(values);
         result.defaultValue = defaultValue;
         result.useKeyframes = useKeyframes;
+        result.defaultEaseFunction = defaultEaseFunction;
         return result;
     }
 
@@ -111,8 +123,16 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
         if (!useKeyframes) {
             defaultValue = valueToSet;
         } else {
-            values.put(globalTimelinePosition, new MixedDoubleInterpolatorElement(valueToSet, EaseFunction.LINEAR));
+            values.put(globalTimelinePosition, new MixedDoubleInterpolatorElement(valueToSet, defaultEaseFunction));
         }
+    }
+
+    public void changeDefaultEaseFunction(EaseFunction defaultEaseFunction) {
+        this.defaultEaseFunction = defaultEaseFunction;
+    }
+
+    public EaseFunction getDefaultEaseFunction() {
+        return defaultEaseFunction;
     }
 
     @Override

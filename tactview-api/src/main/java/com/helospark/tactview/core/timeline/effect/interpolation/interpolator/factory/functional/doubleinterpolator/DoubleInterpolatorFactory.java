@@ -1,11 +1,11 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.DoubleInterpolator;
-import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 
 public interface DoubleInterpolatorFactory {
 
-    public DoubleInterpolator createInterpolator(DoubleProvider previousInterpolator);
+    public DoubleInterpolator createInterpolator(KeyframeableEffect<?> previousInterpolator, DoubleInterpolator doubleInterpolator);
 
     public String getId();
 

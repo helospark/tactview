@@ -11,7 +11,7 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.EaseFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.mixed.MixedDoubleInterpolator;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.commands.impl.ChangeEasingCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ChangeDefaultEasingCommand;
 
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -19,11 +19,11 @@ import javafx.scene.control.RadioMenuItem;
 
 @Component
 @Order(50)
-public class EasingInterpolatorContextMenuItem implements PropertyValueContextMenuItem {
+public class DefaultEasingInterpolatorContextMenuItem implements PropertyValueContextMenuItem {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
 
-    public EasingInterpolatorContextMenuItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+    public DefaultEasingInterpolatorContextMenuItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
     }
@@ -41,7 +41,7 @@ public class EasingInterpolatorContextMenuItem implements PropertyValueContextMe
     }
 
     public Menu createInterpolators(String id, TimelinePosition timelinePosition) {
-        Menu menu = new Menu("Change easing");
+        Menu menu = new Menu("Default easing function");
 
         List<MenuItem> menuItems = createMenuItems(id, timelinePosition);
 
@@ -56,17 +56,14 @@ public class EasingInterpolatorContextMenuItem implements PropertyValueContextMe
                 .map(easing -> {
                     RadioMenuItem menuItem = new RadioMenuItem(easing.getId());
                     menuItem.setOnAction(e -> {
-                        ChangeEasingCommand interpolatorChangedCommand = ChangeEasingCommand.builder()
+                        ChangeDefaultEasingCommand interpolatorChangedCommand = ChangeDefaultEasingCommand.builder()
                                 .withDescriptorId(id)
-                                .withPosition(timelinePosition)
                                 .withNewEasingId(easing.getId())
                                 .withEffectParametersRepository(effectParametersRepository)
                                 .build();
                         commandInterpreter.sendWithResult(interpolatorChangedCommand);
                     });
-                    boolean isSelected = mixedInterpolator.getEasingAt(timelinePosition)
-                            .map(a -> a.getValue().getEaseFunction().equals(easing))
-                            .orElse(false);
+                    boolean isSelected = mixedInterpolator.getDefaultEaseFunction().equals(easing);
                     menuItem.setSelected(isSelected);
                     return menuItem;
                 })

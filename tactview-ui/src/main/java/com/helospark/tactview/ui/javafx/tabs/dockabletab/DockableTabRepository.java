@@ -111,6 +111,8 @@ public class DockableTabRepository {
                 DetachableTabPane mainStage = findMainStageTabPane();
                 mainStage.openStage(tab);
             }
+        } else {
+            optionalTabPane.get().getSelectionModel().select(request.tabToOpen);
         }
     }
 
