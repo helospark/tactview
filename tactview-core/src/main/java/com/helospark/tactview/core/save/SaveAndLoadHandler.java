@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.save;
 
+import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,10 +16,19 @@ public class SaveAndLoadHandler extends AbstractSaveHandler {
         super(SAVEDATA_FILENAME, context);
     }
 
-    @Override
-    protected void queryAdditionalDataToSave(Map<String, Object> result, SaveMetadata saveMetadata) {
+    public void save(SaveRequest saveRequest) {
+        File rootDirectory = createRootDirectory();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        SaveMetadata saveMetadata = new SaveMetadata(saveRequest.isPackageAllContent());
+
         context.getListOfBeans(SaveLoadContributor.class)
                 .forEach(a -> a.generateSavedContent(result, saveMetadata));
+
+        createSavePackageFromResultt(saveRequest, rootDirectory, result, saveMetadata);
+
+        deleteDirectory(rootDirectory);
     }
 
     @Override

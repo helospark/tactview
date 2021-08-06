@@ -23,13 +23,15 @@ public class SubtimelineFromTimelineFactory {
     private TimelineManagerAccessor timelineManager;
     private TimelineChannelsState timelineChannelsState;
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
+    private SubtimelineHelper subtimelineHelper;
 
     public SubtimelineFromTimelineFactory(ProjectRepository projectRepository, TimelineManagerAccessor timelineManager, TimelineChannelsState timelineChannelsState,
-            TimelineManagerAccessorFactory timelineManagerAccessorFactory) {
+            TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineHelper subtimelineHelper) {
         this.projectRepository = projectRepository;
         this.timelineManager = timelineManager;
         this.timelineChannelsState = timelineChannelsState;
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
+        this.subtimelineHelper = subtimelineHelper;
     }
 
     public SubtimelineVisualClip createSubtimelineVideoClipFromCurrentTimeline(Set<ExposedDescriptorDescriptor> exposedDescriptors) {
@@ -47,7 +49,7 @@ public class SubtimelineFromTimelineFactory {
                 .map(a -> a.butWithId(cloneMetadata.getPreviousId(a.getId())))
                 .collect(Collectors.toSet());
 
-        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, clonedState, timelineManagerAccessorFactory, fixedExposedDescriptors,
+        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, clonedState, timelineManagerAccessorFactory, subtimelineHelper, fixedExposedDescriptors,
                 TimelinePosition.ofZero(),
                 length);
 
@@ -56,7 +58,7 @@ public class SubtimelineFromTimelineFactory {
         return result;
     }
 
-    public SubtimelineAudioClip createSubtimelineAudioClipFromCurrentTimeline() {
+    public SubtimelineAudioClip createSubtimelineAudioClipFromCurrentTimeline(Set<ExposedDescriptorDescriptor> exposedDescriptors) {
         TimelineLength length = timelineManager.findEndPosition().toLength();
         AudioMediaMetadata metadata = AudioMediaMetadata.builder()
                 .withBitRate(timelineManager.findMaximumAudioBitRate())
@@ -66,7 +68,9 @@ public class SubtimelineFromTimelineFactory {
                 .withSampleRate(projectRepository.getBytesPerSample())
                 .build();
 
-        SubtimelineAudioClip result = new SubtimelineAudioClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, TimelinePosition.ofZero(),
+        SubtimelineAudioClip result = new SubtimelineAudioClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, subtimelineHelper,
+                exposedDescriptors,
+                TimelinePosition.ofZero(),
                 length);
         result.setCreatorFactoryId(SubtimelineAudioClipFactory.ID);
         return result;

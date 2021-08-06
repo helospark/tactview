@@ -9,8 +9,8 @@ import com.helospark.tactview.core.save.TemplateSaveAndLoadHandler;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.ClipFactory;
 import com.helospark.tactview.core.timeline.TimelineClip;
+import com.helospark.tactview.core.timeline.subtimeline.SubtimelineHelper;
 import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorFactory;
-import com.helospark.tactview.core.timeline.subtimeline.audio.SubtimelineAudioClip;
 import com.helospark.tactview.core.timeline.subtimeline.loadhelper.LoadData;
 import com.helospark.tactview.core.timeline.subtimeline.loadhelper.SubtimelineLoadFileService;
 
@@ -20,28 +20,30 @@ public class SubtimelineVisualClipFactory implements ClipFactory {
 
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
     private SubtimelineLoadFileService subtimelineLoadFileService;
+    private SubtimelineHelper subtimelineHelper;
 
-    public SubtimelineVisualClipFactory(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineLoadFileService subtimelineLoadFileService) {
+    public SubtimelineVisualClipFactory(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineLoadFileService subtimelineLoadFileService, SubtimelineHelper subtimelineHelper) {
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
         this.subtimelineLoadFileService = subtimelineLoadFileService;
+        this.subtimelineHelper = subtimelineHelper;
     }
 
     @Override
     public boolean doesSupport(AddClipRequest request) {
-        return request.containsFile() && request.getFilePath().endsWith("." + TemplateSaveAndLoadHandler.TEMPLATE_FILE_EXTENSION); // TODO: check content if there is track
+        return subtimelineHelper.containsSubtimeline(request, TemplateSaveAndLoadHandler.VIDEO_TRACK_NODE);
     }
 
     @Override
     public MediaMetadata readMetadata(AddClipRequest request) {
         LoadData loadData = subtimelineLoadFileService.getLoadData(request, TemplateSaveAndLoadHandler.VIDEO_TRACK_NODE);
-        return SubtimelineAudioClip.readMetadata(loadData.tree.get(0), loadData.loadMetadata);
+        return SubtimelineHelper.readMetadata(loadData.tree.get(0), loadData.loadMetadata, SubtimelineVisualMetadata.class);
     }
 
     @Override
     public TimelineClip createClip(AddClipRequest request) {
         LoadData loadData = subtimelineLoadFileService.getLoadData(request, TemplateSaveAndLoadHandler.VIDEO_TRACK_NODE);
 
-        return new SubtimelineVisualClip(timelineManagerAccessorFactory, loadData.tree, loadData.loadMetadata).cloneClip(CloneRequestMetadata.ofDefault());
+        return new SubtimelineVisualClip(timelineManagerAccessorFactory, subtimelineHelper, loadData.tree, loadData.loadMetadata).cloneClip(CloneRequestMetadata.ofDefault());
     }
 
     @Override
@@ -51,7 +53,7 @@ public class SubtimelineVisualClipFactory implements ClipFactory {
 
     @Override
     public TimelineClip restoreClip(JsonNode savedClip, LoadMetadata loadMetadata) {
-        return new SubtimelineVisualClip(timelineManagerAccessorFactory, savedClip, loadMetadata);
+        return new SubtimelineVisualClip(timelineManagerAccessorFactory, subtimelineHelper, savedClip, loadMetadata);
     }
 
 }

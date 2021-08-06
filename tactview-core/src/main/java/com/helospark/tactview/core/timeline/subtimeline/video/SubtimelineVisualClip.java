@@ -3,9 +3,7 @@ package com.helospark.tactview.core.timeline.subtimeline.video;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,6 +27,7 @@ import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
+import com.helospark.tactview.core.timeline.subtimeline.SubtimelineHelper;
 import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorFactory;
 
 public class SubtimelineVisualClip extends VisualTimelineClip {
@@ -36,14 +35,17 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
     private TimelineManagerRenderService timelineManagerRenderService;
     private TimelineChannelsState timelineState;
     private TimelineManagerAccessorFactory timelineManagerAccessorFactory;
+    private SubtimelineHelper subtimelineHelper;
 
     private Set<ExposedDescriptorDescriptor> enabledDescriptors = new HashSet<>();
 
     public SubtimelineVisualClip(SubtimelineVisualMetadata metadata, TimelineChannelsState timelineState, TimelineManagerAccessorFactory timelineManagerAccessorFactory,
+            SubtimelineHelper subtimelineHelper,
             Set<ExposedDescriptorDescriptor> descriptorIds,
             TimelinePosition position,
             TimelineLength length) {
         super(metadata, new TimelineInterval(position, length), TimelineClipType.IMAGE);
+        this.subtimelineHelper = subtimelineHelper;
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
         this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineState);
         this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor);
@@ -54,21 +56,19 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
 
     public SubtimelineVisualClip(SubtimelineVisualClip clip, CloneRequestMetadata cloneRequestMetadata) {
         super(clip, cloneRequestMetadata);
+        this.subtimelineHelper = clip.subtimelineHelper;
         this.timelineState = clip.timelineState.deepClone(cloneRequestMetadata);
         this.timelineManagerAccessorFactory = clip.timelineManagerAccessorFactory;
         this.timelineManagerAccessor = clip.timelineManagerAccessorFactory.createAccessor(this.timelineState);
         this.timelineManagerRenderService = clip.timelineManagerAccessorFactory.createRenderService(this.timelineState, timelineManagerAccessor);
 
-        if (!cloneRequestMetadata.isDeepCloneId()) {
-            enabledDescriptors = clip.enabledDescriptors.stream()
-                    .map(a -> a.butWithId(cloneRequestMetadata.getPreviousId(a.getId())))
-                    .collect(Collectors.toSet());
-        }
+        this.enabledDescriptors = subtimelineHelper.copyExposedDescriptors(cloneRequestMetadata, clip.enabledDescriptors);
     }
 
-    public SubtimelineVisualClip(TimelineManagerAccessorFactory timelineManagerAccessorFactory, JsonNode savedClip, LoadMetadata loadMetadata) {
-        super(readMetadata(savedClip, loadMetadata), savedClip, loadMetadata);
+    public SubtimelineVisualClip(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineHelper subtimelineHelper, JsonNode savedClip, LoadMetadata loadMetadata) {
+        super(SubtimelineHelper.readMetadata(savedClip, loadMetadata, SubtimelineVisualMetadata.class), savedClip, loadMetadata);
         this.timelineState = new TimelineChannelsState();
+        this.subtimelineHelper = subtimelineHelper;
         this.timelineManagerAccessorFactory = timelineManagerAccessorFactory;
         this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineState);
         this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor);
@@ -78,15 +78,6 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
             ObjectReader reader = loadMetadata.getObjectMapperUsed().readerFor(new TypeReference<Set<ExposedDescriptorDescriptor>>() {
             });
             this.enabledDescriptors = reader.readValue(savedClip.get("exposedDescriptors"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static SubtimelineVisualMetadata readMetadata(JsonNode savedClip, LoadMetadata loadMetadata) {
-        try {
-            var reader = loadMetadata.getObjectMapperUsed().readerFor(SubtimelineVisualMetadata.class);
-            return reader.readValue(savedClip.get("metadata"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -141,29 +132,9 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
-        for (var channel : this.timelineManagerAccessor.getChannels()) {
-            for (var clip : channel.getAllClips()) {
-                for (var descriptor : clip.getDescriptors()) {
-                    Optional<ExposedDescriptorDescriptor> enabledDescriptorProperty = findDescriptorById(descriptor.getKeyframeableEffect().getId());
-                    if (enabledDescriptorProperty.isPresent()) {
-                        ValueProviderDescriptor newDescriptor = ValueProviderDescriptor.builderFrom(descriptor)
-                                .withName(Optional.ofNullable(enabledDescriptorProperty.get().getName()).orElse(descriptor.getName()))
-                                .withGroup(Optional.ofNullable(enabledDescriptorProperty.get().getGroup()).orElse(clip.getClass().getSimpleName() + " " + descriptor.getGroup() + " properties"))
-                                .build();
-                        result.add(newDescriptor);
-                    }
-                }
-            }
-        }
+        subtimelineHelper.addDescriptorsFromTimeline(result, this.timelineManagerAccessor, enabledDescriptors);
 
         return result;
-    }
-
-    private Optional<ExposedDescriptorDescriptor> findDescriptorById(String id) {
-        return enabledDescriptors
-                .stream()
-                .filter(a -> a.getId().equals(id))
-                .findFirst();
     }
 
 }

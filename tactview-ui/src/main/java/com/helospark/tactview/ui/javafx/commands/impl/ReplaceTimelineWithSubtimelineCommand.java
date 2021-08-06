@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -19,6 +20,7 @@ public class ReplaceTimelineWithSubtimelineCommand implements UiCommand {
     private SubtimelineFromTimelineFactory subtimelineFromTimelineFactory;
     private TimelineManagerAccessor timelineManagerAccessor;
     private LinkClipRepository linkClipRepository;
+    private ProjectRepository projectRepository;
 
     private List<ChannelClipPair> clipsRemoved = new ArrayList<>();
     private List<String> addedIds = new ArrayList<>();
@@ -26,18 +28,25 @@ public class ReplaceTimelineWithSubtimelineCommand implements UiCommand {
     private Set<ExposedDescriptorDescriptor> exposedDescriptors;
 
     public ReplaceTimelineWithSubtimelineCommand(SubtimelineFromTimelineFactory subtimelineFromTimelineFactory, TimelineManagerAccessor timelineManagerAccessor,
-            LinkClipRepository linkClipRepository, Set<ExposedDescriptorDescriptor> exposedDescriptors) {
+            LinkClipRepository linkClipRepository, Set<ExposedDescriptorDescriptor> exposedDescriptors, ProjectRepository projectRepository) {
         this.subtimelineFromTimelineFactory = subtimelineFromTimelineFactory;
         this.timelineManagerAccessor = timelineManagerAccessor;
         this.linkClipRepository = linkClipRepository;
         this.exposedDescriptors = exposedDescriptors;
+        this.projectRepository = projectRepository;
     }
 
     @Override
     public void execute() {
         synchronized (timelineManagerAccessor.getFullLock()) {
-            SubtimelineVisualClip newVideoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(exposedDescriptors);
-            SubtimelineAudioClip newAudioClip = subtimelineFromTimelineFactory.createSubtimelineAudioClipFromCurrentTimeline();
+            SubtimelineVisualClip newVideoClip = null;
+            SubtimelineAudioClip newAudioClip = null;
+            if (projectRepository.isVideoInitialized()) {
+                newVideoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(exposedDescriptors);
+            }
+            if (projectRepository.isAudioInitialized()) {
+                newAudioClip = subtimelineFromTimelineFactory.createSubtimelineAudioClipFromCurrentTimeline(exposedDescriptors);
+            }
 
             for (var id : timelineManagerAccessor.getAllClipIds()) {
                 TimelineChannel channel = timelineManagerAccessor.findChannelForClipId(id).get();
@@ -46,13 +55,18 @@ public class ReplaceTimelineWithSubtimelineCommand implements UiCommand {
                 timelineManagerAccessor.removeClip(id);
             }
 
-            timelineManagerAccessor.addClip(timelineManagerAccessor.getChannels().get(0), newVideoClip);
-            addedIds.add(newVideoClip.getId());
+            if (newVideoClip != null) {
+                timelineManagerAccessor.addClip(timelineManagerAccessor.getChannels().get(0), newVideoClip);
+                addedIds.add(newVideoClip.getId());
+            }
 
-            timelineManagerAccessor.addClip(timelineManagerAccessor.getChannels().get(1), newAudioClip);
-            addedIds.add(newAudioClip.getId());
-
-            linkClipRepository.linkClip(newVideoClip.getId(), newAudioClip.getId());
+            if (newAudioClip != null) {
+                timelineManagerAccessor.addClip(timelineManagerAccessor.getChannels().get(1), newAudioClip);
+                addedIds.add(newAudioClip.getId());
+            }
+            if (newVideoClip != null && newAudioClip != null) {
+                linkClipRepository.linkClip(newVideoClip.getId(), newAudioClip.getId());
+            }
         }
     }
 

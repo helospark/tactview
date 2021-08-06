@@ -1,14 +1,14 @@
 package com.helospark.tactview.core.save;
 
+import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
-import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
 import com.helospark.tactview.core.timeline.subtimeline.audio.SubtimelineAudioClip;
 import com.helospark.tactview.core.timeline.subtimeline.video.SubtimelineVisualClip;
@@ -21,28 +21,46 @@ public class TemplateSaveAndLoadHandler extends AbstractSaveHandler {
     public static final String TEMPLATE_FILE_EXTENSION = "tvt";
     private SubtimelineFromTimelineFactory subtimelineFromTimelineFactory;
     private TimelineManagerAccessor timelineManagerAccessor;
+    private ProjectRepository projectRepository;
 
     public TemplateSaveAndLoadHandler(SubtimelineFromTimelineFactory subtimelineFromTimelineFactory, LightDiContext context,
-            TimelineManagerAccessor timelineManagerAccessor) {
+            TimelineManagerAccessor timelineManagerAccessor, ProjectRepository projectRepository) {
         super(TEMPLATE_FILE_NAME, context);
         this.subtimelineFromTimelineFactory = subtimelineFromTimelineFactory;
         this.timelineManagerAccessor = timelineManagerAccessor;
+        this.projectRepository = projectRepository;
     }
 
-    @Override
-    protected void queryAdditionalDataToSave(Map<String, Object> result, SaveMetadata saveMetadata) {
-        Set<ExposedDescriptorDescriptor> asd = this.timelineManagerAccessor.getChannels()
-                .stream()
-                .flatMap(a -> a.getAllClips().stream())
-                .flatMap(a -> a.getDescriptors().stream())
-                .map(a -> ExposedDescriptorDescriptor.builder().withId(a.getKeyframeableEffect().getId()).build())
-                .collect(Collectors.toSet());
+    public void save(SaveTemplateRequest saveTemplateRequest) {
+        File rootDirectory = createRootDirectory();
 
-        SubtimelineVisualClip videoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(asd);
-        SubtimelineAudioClip audioClip = subtimelineFromTimelineFactory.createSubtimelineAudioClipFromCurrentTimeline();
+        Map<String, Object> result = new LinkedHashMap<>();
 
-        result.put(VIDEO_TRACK_NODE, videoClip.generateSavedContent(saveMetadata));
-        result.put(AUDIO_TRACK_NODE, audioClip.generateSavedContent(saveMetadata));
+        SaveMetadata saveMetadata = new SaveMetadata(saveTemplateRequest.isPackageAllContent());
+
+        queryAdditionalDataToSave(result, saveMetadata, saveTemplateRequest);
+
+        SaveRequest saveRequest = SaveRequest
+                .builder()
+                .withFileName(saveTemplateRequest.getFileName())
+                .withPackageAllContent(saveTemplateRequest.isPackageAllContent())
+                .build();
+
+        createSavePackageFromResultt(saveRequest, rootDirectory, result, saveMetadata);
+
+        deleteDirectory(rootDirectory);
+    }
+
+    protected void queryAdditionalDataToSave(Map<String, Object> result, SaveMetadata saveMetadata, SaveTemplateRequest saveTemplateRequest) {
+
+        if (projectRepository.isVideoInitialized()) {
+            SubtimelineVisualClip videoClip = subtimelineFromTimelineFactory.createSubtimelineVideoClipFromCurrentTimeline(saveTemplateRequest.getExposedDescriptors());
+            result.put(VIDEO_TRACK_NODE, videoClip.generateSavedContent(saveMetadata));
+        }
+        if (projectRepository.isAudioInitialized()) {
+            SubtimelineAudioClip audioClip = subtimelineFromTimelineFactory.createSubtimelineAudioClipFromCurrentTimeline(saveTemplateRequest.getExposedDescriptors());
+            result.put(AUDIO_TRACK_NODE, audioClip.generateSavedContent(saveMetadata));
+        }
 
         context.getListOfBeans(SaveLoadContributor.class)
                 .stream()
@@ -57,6 +75,10 @@ public class TemplateSaveAndLoadHandler extends AbstractSaveHandler {
                 .filter(a -> !a.getClass().equals(TimelineManagerAccessor.class))
                 .forEach(a -> a.loadFrom(tree, loadMetadata));
 
-        timelineManagerAccessor.loadFrom(tree.get(VIDEO_TRACK_NODE), loadMetadata);
+        if (tree.get(VIDEO_TRACK_NODE) != null) {
+            timelineManagerAccessor.loadFrom(tree.get(VIDEO_TRACK_NODE), loadMetadata);
+        } else {
+            timelineManagerAccessor.loadFrom(tree.get(AUDIO_TRACK_NODE), loadMetadata);
+        }
     }
 }

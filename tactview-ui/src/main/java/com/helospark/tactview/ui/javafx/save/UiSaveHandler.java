@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.save;
 
 import java.io.File;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 
@@ -10,8 +11,11 @@ import com.helospark.tactview.core.persistentstate.PersistentState;
 import com.helospark.tactview.core.save.DirtyRepository;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.save.SaveRequest;
+import com.helospark.tactview.core.save.SaveTemplateRequest;
 import com.helospark.tactview.core.save.TemplateSaveAndLoadHandler;
+import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.ui.javafx.menu.defaultmenus.subtimeline.SubtimelineSelectWindowOpener;
 import com.helospark.tactview.ui.javafx.save.QuerySaveFilenameService.QuerySaveFileNameRequest;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 
@@ -24,13 +28,15 @@ public class UiSaveHandler {
     private AlertDialogFactory alertDialogFactory;
     private RecentlyAccessedRepository recentlyAccessedRepository;
     private QuerySaveFilenameService querySaveFilenameService;
+    private SubtimelineSelectWindowOpener subtimelineWindowOpener;
     @Slf4j
     private Logger logger;
     @PersistentState
     String lastOpenedDirectoryName;
 
     public UiSaveHandler(SaveAndLoadHandler saveAndLoadHandler, CurrentProjectSavedFileRepository currentProjectSavedFileRepository, DirtyRepository dirtyRepository,
-            QuerySaveFilenameService querySaveFilenameService, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository, TemplateSaveAndLoadHandler templateSaveHandler) {
+            QuerySaveFilenameService querySaveFilenameService, AlertDialogFactory alertDialogFactory, RecentlyAccessedRepository recentlyAccessedRepository,
+            TemplateSaveAndLoadHandler templateSaveHandler, SubtimelineSelectWindowOpener subtimelineWindowOpener) {
         this.saveAndLoadHandler = saveAndLoadHandler;
         this.currentProjectSavedFileRepository = currentProjectSavedFileRepository;
         this.dirtyRepository = dirtyRepository;
@@ -38,6 +44,7 @@ public class UiSaveHandler {
         this.alertDialogFactory = alertDialogFactory;
         this.recentlyAccessedRepository = recentlyAccessedRepository;
         this.templateSaveHandler = templateSaveHandler;
+        this.subtimelineWindowOpener = subtimelineWindowOpener;
     }
 
     public boolean save() {
@@ -114,15 +121,26 @@ public class UiSaveHandler {
                 .build();
         Optional<String> fileName = querySaveFilenameService.queryUserAboutFileName(request);
         if (fileName.isPresent()) {
-            String resultFilePath = fileName.get();
-            if (!resultFilePath.endsWith(".tvt")) {
-                resultFilePath += ".tvt";
+            Optional<Set<ExposedDescriptorDescriptor>> result = subtimelineWindowOpener.openWindow();
+            if (result.isPresent()) {
+                String resultFilePath = fileName.get();
+                if (!resultFilePath.endsWith(".tvt")) {
+                    resultFilePath += ".tvt";
+                }
+                File resultFile = new File(resultFilePath);
+                lastOpenedDirectoryName = resultFile.getParentFile().getAbsolutePath();
+                templateSaveHandler.save(createSaveTemplateRequest(resultFilePath, result.get()));
+                dirtyRepository.setDirty(false);
             }
-            File resultFile = new File(resultFilePath);
-            lastOpenedDirectoryName = resultFile.getParentFile().getAbsolutePath();
-            templateSaveHandler.save(createSaveRequest(resultFilePath));
-            dirtyRepository.setDirty(false);
         }
+    }
+
+    protected SaveTemplateRequest createSaveTemplateRequest(String filePath, Set<ExposedDescriptorDescriptor> exposedDescriptors) {
+        return SaveTemplateRequest.builder()
+                .withFileName(filePath)
+                .withPackageAllContent(false)
+                .withExposedDescriptors(exposedDescriptors)
+                .build();
     }
 
     public String getLastOpenedDirectoryName() {

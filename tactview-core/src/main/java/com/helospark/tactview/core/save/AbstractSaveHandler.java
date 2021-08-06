@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -32,21 +31,9 @@ public abstract class AbstractSaveHandler {
         this.context = context;
     }
 
-    public void save(SaveRequest saveRequest) {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-        File rootDirectory = new File(tmpDir, "tactview_save_" + System.currentTimeMillis());
-        if (rootDirectory.exists() || rootDirectory.isDirectory()) {
-            deleteDirectory(rootDirectory);
-        }
-        rootDirectory.mkdirs();
+    protected void createSavePackageFromResultt(SaveRequest saveRequest, File rootDirectory, Map<String, Object> result, SaveMetadata saveMetadata) {
         File saveDataJson = new File(rootDirectory, saveFileName);
-
-        Map<String, Object> result = new LinkedHashMap<>();
-
-        SaveMetadata saveMetadata = new SaveMetadata(saveRequest.isPackageAllContent());
-
         try (FileOutputStream outstream = new FileOutputStream(saveDataJson)) {
-            queryAdditionalDataToSave(result, saveMetadata);
 
             ObjectMapper mapper = createObjectMapper(saveMetadata);
             String saveData = mapper.writeValueAsString(result);
@@ -85,11 +72,17 @@ public abstract class AbstractSaveHandler {
         resultFile.delete();
 
         ZipUtil.pack(rootDirectory, resultFile);
-
-        deleteDirectory(rootDirectory);
     }
 
-    protected abstract void queryAdditionalDataToSave(Map<String, Object> result, SaveMetadata saveMetadata);
+    protected File createRootDirectory() {
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        File rootDirectory = new File(tmpDir, "tactview_save_" + System.currentTimeMillis());
+        if (rootDirectory.exists() || rootDirectory.isDirectory()) {
+            deleteDirectory(rootDirectory);
+        }
+        rootDirectory.mkdirs();
+        return rootDirectory;
+    }
 
     protected ObjectMapper createObjectMapper(SaveMetadata saveMetadata) {
         ObjectMapper objectMapper = new ObjectMapper();

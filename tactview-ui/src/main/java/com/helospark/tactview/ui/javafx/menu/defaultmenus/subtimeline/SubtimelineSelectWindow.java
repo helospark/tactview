@@ -115,8 +115,8 @@ public class SubtimelineSelectWindow {
 
         ButtonBar result = new ButtonBar();
 
-        ButtonBar.setButtonData(closeButton, ButtonData.CANCEL_CLOSE);
-        ButtonBar.setButtonData(saveAndRestartButton, ButtonData.APPLY);
+        ButtonBar.setButtonData(closeButton, ButtonData.LEFT);
+        ButtonBar.setButtonData(saveAndRestartButton, ButtonData.RIGHT);
 
         result.getButtons().addAll(closeButton, saveAndRestartButton);
         return result;
