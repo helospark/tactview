@@ -401,9 +401,9 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
     @Bean
     @Order(5000)
     public SelectableMenuContribution hotKeyContributionMenuItem(PreferencesPage preferencesPage, HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService,
-            RestartDialogOpener restartDialogOpener, CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
+            RestartDialogOpener restartDialogOpener, CurrentlyPressedKeyRepository currentlyPressedKeyRepository, AlertDialogFactory alertDialogFactory) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "Hotkeys"), event -> {
-            new HotKeyRemapWindow(hotKeyRepository, stylesheetAdderService, restartDialogOpener).open(scene);
+            new HotKeyRemapWindow(hotKeyRepository, stylesheetAdderService, restartDialogOpener, alertDialogFactory).open(scene);
         });
     }
 

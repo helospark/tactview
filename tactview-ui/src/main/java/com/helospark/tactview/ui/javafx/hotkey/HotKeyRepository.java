@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.hotkey;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,38 @@ public class HotKeyRepository {
     public void changeHotKeyForId(String id, KeyCodeCombination combination) {
         KeyDescriptor keyDescriptor = descriptors.get(id);
         descriptors.put(id, keyDescriptor.butWithCombination(combination));
+
+        Map<KeyCodeCombination, List<String>> collisions = calculateHotkeyCollisions();
+        if (collisions.size() > 0) {
+            LOGGER.warn("Collision with hotkeys " + collisions);
+        }
+    }
+
+    public boolean hasCollision() {
+        return calculateHotkeyCollisions().size() > 0;
+    }
+
+    public Map<KeyCodeCombination, List<String>> calculateHotkeyCollisions() {
+        Map<KeyCodeCombination, List<String>> combinationToName = new HashMap<>();
+
+        for (var descriptor : descriptors.values()) {
+            List<String> count = countByDescriptor(descriptors, descriptor.getCombination());
+            if (count.size() > 1) {
+                combinationToName.put(descriptor.getCombination(), count);
+            }
+        }
+
+        return combinationToName;
+    }
+
+    private List<String> countByDescriptor(Map<String, KeyDescriptor> descriptors, KeyCodeCombination combination) {
+        List<String> result = new ArrayList<>();
+        for (var element : descriptors.values()) {
+            if (element.getCombination().equals(combination)) {
+                result.add(element.getName());
+            }
+        }
+        return result;
     }
 
     private class KeyCodeCombinationDeserializer extends JsonDeserializer<KeyCodeCombination> {

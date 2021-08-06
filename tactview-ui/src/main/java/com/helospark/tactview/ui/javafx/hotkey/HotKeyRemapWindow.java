@@ -10,11 +10,15 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import com.helospark.tactview.ui.javafx.plugin.RestartDialogOpener;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonBar.ButtonData;
@@ -47,6 +51,7 @@ public class HotKeyRemapWindow {
     private HotKeyRepository hotKeyRepository;
     private StylesheetAdderService stylesheetAdderService;
     private RestartDialogOpener restartDialogOpener;
+    private AlertDialogFactory alertDialogFactory;
 
     private Stage stage;
     private BorderPane pane;
@@ -55,10 +60,11 @@ public class HotKeyRemapWindow {
     private Optional<String> editingId = Optional.empty();
     private Set<KeyCode> pressedKeys = new HashSet<>();
 
-    public HotKeyRemapWindow(HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService, RestartDialogOpener restartDialogOpener) {
+    public HotKeyRemapWindow(HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService, RestartDialogOpener restartDialogOpener, AlertDialogFactory alertDialogFactory) {
         this.hotKeyRepository = hotKeyRepository;
         this.stylesheetAdderService = stylesheetAdderService;
         this.restartDialogOpener = restartDialogOpener;
+        this.alertDialogFactory = alertDialogFactory;
     }
 
     public Scene createScene() {
@@ -103,12 +109,18 @@ public class HotKeyRemapWindow {
                 if (event.isShiftDown()) {
                     modifiers.add(KeyCombination.SHIFT_DOWN);
                 }
-                if (event.isShortcutDown()) {
+                if (event.isShortcutDown() && SystemUtils.IS_OS_MAC) {
                     modifiers.add(KeyCombination.SHORTCUT_DOWN);
                 }
                 KeyCodeCombination combination = new KeyCodeCombination(event.getCode(), modifiers.toArray(new Modifier[0]));
 
                 hotKeyRepository.changeHotKeyForId(editingId.get(), combination);
+
+                Map<KeyCodeCombination, List<String>> hotkeyCollisions = hotKeyRepository.calculateHotkeyCollisions();
+                if (hotkeyCollisions.containsKey(combination)) {
+                    alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.WARNING, "Collision between hotkeys", "There are collisions between " + hotkeyCollisions.values()).show();
+                }
+
                 editingId = Optional.empty();
                 reloadContent();
             }
