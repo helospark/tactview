@@ -11,6 +11,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -27,6 +28,7 @@ public abstract class AbstractSearchableTabFactory implements TabFactory {
     @Override
     public Tab createTabContent() {
         BorderPane borderPane = new BorderPane();
+        borderPane.setOnDragOver(event -> event.acceptTransferModes(TransferMode.ANY));
 
         FlowPane effectTabContent = new FlowPane(Orientation.HORIZONTAL, 5, 5);
 

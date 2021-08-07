@@ -26,6 +26,7 @@ import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineU
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.TransferMode;
 
 @Component
 public class TimelineCanvasOnDragOverHandler {
@@ -108,6 +109,7 @@ public class TimelineCanvasOnDragOverHandler {
     public boolean onDrag(double x, double y, boolean finished, TimelineCanvasOnDragOverHandlerRequest request) {
         TimelinePosition position = request.xPosition;
         if ((dragRepository.currentEffectDragInformation() != null || dragRepository.currentlyDraggedClip() != null)) {
+            acceptTransferMode(request);
 
             if (!pressedKeyRepository.isKeyDown(KeyCode.CONTROL)) {
                 selectElementOnMouseDrag();
@@ -128,6 +130,7 @@ public class TimelineCanvasOnDragOverHandler {
                 dragRepository.currentlyDraggedClip().setLastPosition(position);
                 return true;
             } else if (dragRepository.currentEffectDragInformation() != null) {
+                acceptTransferMode(request);
                 if (dragRepository.isResizing()) {
                     TimelinePosition newX = position;
                     timelineDragAndDropHandler.resizeEffect(newX, finished);
@@ -146,6 +149,12 @@ public class TimelineCanvasOnDragOverHandler {
             }
         }
         return false;
+    }
+
+    private void acceptTransferMode(TimelineCanvasOnDragOverHandlerRequest request) {
+        if (request.event != null) {
+            request.event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+        }
     }
 
     private void selectElementOnMouseDrag() {
