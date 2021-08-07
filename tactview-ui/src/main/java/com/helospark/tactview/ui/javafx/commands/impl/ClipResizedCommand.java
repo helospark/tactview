@@ -2,7 +2,6 @@ package com.helospark.tactview.ui.javafx.commands.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +15,7 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.domain.ClipChannelPair;
 import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 public class ClipResizedCommand implements UiCommand {
@@ -27,7 +27,7 @@ public class ClipResizedCommand implements UiCommand {
 
     private TimelinePosition originalPosition;
     private TimelineInterval originalInterval;
-    private Set<MovedClip> clipsToMove = Set.of();
+    private Set<ClipChannelPair> clipsToMove = Set.of();
     private TimelinePosition lengthToJump;
     private TimelinePosition relativeMove;
 
@@ -81,7 +81,7 @@ public class ClipResizedCommand implements UiCommand {
                 }
                 clipsToMove = timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(ripplePosition, channels, clipIds)
                         .stream()
-                        .map(a -> new MovedClip(a, timelineManager.findChannelForClipId(a.getId()).get().getId()))
+                        .map(a -> new ClipChannelPair(a, timelineManager.findChannelForClipId(a.getId()).get().getId()))
                         .collect(Collectors.toSet());
 
             }
@@ -206,31 +206,6 @@ public class ClipResizedCommand implements UiCommand {
         return "ClipResizedCommand [timelineManager=" + timelineManager + ", clipIds=" + clipIds + ", position=" + position + ", left=" + left + ", originalPosition=" + originalPosition
                 + ", clipsToMove=" + clipsToMove + ", lengthToJump=" + lengthToJump + ", revertable=" + revertable + ", useSpecialPoints=" + useSpecialPoints + ", moreResizeExpected="
                 + moreResizeExpected + ", maximumJumpLength=" + maximumJumpLength + ", minimumSize=" + minimumSize + ", timelineEditMode=" + timelineEditMode + "]";
-    }
-
-    static class MovedClip {
-        TimelineClip clip;
-        String channel;
-
-        public MovedClip(TimelineClip clip, String channel) {
-            this.clip = clip;
-            this.channel = channel;
-        }
-
-        @Override
-        public boolean equals(final Object other) {
-            if (!(other instanceof MovedClip)) {
-                return false;
-            }
-            MovedClip castOther = (MovedClip) other;
-            return Objects.equals(clip, castOther.clip) && Objects.equals(channel, castOther.channel);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(clip, channel);
-        }
-
     }
 
     @Generated("SparkTools")

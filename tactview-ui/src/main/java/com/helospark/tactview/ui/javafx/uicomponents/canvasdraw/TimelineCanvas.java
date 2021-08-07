@@ -356,6 +356,7 @@ public class TimelineCanvas implements ScenePostProcessor {
                             .withChannel(findChannelAtPosition(x, y))
                             .withSelectedElement(findElementAt(x, y))
                             .withXPosition(TimelinePosition.ofSeconds(mapCanvasPixelToTime(x)))
+                            .withMouseEvent(event)
                             .build();
 
                     timelineCanvasOnDragOverHandler.onDrag(x, y, false, request);
@@ -376,6 +377,7 @@ public class TimelineCanvas implements ScenePostProcessor {
                         .withChannel(findChannelAtPosition(event.getX(), event.getY()))
                         .withSelectedElement(findElementAt(event.getX(), event.getY()))
                         .withXPosition(TimelinePosition.ofSeconds(mapCanvasPixelToTime(event.getX())))
+                        .withMouseEvent(event)
                         .build();
 
                 timelineCanvasOnDragOverHandler.onDrag(event.getX(), event.getY(), true, request);

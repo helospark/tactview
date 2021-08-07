@@ -1200,6 +1200,19 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return result;
     }
 
+    public TreeSet<TimelineClip> findClipLeftOfPositionIncludingPartialOnChannels(TimelinePosition position, List<Integer> channelIndices, List<String> excludedClipIds) {
+        TreeSet<TimelineClip> result = new TreeSet<>((a, b) -> a.getInterval().getEndPosition().compareTo(b.getInterval().getEndPosition()));
+        for (int channelIndex : channelIndices) {
+            var channel = getChannels().get(channelIndex);
+            for (var clip : channel.getAllClips()) {
+                if (clip.getInterval().getStartPosition().isLessOrEqualToThan(position) && !excludedClipIds.contains(clip.getId())) {
+                    result.add(clip);
+                }
+            }
+        }
+        return result;
+    }
+
     public List<TimelineClip> resolveClipIdsWithAllLinkedClip(List<String> clipIds) {
         Set<String> idsToResolve = new HashSet<>(clipIds);
         Set<String> newIds = new HashSet<>();

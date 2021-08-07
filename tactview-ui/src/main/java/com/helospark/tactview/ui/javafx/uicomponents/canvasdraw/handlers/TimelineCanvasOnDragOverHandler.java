@@ -19,12 +19,14 @@ import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragAdder;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineDragAndDropHandler;
+import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheElement;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheType;
 
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 
 @Component
@@ -36,11 +38,13 @@ public class TimelineCanvasOnDragOverHandler {
     private SelectedNodeRepository selectedNodeRepository;
     private EffectDragAdder effectDragAdder;
     private CurrentlyPressedKeyRepository pressedKeyRepository;
+    private TimelineState timelineState;
 
     private boolean isLoadingInprogress = false; // Move to repository class
 
     public TimelineCanvasOnDragOverHandler(TimelineManagerAccessor timelineAccessor, TimelineDragAndDropHandler timelineDragAndDropHandler, UiCommandInterpreterService commandInterpreter,
-            DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, EffectDragAdder effectDragAdder, CurrentlyPressedKeyRepository pressedKeyRepository) {
+            DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, EffectDragAdder effectDragAdder, CurrentlyPressedKeyRepository pressedKeyRepository,
+            TimelineState timelineState) {
         this.timelineAccessor = timelineAccessor;
         this.timelineDragAndDropHandler = timelineDragAndDropHandler;
         this.commandInterpreter = commandInterpreter;
@@ -48,10 +52,11 @@ public class TimelineCanvasOnDragOverHandler {
         this.selectedNodeRepository = selectedNodeRepository;
         this.effectDragAdder = effectDragAdder;
         this.pressedKeyRepository = pressedKeyRepository;
+        this.timelineState = timelineState;
     }
 
     public void onDragOver(TimelineCanvasOnDragOverHandlerRequest request) {
-        var event = request.event;
+        var event = request.event.get();
         Dragboard db = event.getDragboard();
 
         boolean hasFile = db.getFiles() != null && !db.getFiles().isEmpty();
@@ -124,7 +129,14 @@ public class TimelineCanvasOnDragOverHandler {
                     String channelId = request.channel
                             .map(a -> a.getId())
                             .orElse(timelineAccessor.getChannels().get(0).getId());
-                    timelineDragAndDropHandler.moveClip(channelId, finished, newX);
+                    Optional<TimelineClip> isInsertNeeded = getInsertBefore(request, channelId);
+
+                    if (isInsertNeeded.isPresent()) {
+                        timelineDragAndDropHandler.moveClip(channelId, true, newX); // so revert works properly
+                        timelineDragAndDropHandler.insertClipBefore(isInsertNeeded.get());
+                    } else {
+                        timelineDragAndDropHandler.moveClip(channelId, finished, newX);
+                    }
                 } else {
                     TimelinePosition newX = position;
                     TimelinePosition relativeMove = position.subtract(dragRepository.currentlyDraggedClip().getLastPosition());
@@ -154,10 +166,40 @@ public class TimelineCanvasOnDragOverHandler {
         return false;
     }
 
-    private void acceptTransferMode(TimelineCanvasOnDragOverHandlerRequest request) {
-        if (request.event != null) {
-            request.event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+    private Optional<TimelineClip> getInsertBefore(TimelineCanvasOnDragOverHandlerRequest request, String channelId) {
+        if (!request.selectedElement.isPresent()) {
+            return Optional.empty();
         }
+        if (!request.selectedElement.get().elementType.equals(TimelineUiCacheType.CLIP)) {
+            return Optional.empty();
+        }
+        if (!request.channel.isPresent()) {
+            return Optional.empty();
+        }
+        String currentlyDraggedClipId = dragRepository.currentlyDraggedClip().getClipId().get(0);
+        TimelineChannel timelineChannel = timelineAccessor.findChannelForClipId(currentlyDraggedClipId).get();
+        if (!(request.channel.isPresent() && timelineChannel.getId().equals(channelId))) {
+            return Optional.empty();
+        }
+
+        for (var clip : request.channel.get().getAllClips()) {
+            if (selectedNodeRepository.getSelectedClipIds().contains(clip.getId())) {
+                continue;
+            }
+            if (dragRepository.currentlyDraggedClip().getClipId().contains(clip.getId())) {
+                continue;
+            }
+
+            if (Math.abs(timelineState.secondsToPixelsWidthZoomAndTranslate(clip.getInterval().getStartPosition()) - request.getEventX()) < 10) {
+                return Optional.ofNullable(clip);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private void acceptTransferMode(TimelineCanvasOnDragOverHandlerRequest request) {
+        request.event.ifPresent(event -> event.acceptTransferModes(TransferMode.COPY_OR_MOVE));
     }
 
     private void selectElementOnMouseDrag() {
@@ -192,7 +234,8 @@ public class TimelineCanvasOnDragOverHandler {
     }
 
     public static class TimelineCanvasOnDragOverHandlerRequest {
-        DragEvent event;
+        Optional<DragEvent> event;
+        Optional<MouseEvent> mouseEvent;
         Optional<TimelineUiCacheElement> selectedElement;
         TimelinePosition xPosition;
         Optional<TimelineChannel> channel;
@@ -202,13 +245,23 @@ public class TimelineCanvasOnDragOverHandler {
             this.selectedElement = builder.selectedElement;
             this.xPosition = builder.xPosition;
             this.channel = builder.channel;
+            this.mouseEvent = builder.mouseEvent;
+        }
+
+        public double getEventX() {
+            if (event.isPresent()) {
+                return event.get().getX();
+            } else {
+                return mouseEvent.get().getX();
+            }
         }
 
         public static Builder builder() {
             return new Builder();
         }
         public static final class Builder {
-            private DragEvent event;
+            private Optional<DragEvent> event = Optional.empty();
+            private Optional<MouseEvent> mouseEvent = Optional.empty();
             private Optional<TimelineUiCacheElement> selectedElement = Optional.empty();
             private TimelinePosition xPosition;
             private Optional<TimelineChannel> channel = Optional.empty();
@@ -216,7 +269,12 @@ public class TimelineCanvasOnDragOverHandler {
             }
 
             public Builder withEvent(DragEvent event) {
-                this.event = event;
+                this.event = Optional.ofNullable(event);
+                return this;
+            }
+
+            public Builder withMouseEvent(MouseEvent event) {
+                this.mouseEvent = Optional.ofNullable(event);
                 return this;
             }
 
