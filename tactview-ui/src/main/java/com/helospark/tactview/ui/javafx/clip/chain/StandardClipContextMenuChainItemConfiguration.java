@@ -20,6 +20,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddScaleCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveEffectCommand;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
+import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 import javafx.scene.control.MenuItem;
@@ -105,19 +106,24 @@ public class StandardClipContextMenuChainItemConfiguration {
     @Bean
     @Order(0)
     public ClipContextMenuChainItem scaleToFrameMenuItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager, ProjectRepository projectRepository,
-            @Qualifier("scaleEffect") EffectFactory scaleFactory, EffectFactoryChain effectFactoryChain) {
+            @Qualifier("scaleEffect") EffectFactory scaleFactory, EffectFactoryChain effectFactoryChain, SelectedNodeRepository selectedNodeRepository) {
         return typeSupportingContextMenuItem(VisualTimelineClip.class, request -> {
             MenuItem scaleToImageMenuItem = new MenuItem("Scale to frame");
             scaleToImageMenuItem.setOnAction(e -> {
-                AddScaleCommand command = AddScaleCommand.builder()
-                        .withClipId(request.getPrimaryClip().getId())
-                        .withProjectRepository(projectRepository)
-                        .withScaleEffectFactory(scaleFactory)
-                        .withTimelineManager(timelineManager)
-                        .withEffectFactoryChain(effectFactoryChain)
-                        .build();
-
-                commandInterpreter.sendWithResult(command);
+                List<AddScaleCommand> commands = request.getAllClips()
+                        .stream()
+                        .map(a -> a.getId())
+                        .map(clipId -> AddScaleCommand.builder()
+                                .withClipId(clipId)
+                                .withProjectRepository(projectRepository)
+                                .withScaleEffectFactory(scaleFactory)
+                                .withTimelineManager(timelineManager)
+                                .withEffectFactoryChain(effectFactoryChain)
+                                .build())
+                        .collect(Collectors.toList());
+                if (commands.size() > 0) {
+                    commandInterpreter.sendWithResult(new CompositeCommand(commands));
+                }
             });
             return scaleToImageMenuItem;
         });

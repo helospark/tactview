@@ -13,14 +13,12 @@ import com.helospark.tactview.core.timeline.marker.markers.InpointMarker;
 import com.helospark.tactview.core.timeline.marker.markers.Marker;
 import com.helospark.tactview.core.timeline.marker.markers.OutpointMarker;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
-import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Window;
@@ -29,22 +27,20 @@ import javafx.stage.Window;
 public class TimelineCanvasTimelineHeaderClickHandler {
     private UiTimelineManager uiTimelineManager;
     private MarkerRepository markerRepository;
-    private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
     private TimelineState timelineState;
     private AlertDialogFactory dialogFactory;
 
-    public TimelineCanvasTimelineHeaderClickHandler(UiTimelineManager uiTimelineManager, MarkerRepository markerRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository,
+    public TimelineCanvasTimelineHeaderClickHandler(UiTimelineManager uiTimelineManager, MarkerRepository markerRepository,
             TimelineState timelineState, AlertDialogFactory dialogFactory) {
         this.uiTimelineManager = uiTimelineManager;
         this.markerRepository = markerRepository;
-        this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
         this.timelineState = timelineState;
         this.dialogFactory = dialogFactory;
     }
 
     public void onHeaderClick(TimelineCanvasTimelineHeaderClickHandlerRequest request) {
         MouseEvent event = request.event;
-        boolean isControlDown = currentlyPressedKeyRepository.isKeyDown(KeyCode.CONTROL);
+        boolean isControlDown = event.isControlDown();
 
         if (event.getButton().equals(MouseButton.PRIMARY) && !isControlDown) {
             uiTimelineManager.jumpAbsolute(request.position.getSeconds());
