@@ -17,6 +17,9 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.marker.MarkerRepository;
+import com.helospark.tactview.core.timeline.marker.markers.GeneralMarker;
+import com.helospark.tactview.core.timeline.marker.markers.InpointMarker;
+import com.helospark.tactview.core.timeline.marker.markers.OutpointMarker;
 import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -47,6 +50,7 @@ import javafx.scene.input.KeyCombination;
 
 @Configuration
 public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
+    private static final String MARKER = "Marker";
     private static final String CUT_MENU_ITEM = "Cut";
     public static final String EDIT_ROOT = "_Edit";
     public static final String SELECT_ROOT = "_Select";
@@ -309,6 +313,54 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
                 .getCombination();
         return new DefaultMenuContribution(List.of(EDIT_ROOT, CUT_MENU_ITEM, title), event -> {
             uiCutHandler.cutSelectedUntilCursor(false);
+        }, combination);
+    }
+
+    @Bean
+    @Order(1930)
+    public SeparatorMenuContribution beforeMarkersSeparatorContribution() {
+        return new SeparatorMenuContribution(List.of(EDIT_ROOT));
+    }
+
+    @Bean
+    @Order(1940)
+    public SelectableMenuContribution addInpointMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, MarkerRepository markerRepository) {
+        KeyCodeCombination combination = hotKeyRepository
+                .registerOrGetHotKey("addInpoint", new KeyCodeCombination(KeyCode.I, KeyCodeCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), "Add inpoint").getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, MARKER, "Add inpoint"), event -> {
+            TimelinePosition position = timelineState.getPlaybackPosition();
+
+            markerRepository.addMarker(position, new InpointMarker());
+        }, combination);
+    }
+
+    @Bean
+    @Order(1941)
+    public SelectableMenuContribution addOutpointMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, MarkerRepository markerRepository) {
+        String name = "Add outpoint";
+        KeyCodeCombination combination = hotKeyRepository
+                .registerOrGetHotKey(name, new KeyCodeCombination(KeyCode.O, KeyCodeCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), name).getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, MARKER, name), event -> {
+            TimelinePosition position = timelineState.getPlaybackPosition();
+
+            markerRepository.addMarker(position, new OutpointMarker());
+        }, combination);
+    }
+
+    @Bean
+    @Order(1942)
+    public SelectableMenuContribution addGeneralMarkerMenuItem(AlertDialogFactory dialogFactory, TimelineState timelineState, MarkerRepository markerRepository) {
+        String name = "Add marker";
+        KeyCodeCombination combination = hotKeyRepository
+                .registerOrGetHotKey(name, new KeyCodeCombination(KeyCode.M, KeyCodeCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN), name).getCombination();
+        return new DefaultMenuContribution(List.of(EDIT_ROOT, MARKER, name), event -> {
+            TimelinePosition position = timelineState.getPlaybackPosition();
+
+            Optional<String> result = dialogFactory.showTextInputDialog("Add marker", "Label of marker", "Something interesting");
+
+            if (result.isPresent()) {
+                markerRepository.addMarker(position, new GeneralMarker(result.get()));
+            }
         }, combination);
     }
 

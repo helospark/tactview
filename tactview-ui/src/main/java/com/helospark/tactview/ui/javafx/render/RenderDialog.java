@@ -33,6 +33,8 @@ import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.marker.MarkerRepository;
 import com.helospark.tactview.core.timeline.marker.markers.ChapterMarker;
+import com.helospark.tactview.core.timeline.marker.markers.InpointMarker;
+import com.helospark.tactview.core.timeline.marker.markers.OutpointMarker;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.control.ResolutionComponent;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
@@ -84,7 +86,7 @@ public class RenderDialog {
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private ScaleService scaleService;
     private RenderServiceChain renderService;
-    private MarkerRepository chapterRepository;
+    private MarkerRepository markerRepository;
 
     TextField fileNameTextField;
     GridPane rendererOptions;
@@ -107,13 +109,13 @@ public class RenderDialog {
 
     public RenderDialog(RenderServiceChain renderService, ProjectRepository projectRepository, UiMessagingService messagingService, TimelineManagerAccessor timelineManager,
             StylesheetAdderService stylesheetAdderService, AlertDialogFactory alertDialogFactory, ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter,
-            ScaleService scaleService, MarkerRepository chapterRepository) {
+            ScaleService scaleService, MarkerRepository markerRepository) {
         this.projectRepository = projectRepository;
         this.alertDialogFactory = alertDialogFactory;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
         this.scaleService = scaleService;
         this.renderService = renderService;
-        this.chapterRepository = chapterRepository;
+        this.markerRepository = markerRepository;
 
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("dialog-root");
@@ -133,11 +135,14 @@ public class RenderDialog {
         upperGridPane.setHgap(15.0);
         upperGridPane.getStyleClass().add("render-dialog-grid-pane");
 
-        startPositionTextField = new TextField(DurationFormatter.fromSeconds(BigDecimal.ZERO));
+        TimelinePosition startTime = markerRepository.getMarkersOfType(InpointMarker.class).keySet().stream().findFirst().orElse(TimelinePosition.ofZero());
+        TimelinePosition endTime = markerRepository.getMarkersOfType(OutpointMarker.class).keySet().stream().findFirst().orElse(timelineManager.findEndPosition());
+
+        startPositionTextField = new TextField(DurationFormatter.fromSeconds(startTime.getSeconds()));
         startPositionTextField.getStyleClass().add("render-dialog-time-selector");
         addGridElement("start position", linePosition++, upperGridPane, startPositionTextField);
 
-        endPositionTextField = new TextField(DurationFormatter.fromSeconds(timelineManager.findEndPosition().getSeconds()));
+        endPositionTextField = new TextField(DurationFormatter.fromSeconds(endTime.getSeconds()));
         endPositionTextField.getStyleClass().add("render-dialog-time-selector");
         addGridElement("end position", linePosition++, upperGridPane, endPositionTextField);
 
@@ -374,7 +379,7 @@ public class RenderDialog {
             fileName += selectedExtensionElement.extension;
         }
 
-        Map<TimelinePosition, String> markers = chapterRepository.getMarkersOfType(ChapterMarker.class).entrySet()
+        Map<TimelinePosition, String> markers = markerRepository.getMarkersOfType(ChapterMarker.class).entrySet()
                 .stream()
                 .collect(Collectors.toMap(a -> a.getKey(), a -> a.getValue().getName()));
 

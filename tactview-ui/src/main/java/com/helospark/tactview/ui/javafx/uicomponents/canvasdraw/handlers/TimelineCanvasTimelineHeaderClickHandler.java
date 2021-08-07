@@ -51,20 +51,50 @@ public class TimelineCanvasTimelineHeaderClickHandler {
         } else if (event.getButton().equals(MouseButton.PRIMARY) && isControlDown) {
             markerRepository.addMarker(request.position, new GeneralMarker(""));
         } else if (event.getButton().equals(MouseButton.SECONDARY)) {
+            boolean addedMarkerContextMenu = false;
             for (var marker : markerRepository.getMarkers().entrySet()) {
                 double markerPosition = timelineState.secondsToPixelsWithZoom(marker.getKey());
                 double mousePosition = request.event.getX();
 
                 if (Math.abs(markerPosition - mousePosition) < 5) {
-                    ContextMenu contextMenu = createContextMenu(marker);
+                    ContextMenu contextMenu = createContextMenuForMarker(marker);
                     contextMenu.show(request.parentWindow, event.getScreenX(), event.getScreenY());
+                    addedMarkerContextMenu = true;
                     break;
                 }
+            }
+
+            if (!addedMarkerContextMenu) {
+                showContextMenuOnEmptyArea(request);
             }
         }
     }
 
-    private ContextMenu createContextMenu(Entry<TimelinePosition, Marker> marker) {
+    private void showContextMenuOnEmptyArea(TimelineCanvasTimelineHeaderClickHandlerRequest request) {
+        ContextMenu contextMenu = createContextMenuForEmptyArea(request);
+        contextMenu.show(request.parentWindow, request.event.getScreenX(), request.event.getScreenY());
+    }
+
+    private ContextMenu createContextMenuForEmptyArea(TimelineCanvasTimelineHeaderClickHandlerRequest request) {
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem jumpToHereMenuItem = new MenuItem("Jump here");
+        jumpToHereMenuItem.setOnAction(e -> uiTimelineManager.jumpAbsolute(request.position.getSeconds()));
+        contextMenu.getItems().add(jumpToHereMenuItem);
+
+        Menu addMarkerMenuItem = new Menu("Add marker");
+        jumpToHereMenuItem.setOnAction(e -> uiTimelineManager.jumpAbsolute(request.position.getSeconds()));
+        contextMenu.getItems().add(addMarkerMenuItem);
+
+        populateChapterMenuItem(addMarkerMenuItem, request.position);
+        populateInpointMenuItem(addMarkerMenuItem, request.position);
+        populateOutpointMenuItem(addMarkerMenuItem, request.position);
+        populateGeneralMenuItem(addMarkerMenuItem, request.position);
+
+        return contextMenu;
+    }
+
+    private ContextMenu createContextMenuForMarker(Entry<TimelinePosition, Marker> marker) {
         ContextMenu contextMenu = new ContextMenu();
 
         contextMenu.getItems().add(createDeleteContextMenu(marker));
@@ -82,45 +112,62 @@ public class TimelineCanvasTimelineHeaderClickHandler {
 
     private MenuItem convertMarkerContextMenu(Entry<TimelinePosition, Marker> marker) {
         Menu convertMarker = new Menu("convert marker");
+        TimelinePosition position = marker.getKey();
 
         if (!marker.getValue().getType().equals(MarkerType.CHAPTER)) {
-            MenuItem menuItem = new MenuItem("Chapter");
-            menuItem.setOnAction(e -> {
-                Optional<String> result = dialogFactory.showTextInputDialog("Add chapter", "Label of the chapter", "Chapter x");
-
-                if (result.isPresent()) {
-                    markerRepository.addMarker(marker.getKey(), new ChapterMarker(result.get()));
-                }
-            });
-            convertMarker.getItems().add(menuItem);
+            populateChapterMenuItem(convertMarker, position);
         }
         if (!marker.getValue().getType().equals(MarkerType.INPOINT)) {
-            MenuItem menuItem = new MenuItem("Inpoint");
-            menuItem.setOnAction(e -> {
-                markerRepository.addMarker(marker.getKey(), new InpointMarker());
-            });
-            convertMarker.getItems().add(menuItem);
+            populateInpointMenuItem(convertMarker, position);
         }
         if (!marker.getValue().getType().equals(MarkerType.OUTPOINT)) {
-            MenuItem menuItem = new MenuItem("Outpoint");
-            menuItem.setOnAction(e -> {
-                markerRepository.addMarker(marker.getKey(), new OutpointMarker());
-            });
-            convertMarker.getItems().add(menuItem);
+            populateOutpointMenuItem(convertMarker, position);
         }
         if (!marker.getValue().getType().equals(MarkerType.GENERAL)) {
-            MenuItem menuItem = new MenuItem("General marker");
-            menuItem.setOnAction(e -> {
-                Optional<String> result = dialogFactory.showTextInputDialog("Add marker", "label", "Something interesting");
-
-                if (result.isPresent()) {
-                    markerRepository.addMarker(marker.getKey(), new GeneralMarker(result.get()));
-                }
-            });
-            convertMarker.getItems().add(menuItem);
+            populateGeneralMenuItem(convertMarker, position);
         }
 
         return convertMarker;
+    }
+
+    private void populateGeneralMenuItem(Menu convertMarker, TimelinePosition position) {
+        MenuItem menuItem = new MenuItem("General marker");
+        menuItem.setOnAction(e -> {
+            Optional<String> result = dialogFactory.showTextInputDialog("Add marker", "label", "Something interesting");
+
+            if (result.isPresent()) {
+                markerRepository.addMarker(position, new GeneralMarker(result.get()));
+            }
+        });
+        convertMarker.getItems().add(menuItem);
+    }
+
+    private void populateOutpointMenuItem(Menu convertMarker, TimelinePosition position) {
+        MenuItem menuItem = new MenuItem("Outpoint");
+        menuItem.setOnAction(e -> {
+            markerRepository.addMarker(position, new OutpointMarker());
+        });
+        convertMarker.getItems().add(menuItem);
+    }
+
+    private void populateInpointMenuItem(Menu convertMarker, TimelinePosition position) {
+        MenuItem menuItem = new MenuItem("Inpoint");
+        menuItem.setOnAction(e -> {
+            markerRepository.addMarker(position, new InpointMarker());
+        });
+        convertMarker.getItems().add(menuItem);
+    }
+
+    private void populateChapterMenuItem(Menu convertMarker, TimelinePosition position) {
+        MenuItem menuItem = new MenuItem("Chapter");
+        menuItem.setOnAction(e -> {
+            Optional<String> result = dialogFactory.showTextInputDialog("Add chapter", "Label of the chapter", "Chapter x");
+
+            if (result.isPresent()) {
+                markerRepository.addMarker(position, new ChapterMarker(result.get()));
+            }
+        });
+        convertMarker.getItems().add(menuItem);
     }
 
     private MenuItem createDeleteContextMenu(Entry<TimelinePosition, Marker> marker) {
