@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.Streams;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
@@ -20,6 +19,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ChangeClipForEffectCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipMovedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
@@ -66,16 +66,17 @@ public class TimelineDragAndDropHandler {
         this.timelineEditModeRepository = timelineEditModeRepository;
     }
 
-    public AddClipRequest addClipRequest(String channelId, List<File> dbFiles, String dbString, double currentX) {
-        String filePath = extractFilePathOrNull(dbFiles);
+    public AddClipsCommand buildAddClipsCommand(String channelId, List<File> dbFiles, String dbString, double currentX) {
+        List<String> filePaths = extractFilePaths(dbFiles);
         String proceduralClipId = extractProceduralEffectOrNull(dbString);
         TimelinePosition position = timelineState.pixelsToSeconds(currentX);
 
-        return AddClipRequest.builder()
+        return AddClipsCommand.builder()
                 .withChannelId(channelId)
                 .withPosition(position)
-                .withFilePath(filePath)
+                .withFilePaths(filePaths)
                 .withProceduralClipId(proceduralClipId)
+                .withTimelineManager(timelineManager)
                 .build();
     }
 
@@ -176,11 +177,13 @@ public class TimelineDragAndDropHandler {
         return proceduralClipId;
     }
 
-    private String extractFilePathOrNull(List<File> dbFiles) {
+    private List<String> extractFilePaths(List<File> dbFiles) {
         if (dbFiles == null) {
             return null;
         }
-        return dbFiles.stream().findFirst().map(f -> f.getAbsolutePath()).orElse(null);
+        return dbFiles.stream()
+                .map(f -> f.getAbsolutePath())
+                .collect(Collectors.toList());
     }
 
     public void resizeEffect(TimelinePosition position, boolean revertable) {

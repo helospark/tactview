@@ -121,14 +121,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
 
         Integer channelIndex = findChannelIndex(channelId).orElseThrow(() -> new IllegalArgumentException("Channel doesn't exist"));
         for (var clip : clips) {
-            linkClipRepository.linkClips(clip.getId(), clips);
-            if (channelIndex >= timelineChannelsState.channels.size()) {
-                createChannel(channelIndex);
-            }
-            if (!timelineChannelsState.channels.get(channelIndex).canAddResourceAt(clip.getInterval().getStartPosition(), clip.getInterval().getLength())) {
-                createChannel(channelIndex);
-            }
-            TimelineChannel channelToAddResourceTo = timelineChannelsState.channels.get(channelIndex);
+            TimelineChannel channelToAddResourceTo = findChannelToAddClipTo(clips, channelIndex, clip);
             addClip(channelToAddResourceTo, clip);
             ++channelIndex;
         }
@@ -138,6 +131,30 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
 
         return clips.get(0);
+    }
+
+    private TimelineChannel findChannelToAddClipTo(List<TimelineClip> clips, Integer channelIndex, TimelineClip clip) {
+        TimelineChannel channelToAddResourceTo = null;
+        linkClipRepository.linkClips(clip.getId(), clips);
+        if (channelIndex >= timelineChannelsState.channels.size()) {
+            channelToAddResourceTo = createChannel(channelIndex);
+        } else if (!timelineChannelsState.channels.get(channelIndex).canAddResourceAt(clip.getInterval().getStartPosition(), clip.getInterval().getLength())) {
+            int i = channelIndex - 1;
+            while (i >= 0) {
+                if (timelineChannelsState.channels.get(i).canAddResourceAt(clip.getInterval().getStartPosition(), clip.getInterval().getLength())) {
+                    channelToAddResourceTo = timelineChannelsState.channels.get(i);
+                    break;
+                }
+                --i;
+            }
+            if (i < 0) {
+                channelToAddResourceTo = createChannel(channelIndex);
+            }
+        }
+        if (channelToAddResourceTo == null) {
+            channelToAddResourceTo = timelineChannelsState.channels.get(channelIndex);
+        }
+        return channelToAddResourceTo;
     }
 
     public void addClip(TimelineChannel channelToAddResourceTo, TimelineClip clip) {

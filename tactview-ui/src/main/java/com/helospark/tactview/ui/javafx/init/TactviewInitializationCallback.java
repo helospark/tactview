@@ -2,6 +2,7 @@ package com.helospark.tactview.ui.javafx.init;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.save.LoadRequest;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
-import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.ProjectInitializer;
@@ -63,13 +63,14 @@ public class TactviewInitializationCallback implements PostInitializationArgsCal
                         LOGGER.info("Loading media file " + file.getAbsolutePath());
                         projectInitializer.clearAndInitialize();
                         String firstChannelId = timelineManagerAccessor.getChannels().get(0).getId();
-                        AddClipRequest addClipRequest = AddClipRequest.builder()
+                        AddClipsCommand addClipCommand = AddClipsCommand.builder()
                                 .withChannelId(firstChannelId)
                                 .withPosition(TimelinePosition.ofZero())
-                                .withFilePath(file.getAbsolutePath())
+                                .withTimelineManager(timelineManagerAccessor)
+                                .withFilePaths(List.of(file.getAbsolutePath()))
                                 .build();
 
-                        commandInterpreterService.synchronousSend(new AddClipsCommand(addClipRequest, timelineManagerAccessor));
+                        commandInterpreterService.synchronousSend(addClipCommand);
 
                         initialized = true;
                     }

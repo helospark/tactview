@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -74,17 +73,21 @@ public class TimelineCanvasOnDragOverHandler {
             String dbString = db.getString();
             double currentX = event.getX();
             String channelId = optionalChannel.get().getId();
-            AddClipRequest addClipRequest = timelineDragAndDropHandler.addClipRequest(channelId, dbFiles, dbString, currentX);
             if (!isLoadingInprogress && dragRepository.currentlyDraggedClip() == null && ((dbFiles != null && !dbFiles.isEmpty()) || timelineDragAndDropHandler.isStringClip(db))) {
                 selectedNodeRepository.clearAllSelectedItems();
                 isLoadingInprogress = true;
 
                 try {
-                    AddClipsCommand result = commandInterpreter.synchronousSend(new AddClipsCommand(addClipRequest, timelineAccessor));
-                    String addedClipId = result.getAddedClipId();
-                    TimelineInterval originalInterval = timelineAccessor.findClipById(addedClipId).get().getInterval();
-                    ClipDragInformation clipDragInformation = new ClipDragInformation(result.getRequestedPosition(), List.of(addedClipId), channelId, 0, originalInterval);
-                    dragRepository.onClipDragged(clipDragInformation);
+                    AddClipsCommand command = timelineDragAndDropHandler.buildAddClipsCommand(channelId, dbFiles, dbString, currentX);
+
+                    AddClipsCommand result = commandInterpreter.synchronousSend(command);
+                    List<String> addedClipIds = result.getAddedClipIds();
+                    if (addedClipIds.size() > 0) {
+                        TimelineInterval originalInterval = timelineAccessor.findClipById(addedClipIds.get(0)).get().getInterval();
+                        selectedNodeRepository.clearAndSetSelectedClips(addedClipIds);
+                        ClipDragInformation clipDragInformation = new ClipDragInformation(result.getRequestedPosition(), addedClipIds, channelId, 0, originalInterval);
+                        dragRepository.onClipDragged(clipDragInformation);
+                    }
                     db.clear();
                 } catch (Exception e1) {
                     e1.printStackTrace();

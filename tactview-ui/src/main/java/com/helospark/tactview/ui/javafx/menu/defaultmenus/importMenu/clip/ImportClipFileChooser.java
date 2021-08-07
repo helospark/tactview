@@ -1,9 +1,9 @@
 package com.helospark.tactview.ui.javafx.menu.defaultmenus.importMenu.clip;
 
 import java.io.File;
+import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
@@ -33,13 +33,14 @@ public class ImportClipFileChooser {
         if (file != null) {
             TimelinePosition maxPosition = timelineManager.findEndPosition();
 
-            AddClipRequest clipRequest = AddClipRequest.builder()
+            AddClipsCommand clipCommand = AddClipsCommand.builder()
                     .withChannelId(timelineManager.getAllChannelIds().get(0))
                     .withPosition(maxPosition)
-                    .withFilePath(file.getAbsolutePath())
+                    .withFilePaths(List.of(file.getAbsolutePath()))
+                    .withTimelineManager(timelineManager)
                     .build();
 
-            commandInterpreterService.sendWithResult(new AddClipsCommand(clipRequest, timelineManager))
+            commandInterpreterService.sendWithResult(clipCommand)
                     .exceptionally(e -> {
                         alertDialogFactory.showExceptionDialog("Unable to add image sequence", e);
 

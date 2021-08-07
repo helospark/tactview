@@ -3,12 +3,12 @@ package com.helospark.tactview.ui.javafx.menu.defaultmenus.importMenu.imageseque
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.helospark.tactview.core.repository.ProjectRepository;
-import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AddClipRequestMetaDataKey;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -103,14 +103,15 @@ public class ImageSequenceChooserDialog {
 
             String filePath = pathField.getText() + FileNamePatternToFileResolverService.PATH_FILENAME_SEPARATOR + patternField.getText();
 
-            AddClipRequest clipRequest = AddClipRequest.builder()
+            AddClipsCommand addClipCommand = AddClipsCommand.builder()
                     .withChannelId(timelineManager.getAllChannelIds().get(0))
                     .withPosition(maxPosition)
                     .withAddClipRequestMetadataKey(metadata)
-                    .withFilePath(filePath)
+                    .withFilePaths(List.of(filePath))
+                    .withTimelineManager(timelineManager)
                     .build();
 
-            commandInterpreterService.sendWithResult(new AddClipsCommand(clipRequest, timelineManager))
+            commandInterpreterService.sendWithResult(addClipCommand)
                     .exceptionally(e -> {
                         alertDialogFactory.showExceptionDialog("Unable to add image sequence", e);
 

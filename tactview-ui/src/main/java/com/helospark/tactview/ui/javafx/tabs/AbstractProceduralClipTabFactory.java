@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.LightDiContext;
-import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -86,13 +85,14 @@ public abstract class AbstractProceduralClipTabFactory<T> extends AbstractSearch
     private void addClipOnDoubleClick(MouseEvent e, String id) {
         TimelinePosition maxPosition = timelineManager.findEndPosition();
 
-        AddClipRequest clipRequest = AddClipRequest.builder()
+        AddClipsCommand addClipsCommand = AddClipsCommand.builder()
                 .withChannelId(timelineManager.getAllChannelIds().get(0))
                 .withPosition(maxPosition)
                 .withProceduralClipId(id)
+                .withTimelineManager(timelineManager)
                 .build();
         if (e.getClickCount() == 2) {
-            commandInterpreter.sendWithResult(new AddClipsCommand(clipRequest, timelineManager));
+            commandInterpreter.sendWithResult(addClipsCommand);
             e.consume();
         }
     }

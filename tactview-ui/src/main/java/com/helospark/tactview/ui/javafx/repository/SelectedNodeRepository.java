@@ -137,4 +137,9 @@ public class SelectedNodeRepository implements CleanableMode {
                 .forEach(clipId -> addSelectedClip(clipId));
     }
 
+    public void clearAndSetSelectedClips(List<String> clipIds) {
+        clearAllSelectedItems();
+        addSelectedClips(clipIds);
+    }
+
 }
