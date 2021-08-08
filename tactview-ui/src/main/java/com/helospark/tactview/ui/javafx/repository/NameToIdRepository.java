@@ -21,6 +21,14 @@ public class NameToIdRepository implements SaveLoadContributor, ResettableBean {
     private Map<String, String> nameToId = new HashMap<>();
     private Map<String, String> idToName = new HashMap<>();
 
+    public void remove(String id) {
+        String elementToRemove = idToName.get(id);
+        if (elementToRemove != null) {
+            idToName.remove(id);
+            nameToId.remove(elementToRemove);
+        }
+    }
+
     public String generateAndAddNameForIdIfNotPresent(String baseName, String id) {
         if (!hasNameForId(id)) {
             int i;
@@ -88,7 +96,7 @@ public class NameToIdRepository implements SaveLoadContributor, ResettableBean {
         try {
             JsonNode mapNode = tree.get("nameToIdMap");
 
-            TypeReference<HashMap<String, String>> typeRef = new TypeReference<HashMap<String, String>>() {
+            TypeReference<HashMap<String, String>> typeRef = new TypeReference<>() {
             };
 
             JavaType jt = mapper.getTypeFactory().constructType(typeRef);

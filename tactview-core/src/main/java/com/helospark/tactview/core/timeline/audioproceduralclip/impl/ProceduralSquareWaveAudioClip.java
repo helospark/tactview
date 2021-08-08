@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.audioproceduralclip.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,19 +44,19 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
         double amplitude = amplitudeProvider.getValueAt(audioRequest.getPosition());
 
         BigDecimal positionSecond = audioRequest.getPosition().getSeconds();
-        BigDecimal onTime = BigDecimal.valueOf(onTimeProvider.getValueAt(audioRequest.getPosition()));
-        BigDecimal offTime = BigDecimal.valueOf(offTimeProvider.getValueAt(audioRequest.getPosition()));
+        BigDecimal onTime = BigDecimal.valueOf(Math.pow(10, BigDecimal.valueOf(onTimeProvider.getValueAt(audioRequest.getPosition())).doubleValue()));
+        BigDecimal offTime = BigDecimal.valueOf(Math.pow(10, BigDecimal.valueOf(offTimeProvider.getValueAt(audioRequest.getPosition())).doubleValue()));
 
         BigDecimal period = onTime.add(offTime);
 
         BigDecimal bigDecimalSampleRate = BigDecimal.valueOf(audioRequest.getSampleRate());
-        long remainderInCycle = positionSecond.remainder(period).multiply(bigDecimalSampleRate).longValue();
-        long onSampleCount = onTime.multiply(bigDecimalSampleRate).longValue();
-        long offSampleCount = onTime.multiply(bigDecimalSampleRate).longValue();
+        long remainderInCycle = positionSecond.remainder(period).multiply(bigDecimalSampleRate).setScale(0, RoundingMode.HALF_UP).longValue();
+        long onSampleCount = onTime.multiply(bigDecimalSampleRate).setScale(0, RoundingMode.HALF_UP).longValue();
+        long offSampleCount = offTime.multiply(bigDecimalSampleRate).setScale(0, RoundingMode.HALF_UP).longValue();
 
         boolean isOne = false;
         long remainingSamplesInState;
-        if (remainderInCycle > onSampleCount) {
+        if (remainderInCycle >= offSampleCount) {
             isOne = true;
             remainingSamplesInState = (onSampleCount + offSampleCount) - remainderInCycle;
         } else {
@@ -102,8 +103,8 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
     @Override
     protected void initializeValueProvider() {
         super.initializeValueProvider();
-        onTimeProvider = new DoubleProvider(1.0 / 20000.0, 1.0 / 20.0, new ConstantInterpolator(1.0 / 700.0));
-        offTimeProvider = new DoubleProvider(1.0 / 20000.0, 1.0 / 20.0, new ConstantInterpolator(1.0 / 700.0));
+        onTimeProvider = new DoubleProvider(Math.log10(1.0 / 20000.0), Math.log10(1.0 / 20.0), new ConstantInterpolator(Math.log10(1.0 / 700.0)));
+        offTimeProvider = new DoubleProvider(Math.log10(1.0 / 20000.0), Math.log10(1.0 / 20.0), new ConstantInterpolator(Math.log10(1.0 / 700.0)));
         amplitudeProvider = new DoubleProvider(0.0, 1.0, new ConstantInterpolator(1.0));
     }
 
@@ -112,11 +113,11 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
         ValueProviderDescriptor onTimeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(onTimeProvider)
-                .withName("On time")
+                .withName("On time (log10)")
                 .build();
         ValueProviderDescriptor offTimeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(offTimeProvider)
-                .withName("Off time")
+                .withName("Off time (log10)")
                 .build();
         result.add(onTimeDescriptor);
         result.add(offTimeDescriptor);
