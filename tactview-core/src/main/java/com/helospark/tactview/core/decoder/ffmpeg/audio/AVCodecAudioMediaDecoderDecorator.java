@@ -2,6 +2,7 @@ package com.helospark.tactview.core.decoder.ffmpeg.audio;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -180,7 +181,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     }
 
     private BigDecimal bytesToSeconds(int bytes, int bytesPerSample, int sampleRate) {
-        return BigDecimal.valueOf(bytes / (bytesPerSample * sampleRate));
+        return BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(bytesPerSample * sampleRate), 20, RoundingMode.FLOOR);
     }
 
     private class FileReadResult {

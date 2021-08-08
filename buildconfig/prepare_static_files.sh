@@ -9,8 +9,8 @@ unzip -u "data/FG Free Cine LUTs Pack v2.zip" -d "$1/dropin/luts"
 
 # Add default plugin
 echo "Adding GLSL plugin as default"
-glslPluginVersion="0.0.1"
-pluginName="tactview-glsl-plugin-${glslPluginVersion}-SNAPSHOT.zip"
+glslPluginVersion="0.0.2"
+pluginName="tactview-glsl-plugin-${glslPluginVersion}.zip"
 glslPlugin="https://github.com/helospark/tactview-glsl-plugin/releases/download/v${glslPluginVersion}/${pluginName}"
 glslPluginPath="tmp/$pluginName"
 mkdir -p "tmp"

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -39,6 +40,9 @@ public class TimelineCanvasOnDragOverHandler {
     private EffectDragAdder effectDragAdder;
     private CurrentlyPressedKeyRepository pressedKeyRepository;
     private TimelineState timelineState;
+
+    @Value("${betafeatures.enabled:false}")
+    private boolean isBetaFeaturesEnabled;
 
     private boolean isLoadingInprogress = false; // Move to repository class
 
@@ -167,6 +171,9 @@ public class TimelineCanvasOnDragOverHandler {
     }
 
     private Optional<TimelineClip> getInsertBefore(TimelineCanvasOnDragOverHandlerRequest request, String channelId) {
+        if (!isBetaFeaturesEnabled) {
+            return Optional.empty(); // TODO: remove later
+        }
         if (!request.selectedElement.isPresent()) {
             return Optional.empty();
         }
