@@ -99,7 +99,7 @@ public class SubtimelineAudioClip extends AudibleTimelineClip {
                 .withPreviewHeight(600)
                 .build();
 
-        AudioVideoFragment audioVideoFragment = timelineManagerRenderService.getFrame(channelFrameRequest);
+        AudioVideoFragment audioVideoFragment = timelineManagerRenderService.getFrame(channelFrameRequest).getAudioVideoFragment();
 
         audioVideoFragment.freeVideoResult();
 

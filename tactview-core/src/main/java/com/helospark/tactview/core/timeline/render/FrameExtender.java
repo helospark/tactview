@@ -1,12 +1,15 @@
 package com.helospark.tactview.core.timeline.render;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Generated;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
@@ -28,6 +31,8 @@ public class FrameExtender {
 
         int requestedXPosition = anchorOffsetX + clip.getXPosition(timelinePosition, scale);
         int requestedYPosition = anchorOffsetY + clip.getYPosition(timelinePosition, scale);
+
+        request.outBoundPositions.put(clip.getId(), new RegularRectangle(requestedXPosition, requestedYPosition, frameResult.getWidth(), frameResult.getHeight()));
 
         return expandAndTranslate(frameResult, previewWidth, previewHeight, requestedXPosition, requestedYPosition);
     }
@@ -69,6 +74,7 @@ public class FrameExtender {
         int previewWidth;
         double scale;
         TimelinePosition timelinePosition;
+        Map<String, RegularRectangle> outBoundPositions;
 
         @Generated("SparkTools")
         private FrameExtendRequest(Builder builder) {
@@ -78,6 +84,7 @@ public class FrameExtender {
             this.previewWidth = builder.previewWidth;
             this.scale = builder.scale;
             this.timelinePosition = builder.timelinePosition;
+            this.outBoundPositions = builder.outBoundPositions;
         }
 
         public ReadOnlyClipImage getFrameResult() {
@@ -117,6 +124,7 @@ public class FrameExtender {
             private int previewWidth;
             private double scale;
             private TimelinePosition timelinePosition;
+            Map<String, RegularRectangle> outBoundPositions = new HashMap<>();
 
             private Builder() {
             }
@@ -148,6 +156,11 @@ public class FrameExtender {
 
             public Builder withTimelinePosition(TimelinePosition timelinePosition) {
                 this.timelinePosition = timelinePosition;
+                return this;
+            }
+
+            public Builder withOutBoundPositions(Map<String, RegularRectangle> outBoundPositions) {
+                this.outBoundPositions = outBoundPositions;
                 return this;
             }
 

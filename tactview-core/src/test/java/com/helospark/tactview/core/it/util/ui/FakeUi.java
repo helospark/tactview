@@ -127,7 +127,7 @@ public class FakeUi {
     }
 
     public AudioVideoFragment requestFrame(TimelineManagerFramesRequest frameRequest) {
-        return timelineManagerRenderService.getFrame(frameRequest);
+        return timelineManagerRenderService.getFrame(frameRequest).getAudioVideoFragment();
     }
 
     public TimelineClip dragFileToTimeline(File testFile, TimelinePosition position) {

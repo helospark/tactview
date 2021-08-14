@@ -23,10 +23,13 @@ import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
@@ -41,6 +44,7 @@ import javafx.scene.paint.Color;
 @Component
 public class DisplayUpdaterService implements ScenePostProcessor {
     private static final int NUMBER_OF_CACHE_JOBS_TO_RUN = 2;
+    private static final int SELECTION_BOX_DASH_SIZE = 5;
     private final ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(NUMBER_OF_CACHE_JOBS_TO_RUN,
             new ThreadFactoryBuilder().setNameFormat("playback-prefetch-cache-job-%d").build());
     private final Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
@@ -53,13 +57,16 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private final List<DisplayUpdatedListener> displayUpdateListeners;
     private final MessagingService messagingService;
     private final ScheduledExecutorService scheduledExecutorService;
+    private final SelectedNodeRepository selectedNodeRepository;
 
     private final boolean debugAudioUpdateEnabled;
 
     // cache current frame
-    private Image cacheCurrentImage;
+    private JavaDisplayableAudioVideoFragment cacheCurrentImage;
     private long cacheLastModifiedTime;
     private TimelinePosition cachePosition;
+    private volatile boolean hasSelectedElement = false;
+    private volatile int selectionBoxUpdateCount = 0;
 
     // end of current frame cache
 
@@ -73,7 +80,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     public DisplayUpdaterService(PlaybackFrameAccessor playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
             @Value("${debug.display-audio-updater.enabled}") boolean debugAudioUpdateEnabled,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService, SelectedNodeRepository selectedNodeRepository) {
         this.playbackFrameAccessor = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
@@ -82,6 +89,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         this.messagingService = messagingService;
         this.debugAudioUpdateEnabled = debugAudioUpdateEnabled;
         this.scheduledExecutorService = scheduledExecutorService;
+        this.selectedNodeRepository = selectedNodeRepository;
     }
 
     @PostConstruct
@@ -97,6 +105,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             // this could be optimized based on the affected interval
             framecache.clear();
         });
+        messagingService.register(ClipSelectionChangedMessage.class, message -> updateCurrentPositionWithoutInvalidatedCache());
     }
 
     @Override
@@ -111,6 +120,13 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 }
             } catch (Exception e) {
                 logger.warn("Unable to check dirty state of display", e);
+            }
+        }, 200, 200, TimeUnit.MILLISECONDS);
+
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            ++selectionBoxUpdateCount;
+            if (hasSelectedElement && canUseCacheAt(uiTimelineManager.getCurrentPosition())) {
+                drawSelectionRectangle(cacheCurrentImage, canvas.getGraphicsContext2D());
             }
         }, 200, 200, TimeUnit.MILLISECONDS);
     }
@@ -188,8 +204,8 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     public void updateDisplay(TimelinePosition currentPosition) {
         long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
         JavaDisplayableAudioVideoFragment actualAudioVideoFragment;
-        if (cacheCurrentImage != null && currentPosition.equals(cachePosition) && cacheLastModifiedTime == currentPostionLastModified) {
-            actualAudioVideoFragment = new JavaDisplayableAudioVideoFragment(cacheCurrentImage, null);
+        if (canUseCacheAt(currentPosition)) {
+            actualAudioVideoFragment = cacheCurrentImage;
         } else {
             Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
             if (cachedKey == null) {
@@ -204,6 +220,10 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         //        startCacheJobs(request.);
     }
 
+    private boolean canUseCacheAt(TimelinePosition currentPosition) {
+        return cacheCurrentImage != null && currentPosition.equals(cachePosition) && cacheLastModifiedTime == globalDirtyClipManager.positionLastModified(currentPosition);
+    }
+
     protected void displayFrameAsync(TimelinePosition currentPosition, long currentPostionLastModified, JavaDisplayableAudioVideoFragment actualAudioVideoFragment) {
         Platform.runLater(() -> {
             try {
@@ -215,13 +235,15 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 Image image = actualAudioVideoFragment.getImage();
                 gc.drawImage(image, 0, 0, width, height);
 
+                drawSelectionRectangle(actualAudioVideoFragment, gc);
+
                 DisplayUpdatedRequest displayUpdateRequest = DisplayUpdatedRequest.builder()
                         .withImage(image)
                         .withPosition(currentPosition)
                         .withGraphics(gc)
                         .withCanvas(canvas)
                         .build();
-                cacheCurrentImage = image;
+                cacheCurrentImage = actualAudioVideoFragment;
                 cachePosition = currentPosition;
                 cacheLastModifiedTime = currentPostionLastModified;
 
@@ -231,6 +253,32 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void drawSelectionRectangle(JavaDisplayableAudioVideoFragment actualAudioVideoFragment, GraphicsContext gc) {
+        boolean foundSelection = false;
+        for (var rectangle : actualAudioVideoFragment.getClipRectangle().entrySet()) {
+            if (selectedNodeRepository.getSelectedClipIds().contains(rectangle.getKey())) {
+                RegularRectangle rect = rectangle.getValue();
+                drawRectangleWithDashedLine(gc, rect);
+                foundSelection = true;
+            }
+        }
+        hasSelectedElement = foundSelection;
+    }
+
+    private void drawRectangleWithDashedLine(GraphicsContext gc, RegularRectangle rect) {
+        int boxOffset = selectionBoxUpdateCount;
+        gc.setStroke(Color.WHITE);
+        gc.setLineDashOffset(boxOffset);
+        gc.setLineDashes(SELECTION_BOX_DASH_SIZE, SELECTION_BOX_DASH_SIZE);
+        gc.strokeRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+
+        gc.setStroke(Color.BLACK);
+        gc.setLineDashOffset(boxOffset - SELECTION_BOX_DASH_SIZE);
+        gc.strokeRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+
+        gc.setLineDashes(null);
     }
 
     public TimelinePosition getLastDisplayedImageTimestamp() {

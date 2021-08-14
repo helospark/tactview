@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
@@ -50,7 +52,7 @@ public class TimelineManagerRenderService {
         this.timelineManagerAccessor = timelineManagerAccessor;
     }
 
-    public AudioVideoFragment getFrame(TimelineManagerFramesRequest request) {
+    public TimelineRenderResult getFrame(TimelineManagerFramesRequest request) {
         List<TimelineClip> allClips = timelineManager.channels
                 .stream()
                 .map(channel -> channel.getDataAt(request.getPosition()))
@@ -73,6 +75,7 @@ public class TimelineManagerRenderService {
 
         Map<String, RenderFrameData> clipsToFrames = new ConcurrentHashMap<>();
         Map<String, AudioFrameResult> audioToFrames = new ConcurrentHashMap<>();
+        Map<String, RegularRectangle> clipToExpandedPosition = new ConcurrentHashMap<>();
 
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -106,7 +109,7 @@ public class TimelineManagerRenderService {
                                 .build();
 
                         ReadOnlyClipImage frameResult = visualClip.getFrame(frameRequest);
-                        ReadOnlyClipImage expandedFrame = expandFrame(request, visualClip, frameResult);
+                        ReadOnlyClipImage expandedFrame = expandFrame(request, visualClip, frameResult, clipToExpandedPosition);
 
                         BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
                         double alpha = visualClip.getAlpha(request.getPosition());
@@ -172,7 +175,7 @@ public class TimelineManagerRenderService {
         ReadOnlyClipImage finalResult = executeGlobalEffectsOn(finalImage);
         // TODO: audio effects
 
-        return new AudioVideoFragment(finalResult, audioBuffer);
+        return new TimelineRenderResult(new AudioVideoFragment(finalResult, audioBuffer), new HashMap<>(clipToExpandedPosition));
     }
 
     private ReadOnlyClipImage executeGlobalEffectsOn(ReadOnlyClipImage finalImage) {
@@ -202,7 +205,7 @@ public class TimelineManagerRenderService {
 
     }
 
-    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult) {
+    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult, Map<String, RegularRectangle> outBoundPositions) {
         FrameExtender.FrameExtendRequest frameExtendRequest = FrameExtender.FrameExtendRequest.builder()
                 .withClip(visualClip)
                 .withFrameResult(frameResult)
@@ -210,6 +213,7 @@ public class TimelineManagerRenderService {
                 .withPreviewHeight(request.getPreviewHeight())
                 .withScale(request.getScale())
                 .withTimelinePosition(request.getPosition())
+                .withOutBoundPositions(outBoundPositions)
                 .build();
         return frameExtender.expandFrame(frameExtendRequest);
     }

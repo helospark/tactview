@@ -104,7 +104,7 @@ public class ClipLoadIT {
                 .build();
         var frame = timelineManagerRenderService.getFrame(frameRequest);
 
-        ReadOnlyClipImage videoFrame = frame.getVideoResult();
+        ReadOnlyClipImage videoFrame = frame.getAudioVideoFragment().getVideoResult();
         return videoFrame;
     }
 

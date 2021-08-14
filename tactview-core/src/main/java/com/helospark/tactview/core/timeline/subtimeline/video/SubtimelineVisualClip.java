@@ -102,7 +102,7 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
                 .withNeedVideo(true)
                 .build();
 
-        AudioVideoFragment audioVideoFragment = timelineManagerRenderService.getFrame(channelFrameRequest);
+        AudioVideoFragment audioVideoFragment = timelineManagerRenderService.getFrame(channelFrameRequest).getAudioVideoFragment();
 
         audioVideoFragment.getAudioResult().free();
 

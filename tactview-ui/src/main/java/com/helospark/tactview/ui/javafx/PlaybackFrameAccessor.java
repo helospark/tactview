@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -18,6 +19,8 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.TimelineRenderResult;
+import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
@@ -51,19 +54,20 @@ public class PlaybackFrameAccessor {
     }
 
     public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position) {
-        Image imageWithEffects = getImageWithEffectEnabled(position, true);
+        ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(position, true);
 
-        Image result;
+        ImageWithExpandedFramePositions result;
         if (uiPlaybackPreferenceRepository.isHalfEffect()) {
-            Image javafxImageWithoutEffects = getImageWithEffectEnabled(position, false);
-            result = mergeImages(imageWithEffects, javafxImageWithoutEffects);
+            ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(position, false);
+            Image sharedImageResult = mergeImages(imageWithEffects.image, javafxImageWithoutEffects.image);
+            result = new ImageWithExpandedFramePositions(sharedImageResult, imageWithEffects.clipRectangle);
         } else {
             result = imageWithEffects;
         }
 
         LOGGER.debug("Frame at {} is loaded", position);
 
-        return new JavaDisplayableAudioVideoFragment(result, new byte[0]);
+        return new JavaDisplayableAudioVideoFragment(result.image, new byte[0], imageWithEffects.clipRectangle);
     }
 
     private Image mergeImages(Image javafxImage, Image javafxImageWithoutEffects) {
@@ -84,7 +88,7 @@ public class PlaybackFrameAccessor {
         return result;
     }
 
-    private Image getImageWithEffectEnabled(TimelinePosition position, boolean enableEffect) {
+    private ImageWithExpandedFramePositions getImageWithEffectEnabled(TimelinePosition position, boolean enableEffect) {
         Integer width = uiProjectRepository.getPreviewWidth();
         Integer height = uiProjectRepository.getPreviewHeight();
         TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
@@ -97,10 +101,11 @@ public class PlaybackFrameAccessor {
                 .withLowResolutionPreview(true)
                 .withEffectsEnabled(enableEffect)
                 .build();
-        AudioVideoFragment frame = timelineManager.getFrame(request);
+        TimelineRenderResult renderResult = timelineManager.getFrame(request);
+        AudioVideoFragment frame = renderResult.getAudioVideoFragment();
         Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame.getVideoResult().getBuffer(), width, height);
         frame.free();
-        return javafxImage;
+        return new ImageWithExpandedFramePositions(javafxImage, renderResult.getClipRectangle());
     }
 
     public AudioVideoFragment getSingleAudioFrameAtPosition(TimelinePosition position, boolean isMute, Optional<TimelineLength> length) {
@@ -119,7 +124,7 @@ public class PlaybackFrameAccessor {
                     .withAudioSampleRate(Optional.of(SAMPLE_RATE))
                     .withAudioLength(length)
                     .build();
-            frame = timelineManager.getFrame(request);
+            frame = timelineManager.getFrame(request).getAudioVideoFragment();
         }
         if (frame == null || frame.getAudioResult().isEmpty()) {
             // this is so the same audio->video sync code can be used to play video, instead of writing a secondary play video logic
@@ -131,5 +136,16 @@ public class PlaybackFrameAccessor {
             frame = new AudioVideoFragment(null, new AudioFrameResult(channels, SAMPLE_RATE, BYTES));
         }
         return frame;
+    }
+
+    static class ImageWithExpandedFramePositions {
+        Image image;
+        Map<String, RegularRectangle> clipRectangle;
+
+        public ImageWithExpandedFramePositions(Image image, Map<String, RegularRectangle> clipRectangle) {
+            this.image = image;
+            this.clipRectangle = clipRectangle;
+        }
+
     }
 }
