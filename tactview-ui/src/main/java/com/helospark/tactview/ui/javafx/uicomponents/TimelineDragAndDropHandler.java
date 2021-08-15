@@ -94,6 +94,14 @@ public class TimelineDragAndDropHandler {
     }
 
     public void moveClip(String channelId, boolean revertable, TimelinePosition position) {
+        ClipMovedCommand command = createMoveClipCommand(channelId, revertable, position);
+        if (command != null) {
+            ClipMovedCommand result = commandInterpreter.sendWithResult(command).join();
+            dragRepository.currentlyDraggedClip().setHasMovedWithoutRevert(!revertable && (dragRepository.currentlyDraggedClip().getHasMovedWithoutRevert() || result.hasMoved()));
+        }
+    }
+
+    public ClipMovedCommand createMoveClipCommand(String channelId, boolean revertable, TimelinePosition position) {
         ClipDragInformation currentlyDraggedClip = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedClip != null) {
             String clipId = currentlyDraggedClip.getClipId().get(0);
@@ -111,7 +119,7 @@ public class TimelineDragAndDropHandler {
                     .findFirst()
                     .map(a -> a.getInterval().getStartPosition());
             if (leftestPositionOptional.isEmpty()) {
-                return;
+                return null;
             }
             var leftestPosition = leftestPositionOptional.get();
 
@@ -130,7 +138,7 @@ public class TimelineDragAndDropHandler {
 
             boolean useSpecialPoints = timelineEditModeRepository.isMagnetEditModeEnabled(currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY));
 
-            ClipMovedCommand command = ClipMovedCommand.builder()
+            return ClipMovedCommand.builder()
                     .withIsRevertable(revertable)
                     .withClipId(clipId)
                     .withAdditionalClipIds(new ArrayList<>(clipIds))
@@ -144,8 +152,8 @@ public class TimelineDragAndDropHandler {
                     .withMaximumJumpLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MAXIMUM_SPECIAL_POINT_JUMP_LENGTH_IN_PIXELS).getSeconds()))
                     .withAdditionalPositions(List.of(uiTimelineManager.getCurrentPosition()))
                     .build();
-
-            commandInterpreter.sendWithResult(command).join();
+        } else {
+            return null;
         }
     }
 
@@ -171,7 +179,7 @@ public class TimelineDragAndDropHandler {
                     .withTimelineEditMode(timelineEditModeRepository.getMode())
                     .withRelativeMove(relativeMove)
                     .build();
-            commandInterpreter.sendWithResult(command);
+            commandInterpreter.sendWithResult(command).join();
         }
     }
 
@@ -217,7 +225,7 @@ public class TimelineDragAndDropHandler {
                 .withMinimumLength(new TimelineLength(timelineState.pixelsToSecondsWithZoom(MINIMUM_EFFECT_SIZE).getSeconds()))
                 .build();
 
-        commandInterpreter.sendWithResult(resizedCommand);
+        commandInterpreter.sendWithResult(resizedCommand).join();
     }
 
     public void moveEffect(TimelinePosition position, boolean revertable) {
@@ -237,16 +245,21 @@ public class TimelineDragAndDropHandler {
                 .withMoreMoveExpected(!revertable)
                 .withAdditionalSpecialPositions(List.of(uiTimelineManager.getCurrentPosition()))
                 .build();
-        commandInterpreter.sendWithResult(command);
+        commandInterpreter.sendWithResult(command).join();
     }
 
     public void moveEffectToDifferentParent(String newClipId, TimelinePosition position) {
         EffectDragInformation dragInformation = dragRepository.currentEffectDragInformation();
         ChangeClipForEffectCommand command = new ChangeClipForEffectCommand(timelineManager, dragInformation.getEffectId(), newClipId, position);
-        commandInterpreter.sendWithResult(command);
+        commandInterpreter.sendWithResult(command).join();
     }
 
     public void insertClipBefore(TimelineClip timelineClip) {
+        ClipInsertCommand clipInsertCommand = createInsertClipBeforeCommand(timelineClip);
+        commandInterpreter.sendWithResult(clipInsertCommand).join();
+    }
+
+    public ClipInsertCommand createInsertClipBeforeCommand(TimelineClip timelineClip) {
         ClipInsertCommand clipInsertCommand = ClipInsertCommand.builder()
                 .withClipIdsToInsert(selectedNodeRepository.getSelectedClipIds())
                 .withInsertInPlace(timelineClip)
@@ -254,7 +267,7 @@ public class TimelineDragAndDropHandler {
                 .withTimelineEditMode(TimelineEditMode.NORMAL) // TODO: fill later
                 .withTimelineManager(timelineManager)
                 .build();
-        commandInterpreter.sendWithResult(clipInsertCommand);
+        return clipInsertCommand;
     }
 
 }

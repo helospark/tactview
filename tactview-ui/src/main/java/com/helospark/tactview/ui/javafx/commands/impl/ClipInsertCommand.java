@@ -32,6 +32,7 @@ public class ClipInsertCommand implements UiCommand {
     TimelineInterval combinedInterval;
     List<Integer> channelIndices;
     boolean moveBackward;
+    List<TimelineClip> clipsToMove;
 
     private ClipInsertCommand(Builder builder) {
         this.timelineManager = builder.timelineManager;
@@ -44,7 +45,7 @@ public class ClipInsertCommand implements UiCommand {
     @Override
     public void execute() {
         synchronized (timelineManager.getFullLock()) {
-            List<TimelineClip> clipsToMove = timelineManager.resolveClipIdsWithAllLinkedClip(clipIdsToInsert);
+            clipsToMove = timelineManager.resolveClipIdsWithAllLinkedClip(clipIdsToInsert);
             List<TimelineChannel> channels = clipsToMove.stream()
                     .flatMap(clip -> timelineManager.findChannelForClipId(clip.getId()).stream())
                     .collect(Collectors.toList());
@@ -173,8 +174,9 @@ public class ClipInsertCommand implements UiCommand {
     @Override
     public void revert() {
         if (success) {
+            TimelineInterval newCombinedInterval = findCombinedInterval(clipsToMove);
             List<ClipChannelPair> removedClips = removeClipsToInsert(actuallyInsertedClips.stream().map(a -> a.clip).collect(Collectors.toList()));
-            moveBackClipsBehind(combinedInterval.getStartPosition(), channelIndices, distanceToMove.negate(), !moveBackward, combinedInterval);
+            moveBackClipsBehind(combinedInterval.getStartPosition(), channelIndices, distanceToMove.negate(), !moveBackward, newCombinedInterval);
             insertClipsAt(combinedInterval.getStartPosition(), new TimelineInterval(insertInPlace.getInterval().getStartPosition(), distanceToMove.toLength()), removedClips);
         }
     }

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -40,9 +39,6 @@ public class TimelineCanvasOnDragOverHandler {
     private EffectDragAdder effectDragAdder;
     private CurrentlyPressedKeyRepository pressedKeyRepository;
     private TimelineState timelineState;
-
-    @Value("${betafeatures.enabled:false}")
-    private boolean isBetaFeaturesEnabled;
 
     private boolean isLoadingInprogress = false; // Move to repository class
 
@@ -133,11 +129,17 @@ public class TimelineCanvasOnDragOverHandler {
                     String channelId = request.channel
                             .map(a -> a.getId())
                             .orElse(timelineAccessor.getChannels().get(0).getId());
-                    Optional<TimelineClip> isInsertNeeded = getInsertBefore(request, channelId);
+                    Optional<TimelineClip> insertBeforeClip = getInsertBefore(request, channelId);
 
-                    if (isInsertNeeded.isPresent()) {
-                        timelineDragAndDropHandler.moveClip(channelId, true, newX); // so revert works properly
-                        timelineDragAndDropHandler.insertClipBefore(isInsertNeeded.get());
+                    if (insertBeforeClip.isPresent()) {
+                        if (dragRepository.getClipDragInformation().getHasMovedWithoutRevert()) {
+                            timelineDragAndDropHandler.moveClip(channelId, true, newX); // so revert works properly
+                        }
+                        timelineDragAndDropHandler.insertClipBefore(insertBeforeClip.get());
+
+                        timelineAccessor.findClipById(dragRepository.getClipDragInformation().getClipId().get(0))
+                                .map(a -> a.getInterval())
+                                .ifPresent(interval -> dragRepository.getClipDragInformation().setOriginalInterval(interval));
                     } else {
                         timelineDragAndDropHandler.moveClip(channelId, finished, newX);
                     }
@@ -171,9 +173,6 @@ public class TimelineCanvasOnDragOverHandler {
     }
 
     private Optional<TimelineClip> getInsertBefore(TimelineCanvasOnDragOverHandlerRequest request, String channelId) {
-        if (!isBetaFeaturesEnabled) {
-            return Optional.empty(); // TODO: remove later
-        }
         if (!request.selectedElement.isPresent()) {
             return Optional.empty();
         }
@@ -184,7 +183,11 @@ public class TimelineCanvasOnDragOverHandler {
             return Optional.empty();
         }
         String currentlyDraggedClipId = dragRepository.currentlyDraggedClip().getClipId().get(0);
-        TimelineChannel timelineChannel = timelineAccessor.findChannelForClipId(currentlyDraggedClipId).get();
+        Optional<TimelineChannel> optionalChannelForClip = timelineAccessor.findChannelForClipId(currentlyDraggedClipId);
+        if (!optionalChannelForClip.isPresent()) {
+            return Optional.empty();
+        }
+        TimelineChannel timelineChannel = optionalChannelForClip.get();
         if (!(request.channel.isPresent() && timelineChannel.getId().equals(channelId))) {
             return Optional.empty();
         }

@@ -24,8 +24,9 @@ public class CompositeCommand implements UiCommand {
 
     @Override
     public void revert() {
-        children.stream()
-                .forEach(child -> child.revert());
+        for (int i = children.size() - 1; i >= 0; --i) {
+            children.get(i).revert();
+        }
     }
 
     @Override

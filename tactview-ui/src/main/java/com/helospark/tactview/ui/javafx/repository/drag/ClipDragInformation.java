@@ -12,6 +12,7 @@ public class ClipDragInformation {
     private double anchorPointX;
     private TimelinePosition lastPosition;
     private TimelineInterval originalInterval;
+    private boolean hasMovedWithoutRevert;
 
     public ClipDragInformation(TimelinePosition originalPosition, List<String> clipId, String originalChannelId, double anchorPointX, TimelineInterval originalInterval) {
         this.originalPosition = originalPosition;
@@ -49,6 +50,19 @@ public class ClipDragInformation {
 
     public TimelineInterval getOriginalInterval() {
         return originalInterval;
+    }
+
+    public void setHasMovedWithoutRevert(boolean hasMovedWithoutRevert) {
+        this.hasMovedWithoutRevert = hasMovedWithoutRevert;
+    }
+
+    public boolean getHasMovedWithoutRevert() {
+        return hasMovedWithoutRevert;
+    }
+
+    public void setOriginalInterval(TimelineInterval originalInterval) {
+        this.originalInterval = originalInterval;
+        this.originalPosition = originalInterval.getStartPosition();
     }
 
 }

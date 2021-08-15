@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.MoveClipRequest;
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -13,6 +14,7 @@ import com.helospark.tactview.ui.javafx.commands.UiCommand;
 
 public class ClipMovedCommand implements UiCommand {
     private boolean isRevertable;
+    private boolean hasIntervalChanged;
 
     private String clipId;
     private List<String> additionalClipIds;
@@ -64,30 +66,39 @@ public class ClipMovedCommand implements UiCommand {
                 .withAdditionalSpecialPositions(additionalPositions)
                 .build();
 
+        TimelineInterval newInterval = timelineManager.findClipById(clipId).get().getInterval();
+
         wasOperationSuccessful = timelineManager.moveClip(request);
+        hasIntervalChanged = !previousPosition.equals(newInterval.getStartPosition());
     }
 
     @Override
     public void revert() {
-        if (wasOperationSuccessful) {
-            MoveClipRequest request = MoveClipRequest.builder()
-                    .withClipId(clipId)
-                    .withAdditionalClipIds(additionalClipIds)
-                    .withNewPosition(previousPosition)
-                    .withNewChannelId(originalChannelId)
-                    .withEnableJumpingToSpecialPosition(false)
-                    .build();
-            timelineManager.moveClip(request);
-        }
+        MoveClipRequest request = MoveClipRequest.builder()
+                .withClipId(clipId)
+                .withAdditionalClipIds(additionalClipIds)
+                .withNewPosition(previousPosition)
+                .withNewChannelId(originalChannelId)
+                .withEnableJumpingToSpecialPosition(false)
+                .build();
+        timelineManager.moveClip(request);
     }
 
     public boolean wasOperationSuccessful() {
         return wasOperationSuccessful;
     }
 
+    public TimelinePosition getNewPosition() {
+        return newPosition;
+    }
+
     @Override
     public boolean isRevertable() {
-        return isRevertable;
+        return isRevertable && hasIntervalChanged;
+    }
+
+    public boolean hasMoved() {
+        return hasIntervalChanged;
     }
 
     @Override
@@ -191,4 +202,5 @@ public class ClipMovedCommand implements UiCommand {
             return new ClipMovedCommand(this);
         }
     }
+
 }
