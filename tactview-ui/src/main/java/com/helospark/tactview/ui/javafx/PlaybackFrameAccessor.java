@@ -53,12 +53,12 @@ public class PlaybackFrameAccessor {
         this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
     }
 
-    public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position) {
-        ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(position, true);
+    public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position, Optional<FrameSize> frameSize) {
+        ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(position, true, frameSize);
 
         ImageWithExpandedFramePositions result;
         if (uiPlaybackPreferenceRepository.isHalfEffect()) {
-            ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(position, false);
+            ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(position, false, frameSize);
             Image sharedImageResult = mergeImages(imageWithEffects.image, javafxImageWithoutEffects.image);
             result = new ImageWithExpandedFramePositions(sharedImageResult, imageWithEffects.clipRectangle);
         } else {
@@ -88,12 +88,13 @@ public class PlaybackFrameAccessor {
         return result;
     }
 
-    private ImageWithExpandedFramePositions getImageWithEffectEnabled(TimelinePosition position, boolean enableEffect) {
-        Integer width = uiProjectRepository.getPreviewWidth();
-        Integer height = uiProjectRepository.getPreviewHeight();
+    private ImageWithExpandedFramePositions getImageWithEffectEnabled(TimelinePosition position, boolean enableEffect, Optional<FrameSize> frameSize) {
+        Integer width = frameSize.map(size -> (int) size.width).orElse(uiProjectRepository.getPreviewWidth());
+        Integer height = frameSize.map(size -> (int) size.height).orElse(uiProjectRepository.getPreviewHeight());
+        double scale = frameSize.map(size -> size.scale).orElse(uiProjectRepository.getScaleFactor());
         TimelineManagerFramesRequest request = TimelineManagerFramesRequest.builder()
                 .withPosition(position)
-                .withScale(uiProjectRepository.getScaleFactor())
+                .withScale(scale)
                 .withPreviewWidth(width)
                 .withPreviewHeight(height)
                 .withNeedSound(false)
@@ -145,6 +146,18 @@ public class PlaybackFrameAccessor {
         public ImageWithExpandedFramePositions(Image image, Map<String, RegularRectangle> clipRectangle) {
             this.image = image;
             this.clipRectangle = clipRectangle;
+        }
+    }
+
+    public static class FrameSize {
+        int width;
+        int height;
+        double scale;
+
+        public FrameSize(int width, int height, double scale) {
+            this.width = width;
+            this.height = height;
+            this.scale = scale;
         }
 
     }

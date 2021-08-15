@@ -98,6 +98,10 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
         this.previewAvailableHeight.set(previewAvailableHeight);
     }
 
+    public double getAspectRatio() {
+        return aspectRatio;
+    }
+
     @Override
     public void generateSavedContent(Map<String, Object> generatedContent, SaveMetadata saveMetadata) {
         Map<String, Object> data = new HashMap<>();

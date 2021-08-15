@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -20,13 +21,14 @@ import org.slf4j.Logger;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
-import com.helospark.lightdi.annotation.Value;
+import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor.FrameSize;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
@@ -52,6 +54,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     private final PlaybackFrameAccessor playbackFrameAccessor;
     private final UiProjectRepository uiProjectRepostiory;
+    private final ProjectRepository projectRepository;
     private final UiTimelineManager uiTimelineManager;
     private final GlobalDirtyClipManager globalDirtyClipManager;
     private final List<DisplayUpdatedListener> displayUpdateListeners;
@@ -59,7 +62,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private final ScheduledExecutorService scheduledExecutorService;
     private final SelectedNodeRepository selectedNodeRepository;
 
-    private final boolean debugAudioUpdateEnabled;
+    private FullScreenData fullscreenData = null;
 
     // cache current frame
     private JavaDisplayableAudioVideoFragment cacheCurrentImage;
@@ -79,17 +82,17 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     public DisplayUpdaterService(PlaybackFrameAccessor playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
-            @Value("${debug.display-audio-updater.enabled}") boolean debugAudioUpdateEnabled,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService, SelectedNodeRepository selectedNodeRepository) {
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService, SelectedNodeRepository selectedNodeRepository,
+            ProjectRepository projectRepository) {
         this.playbackFrameAccessor = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
         this.globalDirtyClipManager = globalDirtyClipManager;
         this.displayUpdateListeners = displayUpdateListeners;
         this.messagingService = messagingService;
-        this.debugAudioUpdateEnabled = debugAudioUpdateEnabled;
         this.scheduledExecutorService = scheduledExecutorService;
         this.selectedNodeRepository = selectedNodeRepository;
+        this.projectRepository = projectRepository;
     }
 
     @PostConstruct
@@ -178,7 +181,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             if (cachedKey != null) {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             } else {
-                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition);
+                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize());
             }
 
             numberOfDroppedFrames = 0;
@@ -209,7 +212,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         } else {
             Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
             if (cachedKey == null) {
-                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition);
+                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize());
             } else {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             }
@@ -227,11 +230,12 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     protected void displayFrameAsync(TimelinePosition currentPosition, long currentPostionLastModified, JavaDisplayableAudioVideoFragment actualAudioVideoFragment) {
         Platform.runLater(() -> {
             try {
-                int width = uiProjectRepostiory.getPreviewWidth();
-                int height = uiProjectRepostiory.getPreviewHeight();
-                GraphicsContext gc = canvas.getGraphicsContext2D();
+                Canvas canvasToUse = (fullscreenData == null ? canvas : fullscreenData.canvas);
+                int width = (fullscreenData == null ? uiProjectRepostiory.getPreviewWidth() : fullscreenData.width);
+                int height = (fullscreenData == null ? uiProjectRepostiory.getPreviewHeight() : fullscreenData.height);
+                GraphicsContext gc = canvasToUse.getGraphicsContext2D();
                 gc.setFill(Color.BLACK);
-                gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                gc.fillRect(0, 0, canvasToUse.getWidth(), canvasToUse.getHeight());
                 Image image = actualAudioVideoFragment.getImage();
                 gc.drawImage(image, 0, 0, width, height);
 
@@ -241,7 +245,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                         .withImage(image)
                         .withPosition(currentPosition)
                         .withGraphics(gc)
-                        .withCanvas(canvas)
+                        .withCanvas(canvasToUse)
                         .build();
                 cacheCurrentImage = actualAudioVideoFragment;
                 cachePosition = currentPosition;
@@ -297,7 +301,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                     if (recentlyDroppedFrames.contains(nextFrameTime)) {
                         return null; // result is ignored, we dropped this frame
                     } else {
-                        return playbackFrameAccessor.getVideoFrameAt(nextFrameTime);
+                        return playbackFrameAccessor.getVideoFrameAt(nextFrameTime, getFrameSize());
                     }
                 });
                 framecache.put(nextFrameTime, task);
@@ -311,6 +315,22 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     public JavaDisplayableAudioVideoFragment getCacheCurrentImage() {
         return cacheCurrentImage;
+    }
+
+    public void startFullscreenPreview(FullScreenData fullscreenData) {
+        this.fullscreenData = fullscreenData;
+    }
+
+    public void stopFullscreenPreview() {
+        this.fullscreenData = null;
+    }
+
+    private Optional<FrameSize> getFrameSize() {
+        if (fullscreenData != null) {
+            return Optional.ofNullable(new FrameSize(fullscreenData.width, fullscreenData.height, fullscreenData.scale));
+        } else {
+            return Optional.ofNullable(new FrameSize(uiProjectRepostiory.getPreviewWidth(), uiProjectRepostiory.getPreviewHeight(), uiProjectRepostiory.getScaleFactor()));
+        }
     }
 
     public static class TimelineDisplayAsyncUpdateRequest {
@@ -357,6 +377,21 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             public TimelineDisplayAsyncUpdateRequest build() {
                 return new TimelineDisplayAsyncUpdateRequest(this);
             }
+        }
+
+    }
+
+    static class FullScreenData {
+        Canvas canvas;
+        int width;
+        int height;
+        double scale;
+
+        public FullScreenData(Canvas canvas, int width, int height, double scale) {
+            this.canvas = canvas;
+            this.width = width;
+            this.height = height;
+            this.scale = scale;
         }
 
     }

@@ -360,7 +360,7 @@
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 3, 0.0 , 0 , 1 );
 }
 
-#video-button-bar .toggle-button:hover {
+#video-button-bar .toggle-button:hover, #video-button-bar .button:hover {
     -fx-background-color: 
         #333333,
         linear-gradient(#000000 50%, white 100%),
@@ -372,6 +372,10 @@
         #333333,
         linear-gradient(#000000 70%, white 100%),
         radial-gradient(center 50% -40%, radius 200%, #000000 45%, rgba(150,150,150,0) 50%);
+}
+
+#video-button-bar .small-empty-space {
+    -fx-pref-width: 8px;
 }
 
 .tab-pane .tab-header-area .tab-header-background {

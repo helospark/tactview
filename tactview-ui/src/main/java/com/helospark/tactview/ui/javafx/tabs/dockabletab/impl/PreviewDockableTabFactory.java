@@ -85,10 +85,13 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         muteButton.setOnAction(event -> playbackPreferenceRepository.setMute(muteButton.isSelected()));
         muteButton.setTooltip(new Tooltip("Mute"));
 
-        Button fullscreenButton = new Button("", new Glyph("FontAwesome",
-                FontAwesome.Glyph.IMAGE));
-        fullscreenButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
-        fullscreenButton.setTooltip(new Tooltip("Show full scale preview"));
+        Button maximalFrameButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.IMAGE));
+        maximalFrameButton.setOnMouseClicked(e -> fullScreenRenderer.renderFullScreenAtCurrentLocation());
+        maximalFrameButton.setTooltip(new Tooltip("Show maximal preview frame"));
+
+        Button fullscreenButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXPAND));
+        fullscreenButton.setOnMouseClicked(e -> uiTimelineManager.startFullscreenPlayback());
+        fullscreenButton.setTooltip(new Tooltip("Fullscreen"));
 
         ToggleButton halfImageEffectButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.STAR_HALF_ALT));
         halfImageEffectButton.setSelected(false);
@@ -145,13 +148,16 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         underVideoBar.getChildren().add(sizeDropDown);
         underVideoBar.getChildren().add(muteButton);
         underVideoBar.getChildren().add(halfImageEffectButton);
-        underVideoBar.getChildren().add(fullscreenButton);
+        underVideoBar.getChildren().add(createSmallEmptyGap());
         underVideoBar.getChildren().add(jumpBackButton);
         underVideoBar.getChildren().add(jumpBackOnFrameButton);
         underVideoBar.getChildren().add(playButton);
         underVideoBar.getChildren().add(stopButton);
         underVideoBar.getChildren().add(jumpForwardOnFrameButton);
         underVideoBar.getChildren().add(jumpForwardButton);
+        underVideoBar.getChildren().add(createSmallEmptyGap());
+        underVideoBar.getChildren().add(maximalFrameButton);
+        underVideoBar.getChildren().add(fullscreenButton);
         underVideoBar.getChildren().add(playbackSpeedDropDown);
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
@@ -170,6 +176,12 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
 
         uiTimelineManager.registerUiPlaybackConsumer(position -> updateTime(position));
         return rightBorderPane;
+    }
+
+    private Node createSmallEmptyGap() {
+        HBox hbox = new HBox();
+        hbox.getStyleClass().add("small-empty-space");
+        return hbox;
     }
 
     private void updateTime(TimelinePosition position) {

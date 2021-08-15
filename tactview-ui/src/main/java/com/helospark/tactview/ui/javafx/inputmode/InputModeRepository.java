@@ -213,7 +213,7 @@ public class InputModeRepository implements CleanableMode {
                         .withUnscaledX(e.getX())
                         .withUnscaledY(e.getY())
                         .withCanvasImage(() -> {
-                            return playbackController.getVideoFrameAt(timelineManager.getCurrentPosition()).getImage();
+                            return playbackController.getVideoFrameAt(timelineManager.getCurrentPosition(), Optional.empty()).getImage();
                         })
                         .withCurrentlyPressedKeyRepository(currentlyPressedKeyRepository)
                         .build();

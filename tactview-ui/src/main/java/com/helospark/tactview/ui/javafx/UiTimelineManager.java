@@ -27,14 +27,23 @@ import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.ui.javafx.DisplayUpdaterService.FullScreenData;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService.TimelineDisplayAsyncUpdateRequest;
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
 import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
+import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
 
 import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
 import sonic.Sonic;
 
 @Component
@@ -54,6 +63,7 @@ public class UiTimelineManager {
     private Sonic sonic = null;
 
     private final ProjectRepository projectRepository;
+    private final UiProjectRepository uiProjectRepository;
     private final TimelineState timelineState;
     private final PlaybackFrameAccessor playbackFrameAccessor;
     private final AudioStreamService audioStreamService;
@@ -68,7 +78,8 @@ public class UiTimelineManager {
 
     public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
             AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository, JavaByteArrayConverter javaByteArrayConverter,
-            List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
+            List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
+            UiProjectRepository uiProjectRepository) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
         this.playbackFrameAccessor = playbackController;
@@ -77,6 +88,7 @@ public class UiTimelineManager {
         this.javaByteArrayConverter = javaByteArrayConverter;
         this.audioPlayedListeners = audioPlayedListeners;
         this.scheduledExecutorService = scheduledExecutorService;
+        this.uiProjectRepository = uiProjectRepository;
 
         scheduledExecutorService.scheduleAtFixedRate(() -> handleStuckPlayback(), 5000, 5000, TimeUnit.MILLISECONDS);
     }
@@ -98,6 +110,14 @@ public class UiTimelineManager {
 
     public void registerStoppedConsumer(Consumer<PlaybackStatus> consumer) {
         this.statusChangeConsumers.add(consumer);
+    }
+
+    private void togglePlayback() {
+        if (this.isPlaying) {
+            stopPlayback();
+        } else {
+            startPlayback();
+        }
     }
 
     public void startPlayback() {
@@ -367,6 +387,57 @@ public class UiTimelineManager {
 
     public boolean isPlaybackInProgress() {
         return isPlaying;
+    }
+
+    public void startFullscreenPlayback() {
+        Rectangle2D screenBounds = Screen.getPrimary().getBounds();
+        double screenAspectRatio = screenBounds.getWidth() / screenBounds.getHeight();
+        double videoAspectRatio = uiProjectRepository.getAspectRatio();
+
+        double videoWidth, videoHeight;
+
+        if (videoAspectRatio > screenAspectRatio) {
+            videoHeight = screenBounds.getHeight();
+            videoWidth = videoHeight * videoAspectRatio;
+        } else {
+            videoWidth = screenBounds.getWidth();
+            videoHeight = videoWidth / videoAspectRatio;
+        }
+
+        BorderPane boderPane = new BorderPane();
+        Canvas canvas = new Canvas(videoWidth, videoHeight);
+        boderPane.setCenter(canvas);
+
+        Scene scene = new Scene(boderPane);
+
+        Stage stage = new Stage();
+        stage.setFullScreen(true);
+        stage.setScene(scene);
+        stage.show();
+
+        scene.setOnKeyPressed(e -> {
+            if (e.getCode().equals(KeyCode.ESCAPE)) {
+                stage.close();
+                displayUpdaterService.stopFullscreenPreview();
+            }
+            if (e.getCode().equals(KeyCode.SPACE)) {
+                togglePlayback();
+            }
+        });
+        scene.setOnMouseClicked(e -> {
+            if (e.isPrimaryButtonDown() && e.getClickCount() == 1) {
+                togglePlayback();
+            }
+        });
+
+        FullScreenData fullscreenData = new FullScreenData(canvas, (int) videoWidth, (int) videoHeight, videoWidth / projectRepository.getWidth());
+
+        displayUpdaterService.startFullscreenPreview(fullscreenData);
+        displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+    }
+
+    public void stopFullscreen() {
+        displayUpdaterService.stopFullscreenPreview();
     }
 
     @PreferenceValue(name = "Number of frames to preload during playback", defaultValue = "2", group = "Performance")
