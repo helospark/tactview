@@ -147,8 +147,14 @@ public class EffectParametersRepository {
     public void resetToDefaultValue(String descriptorId) {
         EffectStore valueToChange = allEffectIdToEffectMap.get(descriptorId);
         if (valueToChange != null) {
-            valueToChange.effect.getInterpolator().resetToDefaultValue();
-            messagingService.sendAsyncMessage(new KeyframeSuccesfullyResetMessage(descriptorId, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
+            if (valueToChange.effect.isPrimitive()) {
+                valueToChange.effect.getInterpolator().resetToDefaultValue();
+                messagingService.sendAsyncMessage(new KeyframeSuccesfullyResetMessage(descriptorId, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
+            } else {
+                List<KeyframeableEffect<?>> children = valueToChange.effect.getChildren();
+                children.stream()
+                        .forEach(a -> resetToDefaultValue(a.getId()));
+            }
         } else {
             System.out.println("We wanted to change " + descriptorId + " but it was removed");
         }

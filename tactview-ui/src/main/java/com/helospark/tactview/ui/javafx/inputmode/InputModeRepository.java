@@ -2,10 +2,13 @@ package com.helospark.tactview.ui.javafx.inputmode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
@@ -15,6 +18,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFu
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
+import com.helospark.tactview.ui.javafx.JavaDisplayableAudioVideoFragment;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
@@ -30,8 +34,11 @@ import com.helospark.tactview.ui.javafx.inputmode.strategy.RelativePointInputTyp
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyKeyInput;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.StrategyMouseInput;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.generalops.GeneralCanvasOperationStrategy;
+import com.helospark.tactview.ui.javafx.inputmode.strategy.generalops.GeneralCanvasOperationsMouseRequest;
 import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
+import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 
@@ -53,12 +60,14 @@ public class InputModeRepository implements CleanableMode {
     private UiTimelineManager timelineManager;
     private VideoStatusBarUpdater videoStatusBarUpdater;
     private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
+    private GeneralCanvasOperationStrategy generalCanvasOperationStrategy;
+    private SelectedNodeRepository selectedNodeRepository;
     private List<Consumer<Boolean>> inputModeConsumer = new ArrayList<>();
 
     public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService,
             SizeFunctionImplementation sizeFunctionImplementation, PlaybackFrameAccessor playbackController,
             UiTimelineManager timelineManager, VideoStatusBarUpdater videoStatusBarUpdater,
-            CurrentlyPressedKeyRepository currentlyPressedKeyRepository) {
+            CurrentlyPressedKeyRepository currentlyPressedKeyRepository, GeneralCanvasOperationStrategy generalCanvasOperationStrategy, SelectedNodeRepository selectedNodeRepository) {
         this.projectRepository = projectRepository;
         this.displayUpdaterService = displayUpdaterService;
         this.sizeFunctionImplementation = sizeFunctionImplementation;
@@ -66,6 +75,8 @@ public class InputModeRepository implements CleanableMode {
         this.timelineManager = timelineManager;
         this.videoStatusBarUpdater = videoStatusBarUpdater;
         this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
+        this.generalCanvasOperationStrategy = generalCanvasOperationStrategy;
+        this.selectedNodeRepository = selectedNodeRepository;
     }
 
     // TODO: should this be in DI framework?
@@ -142,18 +153,21 @@ public class InputModeRepository implements CleanableMode {
     }
 
     private void processStrategy() {
-        canvas.setOnMousePressed(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDownEvent(input)));
-        canvas.setOnMouseReleased(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseUpEvent(input)));
-        canvas.setOnMouseDragged(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDraggedEvent(input)));
+        canvas.setOnMousePressed(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDownEvent(input), input -> generalCanvasOperationStrategy.onMouseDownEvent(input)));
+        canvas.setOnMouseReleased(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseUpEvent(input), input -> generalCanvasOperationStrategy.onMouseUpEvent(input)));
+        canvas.setOnMouseDragged(createMouseHandler(input -> inputModeInput.currentStrategy.onMouseDraggedEvent(input), input -> generalCanvasOperationStrategy.onMouseDraggedEvent(input)));
         currentlyPressedKeyRepository.onKeyDown(createKeyHandler(input -> inputModeInput.currentStrategy.onKeyPressedEvent(input)));
 
-        EventHandler<? super MouseEvent> mouseMoveHandler = createMouseHandler(input -> inputModeInput.currentStrategy.onMouseMovedEvent(input));
+        EventHandler<? super MouseEvent> mouseMoveHandler = createMouseHandler(input -> inputModeInput.currentStrategy.onMouseMovedEvent(input),
+                input -> generalCanvasOperationStrategy.onMouseMovedEvent(input));
+
         canvas.setOnMouseMoved(e -> {
             mouseMoveHandler.handle(e);
             updateCanvas(e);
         });
         canvas.setOnMouseExited(e -> {
             displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+            generalCanvasOperationStrategy.onMouseExited(canvas);
             updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null);
         });
     }
@@ -185,8 +199,9 @@ public class InputModeRepository implements CleanableMode {
         }
     }
 
-    private EventHandler<? super MouseEvent> createMouseHandler(Consumer<StrategyMouseInput> function) {
+    private EventHandler<? super MouseEvent> createMouseHandler(Consumer<StrategyMouseInput> function, Consumer<GeneralCanvasOperationsMouseRequest> fallbackHandler) {
         return e -> {
+            JavaDisplayableAudioVideoFragment cacheCurrentImage = displayUpdaterService.getCacheCurrentImage();
             if (inputModeInput != null) {
                 double x = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getX(), inputModeInput.sizeFunction, projectRepository.getPreviewWidth()));
                 double y = (sizeFunctionImplementation.scalePreviewDataUsingSizeFunction(e.getY(), inputModeInput.sizeFunction, projectRepository.getPreviewHeight()));
@@ -211,8 +226,24 @@ public class InputModeRepository implements CleanableMode {
                     handleStrategyHasResult();
                     reset();
                 }
+                updateCanvas(e);
+            } else if (cacheCurrentImage != null) {
+                Map<String, RegularRectangle> filteredRectangles = cacheCurrentImage.getClipRectangle()
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> selectedNodeRepository.getSelectedClipIds().contains(entry.getKey()))
+                        .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+                GeneralCanvasOperationsMouseRequest fallbackRequest = GeneralCanvasOperationsMouseRequest.builder()
+                        .withCanvas(canvas)
+                        .withUnscaledX(e.getX())
+                        .withUnscaledY(e.getY())
+                        .withx(e.getX() / projectRepository.getPreviewWidth())
+                        .withy(e.getY() / projectRepository.getPreviewHeight())
+                        .withMouseEvent(e)
+                        .withRectangles(filteredRectangles)
+                        .build();
+                fallbackHandler.accept(fallbackRequest);
             }
-            updateCanvas(e);
         };
     }
 

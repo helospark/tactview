@@ -30,16 +30,7 @@ public class ResetDefaultValuesCommand implements UiCommand {
         KeyframeableEffect previousValue = effectParametersRepository.getKeyframeableEffect(descriptorId);
 
         if (previousValue != null) {
-            List<KeyframeableEffect> children = previousValue.getChildren();
-
-            for (var a : children) {
-                String id = a.getId();
-                EffectInterpolator clonedInterpolator = a.getInterpolator().deepClone(CloneRequestMetadata.fullCopy());
-
-                previousInterpolatorClones.put(id, clonedInterpolator);
-
-                effectParametersRepository.resetToDefaultValue(id);
-            }
+            recursiveResetDefault(previousValue);
 
             EffectInterpolator previousInterpolator = previousValue.getInterpolator();
             if (previousInterpolator != null) {
@@ -48,6 +39,22 @@ public class ResetDefaultValuesCommand implements UiCommand {
                 LOGGER.error("No previous value present for interpolator");
             }
             effectParametersRepository.resetToDefaultValue(descriptorId);
+        }
+    }
+
+    private void recursiveResetDefault(KeyframeableEffect previousValue) {
+        if (previousValue.isPrimitive()) {
+            String id = previousValue.getId();
+            EffectInterpolator clonedInterpolator = previousValue.getInterpolator().deepClone(CloneRequestMetadata.fullCopy());
+
+            previousInterpolatorClones.put(id, clonedInterpolator);
+
+            effectParametersRepository.resetToDefaultValue(id);
+        } else {
+            List<KeyframeableEffect> children = previousValue.getChildren();
+            for (var a : children) {
+                recursiveResetDefault(a);
+            }
         }
     }
 

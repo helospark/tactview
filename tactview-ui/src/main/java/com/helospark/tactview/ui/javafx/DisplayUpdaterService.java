@@ -126,7 +126,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             ++selectionBoxUpdateCount;
             if (hasSelectedElement && canUseCacheAt(uiTimelineManager.getCurrentPosition())) {
-                drawSelectionRectangle(cacheCurrentImage, canvas.getGraphicsContext2D());
+                Platform.runLater(() -> drawSelectionRectangle(cacheCurrentImage, canvas.getGraphicsContext2D()));
             }
         }, 200, 200, TimeUnit.MILLISECONDS);
     }
@@ -256,20 +256,23 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     }
 
     private void drawSelectionRectangle(JavaDisplayableAudioVideoFragment actualAudioVideoFragment, GraphicsContext gc) {
-        boolean foundSelection = false;
-        for (var rectangle : actualAudioVideoFragment.getClipRectangle().entrySet()) {
-            if (selectedNodeRepository.getSelectedClipIds().contains(rectangle.getKey())) {
-                RegularRectangle rect = rectangle.getValue();
-                drawRectangleWithDashedLine(gc, rect);
-                foundSelection = true;
+        if (actualAudioVideoFragment != null) {
+            boolean foundSelection = false;
+            for (var rectangle : actualAudioVideoFragment.getClipRectangle().entrySet()) {
+                if (selectedNodeRepository.getSelectedClipIds().contains(rectangle.getKey())) {
+                    RegularRectangle rect = rectangle.getValue();
+                    drawRectangleWithDashedLine(gc, rect);
+                    foundSelection = true;
+                }
             }
+            hasSelectedElement = foundSelection;
         }
-        hasSelectedElement = foundSelection;
     }
 
     private void drawRectangleWithDashedLine(GraphicsContext gc, RegularRectangle rect) {
         int boxOffset = selectionBoxUpdateCount;
         gc.setStroke(Color.WHITE);
+        gc.setLineWidth(1.0);
         gc.setLineDashOffset(boxOffset);
         gc.setLineDashes(SELECTION_BOX_DASH_SIZE, SELECTION_BOX_DASH_SIZE);
         gc.strokeRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
@@ -304,6 +307,10 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                 }
             }
         }
+    }
+
+    public JavaDisplayableAudioVideoFragment getCacheCurrentImage() {
+        return cacheCurrentImage;
     }
 
     public static class TimelineDisplayAsyncUpdateRequest {
