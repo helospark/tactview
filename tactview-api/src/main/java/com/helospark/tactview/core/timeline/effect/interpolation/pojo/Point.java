@@ -39,6 +39,10 @@ public class Point {
         return new Point(x * otherX, y * otherY);
     }
 
+    public Point multiply(double otherX, double otherY) {
+        return new Point(x * otherX, y * otherY);
+    }
+
     public Point scalarMultiply(double scale) {
         return new Point(x * scale, y * scale);
     }
