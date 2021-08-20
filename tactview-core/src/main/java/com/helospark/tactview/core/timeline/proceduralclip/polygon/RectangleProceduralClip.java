@@ -16,14 +16,18 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
 import com.helospark.tactview.core.util.IndependentPixelOperation;
@@ -33,9 +37,15 @@ import com.helospark.tactview.core.util.ReflectionUtil;
 public class RectangleProceduralClip extends ProceduralVisualClip {
     private IndependentPixelOperation independentPixelOperation;
 
+    private ValueListProvider<ValueListElement> fillTypeProvider;
+
     private ColorProvider colorProvider;
     private LineProvider lineProvider;
     private DoubleProvider fuzzyDistanceProvider;
+
+    private ColorProvider startColorGradientProvider;
+    private ColorProvider endColorGradientProvider;
+    private BooleanProvider horizontalGradientProvider;
 
     public RectangleProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(visualMediaMetadata, interval);
@@ -61,7 +71,12 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
         ClipImage result = ClipImage.fromSize((int) (Math.abs(endPositionNormalized.x - startPositionNormalized.x) * request.getExpectedWidth()),
                 (int) (Math.abs(endPositionNormalized.y - startPositionNormalized.y) * request.getExpectedHeight()));
 
-        Color color = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
+        String fillType = fillTypeProvider.getValueAt(relativePosition).getId();
+        Color globalPixelColor = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
+        Color startGradientColor = startColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
+        Color endGradientColor = endColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
+        boolean horizontal = horizontalGradientProvider.getValueAt(relativePosition);
+
         double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition);
 
         independentPixelOperation.executePixelTransformation(result.getWidth(), result.getHeight(), (x, y) -> {
@@ -79,6 +94,11 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
                 alphaNormalized = Math.min(minDistance / fuzzyDistance, 1.0);
             }
+            Color color = globalPixelColor;
+            if (fillType.equals("gradient")) {
+                double percent = horizontal ? normalizedX : normalizedY;
+                color = startGradientColor.interpolate(endGradientColor, percent);
+            }
 
             result.setRed((int) color.red, x, y);
             result.setGreen((int) color.green, x, y);
@@ -92,23 +112,63 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
+        fillTypeProvider = new ValueListProvider<>(createFillTypeElements(), new StepStringInterpolator("color"));
+
         colorProvider = ColorProvider.fromDefaultValue(0.5, 0.5, 0.5);
+
+        startColorGradientProvider = ColorProvider.fromDefaultValue(0.2, 0.2, 0.2);
+        endColorGradientProvider = ColorProvider.fromDefaultValue(1.0, 1.0, 1.0);
+        horizontalGradientProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
+
         fuzzyDistanceProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(0.0));
 
         PointProvider topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.3), doubleProviderWithDefaultValue(0.3));
         PointProvider bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.6), doubleProviderWithDefaultValue(0.6));
         lineProvider = new LineProvider(topLeftPointProvider, bottomRightPointProvider);
+    }
 
+    private List<ValueListElement> createFillTypeElements() {
+        return List.of(
+                new ValueListElement("color", "color"),
+                new ValueListElement("gradient", "gradient"));
     }
 
     @Override
     public List<ValueProviderDescriptor> getDescriptorsInternal() {
         List<ValueProviderDescriptor> result = super.getDescriptorsInternal();
 
-        ValueProviderDescriptor startColorDescriptor = ValueProviderDescriptor.builder()
+        ValueProviderDescriptor fillTypeDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(fillTypeProvider)
+                .withName("Fill")
+                .withGroup("fill")
+                .build();
+
+        ValueProviderDescriptor colorDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(colorProvider)
                 .withName("Color")
+                .withGroup("fill")
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("color"))
                 .build();
+
+        ValueProviderDescriptor startColorGradientDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(startColorGradientProvider)
+                .withName("Start color")
+                .withGroup("fill")
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("gradient"))
+                .build();
+        ValueProviderDescriptor endColorGradientDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(endColorGradientProvider)
+                .withName("End color")
+                .withGroup("fill")
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("gradient"))
+                .build();
+        ValueProviderDescriptor horizontalGradientProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(horizontalGradientProvider)
+                .withName("Horizontal")
+                .withGroup("fill")
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("gradient"))
+                .build();
+
         ValueProviderDescriptor lineProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lineProvider)
                 .withName("Area")
@@ -118,7 +178,8 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
                 .withName("Fuzziness")
                 .build();
 
-        result.addAll(List.of(startColorDescriptor, lineProviderDescriptor, innerSaturationDiameterProviderDescriptor));
+        result.addAll(List.of(fillTypeDescriptor, colorDescriptor, startColorGradientDescriptor, endColorGradientDescriptor, horizontalGradientProviderDescriptor,
+                lineProviderDescriptor, innerSaturationDiameterProviderDescriptor));
         return result;
     }
 

@@ -143,13 +143,13 @@ public class LutEffect extends StatelessVideoEffect {
         ValueProviderDescriptor lutFileProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lutFileProvider)
                 .withName("file")
-                .withShowPredicate(a -> !customFileProvider.getValueAt(a))
+                .withShowPredicate(a -> customFileProvider.getValueAt(a))
                 .build();
 
         ValueProviderDescriptor droppedInLutProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(buildInFilesProvider)
                 .withName("LUT")
-                .withShowPredicate(a -> customFileProvider.getValueAt(a))
+                .withShowPredicate(a -> !customFileProvider.getValueAt(a))
                 .build();
 
         ValueProviderDescriptor intensityProviderDescriptor = ValueProviderDescriptor.builder()

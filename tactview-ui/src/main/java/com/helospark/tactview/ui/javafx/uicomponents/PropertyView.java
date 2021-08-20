@@ -279,7 +279,7 @@ public class PropertyView implements CleanableMode {
         result.addUpdateFunctions(currentTime -> Platform.runLater(() -> {
             keyframeChange.updateUi(currentTime);
             if (descriptor != null && descriptor.getShowPredicate().isPresent()) {
-                Boolean visible = !descriptor.getShowPredicate().get().apply(currentTime);
+                Boolean visible = descriptor.getShowPredicate().get().apply(currentTime);
 
                 labelBox.setVisible(visible);
                 labelBox.setManaged(visible);
