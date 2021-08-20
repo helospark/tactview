@@ -8,6 +8,7 @@ import javax.annotation.Generated;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
+import com.helospark.tactview.core.timeline.GetPositionParameters;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
@@ -29,8 +30,9 @@ public class FrameExtender {
 
         double scale = request.getScale();
 
-        int requestedXPosition = anchorOffsetX + clip.getXPosition(timelinePosition, scale);
-        int requestedYPosition = anchorOffsetY + clip.getYPosition(timelinePosition, scale);
+        GetPositionParameters getPositionParameters = new GetPositionParameters(timelinePosition, scale, previewWidth, previewHeight);
+        int requestedXPosition = anchorOffsetX + clip.getXPosition(getPositionParameters);
+        int requestedYPosition = anchorOffsetY + clip.getYPosition(getPositionParameters);
 
         request.outBoundPositions.put(clip.getId(), new RegularRectangle(requestedXPosition, requestedYPosition, frameResult.getWidth(), frameResult.getHeight()));
 

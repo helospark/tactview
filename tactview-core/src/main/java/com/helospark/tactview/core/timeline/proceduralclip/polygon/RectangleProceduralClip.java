@@ -10,6 +10,7 @@ import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
+import com.helospark.tactview.core.timeline.GetPositionParameters;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -53,12 +54,12 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
-
         InterpolationLine line = lineProvider.getValueAt(relativePosition);
+        Point startPositionNormalized = line.start;
+        Point endPositionNormalized = line.end;
 
-        Point startPositionInPixels = line.start;
-        Point endPositionInPixels = line.end;
+        ClipImage result = ClipImage.fromSize((int) (Math.abs(endPositionNormalized.x - startPositionNormalized.x) * request.getExpectedWidth()),
+                (int) (Math.abs(endPositionNormalized.y - startPositionNormalized.y) * request.getExpectedHeight()));
 
         Color color = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
         double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition);
@@ -67,25 +68,22 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
             double normalizedX = (double) x / result.getWidth();
             double normalizedY = (double) y / result.getHeight();
 
-            if (normalizedX >= startPositionInPixels.x && normalizedY >= startPositionInPixels.y
-                    && normalizedX < endPositionInPixels.x && normalizedY < endPositionInPixels.y) {
-                double alphaNormalized = 1.0;
-                if (fuzzyDistance > 0) {
-                    double minLeftXDistance = Math.abs(startPositionInPixels.x - normalizedX);
-                    double minRightXDistance = Math.abs(endPositionInPixels.x - normalizedX);
-                    double maxTopYDistance = Math.abs(startPositionInPixels.y - normalizedY);
-                    double maxBottomYDistance = Math.abs(endPositionInPixels.y - normalizedY);
+            double alphaNormalized = 1.0;
+            if (fuzzyDistance > 0) {
+                double minLeftXDistance = Math.abs(normalizedX);
+                double minRightXDistance = Math.abs(1.0 - normalizedX);
+                double maxTopYDistance = Math.abs(normalizedY);
+                double maxBottomYDistance = Math.abs(1.0 - normalizedY);
 
-                    double minDistance = MathUtil.min(minLeftXDistance, minRightXDistance, maxTopYDistance, maxBottomYDistance);
+                double minDistance = MathUtil.min(minLeftXDistance, minRightXDistance, maxTopYDistance, maxBottomYDistance);
 
-                    alphaNormalized = Math.min(minDistance / fuzzyDistance, 1.0);
-                }
-
-                result.setRed((int) color.red, x, y);
-                result.setGreen((int) color.green, x, y);
-                result.setBlue((int) color.blue, x, y);
-                result.setAlpha((int) (alphaNormalized * 255.0), x, y);
+                alphaNormalized = Math.min(minDistance / fuzzyDistance, 1.0);
             }
+
+            result.setRed((int) color.red, x, y);
+            result.setGreen((int) color.green, x, y);
+            result.setBlue((int) color.blue, x, y);
+            result.setAlpha((int) (alphaNormalized * 255.0), x, y);
         });
         return result;
     }
@@ -133,4 +131,17 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
         return new RectangleProceduralClip(this, cloneRequestMetadata);
     }
 
+    @Override
+    public int getXPosition(GetPositionParameters parameterObject) {
+        InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
+        double xPos = Math.min(line.start.x, line.end.x);
+        return (int) (xPos * parameterObject.getWidth()) + super.getXPosition(parameterObject);
+    }
+
+    @Override
+    public int getYPosition(GetPositionParameters parameterObject) {
+        InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
+        double yPos = Math.min(line.start.y, line.end.y);
+        return (int) (yPos * parameterObject.getHeight()) + super.getYPosition(parameterObject);
+    }
 }

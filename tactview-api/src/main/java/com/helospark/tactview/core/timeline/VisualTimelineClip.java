@@ -139,12 +139,12 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     public abstract VisualMediaMetadata getMediaMetadata();
 
-    public int getXPosition(TimelinePosition timelinePosition, double scale) {
-        return (int) (translatePointProvider.getValueAt(timelinePosition).x * scale);
+    public int getXPosition(GetPositionParameters parameterObject) {
+        return (int) (translatePointProvider.getValueAt(parameterObject.getTimelinePosition()).x * parameterObject.getScale());
     }
 
-    public int getYPosition(TimelinePosition timelinePosition, double scale) {
-        return (int) (translatePointProvider.getValueAt(timelinePosition).y * scale);
+    public int getYPosition(GetPositionParameters parameterObject) {
+        return (int) (translatePointProvider.getValueAt(parameterObject.getTimelinePosition()).y * parameterObject.getScale());
     }
 
     public BiFunction<Integer, Integer, Integer> getVerticalAlignment(TimelinePosition timelinePosition) {

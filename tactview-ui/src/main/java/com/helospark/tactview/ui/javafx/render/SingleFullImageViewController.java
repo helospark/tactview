@@ -24,13 +24,15 @@ import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -85,8 +87,12 @@ public class SingleFullImageViewController {
         private Stage stage;
 
         public ImageShowDialog(Image image, StylesheetAdderService stylesheetAdderService) {
-            ImageView imageView = new ImageView();
-            imageView.setImage(image);
+            Canvas imageView = new Canvas(image.getWidth(), image.getHeight());
+            GraphicsContext graphics = imageView.getGraphicsContext2D();
+
+            graphics.setFill(Color.BLACK);
+            graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
+            graphics.drawImage(image, 0, 0);
 
             ScrollPane root = new ScrollPane();
 
