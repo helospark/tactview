@@ -25,7 +25,7 @@ public class RemoveClipService {
     }
 
     public void removeClip(String clipId) {
-        commandInterpreterService.sendWithResult(createCommand(clipId));
+        commandInterpreterService.synchronousSend(createCommand(clipId));
     }
 
     public void removeClips(Collection<String> clipIds) {
@@ -33,7 +33,7 @@ public class RemoveClipService {
                 .map(clipId -> createCommand(clipId))
                 .collect(Collectors.toList());
         if (commands.size() > 0) {
-            commandInterpreterService.sendWithResult(new CompositeCommand(commands));
+            commandInterpreterService.synchronousSend(new CompositeCommand(commands));
         }
     }
 
@@ -43,7 +43,7 @@ public class RemoveClipService {
 
     public void rippleDeleteClips(List<String> clipIds, TimelineEditMode timelineEditProperty) {
         if (clipIds.size() > 0) {
-            commandInterpreterService.sendWithResult(new RippleRemoveClipCommand(timelineManager, messagingService, clipIds, timelineEditProperty));
+            commandInterpreterService.synchronousSend(new RippleRemoveClipCommand(timelineManager, messagingService, clipIds, timelineEditProperty));
         }
     }
 

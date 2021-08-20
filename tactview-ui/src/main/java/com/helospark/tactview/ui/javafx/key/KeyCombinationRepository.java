@@ -11,13 +11,12 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.ui.javafx.hotkey.KeyDescriptor;
 
 import javafx.scene.Node;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 
 @Component
 public class KeyCombinationRepository {
     private Map<KeyCombination, GlobalShortcutHandler> combinations = new HashMap<>();
-    private Map<KeyCode, GlobalFilterShortcutInfo> globalFilters = new HashMap<>();
+    private Map<KeyCombination, GlobalFilterShortcutInfo> globalFilters = new HashMap<>();
 
     public void registerKeyCombination(KeyDescriptor combination, GlobalShortcutHandler handler) {
         combinations.put(combination.getCombination(), handler);
@@ -28,10 +27,10 @@ public class KeyCombinationRepository {
     }
 
     public void registerGlobalKeyFilters(KeyDescriptor combination, GlobalShortcutHandler handler, Set<Class<? extends Node>> disabledOnNodes) {
-        globalFilters.put(combination.getCombination().getCode(), new GlobalFilterShortcutInfo(handler, disabledOnNodes)); // TODO: handle combination
+        globalFilters.put(combination.getCombination(), new GlobalFilterShortcutInfo(handler, disabledOnNodes)); // TODO: handle combination
     }
 
-    public Map<KeyCode, GlobalFilterShortcutInfo> getGlobalFilters() {
+    public Map<KeyCombination, GlobalFilterShortcutInfo> getGlobalFilters() {
         return globalFilters;
     }
 

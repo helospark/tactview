@@ -20,16 +20,17 @@ public class RemoveEffectService {
     }
 
     public void removeEffect(String effectId) {
-        commandInterpreterService.sendWithResult(new RemoveEffectCommand(timelineManager, effectId));
+        commandInterpreterService.synchronousSend(new RemoveEffectCommand(timelineManager, effectId));
     }
 
     public void removeEffects(Collection<String> effectIds) {
         List<RemoveEffectCommand> commands = effectIds.stream()
+                .filter(a -> timelineManager.findEffectById(a).isPresent())
                 .map(a -> new RemoveEffectCommand(timelineManager, a))
                 .collect(Collectors.toList());
         if (commands.size() > 0) {
             CompositeCommand compositeCommand = new CompositeCommand(commands);
-            commandInterpreterService.sendWithResult(compositeCommand);
+            commandInterpreterService.synchronousSend(compositeCommand);
         }
     }
 

@@ -5,6 +5,7 @@ import static javafx.scene.input.KeyCode.K;
 import static javafx.scene.input.KeyCode.LEFT;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -212,12 +213,16 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     public void setMainWindowStage(Stage stage) {
 
         stage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            GlobalFilterShortcutInfo element = keyCombinationRepository.getGlobalFilters().get(event.getCode());
+            Map<KeyCombination, GlobalFilterShortcutInfo> filters = keyCombinationRepository.getGlobalFilters();
 
-            if (element != null && !isDisabled(element)) {
-                element.handler.onShortcutExecuted(new ShortcutExecutedEvent(new KeyCodeCombination(event.getCode())));
-                event.consume();
+            for (var entry : filters.entrySet()) {
+                if (entry.getKey().match(event) && !isDisabled(entry.getValue())) {
+                    entry.getValue().handler.onShortcutExecuted(new ShortcutExecutedEvent(new KeyCodeCombination(event.getCode())));
+                    event.consume();
+                    break;
+                }
             }
+
         });
     }
 
