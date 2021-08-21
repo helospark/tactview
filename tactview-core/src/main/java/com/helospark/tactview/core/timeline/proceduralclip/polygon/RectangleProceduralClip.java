@@ -35,6 +35,9 @@ import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public class RectangleProceduralClip extends ProceduralVisualClip {
+    private static final String GRADIENT_ID = "gradient";
+    private static final String COLOR_ID = "color";
+
     private IndependentPixelOperation independentPixelOperation;
 
     private ValueListProvider<ValueListElement> fillTypeProvider;
@@ -95,7 +98,7 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
                 alphaNormalized = Math.min(minDistance / fuzzyDistance, 1.0);
             }
             Color color = globalPixelColor;
-            if (fillType.equals("gradient")) {
+            if (fillType.equals(GRADIENT_ID)) {
                 double percent = horizontal ? normalizedX : normalizedY;
                 color = startGradientColor.interpolate(endGradientColor, percent);
             }
@@ -112,7 +115,7 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
-        fillTypeProvider = new ValueListProvider<>(createFillTypeElements(), new StepStringInterpolator("color"));
+        fillTypeProvider = new ValueListProvider<>(createFillTypeElements(), new StepStringInterpolator(COLOR_ID));
 
         colorProvider = ColorProvider.fromDefaultValue(0.5, 0.5, 0.5);
 
@@ -129,8 +132,8 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
     private List<ValueListElement> createFillTypeElements() {
         return List.of(
-                new ValueListElement("color", "color"),
-                new ValueListElement("gradient", "gradient"));
+                new ValueListElement(COLOR_ID, COLOR_ID),
+                new ValueListElement(GRADIENT_ID, GRADIENT_ID));
     }
 
     @Override
@@ -147,26 +150,26 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
                 .withKeyframeableEffect(colorProvider)
                 .withName("Color")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("color"))
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(COLOR_ID))
                 .build();
 
         ValueProviderDescriptor startColorGradientDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(startColorGradientProvider)
                 .withName("Start color")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("gradient"))
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(GRADIENT_ID))
                 .build();
         ValueProviderDescriptor endColorGradientDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(endColorGradientProvider)
                 .withName("End color")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("gradient"))
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(GRADIENT_ID))
                 .build();
         ValueProviderDescriptor horizontalGradientProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(horizontalGradientProvider)
                 .withName("Horizontal")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals("gradient"))
+                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(GRADIENT_ID))
                 .build();
 
         ValueProviderDescriptor lineProviderDescriptor = ValueProviderDescriptor.builder()

@@ -72,6 +72,9 @@
                 <include>**/*IT.java</include>
             </includes>
             <trimStackTrace>false</trimStackTrace>
+            <systemProperties>
+                <headless>true</headless>
+            </systemProperties>
         </configuration>
       </plugin>
     </plugins>

@@ -73,7 +73,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 public class JavaFXUiMain extends Application {
-    private static String[] mainArgs;
+    private static String[] mainArgs = new String[0];
 
     public static Stage STAGE = null;
 
