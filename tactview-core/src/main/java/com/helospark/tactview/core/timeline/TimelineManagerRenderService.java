@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -26,6 +27,7 @@ import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
 import com.helospark.tactview.core.timeline.framemerge.RenderFrameData;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.timeline.proceduralclip.channelcopy.AdjustmentLayerProceduralClip;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
 import com.helospark.tactview.core.util.logger.Slf4j;
 
@@ -95,7 +97,24 @@ public class TimelineManagerRenderService {
                                 .flatMap(channel -> channel.getDataAt(request.getPosition()).stream())
                                 .filter(a -> clipsToFrames.containsKey(a.getId()))
                                 .map(a -> clipsToFrames.get(a.getId()))
-                                .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult));
+                                .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult, (a, b) -> a, HashMap::new));
+
+                        ReadOnlyClipImage adjustmentImage = null;
+                        if (clip instanceof AdjustmentLayerProceduralClip) {
+                            Map<String, RenderFrameData> framesBelow = new TreeMap<>();
+                            int startChannel = timelineManagerAccessor.findChannelIndexForClipId(visualClip.getId()).get() + 1;
+
+                            for (int k = startChannel; k < timelineManager.channels.size(); ++k) {
+                                Optional<TimelineClip> clipAtChannel = timelineManager.channels.get(k).getDataAt(request.getPosition());
+                                if (clipAtChannel.isPresent()) {
+                                    String clipId = clipAtChannel.get().getId();
+                                    framesBelow.put(clipId, clipsToFrames.get(clipId));
+                                }
+                            }
+
+                            adjustmentImage = renderBelowLayers(request, renderOrder, framesBelow);
+                            channelCopiedClips.put(AdjustmentLayerProceduralClip.LAYER_ID, adjustmentImage);
+                        }
 
                         GetFrameRequest frameRequest = GetFrameRequest.builder()
                                 .withScale(request.getScale())
@@ -115,6 +134,9 @@ public class TimelineManagerRenderService {
                         double alpha = visualClip.getAlpha(request.getPosition());
 
                         GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
+                        if (adjustmentImage != null) {
+                            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(adjustmentImage.getBuffer());
+                        }
 
                         String channelId = timelineManagerAccessor.findChannelForClipId(visualClip.getId()).get().getId();
                         return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame, clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class),
@@ -176,6 +198,10 @@ public class TimelineManagerRenderService {
         // TODO: audio effects
 
         return new TimelineRenderResult(new AudioVideoFragment(finalResult, audioBuffer), new HashMap<>(clipToExpandedPosition));
+    }
+
+    private ReadOnlyClipImage renderBelowLayers(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> framesBelow) {
+        return renderVideo(request, renderOrder, framesBelow);
     }
 
     private ReadOnlyClipImage executeGlobalEffectsOn(ReadOnlyClipImage finalImage) {
@@ -272,7 +298,7 @@ public class TimelineManagerRenderService {
         List<TreeNode> tree = new ArrayList<>();
 
         for (var clip : clipsToRender.values()) {
-            if (clip.getClipDependency(position).isEmpty() && clip.getChannelDependency(position).isEmpty()) {
+            if (clip.getClipDependency(position).isEmpty() && getChannelDependencies(clip, position).isEmpty()) {
                 tree.add(new TreeNode(clip));
             }
         }
@@ -303,10 +329,23 @@ public class TimelineManagerRenderService {
         List<TreeNode> result = new ArrayList<>();
         String dependentClipChannel = timelineManagerAccessor.findChannelForClipId(dependentClipId).map(channel -> channel.getId()).get();
         for (TimelineClip clip : clipsToRender.values()) {
-            if (clip.getClipDependency(position).contains(dependentClipId) || clip.getChannelDependency(position).contains(dependentClipChannel)) {
+            if (clip.getClipDependency(position).contains(dependentClipId) || getChannelDependencies(clip, position).contains(dependentClipChannel)) {
                 result.add(new TreeNode(clip));
             }
         }
+        return result;
+    }
+
+    private List<String> getChannelDependencies(TimelineClip clip, TimelinePosition position) {
+        List<String> result = clip.getChannelDependency(position);
+
+        if (clip instanceof AdjustmentLayerProceduralClip) {
+            int clipIndex = timelineManagerAccessor.findChannelIndexForClipId(clip.getId()).get();
+            for (int i = clipIndex + 1; i < timelineManager.channels.size(); ++i) {
+                result.add(timelineManager.channels.get(i).getId());
+            }
+        }
+
         return result;
     }
 

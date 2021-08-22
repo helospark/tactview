@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.effect.graphing.DefaultGraphArrangementFactory;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraphAccessorMessageSender;
+import com.helospark.tactview.core.timeline.proceduralclip.channelcopy.AdjustmentLayerProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.channelcopy.ChannelCopyProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.LinearGradientProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.gradient.RadialGradientProceduralEffect;
@@ -252,6 +253,17 @@ public class CoreClipFactoryChainItemConfiguration {
                 },
                 (node, loadMetadata) -> {
                     return new ChannelCopyProceduralClip(metadata, node, loadMetadata);
+                });
+    }
+
+    @Bean
+    public StandardProceduralClipFactoryChainItem adjustmentLayerProceduralClip() {
+        return new StandardProceduralClipFactoryChainItem("adjustmentlayer", "Adjustment layer",
+                request -> {
+                    return new AdjustmentLayerProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength));
+                },
+                (node, loadMetadata) -> {
+                    return new AdjustmentLayerProceduralClip(metadata, node, loadMetadata);
                 });
     }
 

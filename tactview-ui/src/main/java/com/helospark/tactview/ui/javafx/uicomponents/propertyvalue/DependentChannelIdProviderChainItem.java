@@ -1,5 +1,8 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
@@ -21,6 +24,7 @@ import javafx.scene.layout.HBox;
 
 @Component
 public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueSetterChainItem<DependentChannelIdProvider> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DependentChannelIdProviderChainItem.class);
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private TimelineManagerAccessor timelineManager;
@@ -81,10 +85,15 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
                 .build();
 
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+            String id = nameToIdRepository.getIdForName(textArea.getText());
+            if (id == null) {
+                LOGGER.warn("Unable to set " + textArea.getText() + " because it has no id");
+                return;
+            }
             KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                     .withDescriptorId(stringProvider.getId())
                     .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
-                    .withValue(textArea.getText())
+                    .withValue(id)
                     .withRevertable(true)
                     .build();
             AddKeyframeForPropertyCommand command = new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest);
