@@ -27,6 +27,7 @@ import javafx.scene.paint.Color;
 public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpCurveEditor {
     protected int draggedIndex = -1;
     protected int closeIndex = -1;
+    protected KeyframePoint originalPoint = null;
 
     private final UiCommandInterpreterService commandInterpreter;
     private final EffectParametersRepository effectParametersRepository;
@@ -107,7 +108,20 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     @Override
     public boolean onMouseDown(CurveEditorMouseRequest mouseEvent) {
         draggedIndex = getElementIndex(mouseEvent);
+        if (draggedIndex != -1) {
+            originalPoint = getKeyframePoints((KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator).get(draggedIndex).deepClone();
+        }
         return false;
+    }
+
+    @Override
+    public boolean onMouseUp(CurveEditorMouseRequest mouseEvent) {
+        if (draggedIndex != -1) {
+            boolean result = handleDrag(mouseEvent, true);
+            draggedIndex = -1;
+            return result;
+        }
+        return super.onMouseUp(mouseEvent);
     }
 
     protected int getElementIndex(CurveEditorMouseRequest mouseEvent) {
@@ -174,6 +188,8 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
                 .withNewTimelinePosition(newTime)
                 .withRevertable(revertable)
                 .withValue(newValue)
+                .withRevertTimelinePosition(originalPoint.timelinePosition)
+                .withRevertValue(originalPoint.value)
                 .build();
 
         ModifyKeyframeForPropertyCommand command = new ModifyKeyframeForPropertyCommand(effectParametersRepository, keyframeModifiedRequest);
@@ -196,6 +212,10 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
         public KeyframePoint(TimelinePosition timelinePosition, double value) {
             this.timelinePosition = timelinePosition;
             this.value = value;
+        }
+
+        public KeyframePoint deepClone() {
+            return new KeyframePoint(timelinePosition, value);
         }
 
     }
@@ -235,4 +255,5 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     public void setUiTimeline(UiTimelineManager uiTimelineManager) {
         this.uiTimelineManager = uiTimelineManager;
     }
+
 }

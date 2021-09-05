@@ -234,10 +234,10 @@
 
 
     <!-- TMP under development plugins -->
-    <!--<dependency>                                     -->
-    <!--  <groupId>com.helospark.tactview</groupId>      -->
-    <!--  <artifactId>tactview-glsl-plugin</artifactId>  -->
-    <!--  <version>0.0.1-SNAPSHOT</version>              -->
-    <!--</dependency>                                    -->
+<!--     <dependency>                                     -->
+<!--        <groupId>com.helospark.tactview</groupId>      -->
+<!--        <artifactId>tactview-ladspa-plugin</artifactId>  -->
+<!--        <version>0.0.1-SNAPSHOT</version>              -->
+<!--     </dependency>                                    -->
   </dependencies>
 </project>

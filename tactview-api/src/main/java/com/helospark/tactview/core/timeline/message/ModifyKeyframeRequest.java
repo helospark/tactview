@@ -7,6 +7,9 @@ public class ModifyKeyframeRequest {
     private TimelinePosition originalTimelinePosition;
     private TimelinePosition newTimelinePosition;
     private Object value;
+
+    private TimelinePosition revertTimelinePosition;
+    private Object revertValue;
     private boolean revertable;
 
     private ModifyKeyframeRequest(Builder builder) {
@@ -14,6 +17,8 @@ public class ModifyKeyframeRequest {
         this.originalTimelinePosition = builder.originalTimelinePosition;
         this.newTimelinePosition = builder.newTimelinePosition;
         this.value = builder.value;
+        this.revertTimelinePosition = builder.revertTimelinePosition;
+        this.revertValue = builder.revertValue;
         this.revertable = builder.revertable;
     }
 
@@ -37,10 +42,18 @@ public class ModifyKeyframeRequest {
         return revertable;
     }
 
+    public TimelinePosition getRevertTimelinePosition() {
+        return revertTimelinePosition;
+    }
+
+    public Object getRevertValue() {
+        return revertValue;
+    }
+
     @Override
     public String toString() {
-        return "ModifyKeyframeAddedRequest [descriptorId=" + descriptorId + ", originalTimelinePosition=" + originalTimelinePosition + ", newTimelinePosition=" + newTimelinePosition + ", value="
-                + value + ", revertable=" + revertable + "]";
+        return "ModifyKeyframeRequest [descriptorId=" + descriptorId + ", originalTimelinePosition=" + originalTimelinePosition + ", newTimelinePosition=" + newTimelinePosition + ", value=" + value
+                + ", revertTimelinePosition=" + revertTimelinePosition + ", revertValue=" + revertValue + ", revertable=" + revertable + "]";
     }
 
     public static Builder builder() {
@@ -52,6 +65,8 @@ public class ModifyKeyframeRequest {
         private TimelinePosition originalTimelinePosition;
         private TimelinePosition newTimelinePosition;
         private Object value;
+        private TimelinePosition revertTimelinePosition;
+        private Object revertValue;
         private boolean revertable;
         private Builder() {
         }
@@ -73,6 +88,16 @@ public class ModifyKeyframeRequest {
 
         public Builder withValue(Object value) {
             this.value = value;
+            return this;
+        }
+
+        public Builder withRevertTimelinePosition(TimelinePosition revertTimelinePosition) {
+            this.revertTimelinePosition = revertTimelinePosition;
+            return this;
+        }
+
+        public Builder withRevertValue(Object revertValue) {
+            this.revertValue = revertValue;
             return this;
         }
 

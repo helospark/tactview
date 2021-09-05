@@ -48,9 +48,9 @@ public class ModifyKeyframeForPropertyCommand implements UiCommand {
             KeyframeAddedRequest addKeyframeRequest = KeyframeAddedRequest
                     .builder()
                     .withDescriptorId(keyframeableEffect.getId())
-                    .withGlobalTimelinePosition(request.getOriginalTimelinePosition())
+                    .withGlobalTimelinePosition(request.getRevertTimelinePosition())
                     .withRevertable(false)
-                    .withValue(previousValue)
+                    .withValue(request.getRevertValue())
                     .build();
 
             effectParametersRepository.keyframeAdded(addKeyframeRequest);
