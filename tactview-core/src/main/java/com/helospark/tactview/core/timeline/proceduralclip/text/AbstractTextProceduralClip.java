@@ -13,6 +13,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.fa
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
@@ -50,17 +52,21 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
     private ColorProvider colorProvider;
     private ColorProvider outlineColorProvider;
     private DoubleProvider outlineWidthProvider;
+    private BooleanProvider isCustomFontProvider;
+    private FileProvider customFontProvider;
     private ValueListProvider<ValueListElement> fontProvider;
     private ValueListProvider<ValueListElement> alignmentProvider;
     private BooleanProvider italicProvider;
     private BooleanProvider boldProvider;
 
     private BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter;
+    private FontLoader fontLoader;
 
     public AbstractTextProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval,
-            BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
+            BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter, FontLoader fontLoader) {
         super(visualMediaMetadata, interval);
         this.bufferedImageToClipFrameResultConverter = bufferedImageToClipFrameResultConverter;
+        this.fontLoader = fontLoader;
     }
 
     public AbstractTextProceduralClip(AbstractTextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {
@@ -68,9 +74,11 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         ReflectionUtil.copyOrCloneFieldFromTo(textProceduralClip, this, AbstractTextProceduralClip.class, cloneRequestMetadata);
     }
 
-    public AbstractTextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {
+    public AbstractTextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2,
+            FontLoader fontLoader) {
         super(metadata, node, loadMetadata);
         this.bufferedImageToClipFrameResultConverter = bufferedImageToClipFrameResultConverter2;
+        this.fontLoader = fontLoader;
     }
 
     protected ReadOnlyClipImage drawText(GetFrameRequest request, TimelinePosition relativePosition, String currentText) {
@@ -80,7 +88,21 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         ValueListElement fontElement = fontProvider.getValueAt(relativePosition);
         ValueListElement alignmentElement = alignmentProvider.getValueAt(relativePosition);
 
-        Font font = new Font(fontElement.getId(), fontHitsAt(relativePosition), (int) currentSize).deriveFont((float) currentSize);
+        Font font = null;
+
+        if (isCustomFontProvider.getValueAt(relativePosition)) {
+            File customFontFile = customFontProvider.getValueAt(relativePosition);
+            if (customFontFile != null && customFontFile.exists()) {
+                font = fontLoader.loadFont(customFontFile);
+            }
+            if (font == null) {
+                font = new Font(fontElement.getId(), Font.PLAIN, 12);
+            }
+        } else {
+            font = new Font(fontElement.getId(), Font.PLAIN, 12);
+        }
+        font = font.deriveFont((float) currentSize).deriveFont(fontHitsAt(relativePosition));
+
         FontMetrics fontMetrics = getFontMetrics(font);
 
         double maxWidth = 0;
@@ -210,6 +232,10 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)),
                 new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(0.6)));
         fontProvider = new ValueListProvider<>(createFontList(), new StepStringInterpolator("Serif.plain"));
+
+        isCustomFontProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0));
+        customFontProvider = new FileProvider(List.of("*.ttf", "*.woff", "*.otf"), new StepStringInterpolator());
+
         alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StepStringInterpolator("center"));
         italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
         boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
@@ -232,11 +258,24 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
                 .withName("color")
                 .withGroup("font")
                 .build();
+        ValueProviderDescriptor isCustomFontProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(isCustomFontProvider)
+                .withName("custom font")
+                .withGroup("font")
+                .build();
         ValueProviderDescriptor fontDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(fontProvider)
+                .withShowPredicate(position -> !isCustomFontProvider.getValueAt(position))
                 .withName("font")
                 .withGroup("font")
                 .build();
+        ValueProviderDescriptor customFontProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(customFontProvider)
+                .withShowPredicate(position -> isCustomFontProvider.getValueAt(position))
+                .withName("font file")
+                .withGroup("font")
+                .build();
+
         ValueProviderDescriptor lineHeightMultiplierDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lineHeightMultiplierProvider)
                 .withName("line height multiplier")
@@ -270,7 +309,9 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
 
         result.add(sizeDescriptor);
         result.add(colorDescriptor);
+        result.add(isCustomFontProviderDescriptor);
         result.add(fontDescriptor);
+        result.add(customFontProviderDescriptor);
         result.add(boldDescriptor);
         result.add(italicDescriptor);
         result.add(lineHeightMultiplierDescriptor);

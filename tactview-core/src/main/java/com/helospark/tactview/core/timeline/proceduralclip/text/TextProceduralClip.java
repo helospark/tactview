@@ -22,12 +22,13 @@ public class TextProceduralClip extends AbstractTextProceduralClip {
     private StringProvider textProvider;
 
     public TextProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval,
-            BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
-        super(visualMediaMetadata, interval, bufferedImageToClipFrameResultConverter);
+            BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter, FontLoader fontLoader) {
+        super(visualMediaMetadata, interval, bufferedImageToClipFrameResultConverter, fontLoader);
     }
 
-    public TextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {
-        super(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter2);
+    public TextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2,
+            FontLoader fontLoader) {
+        super(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter2, fontLoader);
     }
 
     public TextProceduralClip(TextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {

@@ -1,6 +1,8 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue;
 
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -40,7 +42,13 @@ public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSett
     protected EffectLine handle(FileProvider fileProvider, ValueProviderDescriptor descriptor) {
         TextField textArea = new TextField();
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setSelectedExtensionFilter(new ExtensionFilter(fileProvider.getExtension(), new String[]{fileProvider.getExtension()}));
+        ExtensionFilter allFilesFilter = new ExtensionFilter("All files", List.of("*"));
+        ExtensionFilter supportedFileFilter = new ExtensionFilter(fileProvider.getExtensions().stream().collect(Collectors.joining(", ")), fileProvider.getExtensions().toArray(new String[0]));
+
+        fileChooser.getExtensionFilters().add(allFilesFilter);
+        fileChooser.getExtensionFilters().add(supportedFileFilter);
+        fileChooser.setSelectedExtensionFilter(supportedFileFilter);
+
         fileChooser.setTitle("Open Resource File");
         Button browseButton = new Button("Browse");
 

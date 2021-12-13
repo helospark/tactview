@@ -26,12 +26,13 @@ public class StopWatchTextProceduralClip extends AbstractTextProceduralClip {
     private BooleanProvider includeMillisecondsProvider;
 
     public StopWatchTextProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval,
-            BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
-        super(visualMediaMetadata, interval, bufferedImageToClipFrameResultConverter);
+            BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter, FontLoader fontLoader) {
+        super(visualMediaMetadata, interval, bufferedImageToClipFrameResultConverter, fontLoader);
     }
 
-    public StopWatchTextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2) {
-        super(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter2);
+    public StopWatchTextProceduralClip(ImageMetadata metadata, JsonNode node, LoadMetadata loadMetadata, BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter2,
+            FontLoader fontLoader) {
+        super(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter2, fontLoader);
     }
 
     public StopWatchTextProceduralClip(StopWatchTextProceduralClip textProceduralClip, CloneRequestMetadata cloneRequestMetadata) {

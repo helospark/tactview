@@ -129,7 +129,7 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
         brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
         endPositionProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(2.0));
         overshootProvider = new DoubleProvider(0.0, 0.2, new MultiKeyframeBasedDoubleInterpolator(0.02));
-        brushFileProvider = new FileProvider("gbr", new StepStringInterpolator());
+        brushFileProvider = new FileProvider("*.gbr", new StepStringInterpolator());
 
     }
 

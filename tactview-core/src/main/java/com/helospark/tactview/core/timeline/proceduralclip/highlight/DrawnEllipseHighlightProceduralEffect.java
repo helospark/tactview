@@ -119,7 +119,7 @@ public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip 
         colorProvider = ColorProvider.fromDefaultValue(0, 0, 0);
         brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
         endPositionProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(2.0));
-        brushFileProvider = new FileProvider("gbr", new StepStringInterpolator());
+        brushFileProvider = new FileProvider("*.gbr", new StepStringInterpolator());
     }
 
     @Override

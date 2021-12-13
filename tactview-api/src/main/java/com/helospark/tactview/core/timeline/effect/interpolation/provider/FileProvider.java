@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
@@ -11,12 +12,17 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.St
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class FileProvider extends KeyframeableEffect<String> {
-    String extension;
+    List<String> extensions;
     StepStringInterpolator stringInterpolator;
 
     public FileProvider(String extension, StepStringInterpolator stringInterpolator) {
         this.stringInterpolator = stringInterpolator;
-        this.extension = extension;
+        this.extensions = List.of(extension);
+    }
+
+    public FileProvider(List<String> extensions, StepStringInterpolator stringInterpolator) {
+        this.stringInterpolator = stringInterpolator;
+        this.extensions = extensions;
     }
 
     @Override
@@ -46,11 +52,11 @@ public class FileProvider extends KeyframeableEffect<String> {
 
     @Override
     public KeyframeableEffect<String> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
-        return new FileProvider(extension, stringInterpolator.deepClone(cloneRequestMetadata));
+        return new FileProvider(extensions, stringInterpolator.deepClone(cloneRequestMetadata));
     }
 
-    public String getExtension() {
-        return extension;
+    public List<String> getExtensions() {
+        return extensions;
     }
 
     @Override

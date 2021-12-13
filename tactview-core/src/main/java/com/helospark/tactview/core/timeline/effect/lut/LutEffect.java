@@ -91,7 +91,7 @@ public class LutEffect extends StatelessVideoEffect {
 
     @Override
     protected void initializeValueProviderInternal() {
-        lutFileProvider = new FileProvider("cube", new StepStringInterpolator(""));
+        lutFileProvider = new FileProvider("*.cube", new StepStringInterpolator(""));
         intensityProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
 
         List<ValueListElement> droppedInFiles = getDroppedInFiles();

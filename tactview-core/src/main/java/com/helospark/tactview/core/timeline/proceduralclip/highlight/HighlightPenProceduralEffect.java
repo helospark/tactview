@@ -103,7 +103,7 @@ public class HighlightPenProceduralEffect extends ProceduralVisualClip {
         colorProvider = ColorProvider.fromDefaultValue(1.0, 1.0, 0);
         brushSizeProvider = new IntegerProvider(10, 500, new MultiKeyframeBasedDoubleInterpolator(70.0));
         endPositionProvider = new DoubleProvider(new MultiKeyframeBasedDoubleInterpolator(2.0));
-        brushFileProvider = new FileProvider("gbr", new StepStringInterpolator());
+        brushFileProvider = new FileProvider("*.gbr", new StepStringInterpolator());
 
         blendModeProvider.keyframeAdded(TimelinePosition.ofZero(), blendModeProvider.getElements().get(Multiply2BlendModeStrategy.ID));
     }

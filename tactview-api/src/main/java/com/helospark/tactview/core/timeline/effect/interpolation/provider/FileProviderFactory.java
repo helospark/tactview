@@ -18,7 +18,7 @@ public class FileProviderFactory extends AbstractKeyframeableEffectDesSerFactory
     @Override
     public FileProvider deserializeInternal(JsonNode data, FileProvider currentFieldValue, LoadMetadata loadMetadata) {
         FileProvider currentValue = currentFieldValue;
-        return new FileProvider(currentValue.getExtension(), ReflectionUtil.deserialize(data.get("stringInterpolator"), StepStringInterpolator.class, currentFieldValue.stringInterpolator, loadMetadata));
+        return new FileProvider(currentValue.getExtensions(), ReflectionUtil.deserialize(data.get("stringInterpolator"), StepStringInterpolator.class, currentFieldValue.stringInterpolator, loadMetadata));
     }
 
 }

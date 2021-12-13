@@ -107,7 +107,7 @@ public class LineProceduralClip extends ProceduralVisualClip {
         endPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.9), doubleProviderWithDefaultValue(0.9));
         colorProvider = ColorProvider.fromDefaultValue(0.1, 0.1, 0.1);
         brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
-        brushFileProvider = new FileProvider("gbr", new StepStringInterpolator());
+        brushFileProvider = new FileProvider("*.gbr", new StepStringInterpolator());
         progressProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
     }
 

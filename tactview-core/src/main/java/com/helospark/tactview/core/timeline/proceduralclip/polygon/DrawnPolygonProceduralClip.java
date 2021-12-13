@@ -95,7 +95,7 @@ public class DrawnPolygonProceduralClip extends ProceduralVisualClip {
         colorProvider = ColorProvider.fromDefaultValue(0, 0, 0);
         brushSizeProvider = new IntegerProvider(1, 200, new MultiKeyframeBasedDoubleInterpolator(70.0));
         drawPercentageProvider = new DoubleProvider(0.0, 1.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
-        brushFileProvider = new FileProvider("gbr", new StepStringInterpolator());
+        brushFileProvider = new FileProvider("*.gbr", new StepStringInterpolator());
     }
 
     @Override

@@ -39,6 +39,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptProcedur
 import com.helospark.tactview.core.timeline.proceduralclip.script.ScriptService;
 import com.helospark.tactview.core.timeline.proceduralclip.singlecolor.SingleColorProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.spark.NovaProceduralClip;
+import com.helospark.tactview.core.timeline.proceduralclip.text.FontLoader;
 import com.helospark.tactview.core.timeline.proceduralclip.text.StopWatchTextProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.text.TextProceduralClip;
 import com.helospark.tactview.core.timeline.proceduralclip.water.CausticProceduralClip;
@@ -81,13 +82,13 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem textProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
+    public StandardProceduralClipFactoryChainItem textProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter, FontLoader fontLoader) {
         return new StandardProceduralClipFactoryChainItem("text", "Text",
                 request -> {
-                    return new TextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter);
+                    return new TextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter, fontLoader);
                 },
                 (node, loadMetadata) -> {
-                    return new TextProceduralClip(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter);
+                    return new TextProceduralClip(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter, fontLoader);
                 });
     }
 
@@ -346,13 +347,13 @@ public class CoreClipFactoryChainItemConfiguration {
     }
 
     @Bean
-    public StandardProceduralClipFactoryChainItem stopWatchProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter) {
+    public StandardProceduralClipFactoryChainItem stopWatchProceduralClip(BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter, FontLoader fontLoader) {
         return new StandardProceduralClipFactoryChainItem("stopwatchtext", "Stop watch text",
                 request -> {
-                    return new StopWatchTextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter);
+                    return new StopWatchTextProceduralClip(metadata, new TimelineInterval(request.getPosition(), defaultLength), bufferedImageToClipFrameResultConverter, fontLoader);
                 },
                 (node, loadMetadata) -> {
-                    return new StopWatchTextProceduralClip(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter);
+                    return new StopWatchTextProceduralClip(metadata, node, loadMetadata, bufferedImageToClipFrameResultConverter, fontLoader);
                 });
     }
 
