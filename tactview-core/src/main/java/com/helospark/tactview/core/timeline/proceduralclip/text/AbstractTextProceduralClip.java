@@ -14,6 +14,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +30,7 @@ import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderError;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
@@ -274,6 +276,7 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
                 .withShowPredicate(position -> isCustomFontProvider.getValueAt(position))
                 .withName("font file")
                 .withGroup("font")
+                .withValidator(position -> validateCustomFont(position))
                 .build();
 
         ValueProviderDescriptor lineHeightMultiplierDescriptor = ValueProviderDescriptor.builder()
@@ -320,6 +323,19 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         result.add(outlineColorProviderDescriptor);
 
         return result;
+    }
+
+    private List<ValueProviderError> validateCustomFont(TimelinePosition position) {
+        List<ValueProviderError> errors = new ArrayList<>();
+        if (isCustomFontProvider.getValueAt(position)) {
+            File customFont = customFontProvider.getValueAt(position);
+            if (!customFont.exists()) {
+                errors.add(new ValueProviderError("File does not exist"));
+            } else if (fontLoader.loadFont(customFont) == null) {
+                errors.add(new ValueProviderError("Font file is not supported"));
+            }
+        }
+        return errors;
     }
 
     private List<ValueListElement> createAlignmentList() {

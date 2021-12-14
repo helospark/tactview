@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -15,6 +16,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderError;
 import com.helospark.tactview.core.timeline.message.AbstractDescriptorsAddedMessage;
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.ClipAddedMessage;
@@ -42,10 +44,12 @@ import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.message.OpenE
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -59,6 +63,7 @@ import javafx.scene.layout.VBox;
 public class PropertyView implements CleanableMode {
     private final Image keyframesOn;
     private final Image keyframesOff;
+    private final Image warningImage;
 
     private VBox propertyWindow;
     private final Map<String, GridPane> details = new HashMap<>();
@@ -91,6 +96,7 @@ public class PropertyView implements CleanableMode {
 
         keyframesOn = new Image(getClass().getResourceAsStream("/clock_on.png"));
         keyframesOff = new Image(getClass().getResourceAsStream("/clock_off.png"));
+        warningImage = new Image(getClass().getResourceAsStream("/warning_icon.png"));
     }
 
     @PostConstruct
@@ -247,6 +253,10 @@ public class PropertyView implements CleanableMode {
         Label label = new Label(descriptor.getName());
         labelBox.getChildren().add(label);
 
+        Label warningImageLabel = createWarningLabel();
+
+        labelBox.getChildren().add(warningImageLabel);
+
         KeyframeableEffect keyframeableEffect = descriptor.getKeyframeableEffect();
         boolean supportsKeyframes = keyframeableEffect.supportsKeyframes();
         if (supportsKeyframes) {
@@ -281,12 +291,38 @@ public class PropertyView implements CleanableMode {
             if (descriptor != null && descriptor.getShowPredicate().isPresent()) {
                 Boolean visible = descriptor.getShowPredicate().get().apply(currentTime);
 
-                labelBox.setVisible(visible);
-                labelBox.setManaged(visible);
-                key.setVisible(visible);
-                key.setManaged(visible);
+                setDisableValue(labelBox, visible);
+                setDisableValue(key, visible);
+            }
+            if (descriptor != null && descriptor.getValueProviderValidator().isPresent()) {
+                List<ValueProviderError> errors = descriptor.getValueProviderValidator().get().apply(currentTime);
+                if (errors != null && errors.size() > 0) {
+                    setDisableValue(warningImageLabel, true);
+                    String errorMessage = errors.stream()
+                            .map(error -> error.getErrorMessage())
+                            .collect(Collectors.joining("\n"));
+                    warningImageLabel.setTooltip(new Tooltip(errorMessage));
+                } else {
+                    setDisableValue(warningImageLabel, false);
+                }
             }
         }));
+    }
+
+    private Label createWarningLabel() {
+        ImageView warningImageView = new ImageView(warningImage);
+        warningImageView.setFitWidth(16);
+        warningImageView.setFitHeight(16);
+        Label warningImageLabel = new Label();
+        setDisableValue(warningImageLabel, false);
+        warningImageLabel.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        warningImageLabel.setGraphic(warningImageView);
+        return warningImageLabel;
+    }
+
+    private void setDisableValue(Node node, boolean disabled) {
+        node.setVisible(false);
+        node.setManaged(false);
     }
 
     private ImageView createKeyframeSupportImageNode(Builder builder, KeyframeableEffect keyframeableEffect) {

@@ -18,6 +18,7 @@ public class ValueProviderDescriptor {
     private Map<Object, Object> renderHints;
     private Optional<Function<TimelinePosition, Boolean>> enabledIf;
     private Optional<String> group;
+    private Optional<Function<TimelinePosition, List<ValueProviderError>>> valueProviderValidator;
 
     private ValueProviderDescriptor(Builder builder) {
         this.name = builder.name;
@@ -27,6 +28,7 @@ public class ValueProviderDescriptor {
         this.renderHints = builder.renderHints;
         this.enabledIf = builder.enabledIf;
         this.group = builder.group;
+        this.valueProviderValidator = builder.valueProviderValidator;
     }
 
     public String getName() {
@@ -51,6 +53,10 @@ public class ValueProviderDescriptor {
 
     public Optional<Function<TimelinePosition, Boolean>> getEnabledIf() {
         return enabledIf;
+    }
+
+    public Optional<Function<TimelinePosition, List<ValueProviderError>>> getValueProviderValidator() {
+        return valueProviderValidator;
     }
 
     public Optional<String> getGroup() {
@@ -80,6 +86,7 @@ public class ValueProviderDescriptor {
         private Map<Object, Object> renderHints = Collections.emptyMap();
         private Optional<Function<TimelinePosition, Boolean>> enabledIf = Optional.empty();
         private Optional<String> group = Optional.empty();
+        private Optional<Function<TimelinePosition, List<ValueProviderError>>> valueProviderValidator = Optional.empty();
 
         private Builder() {
         }
@@ -92,6 +99,7 @@ public class ValueProviderDescriptor {
             this.renderHints = valueProviderDescriptor.renderHints;
             this.enabledIf = valueProviderDescriptor.enabledIf;
             this.group = valueProviderDescriptor.group;
+            this.valueProviderValidator = valueProviderDescriptor.valueProviderValidator;
         }
 
         public Builder withName(String name) {
@@ -121,6 +129,11 @@ public class ValueProviderDescriptor {
 
         public Builder withEnabledIf(Function<TimelinePosition, Boolean> enabledIf) {
             this.enabledIf = Optional.ofNullable(enabledIf);
+            return this;
+        }
+
+        public Builder withValidator(Function<TimelinePosition, List<ValueProviderError>> validator) {
+            this.valueProviderValidator = Optional.ofNullable(validator);
             return this;
         }
 
