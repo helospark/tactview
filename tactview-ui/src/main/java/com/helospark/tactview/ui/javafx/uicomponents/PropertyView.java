@@ -291,19 +291,19 @@ public class PropertyView implements CleanableMode {
             if (descriptor != null && descriptor.getShowPredicate().isPresent()) {
                 Boolean visible = descriptor.getShowPredicate().get().apply(currentTime);
 
-                setDisableValue(labelBox, visible);
-                setDisableValue(key, visible);
+                setVisibleValue(labelBox, visible);
+                setVisibleValue(key, visible);
             }
             if (descriptor != null && descriptor.getValueProviderValidator().isPresent()) {
                 List<ValueProviderError> errors = descriptor.getValueProviderValidator().get().apply(currentTime);
                 if (errors != null && errors.size() > 0) {
-                    setDisableValue(warningImageLabel, true);
+                    setVisibleValue(warningImageLabel, true);
                     String errorMessage = errors.stream()
                             .map(error -> error.getErrorMessage())
                             .collect(Collectors.joining("\n"));
                     warningImageLabel.setTooltip(new Tooltip(errorMessage));
                 } else {
-                    setDisableValue(warningImageLabel, false);
+                    setVisibleValue(warningImageLabel, false);
                 }
             }
         }));
@@ -314,13 +314,13 @@ public class PropertyView implements CleanableMode {
         warningImageView.setFitWidth(16);
         warningImageView.setFitHeight(16);
         Label warningImageLabel = new Label();
-        setDisableValue(warningImageLabel, false);
+        setVisibleValue(warningImageLabel, false);
         warningImageLabel.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         warningImageLabel.setGraphic(warningImageView);
         return warningImageLabel;
     }
 
-    private void setDisableValue(Node node, boolean disabled) {
+    private void setVisibleValue(Node node, boolean visible) {
         node.setVisible(false);
         node.setManaged(false);
     }

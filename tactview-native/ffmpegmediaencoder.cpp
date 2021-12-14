@@ -35,6 +35,9 @@ extern "C" {
 
     #define SCALE_FLAGS SWS_BICUBIC
 
+    // Fix for: error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
+    #define AV_TIME_BASE_Q AVRational {1, AV_TIME_BASE}
+
     struct ChapterInformation {
         long long timeInMicroseconds;
         char* name;
