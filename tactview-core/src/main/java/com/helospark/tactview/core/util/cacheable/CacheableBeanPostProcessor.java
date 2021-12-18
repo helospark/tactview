@@ -20,11 +20,13 @@ import com.helospark.lightdi.util.AnnotationUtil;
 import com.helospark.lightdi.util.LightDiAnnotation;
 import com.helospark.lightdi.util.ReflectionUtil;
 
-import net.sf.cglib.proxy.Callback;
-import net.sf.cglib.proxy.Enhancer;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatchers;
 
 /**
  * Adds proxy around {@literal @}Cacheable annotated methods.
+ *
  * @author helospark
  */
 @Component
@@ -33,8 +35,7 @@ public class CacheableBeanPostProcessor implements BeanPostProcessor {
     @Override
     public Object postProcessAfterInitialization(Object bean, DependencyDescriptor dependencyDescriptor) {
         List<Method> cacheableMethods = ReflectionUtil.getNonObjectMethods(bean.getClass())
-                .filter(method -> AnnotationUtil.doesElementContainAnyAnnotationOf(method, Cacheable.class))
-                .collect(Collectors.toList());
+                .filter(method -> AnnotationUtil.doesElementContainAnyAnnotationOf(method, Cacheable.class)).collect(Collectors.toList());
         if (cacheableMethods.isEmpty()) {
             return bean;
         } else {
@@ -42,16 +43,20 @@ public class CacheableBeanPostProcessor implements BeanPostProcessor {
         }
     }
 
-    // Magic explanation: https://brixomatic.wordpress.com/2012/12/22/dynamic-proxies-for-classes/
     private Object createProxyCacheableProxyAround(Object bean, List<Method> cacheableMethods) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(bean.getClass());
-        enhancer.setCallbackType(CacheableProxy.class);
-        enhancer.setUseCache(false);
+        try {
+            final Class<?> proxyClass = new ByteBuddy()
+                    .subclass(bean.getClass())
+                    .method(ElementMatchers.any())
+                    .intercept(MethodDelegation.to(createCacheableInterceptor(bean, cacheableMethods)))
+                    .make()
+                    .load(getClass().getClassLoader())
+                    .getLoaded();
 
-        final Class<?> proxyClass = enhancer.createClass();
-        Enhancer.registerStaticCallbacks(proxyClass, new Callback[]{createCacheableInterceptor(bean, cacheableMethods)});
-        return ObjenesisHelper.newInstance(proxyClass);
+            return ObjenesisHelper.newInstance(proxyClass);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot create proxy", e);
+        }
     }
 
     private CacheableProxy createCacheableInterceptor(Object bean, List<Method> cacheableMethods) {
@@ -60,8 +65,7 @@ public class CacheableBeanPostProcessor implements BeanPostProcessor {
             LightDiAnnotation annotation = AnnotationUtil.getSingleAnnotationOfType(method, Cacheable.class);
             Class<?> cacheValue = method.getReturnType();
 
-            Caffeine<Object, Object> coffeinCacheBuilder = Caffeine.newBuilder()
-                    .maximumSize(annotation.getAttributeAs("size", Integer.class))
+            Caffeine<Object, Object> coffeinCacheBuilder = Caffeine.newBuilder().maximumSize(annotation.getAttributeAs("size", Integer.class))
                     .expireAfterWrite(annotation.getAttributeAs("cacheTimeInMilliseconds", Integer.class), TimeUnit.MILLISECONDS);
 
             if (CacheCleanable.class.isAssignableFrom(cacheValue)) {
@@ -79,8 +83,7 @@ public class CacheableBeanPostProcessor implements BeanPostProcessor {
                 });
             }
 
-            LoadingCache<HashableArray, Object> cache = coffeinCacheBuilder
-                    .build(key -> method.invoke(bean, key.getElements()));
+            LoadingCache<HashableArray, Object> cache = coffeinCacheBuilder.build(key -> method.invoke(bean, key.getElements()));
             cacheables.put(method, cache);
         }
         return new CacheableProxy(bean, cacheables);

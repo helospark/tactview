@@ -5,10 +5,11 @@ import java.util.Map;
 
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 
-public class CacheableProxy implements MethodInterceptor {
+public class CacheableProxy {
     private Object bean;
     Map<Method, LoadingCache<HashableArray, Object>> cacheables;
 
@@ -17,8 +18,8 @@ public class CacheableProxy implements MethodInterceptor {
         this.bean = bean;
     }
 
-    @Override
-    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+    @RuntimeType
+    public Object intercept(@Origin Method method, @AllArguments Object[] args) throws Throwable {
         LoadingCache<HashableArray, Object> cacheLoader = cacheables.get(method);
         if (cacheLoader == null) {
             Method methodToProxyTo = bean.getClass().getMethod(method.getName(), method.getParameterTypes());

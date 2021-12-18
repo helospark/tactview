@@ -1,7 +1,6 @@
 package com.helospark.tactview.core.it;
 
 import static com.helospark.tactview.core.it.PictureAssertions.assertFrameOfColorWithDelta;
-import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -59,6 +58,8 @@ public class SaveAndLoadIT {
 
         AudioVideoFragment frame3 = fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(20.0));
         assertFrameOfColorWithDelta(frame3, 0, 0, 255, 255, Delta.of(1));
+
+        tmpFile.delete();
     }
 
     @Test
@@ -85,6 +86,8 @@ public class SaveAndLoadIT {
 
         IntegrationTestUtil.assertFrameEquals(actualFrame1.getVideoResult(), expectedFrame1.getVideoResult(), "Video frames not equal");
         IntegrationTestUtil.assertFrameEquals(actualFrame2.getVideoResult(), expectedFrame2.getVideoResult(), "Video frames not equal");
+
+        file.delete();
     }
 
     @Test
@@ -93,9 +96,10 @@ public class SaveAndLoadIT {
         fakeUi.dragFileToTimeline(testFile, TimelinePosition.ofSeconds(1));
 
         fakeUi.requestPreviewVideoFrame(TimelinePosition.ofSeconds(5.0));
-        
+
         // THEN should not crash
     }
+
     @Test
     public void testSaveAndLoadOfAnimatedProperties() throws IOException {
         TimelineClip addedClip = fakeUi.dragProceduralClipToFirstChannel("singlecolor", TimelinePosition.ofZero());
@@ -136,6 +140,8 @@ public class SaveAndLoadIT {
         IntegrationTestUtil.assertFrameEquals(actualFrame1.getVideoResult(), expectedFrame1.getVideoResult(), "Video frames not equal");
         IntegrationTestUtil.assertFrameEquals(actualFrame2.getVideoResult(), expectedFrame2.getVideoResult(), "Video frames not equal");
         IntegrationTestUtil.assertFrameEquals(actualFrame3.getVideoResult(), expectedFrame3.getVideoResult(), "Video frames not equal");
+
+        file.delete();
     }
 
     private File copyTestFileFromClassPathToTmpDirectory() throws IOException {
