@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +35,8 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 
 @Component
 public class TimelineManagerRenderService {
-    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new ThreadFactoryBuilder().setNameFormat("timeline-manager-executor-%d").build());
+    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+            new ThreadFactoryBuilder().setNameFormat("timeline-manager-executor-%d").build());
     private final FrameBufferMerger frameBufferMerger;
     private final AudioBufferMerger audioBufferMerger;
     private final ProjectRepository projectRepository;
@@ -139,7 +142,8 @@ public class TimelineManagerRenderService {
                         }
 
                         String channelId = timelineManagerAccessor.findChannelForClipId(visualClip.getId()).get().getId();
-                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame, clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class),
+                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame,
+                                clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class),
                                 channelId);
                     }, executorService).thenAccept(a -> {
                         clipsToFrames.put(visualClip.getId(), a);
@@ -231,7 +235,8 @@ public class TimelineManagerRenderService {
 
     }
 
-    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult, Map<String, RegularRectangle> outBoundPositions) {
+    private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult,
+            Map<String, RegularRectangle> outBoundPositions) {
         FrameExtender.FrameExtendRequest frameExtendRequest = FrameExtender.FrameExtendRequest.builder()
                 .withClip(visualClip)
                 .withFrameResult(frameResult)
@@ -281,17 +286,40 @@ public class TimelineManagerRenderService {
     }
 
     private ReadOnlyClipImage renderVideo(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> clipsToFrames) {
+        List<String> existingFrames = renderOrder.stream().filter(a -> clipsToFrames.containsKey(a)).collect(Collectors.toList());
+        Set<String> extraDisabledClips = findExtraDisabledClips(request, existingFrames);
+
         List<RenderFrameData> frames = renderOrder.stream()
                 .filter(clipId -> {
                     TimelineChannel channelContainingCurrentClip = timelineManagerAccessor.findChannelForClipId(clipId).get();
-                    return !channelContainingCurrentClip.isDisabled();
+                    if (channelContainingCurrentClip.isDisabled()) {
+                        return true;
+                    } else {
+                        return !extraDisabledClips.contains(clipId);
+                    }
                 })
                 .map(a -> clipsToFrames.get(a))
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
 
-        ReadOnlyClipImage finalImage = frameBufferMerger.alphaMergeFrames(frames, request);
-        return finalImage;
+        return frameBufferMerger.alphaMergeFrames(frames, request);
+    }
+
+    private Set<String> findExtraDisabledClips(TimelineManagerFramesRequest request, List<String> renderOrder) {
+        Set<String> extraDisabledClips = new HashSet<>();
+
+        for (int i = 0; i < renderOrder.size(); ++i) {
+            TimelineClip clip = timelineManagerAccessor.findClipById(renderOrder.get(i)).get();
+            if (clip instanceof AdjustmentLayerProceduralClip) {
+                boolean hideClips = ((AdjustmentLayerProceduralClip) clip).shouldHideBelowClips(request.getPosition());
+                if (hideClips) {
+                    for (int j = i + 1; j < renderOrder.size(); ++j) {
+                        extraDisabledClips.add(renderOrder.get(j));
+                    }
+                }
+            }
+        }
+        return extraDisabledClips;
     }
 
     private List<TreeNode> buildRenderTree(Map<String, TimelineClip> clipsToRender, TimelinePosition position) {
