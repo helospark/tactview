@@ -57,22 +57,30 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
             Point inPointInScreenSpace = remapPointToScreenSpace(mouseEvent, entry.getValue().controlPointIn.add(actualPoint));
             Point outPointInScreenSpace = remapPointToScreenSpace(mouseEvent, entry.getValue().controlPointOut.add(actualPoint));
 
+            BezierMousePointDescriptor result = null;
+
             if (isClose(actualPointInScreenSpace, mouseEvent.screenMousePosition)) {
-                BezierMousePointDescriptor result = new BezierMousePointDescriptor();
+                result = new BezierMousePointDescriptor();
                 result.draggedIndex = i;
-                result.draggedPointType = PointType.VALUE;
-                return result;
+                result.draggedPointType = BezierPointType.VALUE;
             } else if (isClose(outPointInScreenSpace, mouseEvent.screenMousePosition)) {
-                BezierMousePointDescriptor result = new BezierMousePointDescriptor();
+                result = new BezierMousePointDescriptor();
                 result.draggedIndex = i;
-                result.draggedPointType = PointType.OUT;
-                return result;
+                result.draggedPointType = BezierPointType.OUT;
             } else if (isClose(inPointInScreenSpace, mouseEvent.screenMousePosition)) {
-                BezierMousePointDescriptor result = new BezierMousePointDescriptor();
+                result = new BezierMousePointDescriptor();
                 result.draggedIndex = i;
-                result.draggedPointType = PointType.IN;
+                result.draggedPointType = BezierPointType.IN;
+            }
+
+            if (result != null) {
+                result.originalPosition = entry.getKey();
+                result.originalValue = entry.getValue().value;
+                result.originalControlPointIn = entry.getValue().controlPointIn;
+                result.originalControlPointOut = entry.getValue().controlPointOut;
                 return result;
             }
+
             ++i;
         }
         return null;
@@ -80,6 +88,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
 
     @Override
     public boolean onMouseUp(CurveEditorMouseRequest mouseEvent) {
+        onMouseDrag(mouseEvent, true);
         dragged = null;
         return false;
     }
@@ -87,6 +96,10 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
     @Override
     public boolean onMouseDragged(CurveEditorMouseRequest mouseEvent) {
         super.jumpToPositionOnDrag(mouseEvent, dragged == null);
+        return onMouseDrag(mouseEvent, false);
+    }
+
+    private boolean onMouseDrag(CurveEditorMouseRequest mouseEvent, boolean revertable) {
         if (dragged == null) {
             return false;
         }
@@ -96,7 +109,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
         TimelinePosition positionToModify = null;
 
         int draggedIndex = dragged.draggedIndex;
-        PointType draggedPointType = dragged.draggedPointType;
+        BezierPointType draggedPointType = dragged.draggedPointType;
 
         int i = 0;
         for (var entry : bezierValues.entrySet()) {
@@ -117,12 +130,40 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
 
             Point relativePoint = new Point(relativeX, relativeY);
 
-            if (draggedPointType == PointType.IN) {
-                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).updatedInControlPointAt(positionToModify, pointToModify.controlPointIn.add(relativePoint));
-            } else if (draggedPointType == PointType.OUT) {
-                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).updatedOutControlPointAt(positionToModify, pointToModify.controlPointOut.add(relativePoint));
+            if (draggedPointType == BezierPointType.IN) {
+                commandInterpreter.synchronousSend(BezierCurveEditorPointChangeInOutPointCommand.builder()
+                        .withToUpdate((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator)
+                        .withOriginalPosition(dragged.originalControlPointIn)
+                        .withPositionToModify(positionToModify)
+                        .withRevertable(revertable)
+                        .withType(BezierPointType.IN)
+                        .withNewPoint(pointToModify.controlPointIn.add(relativePoint))
+                        .withEffectParametersRepository(effectParametersRepository)
+                        .withProviderId(mouseEvent.currentProvider.getId())
+                        .build());
+            } else if (draggedPointType == BezierPointType.OUT) {
+                commandInterpreter.synchronousSend(BezierCurveEditorPointChangeInOutPointCommand.builder()
+                        .withToUpdate((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator)
+                        .withOriginalPosition(dragged.originalControlPointOut)
+                        .withPositionToModify(positionToModify)
+                        .withRevertable(revertable)
+                        .withType(BezierPointType.OUT)
+                        .withNewPoint(pointToModify.controlPointOut.add(relativePoint))
+                        .withEffectParametersRepository(effectParametersRepository)
+                        .withProviderId(mouseEvent.currentProvider.getId())
+                        .build());
             } else {
-                ((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator).valueModifiedAt(positionToModify, newTime, newPosition);
+                commandInterpreter.synchronousSend((BezierCurveEditorPointChangePointCommand.builder()
+                        .withToUpdate((BezierDoubleInterpolator) mouseEvent.currentDoubleInterpolator)
+                        .withPositionToModify(positionToModify)
+                        .withRevertable(revertable)
+                        .withNewPosition(newPosition)
+                        .withEffectParametersRepository(effectParametersRepository)
+                        .withProviderId(mouseEvent.currentProvider.getId())
+                        .withOriginalValue(dragged.originalValue)
+                        .withOriginalPosition(dragged.originalPosition)
+                        .withNewTime(newTime)
+                        .build()));
             }
             return true;
         }
@@ -135,7 +176,7 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
         TreeMap<TimelinePosition, CubicBezierPoint> bezierValues = ((BezierDoubleInterpolator) drawRequest.currentDoubleInterpolator).getBezierValues();
 
         int closeIndex = -1;
-        PointType closePointType = null;
+        BezierPointType closePointType = null;
         if (close != null) {
             closeIndex = close.draggedIndex;
             closePointType = close.draggedPointType;
@@ -155,21 +196,21 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
 
             Point screenSpaceCenterPosition = remapPointToScreenSpace(drawRequest, actualPoint);
 
-            if (i == closeIndex && PointType.IN == closePointType) {
+            if (i == closeIndex && BezierPointType.IN == closePointType) {
                 graphics.setFill(Color.RED);
             } else {
                 graphics.setFill(Color.GRAY);
             }
             drawControlPoint(drawRequest, screenSpaceCenterPosition, absolueInPoint);
 
-            if (i == closeIndex && PointType.OUT == closePointType) {
+            if (i == closeIndex && BezierPointType.OUT == closePointType) {
                 graphics.setFill(Color.RED);
             } else {
                 graphics.setFill(Color.GRAY);
             }
             drawControlPoint(drawRequest, screenSpaceCenterPosition, absolueOutPoint);
 
-            if (i == closeIndex && PointType.VALUE == closePointType) {
+            if (i == closeIndex && BezierPointType.VALUE == closePointType) {
                 graphics.setFill(Color.RED);
             } else {
                 graphics.setFill(Color.BLUE);
@@ -199,15 +240,14 @@ public class BezierSplineCurveEditor extends AbstractGeneralPointBasedCurveEdito
                 .collect(Collectors.toList());
     }
 
-    static enum PointType {
-        IN,
-        OUT,
-        VALUE
-    }
-
     static class BezierMousePointDescriptor {
         int draggedIndex = -1;
-        PointType draggedPointType;
+        BezierPointType draggedPointType;
+
+        TimelinePosition originalPosition;
+        double originalValue;
+        Point originalControlPointIn;
+        Point originalControlPointOut;
 
         @Override
         public int hashCode() {

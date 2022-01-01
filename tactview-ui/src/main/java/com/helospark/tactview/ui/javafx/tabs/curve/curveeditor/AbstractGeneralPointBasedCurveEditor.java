@@ -28,9 +28,9 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     protected int draggedIndex = -1;
     protected int closeIndex = -1;
     protected KeyframePoint originalPoint = null;
+    protected final UiCommandInterpreterService commandInterpreter;
+    protected final EffectParametersRepository effectParametersRepository;
 
-    private final UiCommandInterpreterService commandInterpreter;
-    private final EffectParametersRepository effectParametersRepository;
     private UiTimelineManager uiTimelineManager;
 
     public AbstractGeneralPointBasedCurveEditor(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
@@ -237,7 +237,8 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
                 graphics.setFill(Color.BLUE);
             }
 
-            if (screenSpacePosition.x >= 0 && screenSpacePosition.y >= 0 && screenSpacePosition.x < drawRequest.canvas.getWidth() && screenSpacePosition.y < drawRequest.canvas.getHeight()) {
+            if (screenSpacePosition.x >= 0 && screenSpacePosition.y >= 0 && screenSpacePosition.x < drawRequest.canvas.getWidth()
+                    && screenSpacePosition.y < drawRequest.canvas.getHeight()) {
                 graphics.fillOval(screenSpacePosition.x - 3, screenSpacePosition.y - 3, 6, 6);
             }
             ++i;

@@ -51,7 +51,8 @@ public class EffectParametersRepository {
 
     private final Map<String, EffectStore> allEffectIdToEffectMap = new ConcurrentHashMap<>();
 
-    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories, List<StringInterpolatorFactory> stringInterpolatorFactories,
+    public EffectParametersRepository(MessagingService messagingService, List<DoubleInterpolatorFactory> interpolatorFactories,
+            List<StringInterpolatorFactory> stringInterpolatorFactories,
             TimelineManagerAccessor timelineManagerAccessor) {
         this.messagingService = messagingService;
         this.doubleInterpolatorFactories = interpolatorFactories;
@@ -135,12 +136,19 @@ public class EffectParametersRepository {
             TimelinePosition relativePosition = positionToLocal(message.getGlobalTimelinePosition(), valueToChange);
             valueToChange.effect.keyframeAdded(relativePosition, message.getValue());
             valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
-            KeyframeSuccesfullyAddedMessage keyframeAddedMessage = new KeyframeSuccesfullyAddedMessage(message.getDescriptorId(), valueToChange.effectAware.getGlobalInterval(),
+            sendKeyframeChangeMessage(message.getDescriptorId());
+        } else {
+            System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
+        }
+    }
+
+    public void sendKeyframeChangeMessage(String id) {
+        EffectStore valueToChange = allEffectIdToEffectMap.get(id);
+        if (valueToChange != null) {
+            KeyframeSuccesfullyAddedMessage keyframeAddedMessage = new KeyframeSuccesfullyAddedMessage(id, valueToChange.effectAware.getGlobalInterval(),
                     valueToChange.containingElementId);
             keyframeAddedMessage.setParentElementId(valueToChange.parentId);
             messagingService.sendAsyncMessage(keyframeAddedMessage);
-        } else {
-            System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
         }
     }
 
@@ -149,7 +157,8 @@ public class EffectParametersRepository {
         if (valueToChange != null) {
             if (valueToChange.effect.isPrimitive()) {
                 valueToChange.effect.getInterpolator().resetToDefaultValue();
-                messagingService.sendAsyncMessage(new KeyframeSuccesfullyResetMessage(descriptorId, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
+                messagingService
+                        .sendAsyncMessage(new KeyframeSuccesfullyResetMessage(descriptorId, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId));
             } else {
                 List<KeyframeableEffect<?>> children = valueToChange.effect.getChildren();
                 children.stream()
@@ -165,7 +174,8 @@ public class EffectParametersRepository {
         EffectStore valueToChange = allEffectIdToEffectMap.get(id);
         valueToChange.effect.removeKeyframeAt(positionToLocal(globalPosition, valueToChange));
         valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
-        KeyframeSuccesfullyRemovedMessage keyframeRemovedMessage = new KeyframeSuccesfullyRemovedMessage(id, valueToChange.effectAware.getGlobalInterval(), valueToChange.containingElementId);
+        KeyframeSuccesfullyRemovedMessage keyframeRemovedMessage = new KeyframeSuccesfullyRemovedMessage(id, valueToChange.effectAware.getGlobalInterval(),
+                valueToChange.containingElementId);
         keyframeRemovedMessage.setParentId(valueToChange.parentId);
         messagingService.sendAsyncMessage(keyframeRemovedMessage);
     }
@@ -201,7 +211,8 @@ public class EffectParametersRepository {
 
         @Override
         public String toString() {
-            return "EffectStore [effect=" + effect + ", containingElementId=" + containingElementId + ", effectAware=" + effectAware + ", descriptor=" + descriptor + ", parentId=" + parentId + "]";
+            return "EffectStore [effect=" + effect + ", containingElementId=" + containingElementId + ", effectAware=" + effectAware + ", descriptor=" + descriptor + ", parentId="
+                    + parentId + "]";
         }
 
     }
@@ -283,7 +294,8 @@ public class EffectParametersRepository {
         EffectStore value = allEffectIdToEffectMap.get(keyframeableEffectId);
         if (value.effect.supportsKeyframes() && value.effect.keyframesEnabled() != useKeyframes) {
             value.effect.setUseKeyframes(useKeyframes);
-            messagingService.sendAsyncMessage(new KeyframeEnabledWasChangedMessage(value.containingElementId, keyframeableEffectId, useKeyframes, value.effectAware.getGlobalInterval()));
+            messagingService
+                    .sendAsyncMessage(new KeyframeEnabledWasChangedMessage(value.containingElementId, keyframeableEffectId, useKeyframes, value.effectAware.getGlobalInterval()));
         } else {
             logger.warn("Setting keyframes is called for id {}, but keyframeableInterpolator does not support it", keyframeableEffectId);
         }
