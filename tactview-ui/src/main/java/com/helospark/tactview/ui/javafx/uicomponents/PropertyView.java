@@ -301,7 +301,9 @@ public class PropertyView implements CleanableMode {
                     String errorMessage = errors.stream()
                             .map(error -> error.getErrorMessage())
                             .collect(Collectors.joining("\n"));
-                    warningImageLabel.setTooltip(new Tooltip(errorMessage));
+                    Tooltip tooltip = new Tooltip(errorMessage);
+                    tooltip.setShowDelay(javafx.util.Duration.millis(0));
+                    warningImageLabel.setTooltip(tooltip);
                 } else {
                     setVisibleValue(warningImageLabel, false);
                 }
@@ -321,8 +323,8 @@ public class PropertyView implements CleanableMode {
     }
 
     private void setVisibleValue(Node node, boolean visible) {
-        node.setVisible(false);
-        node.setManaged(false);
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 
     private ImageView createKeyframeSupportImageNode(Builder builder, KeyframeableEffect keyframeableEffect) {
