@@ -1,10 +1,14 @@
 package com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.timeline.AddExistingClipRequest;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -13,6 +17,8 @@ import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.AddExistingClipsCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
@@ -42,7 +48,8 @@ public class TimelineCanvasOnDragOverHandler {
 
     private boolean isLoadingInprogress = false; // Move to repository class
 
-    public TimelineCanvasOnDragOverHandler(TimelineManagerAccessor timelineAccessor, TimelineDragAndDropHandler timelineDragAndDropHandler, UiCommandInterpreterService commandInterpreter,
+    public TimelineCanvasOnDragOverHandler(TimelineManagerAccessor timelineAccessor, TimelineDragAndDropHandler timelineDragAndDropHandler,
+            UiCommandInterpreterService commandInterpreter,
             DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, EffectDragAdder effectDragAdder, CurrentlyPressedKeyRepository pressedKeyRepository,
             TimelineState timelineState) {
         this.timelineAccessor = timelineAccessor;
@@ -141,7 +148,11 @@ public class TimelineCanvasOnDragOverHandler {
                                 .map(a -> a.getInterval())
                                 .ifPresent(interval -> dragRepository.getClipDragInformation().setOriginalInterval(interval));
                     } else {
-                        timelineDragAndDropHandler.moveClip(channelId, finished, newX);
+                        if (dragRepository.currentlyDraggedClip().shouldCopyClip()) {
+                            copyCurrentClipOnDrag(dragRepository.currentlyDraggedClip().getClipId(), channelId, newX);
+                        } else {
+                            timelineDragAndDropHandler.moveClip(channelId, finished, newX);
+                        }
                     }
                 } else {
                     TimelinePosition newX = position;
@@ -170,6 +181,45 @@ public class TimelineCanvasOnDragOverHandler {
             }
         }
         return false;
+    }
+
+    private void copyCurrentClipOnDrag(List<String> clipIds, String channelId, TimelinePosition newX) {
+        List<AddExistingClipsCommand> commands = new ArrayList<>();
+        TimelineChannel channel = timelineAccessor.findChannelWithId(channelId).get();
+        List<TimelineClip> clips = new ArrayList<>();
+        for (var element : clipIds) {
+            TimelineClip clip = timelineAccessor.findClipById(element).get();
+            TimelineClip clonedClip = clip.cloneClip(CloneRequestMetadata.ofDefault());
+            AddExistingClipRequest request = AddExistingClipRequest.builder()
+                    .withChannel(channel)
+                    .withClipToAdd(clonedClip)
+                    .withPosition(Optional.of(newX))
+                    .build();
+            AddExistingClipsCommand addClipCommand = new AddExistingClipsCommand(request, timelineAccessor);
+            commands.add(addClipCommand);
+            clips.add(clonedClip);
+        }
+        if (clips.size() > 0) {
+            commandInterpreter.synchronousSend(new CompositeCommand(commands));
+
+            setNewClipDragInformationAfterCopy(channelId, commands, clips);
+        }
+    }
+
+    private void setNewClipDragInformationAfterCopy(String channelId, List<AddExistingClipsCommand> commands, List<TimelineClip> clips) {
+        TimelineClip clip = clips.get(0);
+        if (commands.stream().anyMatch(a -> a.isSuccess())) {
+            dragRepository.currentlyDraggedClip().setShouldCopyClip(false);
+            List<String> elementIds = clips.stream().map(a -> a.getId()).collect(Collectors.toList());
+
+            ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(),
+                    elementIds,
+                    channelId,
+                    dragRepository.getClipDragInformation().getAnchorPointX(),
+                    clip.getGlobalInterval());
+
+            dragRepository.onClipDragged(clipDragInformation);
+        }
     }
 
     private Optional<TimelineClip> getInsertBefore(TimelineCanvasOnDragOverHandlerRequest request, String channelId) {
@@ -269,12 +319,14 @@ public class TimelineCanvasOnDragOverHandler {
         public static Builder builder() {
             return new Builder();
         }
+
         public static final class Builder {
             private Optional<DragEvent> event = Optional.empty();
             private Optional<MouseEvent> mouseEvent = Optional.empty();
             private Optional<TimelineUiCacheElement> selectedElement = Optional.empty();
             private TimelinePosition xPosition;
             private Optional<TimelineChannel> channel = Optional.empty();
+
             private Builder() {
             }
 

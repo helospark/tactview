@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.handlers;
 
+import static com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository.NO_KEYCODE_DEFINED;
+
 import java.util.List;
 
 import com.helospark.lightdi.annotation.Component;
@@ -7,6 +9,9 @@ import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository;
+import com.helospark.tactview.ui.javafx.hotkey.KeyDescriptor;
+import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository.DragDirection;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
@@ -14,16 +19,26 @@ import com.helospark.tactview.ui.javafx.uicomponents.EffectDragInformation;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheElement;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheType;
 
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.MouseEvent;
 
 @Component
 public class TimelineCanvasElementClickHandler {
+    private static final String COPY_CLIP_HOTKEY = "Copy clip on drag";
+    private static final KeyCodeCombination KEY_CODE_COMBINATION = new KeyCodeCombination(NO_KEYCODE_DEFINED, KeyCodeCombination.CONTROL_DOWN, KeyCodeCombination.SHIFT_DOWN);
+
     private TimelineManagerAccessor timelineAccessor;
     private DragRepository dragRepository;
+    private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
+    private KeyDescriptor copyOnDragHotkey;
 
-    public TimelineCanvasElementClickHandler(TimelineManagerAccessor timelineAccessor, DragRepository dragRepository) {
+    public TimelineCanvasElementClickHandler(TimelineManagerAccessor timelineAccessor, DragRepository dragRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository,
+            HotKeyRepository hotKeyRepository) {
         this.timelineAccessor = timelineAccessor;
         this.dragRepository = dragRepository;
+        this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
+
+        copyOnDragHotkey = hotKeyRepository.registerOrGetHotKey(COPY_CLIP_HOTKEY, KEY_CODE_COMBINATION, COPY_CLIP_HOTKEY);
     }
 
     public void onElementClick(MouseEvent event, double currentX, TimelineUiCacheElement element) {
@@ -40,8 +55,14 @@ public class TimelineCanvasElementClickHandler {
                 ClipDragInformation clipDragInformation = new ClipDragInformation(originalPosition, clipIds, channelId, currentX - clipPositionAsDouble, clip.getGlobalInterval());
                 dragRepository.onClipResizing(clipDragInformation, resizingLeft ? DragDirection.LEFT : DragDirection.RIGHT);
             } else {
-                ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), List.of(element.elementId), channelId, currentX - clipPositionAsDouble,
+                ClipDragInformation clipDragInformation = new ClipDragInformation(clip.getGlobalInterval().getStartPosition(), List.of(element.elementId), channelId,
+                        currentX - clipPositionAsDouble,
                         clip.getGlobalInterval());
+
+                if (currentlyPressedKeyRepository.isKeyModifiersMatch(copyOnDragHotkey.getCombination())) {
+                    clipDragInformation.setShouldCopyClip(true);
+                }
+
                 dragRepository.onClipDragged(clipDragInformation);
             }
         } else {

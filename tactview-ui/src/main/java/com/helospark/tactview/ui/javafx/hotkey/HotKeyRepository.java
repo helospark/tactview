@@ -33,6 +33,7 @@ import javafx.scene.input.KeyCombination.Modifier;
 
 @Component
 public class HotKeyRepository {
+    public static final KeyCode NO_KEYCODE_DEFINED = KeyCode.F24;
     private static final Logger LOGGER = LoggerFactory.getLogger(HotKeyRepository.class);
     private Map<String, KeyDescriptor> descriptors = new LinkedHashMap<>();
 

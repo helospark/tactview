@@ -641,6 +641,10 @@
     -fx-padding:6px 1px 6px 3px;
 }
 
+.key-code-container-selected {
+    -fx-opacity: 0.7;
+}
+
 .dialog-root {
     -fx-text-fill: #a1a1a1;
 }

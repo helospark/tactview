@@ -8,6 +8,8 @@ public class AddExistingClipsCommand implements UiCommand {
     private final AddExistingClipRequest request;
     private final TimelineManagerAccessor timelineManager;
 
+    private boolean success = false;
+
     public AddExistingClipsCommand(AddExistingClipRequest request,
             TimelineManagerAccessor timelineManager) {
         this.request = request;
@@ -16,12 +18,17 @@ public class AddExistingClipsCommand implements UiCommand {
 
     @Override
     public void execute() {
-        timelineManager.addExistingClip(request);
+        success = timelineManager.addExistingClip(request);
     }
 
     @Override
     public void revert() {
-        timelineManager.removeClip(request.getClipToAdd().getId());
+        if (success) {
+            timelineManager.removeClip(request.getClipToAdd().getId());
+        }
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
 }

@@ -14,6 +14,8 @@ public class ClipDragInformation {
     private TimelineInterval originalInterval;
     private boolean hasMovedWithoutRevert;
 
+    private boolean shouldCopyClip;
+
     public ClipDragInformation(TimelinePosition originalPosition, List<String> clipId, String originalChannelId, double anchorPointX, TimelineInterval originalInterval) {
         this.originalPosition = originalPosition;
         this.clipId = clipId;
@@ -63,6 +65,14 @@ public class ClipDragInformation {
     public void setOriginalInterval(TimelineInterval originalInterval) {
         this.originalInterval = originalInterval;
         this.originalPosition = originalInterval.getStartPosition();
+    }
+
+    public boolean shouldCopyClip() {
+        return shouldCopyClip;
+    }
+
+    public void setShouldCopyClip(boolean shouldCopyClip) {
+        this.shouldCopyClip = shouldCopyClip;
     }
 
 }

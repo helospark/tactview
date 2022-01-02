@@ -12,6 +12,8 @@ import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyCombination.ModifierValue;
 import javafx.scene.input.KeyEvent;
 
 @Component
@@ -35,6 +37,18 @@ public class CurrentlyPressedKeyRepository implements ScenePostProcessor {
 
     public boolean isKeyDown(KeyCode keyCode) {
         return pressedKeys.contains(keyCode);
+    }
+
+    public boolean isKeyModifiersMatch(KeyCombination combination) {
+        return isKeyStatusMatch(combination.getAlt(), KeyCode.ALT)
+                && isKeyStatusMatch(combination.getControl(), KeyCode.CONTROL)
+                && isKeyStatusMatch(combination.getShift(), KeyCode.SHIFT)
+                && isKeyStatusMatch(combination.getMeta(), KeyCode.META);
+    }
+
+    private boolean isKeyStatusMatch(ModifierValue key, KeyCode keyCode) {
+        return key.equals(ModifierValue.DOWN) && pressedKeys.contains(keyCode)
+                || key.equals(ModifierValue.UP) && !pressedKeys.contains(keyCode);
     }
 
     public void onKeyDown(Consumer<KeyCode> handler) {

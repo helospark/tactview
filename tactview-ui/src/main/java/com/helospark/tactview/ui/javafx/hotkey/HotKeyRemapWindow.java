@@ -1,5 +1,6 @@
 package com.helospark.tactview.ui.javafx.hotkey;
 
+import static com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository.NO_KEYCODE_DEFINED;
 import static javafx.stage.Modality.APPLICATION_MODAL;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -40,7 +42,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class HotKeyRemapWindow {
-    private static final KeyCode NO_KEYCODE_DEFINED = KeyCode.F24;
     private static final int DIALOG_WIDTH = 500;
     private static final Map<KeyCode, Modifier> KEY_CODE_TO_MODIFIER = Map.of(
             KeyCode.CONTROL, KeyCombination.CONTROL_DOWN,
@@ -60,7 +61,10 @@ public class HotKeyRemapWindow {
     private Optional<String> editingId = Optional.empty();
     private Set<KeyCode> pressedKeys = new HashSet<>();
 
-    public HotKeyRemapWindow(HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService, RestartDialogOpener restartDialogOpener, AlertDialogFactory alertDialogFactory) {
+    private Tooltip tooltip;
+
+    public HotKeyRemapWindow(HotKeyRepository hotKeyRepository, StylesheetAdderService stylesheetAdderService, RestartDialogOpener restartDialogOpener,
+            AlertDialogFactory alertDialogFactory) {
         this.hotKeyRepository = hotKeyRepository;
         this.stylesheetAdderService = stylesheetAdderService;
         this.restartDialogOpener = restartDialogOpener;
@@ -70,6 +74,11 @@ public class HotKeyRemapWindow {
     public Scene createScene() {
         pane = new BorderPane();
         pane.getStyleClass().add("dialog-root");
+
+        tooltip = new Tooltip();
+        tooltip.hide();
+        tooltip.setText("Press buttons to change combination. Press Esc to abort.");
+        tooltip.setHideOnEscape(false);
 
         searchTextField = new TextField();
         searchTextField.setPromptText("Search");
@@ -112,13 +121,19 @@ public class HotKeyRemapWindow {
                 if (event.isShortcutDown() && SystemUtils.IS_OS_MAC) {
                     modifiers.add(KeyCombination.SHORTCUT_DOWN);
                 }
-                KeyCodeCombination combination = new KeyCodeCombination(event.getCode(), modifiers.toArray(new Modifier[0]));
+                KeyCode originalKeyCode = hotKeyRepository.getHotKeyById(editingId.get()).getCombination().getCode();
+                KeyCode newKeyCode = originalKeyCode.equals(HotKeyRepository.NO_KEYCODE_DEFINED)
+                        ? HotKeyRepository.NO_KEYCODE_DEFINED
+                        : event.getCode();
+                KeyCodeCombination combination = new KeyCodeCombination(newKeyCode, modifiers.toArray(new Modifier[0]));
 
                 hotKeyRepository.changeHotKeyForId(editingId.get(), combination);
 
                 Map<KeyCodeCombination, List<String>> hotkeyCollisions = hotKeyRepository.calculateHotkeyCollisions();
                 if (hotkeyCollisions.containsKey(combination)) {
-                    alertDialogFactory.createSimpleAlertWithTitleAndContent(AlertType.WARNING, "Collision between hotkeys", "There are collisions between " + hotkeyCollisions.values()).show();
+                    alertDialogFactory
+                            .createSimpleAlertWithTitleAndContent(AlertType.WARNING, "Collision between hotkeys", "There are collisions between " + hotkeyCollisions.values())
+                            .show();
                 }
 
                 editingId = Optional.empty();
@@ -136,6 +151,12 @@ public class HotKeyRemapWindow {
         vbox.setPrefWidth(DIALOG_WIDTH);
 
         String searchFor = searchTextField.getText().toUpperCase();
+
+        if (editingId.isPresent()) {
+            tooltip.show(stage, stage.getX() + 20, stage.getY() + 20);
+        } else {
+            tooltip.hide();
+        }
 
         for (var entry : hotKeyRepository.getKeyDescriptors().entrySet()) {
             GridPane subGridPane = new GridPane();
@@ -158,8 +179,14 @@ public class HotKeyRemapWindow {
             Button changeButton = new Button("Change");
             changeButton.setOnAction(a -> {
                 editingId = Optional.ofNullable(entry.getKey());
+                reloadContent();
             });
             subGridPane.add(changeButton, 2, 0);
+
+            if (editingId.isPresent() && entry.getKey().equals(editingId.get())) {
+                combinationNode.getStyleClass().add("key-code-container-selected");
+                changeButton.setDisable(true);
+            }
 
             if (searchFor.isBlank() ||
                     entry.getValue().getName().toUpperCase().contains(searchFor) ||

@@ -63,7 +63,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     private final LongProcessRequestor longProcessRequestor;
     private final ProjectRepository projectRepository;
 
-    public TimelineManagerAccessor(MessagingService messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
+    public TimelineManagerAccessor(MessagingService messagingService, ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain,
+            LinkClipRepository linkClipRepository,
             TimelineChannelsState timelineChannelsState, LongProcessRequestor longProcessRequestor, ProjectRepository projectRepository) {
         this.messagingService = messagingService;
         this.clipFactoryChain = clipFactoryChain;
@@ -176,14 +177,16 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
 
     private void sendClipAndEffectMessages(TimelineChannel channelToAddResourceTo, TimelineClip clip) {
         List<ValueProviderDescriptor> descriptors = clip.getDescriptors(); // must call before sending clip added message to initialize descriptors
-        messagingService.sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
+        messagingService
+                .sendMessage(new ClipAddedMessage(clip.getId(), channelToAddResourceTo.getId(), clip.getInterval().getStartPosition(), clip, clip.isResizable(), clip.interval));
         messagingService.sendMessage(new ClipDescriptorsAdded(clip.getId(), descriptors, clip));
         // TODO: keyframes
 
         for (var effect : clip.getEffects()) {
             messagingService.sendAsyncMessage(new EffectDescriptorsAdded(effect.getId(), effect.getValueProviders(), effect));
             int channelIndex = clip.getEffectWithIndex(effect);
-            messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clip.getId(), effect.interval.getStartPosition(), effect, channelIndex, effect.getGlobalInterval()));
+            messagingService
+                    .sendMessage(new EffectAddedMessage(effect.getId(), clip.getId(), effect.interval.getStartPosition(), effect, channelIndex, effect.getGlobalInterval()));
         }
     }
 
@@ -212,7 +215,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
     public void addEffectForClip(TimelineClip clipById, StatelessEffect effect) {
         int newEffectChannelId = clipById.addEffectAtAnyChannel(effect);
         messagingService.sendAsyncMessage(new EffectDescriptorsAdded(effect.getId(), effect.getValueProviders(), effect));
-        messagingService.sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), effect.interval.getStartPosition(), effect, newEffectChannelId, effect.getGlobalInterval()));
+        messagingService
+                .sendMessage(new EffectAddedMessage(effect.getId(), clipById.getId(), effect.interval.getStartPosition(), effect, newEffectChannelId, effect.getGlobalInterval()));
         effect.notifyAfterInitialized();
     }
 
@@ -274,7 +278,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 timelineChannelsState.channels.add(channelToInsert);
             }
         }
-        messagingService.sendMessage(new ChannelAddedMessage(channelToInsert.getId(), timelineChannelsState.channels.indexOf(channelToInsert), channelToInsert.isDisabled(), channelToInsert.isMute()));
+        messagingService.sendMessage(
+                new ChannelAddedMessage(channelToInsert.getId(), timelineChannelsState.channels.indexOf(channelToInsert), channelToInsert.isDisabled(), channelToInsert.isMute()));
 
         channelToInsert.getAllClipId()
                 .stream()
@@ -347,7 +352,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             Map<String, Set<ClosesIntervalChannel>> result = new HashMap<>();
             synchronized (timelineChannelsState.fullLock) { // allLinkedClipsCanBeMoved requires state modification
                 for (var currentClip : linkedClips) {
-                    calculateSpecialPositionAround(currentClip.getInterval().getStartPosition().add(relativeClipMove), moveClipRequest.maximumJump, currentClip.getInterval(), ignoredIds,
+                    calculateSpecialPositionAround(currentClip.getInterval().getStartPosition().add(relativeClipMove), moveClipRequest.maximumJump, currentClip.getInterval(),
+                            ignoredIds,
                             moveClipRequest.additionalSpecialPositions)
                                     .stream()
                                     .filter(a -> {
@@ -433,8 +439,9 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                                 clip.setInterval(clipNewPosition);
                                 newMovedChannel.addResource(clip);
 
-                                messagingService.sendAsyncMessage(new ClipMovedMessage(clip.getId(), clipNewPosition.getStartPosition(), newMovedChannel.getId(), finalSpecialPositionUsed,
-                                        clipCurrentInterval, clip.getGlobalInterval(), moveClipRequest.moreMoveExpected));
+                                messagingService
+                                        .sendAsyncMessage(new ClipMovedMessage(clip.getId(), clipNewPosition.getStartPosition(), newMovedChannel.getId(), finalSpecialPositionUsed,
+                                                clipCurrentInterval, clip.getGlobalInterval(), moveClipRequest.moreMoveExpected));
                             });
                 } else {
                     return false;
@@ -552,7 +559,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
 
         Optional<ClosesIntervalChannel> specialPosition = Optional.empty();
         if (request.getMaximumJumpToSpecialPositions().isPresent()) {
-            specialPosition = calculateSpecialPositionAround(globalNewPosition, request.getMaximumJumpToSpecialPositions().get(), effect.getGlobalInterval(), List.of(request.getEffectId()),
+            specialPosition = calculateSpecialPositionAround(globalNewPosition, request.getMaximumJumpToSpecialPositions().get(), effect.getGlobalInterval(),
+                    List.of(request.getEffectId()),
                     request.getAdditionalSpecialPositions())
                             .stream()
                             .filter(a -> {
@@ -904,7 +912,8 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
-    private Optional<ClosesIntervalChannel> findClosesIntervalForChannel(List<TimelineInterval> findSpecialPositionAround, TimelinePosition position, TimelineChannel channel, TimelineLength length) {
+    private Optional<ClosesIntervalChannel> findClosesIntervalForChannel(List<TimelineInterval> findSpecialPositionAround, TimelinePosition position, TimelineChannel channel,
+            TimelineLength length) {
         BigDecimal minimumLength = null;
         TimelinePosition minimumPosition = null;
 
@@ -982,13 +991,17 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return Optional.empty();
     }
 
-    public void addExistingClip(AddExistingClipRequest request) {
+    public boolean addExistingClip(AddExistingClipRequest request) {
         TimelineChannel channel = request.getChannel();
         TimelineClip clip = request.getClipToAdd();
         TimelinePosition position = request.getPosition()
                 .orElseGet(() -> channel.findPositionWhereIntervalWithLengthCanBeInserted(clip.getInterval().getLength()));
         clip.setInterval(clip.getInterval().butMoveStartPostionTo(position));
+        if (!request.getChannel().canAddResourceAt(clip.getInterval())) {
+            return false;
+        }
         addClip(request.getChannel(), clip);
+        return true;
     }
 
     public void addExistingEffect(TimelineClip clipToAdd, StatelessEffect effect) {
