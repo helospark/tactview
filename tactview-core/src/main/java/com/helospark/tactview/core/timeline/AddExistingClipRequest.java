@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -10,11 +12,14 @@ public class AddExistingClipRequest {
     private TimelineChannel channel;
     private Optional<TimelinePosition> position;
 
+    private List<ClipChannelPair> additionalClipsToAdd;
+
     @Generated("SparkTools")
     private AddExistingClipRequest(Builder builder) {
         this.clipToAdd = builder.clipToAdd;
         this.channel = builder.channel;
         this.position = builder.position;
+        this.additionalClipsToAdd = builder.additionalClipsToAdd;
     }
 
     public TimelineClip getClipToAdd() {
@@ -25,18 +30,17 @@ public class AddExistingClipRequest {
         return channel;
     }
 
+    public List<ClipChannelPair> getAdditionalClipsToAdd() {
+        return additionalClipsToAdd;
+    }
+
     public Optional<TimelinePosition> getPosition() {
         return position;
     }
 
     @Override
     public String toString() {
-        return "AddExistingClipRequest [clipToAdd=" + clipToAdd + ", channel=" + channel + ", position=" + position + "]";
-    }
-
-    @Generated("SparkTools")
-    public static Builder builder() {
-        return new Builder();
+        return "AddExistingClipRequest [clipToAdd=" + clipToAdd + ", channel=" + channel + ", position=" + position + ", additionalClipsToAdd=" + additionalClipsToAdd + "]";
     }
 
     @Override
@@ -54,10 +58,16 @@ public class AddExistingClipRequest {
     }
 
     @Generated("SparkTools")
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    @Generated("SparkTools")
     public static final class Builder {
         private TimelineClip clipToAdd;
         private TimelineChannel channel;
         private Optional<TimelinePosition> position = Optional.empty();
+        private List<ClipChannelPair> additionalClipsToAdd = Collections.emptyList();
 
         private Builder() {
         }
@@ -74,6 +84,11 @@ public class AddExistingClipRequest {
 
         public Builder withPosition(Optional<TimelinePosition> position) {
             this.position = position;
+            return this;
+        }
+
+        public Builder withAdditionalClipsToAdd(List<ClipChannelPair> additionalClipsToAdd) {
+            this.additionalClipsToAdd = additionalClipsToAdd;
             return this;
         }
 

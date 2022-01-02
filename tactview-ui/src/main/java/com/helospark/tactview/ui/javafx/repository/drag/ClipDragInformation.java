@@ -30,7 +30,7 @@ public class ClipDragInformation {
         return originalPosition;
     }
 
-    public List<String> getClipId() {
+    public List<String> getClipIds() {
         return clipId;
     }
 

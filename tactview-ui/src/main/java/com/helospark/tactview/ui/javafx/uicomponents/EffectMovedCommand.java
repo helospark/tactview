@@ -78,8 +78,10 @@ public class EffectMovedCommand implements UiCommand {
 
     @Override
     public String toString() {
-        return "EffectMovedCommand [effectId=" + effectId + ", originalClipId=" + originalClipId + ", originalPosition=" + originalPosition + ", globalNewPosition=" + globalNewPosition
-                + ", enableJumpingToSpecialPosition=" + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + ", revertable=" + revertable + ", moreMoveExpected="
+        return "EffectMovedCommand [effectId=" + effectId + ", originalClipId=" + originalClipId + ", originalPosition=" + originalPosition + ", globalNewPosition="
+                + globalNewPosition
+                + ", enableJumpingToSpecialPosition=" + enableJumpingToSpecialPosition + ", maximumJumpLength=" + maximumJumpLength + ", revertable=" + revertable
+                + ", moreMoveExpected="
                 + moreMoveExpected + ", timelineManager=" + timelineManager + "]";
     }
 

@@ -996,11 +996,23 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         TimelineClip clip = request.getClipToAdd();
         TimelinePosition position = request.getPosition()
                 .orElseGet(() -> channel.findPositionWhereIntervalWithLengthCanBeInserted(clip.getInterval().getLength()));
+
+        TimelinePosition relativeMove = position.subtract(clip.getInterval().getStartPosition());
+
         clip.setInterval(clip.getInterval().butMoveStartPostionTo(position));
         if (!request.getChannel().canAddResourceAt(clip.getInterval())) {
             return false;
         }
+        for (var additionalClip : request.getAdditionalClipsToAdd()) {
+            additionalClip.clip.setInterval(additionalClip.clip.getInterval().butAddOffset(relativeMove));
+            if (!additionalClip.channel.canAddResourceAt(additionalClip.clip.getInterval())) {
+                return false;
+            }
+        }
         addClip(request.getChannel(), clip);
+        for (var additionalClip : request.getAdditionalClipsToAdd()) {
+            addClip(additionalClip.channel, additionalClip.clip);
+        }
         return true;
     }
 

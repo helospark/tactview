@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.ClipChannelIdPair;
 import com.helospark.tactview.core.timeline.MoveClipRequest;
 import com.helospark.tactview.core.timeline.ResizeClipRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -15,7 +16,6 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.domain.ClipChannelPair;
 import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 public class ClipResizedCommand implements UiCommand {
@@ -27,7 +27,7 @@ public class ClipResizedCommand implements UiCommand {
 
     private TimelinePosition originalPosition;
     private TimelineInterval originalInterval;
-    private Set<ClipChannelPair> clipsToMove = Set.of();
+    private Set<ClipChannelIdPair> clipsToMove = Set.of();
     private TimelinePosition lengthToJump;
     private TimelinePosition relativeMove;
 
@@ -81,7 +81,7 @@ public class ClipResizedCommand implements UiCommand {
                 }
                 clipsToMove = timelineManager.findClipsRightFromPositionAndOnChannelIgnoring(ripplePosition, channels, clipIds)
                         .stream()
-                        .map(a -> new ClipChannelPair(a, timelineManager.findChannelForClipId(a.getId()).get().getId()))
+                        .map(a -> new ClipChannelIdPair(a, timelineManager.findChannelForClipId(a.getId()).get().getId()))
                         .collect(Collectors.toSet());
 
             }

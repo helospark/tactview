@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import com.helospark.tactview.core.timeline.ClipChannelIdPair;
 import com.helospark.tactview.core.timeline.MoveClipRequest;
 import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -15,7 +16,6 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.message.NotificationMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.commands.UiCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.domain.ClipChannelPair;
 import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditMode;
 
 public class ClipInsertCommand implements UiCommand {
@@ -28,7 +28,7 @@ public class ClipInsertCommand implements UiCommand {
 
     private TimelinePosition distanceToMove;
     boolean success = false;
-    List<ClipChannelPair> actuallyInsertedClips;
+    List<ClipChannelIdPair> actuallyInsertedClips;
     TimelineInterval combinedInterval;
     List<Integer> channelIndices;
     boolean moveBackward;
@@ -81,7 +81,7 @@ public class ClipInsertCommand implements UiCommand {
         }
     }
 
-    private void insertClipsAt(TimelinePosition positionToInsertTo, TimelineInterval combinedInterval, List<ClipChannelPair> removedClips) {
+    private void insertClipsAt(TimelinePosition positionToInsertTo, TimelineInterval combinedInterval, List<ClipChannelIdPair> removedClips) {
         for (var removedClip : removedClips) {
             var clip = removedClip.clip;
 
@@ -137,12 +137,12 @@ public class ClipInsertCommand implements UiCommand {
         }
     }
 
-    private List<ClipChannelPair> removeClipsToInsert(List<TimelineClip> clipsToMove) {
+    private List<ClipChannelIdPair> removeClipsToInsert(List<TimelineClip> clipsToMove) {
         // TODO: ripple if set
-        List<ClipChannelPair> clipsRemoved = new ArrayList<>();
+        List<ClipChannelIdPair> clipsRemoved = new ArrayList<>();
         for (var clip : clipsToMove) {
             TimelineChannel channel = timelineManager.findChannelForClipId(clip.getId()).get();
-            clipsRemoved.add(new ClipChannelPair(clip, channel.getId()));
+            clipsRemoved.add(new ClipChannelIdPair(clip, channel.getId()));
             timelineManager.removeClip(clip.getId());
         }
         return clipsRemoved;
@@ -175,7 +175,7 @@ public class ClipInsertCommand implements UiCommand {
     public void revert() {
         if (success) {
             TimelineInterval newCombinedInterval = findCombinedInterval(clipsToMove);
-            List<ClipChannelPair> removedClips = removeClipsToInsert(actuallyInsertedClips.stream().map(a -> a.clip).collect(Collectors.toList()));
+            List<ClipChannelIdPair> removedClips = removeClipsToInsert(actuallyInsertedClips.stream().map(a -> a.clip).collect(Collectors.toList()));
             moveBackClipsBehind(combinedInterval.getStartPosition(), channelIndices, distanceToMove.negate(), !moveBackward, newCombinedInterval);
             insertClipsAt(combinedInterval.getStartPosition(), new TimelineInterval(insertInPlace.getInterval().getStartPosition(), distanceToMove.toLength()), removedClips);
         }

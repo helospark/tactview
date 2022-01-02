@@ -104,7 +104,7 @@ public class TimelineDragAndDropHandler {
     public ClipMovedCommand createMoveClipCommand(String channelId, boolean revertable, TimelinePosition position) {
         ClipDragInformation currentlyDraggedClip = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedClip != null) {
-            String clipId = currentlyDraggedClip.getClipId().get(0);
+            String clipId = currentlyDraggedClip.getClipIds().get(0);
 
             if (position.isLessThan(TimelinePosition.ofZero())) {
                 position = TimelinePosition.ofZero();
@@ -160,7 +160,7 @@ public class TimelineDragAndDropHandler {
     public void resizeClip(TimelinePosition position, boolean revertable, TimelinePosition relativeMove) {
         ClipDragInformation currentlyDraggedEffect = dragRepository.currentlyDraggedClip();
         if (currentlyDraggedEffect != null) {
-            List<String> clipId = currentlyDraggedEffect.getClipId();
+            List<String> clipId = currentlyDraggedEffect.getClipIds();
 
             boolean useSpecialPoints = timelineEditModeRepository.isMagnetEditModeEnabled(currentlyPressedKeyRepository.isKeyDown(SPECIAL_POSITION_DISABLE_KEY));
 
