@@ -80,6 +80,7 @@ import com.helospark.tactview.core.timeline.effect.mirror.MirrorEffect;
 import com.helospark.tactview.core.timeline.effect.mirror.MirrorLineEffect;
 import com.helospark.tactview.core.timeline.effect.motionblur.GhostingEffect;
 import com.helospark.tactview.core.timeline.effect.mozaic.MozaicEffect;
+import com.helospark.tactview.core.timeline.effect.offset.OffsetEffect;
 import com.helospark.tactview.core.timeline.effect.orthogonal.OrthogonalTransformationEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.PencilSketchEffect;
 import com.helospark.tactview.core.timeline.effect.pencil.opencv.OpenCVPencilSketchImplementation;
@@ -889,4 +890,17 @@ public class StandardEffectConfiguration {
                 .withIsFullWidth(true)
                 .build();
     }
+
+    @Bean
+    public StandardEffectFactory offsetEffect(IndependentPixelOperation independentPixelOperation) {
+        return StandardEffectFactory.builder()
+                .withFactory(request -> new OffsetEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), independentPixelOperation))
+                .withRestoreFactory((node, loadMetadata) -> new OffsetEffect(node, loadMetadata, independentPixelOperation))
+                .withName("Offset")
+                .withSupportedEffectId("offset")
+                .withSupportedClipTypes(List.of(TimelineClipType.VIDEO, TimelineClipType.IMAGE))
+                .withEffectType(TimelineEffectType.VIDEO_EFFECT)
+                .build();
+    }
+
 }
