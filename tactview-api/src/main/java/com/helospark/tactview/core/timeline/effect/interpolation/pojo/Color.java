@@ -207,4 +207,28 @@ public class Color {
         return Objects.hash(red, green, blue);
     }
 
+    public double getRed() {
+        return red;
+    }
+
+    public double getGreen() {
+        return green;
+    }
+
+    public double getBlue() {
+        return blue;
+    }
+
+    public double getHue() {
+        return red;
+    }
+
+    public double getSaturation() {
+        return green;
+    }
+
+    public double getLightness() {
+        return blue;
+    }
+
 }
