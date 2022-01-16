@@ -13,9 +13,9 @@ public class HslLightnessBlendMode extends AbstractHslBlendMode {
 
     @Override
     protected Color createMofidifedHslColor(Color topHslColor, Color bottomHslColor, double topAlpha, double bottomAlpha) {
-        double hue = topHslColor.getHue() * topAlpha + bottomHslColor.getHue() * (1.0 - topAlpha);
+        double hue = bottomHslColor.getHue();
         double saturation = bottomHslColor.getSaturation();
-        double lightness = bottomHslColor.getLightness();
+        double lightness = topHslColor.getLightness() * topAlpha + bottomHslColor.getLightness() * (1.0 - topAlpha);
         return new Color(hue, saturation, lightness);
     }
 

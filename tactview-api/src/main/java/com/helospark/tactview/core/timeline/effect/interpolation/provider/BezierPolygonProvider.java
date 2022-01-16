@@ -17,7 +17,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.B
 import com.helospark.tactview.core.util.DesSerFactory;
 
 // TODO: Too many copypaste from PolygonProvider
-public class BezierPolygonProvider extends KeyframeableEffect<List<BezierPolygonPoint>> {
+public class BezierPolygonProvider extends KeyframeableEffect<BezierPolygon> {
     protected boolean useKeyframes;
     protected List<BezierPolygonPoint> defaultValues;
     protected TreeMap<TimelinePosition, List<BezierPolygonPoint>> values = new TreeMap<>();
@@ -41,7 +41,7 @@ public class BezierPolygonProvider extends KeyframeableEffect<List<BezierPolygon
     }
 
     @Override
-    public Class<? extends DesSerFactory<? extends KeyframeableEffect<List<BezierPolygonPoint>>>> generateSerializableContent() {
+    public Class<? extends DesSerFactory<? extends KeyframeableEffect<BezierPolygon>>> generateSerializableContent() {
         return BezierPolygonProviderDesSerFactory.class;
     }
 
@@ -82,8 +82,8 @@ public class BezierPolygonProvider extends KeyframeableEffect<List<BezierPolygon
                 BezierPolygonPoint point1 = lastPoints.get(i);
                 BezierPolygonPoint point2 = nextPoints.get(i);
 
-                double xCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[]{point1.getX(), point2.getX()});
-                double yCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[]{point1.getY(), point2.getY()});
+                double xCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[] { point1.getX(), point2.getX() });
+                double yCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[] { point1.getY(), point2.getY() });
 
                 newPoints.add(new BezierPolygonPoint(xCoordinate, yCoordinate, point1.getType()));
             }
@@ -93,7 +93,7 @@ public class BezierPolygonProvider extends KeyframeableEffect<List<BezierPolygon
 
     private double interpolateAxis(Entry<TimelinePosition, List<BezierPolygonPoint>> lastEntry, Entry<TimelinePosition, List<BezierPolygonPoint>> nextEntry, TimelinePosition position,
             double[] yVals) {
-        double[] timeVals = new double[]{lastEntry.getKey().getSeconds().doubleValue(), nextEntry.getKey().getSeconds().doubleValue()};
+        double[] timeVals = new double[] { lastEntry.getKey().getSeconds().doubleValue(), nextEntry.getKey().getSeconds().doubleValue() };
         return interpolatorImplementation.interpolate(timeVals, yVals).value(position.getSeconds().doubleValue());
     }
 
@@ -103,13 +103,13 @@ public class BezierPolygonProvider extends KeyframeableEffect<List<BezierPolygon
     }
 
     @Override
-    public KeyframeableEffect<List<BezierPolygonPoint>> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
+    public KeyframeableEffect<BezierPolygon> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
         return new BezierPolygonProvider(useKeyframes, new ArrayList<>(defaultValues), new TreeMap<>(values), interpolatorImplementation);
     }
 
     @Override
-    public void keyframeAdded(TimelinePosition globalTimelinePosition, List<BezierPolygonPoint> value) {
-        List<BezierPolygonPoint> newPoints = value;
+    public void keyframeAdded(TimelinePosition globalTimelinePosition, BezierPolygon polygon) {
+        List<BezierPolygonPoint> newPoints = polygon.points;
         if (useKeyframes) {
             values.put(globalTimelinePosition, newPoints);
         } else {
