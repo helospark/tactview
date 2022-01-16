@@ -13,15 +13,20 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.CanvasStateHolder;
+import com.helospark.tactview.ui.javafx.DisplayUpdateRequestMessage;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddEffectCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.uicomponents.DefaultCanvasTranslateSetter;
 
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.input.MouseButton;
 
 @Component
 public class GeneralCanvasOperationStrategy {
@@ -31,22 +36,31 @@ public class GeneralCanvasOperationStrategy {
     private UiTimelineManager uiTimelineManager;
     private UiProjectRepository projectRepository;
     private TimelineManagerAccessor timelineManagerAccessor;
+    private CanvasStateHolder canvasStateHolder;
+    private MessagingService messagingService;
+    private DefaultCanvasTranslateSetter defaultCanvasTranslateSetter;
 
     private DragData dragData;
-    private Point lastDragPoint = null;
+    private Point dragStartPoint = null;
+    private Point dragStartPointAbsoluteCanvasPos = null;
 
     public GeneralCanvasOperationStrategy(UiCommandInterpreterService commandInterpreterService, EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager,
-            UiProjectRepository projectRepository, TimelineManagerAccessor timelineManagerAccessor) {
+            UiProjectRepository projectRepository, TimelineManagerAccessor timelineManagerAccessor, CanvasStateHolder canvasStateHolder,
+            MessagingService messagingService, DefaultCanvasTranslateSetter defaultCanvasTranslateSetter) {
         this.commandInterpreterService = commandInterpreterService;
         this.effectParametersRepository = effectParametersRepository;
         this.uiTimelineManager = uiTimelineManager;
         this.projectRepository = projectRepository;
         this.timelineManagerAccessor = timelineManagerAccessor;
+        this.canvasStateHolder = canvasStateHolder;
+        this.messagingService = messagingService;
+        this.defaultCanvasTranslateSetter = defaultCanvasTranslateSetter;
     }
 
     public void onMouseDownEvent(GeneralCanvasOperationsMouseRequest input) {
         dragData = findDragData(input);
-        lastDragPoint = new Point(input.x, input.y);
+        dragStartPoint = new Point(input.x, input.y);
+        dragStartPointAbsoluteCanvasPos = new Point(input.canvasRelativeX, input.canvasRelativeY);
     }
 
     public void onMouseMovedEvent(GeneralCanvasOperationsMouseRequest input) {
@@ -64,12 +78,27 @@ public class GeneralCanvasOperationStrategy {
 
     public void onMouseUpEvent(GeneralCanvasOperationsMouseRequest input) {
         input.canvas.setCursor(Cursor.DEFAULT);
+        if (input.mouseEvent.getButton().equals(MouseButton.MIDDLE)
+                && input.mouseEvent.getClickCount() > 0
+                && input.mouseEvent.isStillSincePress()) {
+            defaultCanvasTranslateSetter.setDefaultCanvasTranslate(projectRepository.getPreviewWidth(), projectRepository.getPreviewHeight());
+        }
         dragData = null;
     }
 
     public void onMouseDraggedEvent(GeneralCanvasOperationsMouseRequest input) {
-        if (dragData != null) {
-            Point relativeMoveNormalized = new Point(input.x, input.y).subtract(lastDragPoint);
+        if (input.mouseEvent.getButton().equals(MouseButton.MIDDLE)) {
+            Point relativeMoveNormalized = new Point(input.canvasRelativeX, input.canvasRelativeY).subtract(dragStartPointAbsoluteCanvasPos);
+
+            if (Math.abs(relativeMoveNormalized.distanceFrom(0.0, 0.0)) >= 1.0) {
+                canvasStateHolder.increaseTranslateX(relativeMoveNormalized.x);
+                canvasStateHolder.increaseTranslateY(relativeMoveNormalized.y);
+                messagingService.sendMessage(new DisplayUpdateRequestMessage(false));
+            }
+
+            dragStartPointAbsoluteCanvasPos = new Point(input.canvasRelativeX, input.canvasRelativeY);
+        } else if (dragData != null) {
+            Point relativeMoveNormalized = new Point(input.x, input.y).subtract(dragStartPoint);
 
             Point relativeScale = relativeMoveNormalized.multiply(projectRepository.getPreviewWidth() / dragData.boundingBox.getWidth(),
                     projectRepository.getPreviewHeight() / dragData.boundingBox.getHeight());

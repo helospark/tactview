@@ -150,6 +150,8 @@ public class BezierPolygonInputTypeStrategy implements InputTypeStrategy<BezierP
 
     @Override
     public void draw(DrawRequestParameter parameterObject) {
+        double translateX = parameterObject.getCanvasTranslateX();
+        double translateY = parameterObject.getCanvasTranslateY();
         parameterObject.getCanvas().setFill(Color.BLUE);
         parameterObject.getCanvas().setStroke(Color.BLUE);
         Point previousRealPoint = null;
@@ -172,7 +174,7 @@ public class BezierPolygonInputTypeStrategy implements InputTypeStrategy<BezierP
                 }
             }
 
-            parameterObject.getCanvas().fillOval(current.x - diameter / 2, current.y - diameter / 2, diameter, diameter);
+            parameterObject.getCanvas().fillOval(current.x - diameter / 2 + translateX, current.y - diameter / 2 + translateY, diameter, diameter);
 
             if (currentBezier.type == SplinePolygonType.SPLINE) {
                 parameterObject.getCanvas().setStroke(Color.GRAY);
@@ -181,7 +183,7 @@ public class BezierPolygonInputTypeStrategy implements InputTypeStrategy<BezierP
             }
 
             if (previousRealPoint != null) {
-                parameterObject.getCanvas().strokeLine(previousRealPoint.x, previousRealPoint.y, current.x, current.y);
+                parameterObject.getCanvas().strokeLine(previousRealPoint.x + translateX, previousRealPoint.y + translateY, current.x + translateX, current.y + translateY);
             }
             if (currentBezier.type == SplinePolygonType.POINT) {
                 previousRealPoint = current;

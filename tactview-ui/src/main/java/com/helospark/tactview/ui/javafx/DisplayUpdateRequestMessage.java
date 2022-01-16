@@ -11,4 +11,9 @@ public class DisplayUpdateRequestMessage {
         return invalidateCache;
     }
 
+    @Override
+    public String toString() {
+        return "DisplayUpdateRequestMessage [invalidateCache=" + invalidateCache + "]";
+    }
+
 }

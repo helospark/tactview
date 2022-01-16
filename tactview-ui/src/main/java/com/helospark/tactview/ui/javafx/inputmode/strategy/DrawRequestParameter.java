@@ -14,6 +14,9 @@ public class DrawRequestParameter {
     private boolean mouseInCanvas;
     private Optional<MouseEvent> mouseEvent;
 
+    private double canvasTranslateX;
+    private double canvasTranslateY;
+
     @Generated("SparkTools")
     private DrawRequestParameter(Builder builder) {
         this.canvas = builder.canvas;
@@ -21,6 +24,8 @@ public class DrawRequestParameter {
         this.height = builder.height;
         this.mouseInCanvas = builder.mouseInCanvas;
         this.mouseEvent = builder.mouseEvent;
+        this.canvasTranslateX = builder.canvasTranslateX;
+        this.canvasTranslateY = builder.canvasTranslateY;
     }
 
     public GraphicsContext getCanvas() {
@@ -43,6 +48,14 @@ public class DrawRequestParameter {
         return mouseEvent;
     }
 
+    public double getCanvasTranslateX() {
+        return canvasTranslateX;
+    }
+
+    public double getCanvasTranslateY() {
+        return canvasTranslateY;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -55,6 +68,8 @@ public class DrawRequestParameter {
         private int height;
         private boolean mouseInCanvas;
         private Optional<MouseEvent> mouseEvent = Optional.empty();
+        private double canvasTranslateX;
+        private double canvasTranslateY;
 
         private Builder() {
         }
@@ -81,6 +96,16 @@ public class DrawRequestParameter {
 
         public Builder withMouseEvent(Optional<MouseEvent> mouseEvent) {
             this.mouseEvent = mouseEvent;
+            return this;
+        }
+
+        public Builder withCanvasTranslateX(double canvasTranslateX) {
+            this.canvasTranslateX = canvasTranslateX;
+            return this;
+        }
+
+        public Builder withCanvasTranslateY(double canvasTranslateY) {
+            this.canvasTranslateY = canvasTranslateY;
             return this;
         }
 

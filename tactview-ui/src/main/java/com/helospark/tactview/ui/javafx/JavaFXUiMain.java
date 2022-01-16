@@ -38,6 +38,7 @@ import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTab
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.common.TiwulFXUtil;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPaneLoadModel;
+import com.helospark.tactview.ui.javafx.uicomponents.DefaultCanvasTranslateSetter;
 import com.helospark.tactview.ui.javafx.uicomponents.PropertyView;
 import com.helospark.tactview.ui.javafx.uicomponents.UiTimeline;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
@@ -147,13 +148,12 @@ public class JavaFXUiMain extends Application {
         mainContentPane.setDividerPositions(0.6);
 
         canvas = new Canvas();
-        canvas.widthProperty().bind(uiProjectRepository.getPreviewWidthProperty());
-        canvas.heightProperty().bind(uiProjectRepository.getPreviewHeightProperty());
-        canvas.getGraphicsContext2D().setFill(new Color(0.0, 0.0, 0.0, 1.0));
-        canvas.getGraphicsContext2D().fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        lightDi.getBean(CanvasStateHolder.class).setCanvas(canvas);
+        lightDi.getBean(DefaultCanvasTranslateSetter.class).setDefaultCanvasTranslate(uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
         InputModeRepository inputModeRepository = lightDi.getBean(InputModeRepository.class);
         inputModeRepository.setCanvas(canvas);
         displayUpdateService.setCanvas(canvas);
+        displayUpdateService.updateCurrentPositionWithInvalidatedCache();
 
         Tooltip tooltip = new Tooltip();
 

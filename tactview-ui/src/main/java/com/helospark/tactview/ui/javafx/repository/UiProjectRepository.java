@@ -82,22 +82,6 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
         this.aspectRatio = newValue;
     }
 
-    public SimpleIntegerProperty getPreviewAvailableWidth() {
-        return previewAvailableWidth;
-    }
-
-    public void setPreviewAvailableWidth(int previewAvailableWidth) {
-        this.previewAvailableWidth.set(previewAvailableWidth);
-    }
-
-    public SimpleIntegerProperty getPreviewAvailableHeight() {
-        return previewAvailableHeight;
-    }
-
-    public void setPreviewAvailableHeight(int previewAvailableHeight) {
-        this.previewAvailableHeight.set(previewAvailableHeight);
-    }
-
     public double getAspectRatio() {
         return aspectRatio;
     }
@@ -127,13 +111,8 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
         int previewWidthModulo = previewWidthToSet % 16;
         if (previewWidthModulo != 0) {
             double multiplier = 0.0;
-            if (previewWidthModulo < 8) {
-                multiplier = ((previewWidthToSet - previewWidthModulo) / (double) previewWidthToSet);
-                previewWidthToSet -= previewWidthModulo;
-            } else {
-                multiplier = ((previewWidthToSet + previewWidthModulo) / (double) previewWidthToSet);
-                previewWidthToSet += (16 - previewWidthModulo);
-            }
+            multiplier = ((previewWidthToSet - previewWidthModulo) / (double) previewWidthToSet);
+            previewWidthToSet -= previewWidthModulo;
 
             previewHeightToSet = (int) (previewHeightToSet * multiplier);
         }

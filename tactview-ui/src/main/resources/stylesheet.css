@@ -177,6 +177,7 @@
 
 #video-button-bar {
     -fx-alignment: center ;
+    -fx-padding: 5px 0px 5px 0px;
 }
 
 #video-button-bar .button {

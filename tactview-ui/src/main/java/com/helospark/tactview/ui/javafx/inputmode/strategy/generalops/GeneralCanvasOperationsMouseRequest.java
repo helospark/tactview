@@ -3,6 +3,8 @@ package com.helospark.tactview.ui.javafx.inputmode.strategy.generalops;
 import java.util.Collections;
 import java.util.Map;
 
+import javax.annotation.Generated;
+
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 
 import javafx.scene.canvas.Canvas;
@@ -13,31 +15,42 @@ public class GeneralCanvasOperationsMouseRequest {
     double y;
     double unscaledX;
     double unscaledY;
+    double canvasRelativeX;
+    double canvasRelativeY;
     MouseEvent mouseEvent;
     Map<String, RegularRectangle> rectangles;
     Canvas canvas;
 
+    @Generated("SparkTools")
     private GeneralCanvasOperationsMouseRequest(Builder builder) {
         this.x = builder.x;
         this.y = builder.y;
         this.unscaledX = builder.unscaledX;
         this.unscaledY = builder.unscaledY;
+        this.canvasRelativeX = builder.canvasRelativeX;
+        this.canvasRelativeY = builder.canvasRelativeY;
         this.mouseEvent = builder.mouseEvent;
         this.rectangles = builder.rectangles;
         this.canvas = builder.canvas;
     }
 
+    @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
     }
+
+    @Generated("SparkTools")
     public static final class Builder {
         private double x;
         private double y;
         private double unscaledX;
         private double unscaledY;
+        private double canvasRelativeX;
+        private double canvasRelativeY;
         private MouseEvent mouseEvent;
         private Map<String, RegularRectangle> rectangles = Collections.emptyMap();
         private Canvas canvas;
+
         private Builder() {
         }
 
@@ -58,6 +71,16 @@ public class GeneralCanvasOperationsMouseRequest {
 
         public Builder withUnscaledY(double unscaledY) {
             this.unscaledY = unscaledY;
+            return this;
+        }
+
+        public Builder withCanvasRelativeX(double canvasRelativeX) {
+            this.canvasRelativeX = canvasRelativeX;
+            return this;
+        }
+
+        public Builder withCanvasRelativeY(double canvasRelativeY) {
+            this.canvasRelativeY = canvasRelativeY;
             return this;
         }
 

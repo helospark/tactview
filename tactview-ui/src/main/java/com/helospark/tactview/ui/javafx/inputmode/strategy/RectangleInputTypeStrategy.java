@@ -99,6 +99,8 @@ public class RectangleInputTypeStrategy implements InputTypeStrategy<Rectangle> 
 
     @Override
     public void draw(DrawRequestParameter parameterObject) {
+        double translateX = parameterObject.getCanvasTranslateX();
+        double translateY = parameterObject.getCanvasTranslateY();
         parameterObject.getCanvas().setFill(Color.BLUE);
         parameterObject.getCanvas().setStroke(Color.BLUE);
         Point previous = null;
@@ -116,16 +118,16 @@ public class RectangleInputTypeStrategy implements InputTypeStrategy<Rectangle> 
                 parameterObject.getCanvas().setFill(Color.BLUE);
             }
 
-            parameterObject.getCanvas().fillOval(current.x - diameter / 2, current.y - diameter / 2, diameter, diameter);
+            parameterObject.getCanvas().fillOval(current.x - diameter / 2 + translateX, current.y - diameter / 2 + translateY, diameter, diameter);
             if (previous != null) {
-                parameterObject.getCanvas().strokeLine(previous.x, previous.y, current.x, current.y);
+                parameterObject.getCanvas().strokeLine(previous.x + translateX, previous.y + translateY, current.x + translateX, current.y + translateY);
             }
             previous = current;
         }
 
         if (result.size() == 4) { // close the loop
             Point current = result.get(0).multiply(parameterObject.getWidth(), parameterObject.getHeight());
-            parameterObject.getCanvas().strokeLine(previous.x, previous.y, current.x, current.y);
+            parameterObject.getCanvas().strokeLine(previous.x + translateX, previous.y + translateY, current.x + translateX, current.y + translateY);
         }
     }
 

@@ -7,7 +7,7 @@ import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.ui.javafx.JavaFXUiMain;
+import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
@@ -16,23 +16,19 @@ import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.Detac
 import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 
-import javafx.geometry.HPos;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 @Component
@@ -44,31 +40,34 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
     private UiTimelineManager uiTimelineManager;
     private SingleFullImageViewController fullScreenRenderer;
     private ScaleComboBoxFactory scaleComboBoxFactory;
+    private CanvasStateHolder canvasStateHolder;
 
     public Label videoTimestampLabel;
 
     public PreviewDockableTabFactory(UiPlaybackPreferenceRepository playbackPreferenceRepository, AudioVisualizationComponent audioVisualazationComponent, UiProjectRepository uiProjectRepository,
-            UiTimelineManager uiTimelineManager, SingleFullImageViewController fullScreenRenderer, ScaleComboBoxFactory scaleComboBoxFactory) {
+            UiTimelineManager uiTimelineManager, SingleFullImageViewController fullScreenRenderer, ScaleComboBoxFactory scaleComboBoxFactory,
+            CanvasStateHolder canvasStateHolder) {
         this.playbackPreferenceRepository = playbackPreferenceRepository;
         this.audioVisualazationComponent = audioVisualazationComponent;
         this.uiProjectRepository = uiProjectRepository;
         this.uiTimelineManager = uiTimelineManager;
         this.fullScreenRenderer = fullScreenRenderer;
         this.scaleComboBoxFactory = scaleComboBoxFactory;
+        this.canvasStateHolder = canvasStateHolder;
     }
 
     private BorderPane createPreviewRightVBox() {
-        ScrollPane previewScrollPane = new ScrollPane(
-                createCentered(JavaFXUiMain.canvas));
-        previewScrollPane.setFitToWidth(true);
-        previewScrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
-        previewScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        Canvas canvas = canvasStateHolder.getCanvas();
+        BorderPane previewScrollPane = createCentered(canvas);
+        canvas.widthProperty().bind(previewScrollPane.widthProperty().subtract(20.0));
+        canvas.heightProperty().bind(previewScrollPane.heightProperty().subtract(30.0));
 
         VBox rightVBox = new VBox(3);
         rightVBox.setAlignment(Pos.TOP_CENTER);
         rightVBox.setId("clip-view");
         rightVBox.getChildren().add(previewScrollPane);
         rightVBox.getChildren().add(audioVisualazationComponent.getCanvas());
+        VBox.setVgrow(previewScrollPane, Priority.ALWAYS);
         audioVisualazationComponent.clearCanvas();
 
         videoTimestampLabel = new Label("00:00:00.000");
@@ -162,15 +161,6 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 
-        rightVBox.widthProperty().addListener((e, oldV, newV) -> {
-            int availableWidth = (int) (rightVBox.getWidth() - 20); // TODO: calculate magic value
-            uiProjectRepository.setPreviewAvailableWidth(availableWidth);
-        });
-        rightVBox.heightProperty().addListener((e, oldV, newV) -> {
-            int availableHeight = (int) (rightVBox.getHeight() - 100); // TODO: calculate magic value
-            uiProjectRepository.setPreviewAvailableHeight(availableHeight);
-        });
-
         BorderPane rightBorderPane = new BorderPane();
         rightBorderPane.setCenter(rightVBox);
 
@@ -196,22 +186,65 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         videoTimestampLabel.setText(newLabel);
     }
 
-    private Node createCentered(Canvas canvas2) {
-        GridPane outerPane = new GridPane();
-        RowConstraints row = new RowConstraints();
-        row.setPercentHeight(100);
-        row.setFillHeight(false);
-        row.setValignment(VPos.CENTER);
-        outerPane.getRowConstraints().add(row);
+    private BorderPane createCentered(Canvas canvas2) {
+        BorderPane borderPane = new BorderPane();
+        borderPane.getStyleClass().add("preview-canvas-border-pane");
+        borderPane.setCenter(canvas2);
 
-        ColumnConstraints col = new ColumnConstraints();
-        col.setPercentWidth(100);
-        col.setFillWidth(false);
-        col.setHalignment(HPos.CENTER);
-        outerPane.getColumnConstraints().add(col);
+        ScrollBar rightScroll = new ScrollBar();
+        rightScroll.setOrientation(Orientation.VERTICAL);
+        canvasStateHolder.getTranslateYProperty().bindBidirectional(rightScroll.valueProperty());
 
-        outerPane.add(canvas2, 0, 0);
-        return outerPane;
+        ScrollBar bottomScroll = new ScrollBar();
+
+        canvasStateHolder.getTranslateXProperty().bindBidirectional(bottomScroll.valueProperty());
+
+        borderPane.setRight(rightScroll);
+        borderPane.setBottom(bottomScroll);
+        rightScroll.setMin(-2000);
+        rightScroll.setMax(2000);
+        rightScroll.setUnitIncrement(100);
+        rightScroll.setBlockIncrement(100);
+        rightScroll.setVisibleAmount(500);
+        bottomScroll.setMin(-2000);
+        bottomScroll.setMax(2000);
+        bottomScroll.setUnitIncrement(100);
+        bottomScroll.setBlockIncrement(100);
+        bottomScroll.setVisibleAmount(500);
+
+        uiProjectRepository.getPreviewWidthProperty().addListener((listener, oldValue, newValue) -> {
+            showBottomScrollBarIfNeeded(bottomScroll, newValue);
+        });
+        uiProjectRepository.getPreviewHeightProperty().addListener((listener, oldValue, newValue) -> {
+            showRightScrollBarIfNeeded(rightScroll, newValue);
+        });
+
+        return borderPane;
+    }
+
+    private void showRightScrollBarIfNeeded(ScrollBar rightScroll, Number newValue) {
+        if (canvasStateHolder.getCanvas().getHeight() < newValue.doubleValue()) {
+            rightScroll.setMin(-1.0 * newValue.doubleValue());
+            rightScroll.setMax(1.0 * newValue.doubleValue());
+            setVisible(rightScroll, true);
+        } else {
+            setVisible(rightScroll, false);
+        }
+    }
+
+    private void showBottomScrollBarIfNeeded(ScrollBar bottomScroll, Number newValue) {
+        if (canvasStateHolder.getCanvas().getWidth() < newValue.doubleValue()) {
+            bottomScroll.setMin(-1.0 * newValue.doubleValue());
+            bottomScroll.setMax(1.0 * newValue.doubleValue());
+            setVisible(bottomScroll, true);
+        } else {
+            setVisible(bottomScroll, false);
+        }
+    }
+
+    private void setVisible(Node node, boolean value) {
+        node.setVisible(value);
+        node.setManaged(value);
     }
 
     @Override
@@ -228,4 +261,5 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
     public String getId() {
         return ID;
     }
+
 }

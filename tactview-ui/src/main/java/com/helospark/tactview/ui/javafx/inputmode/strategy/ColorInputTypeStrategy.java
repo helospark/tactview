@@ -69,13 +69,15 @@ public class ColorInputTypeStrategy implements InputTypeStrategy<Color> {
 
     @Override
     public void draw(DrawRequestParameter parameterObject) {
+        double translateX = parameterObject.getCanvasTranslateX();
+        double translateY = parameterObject.getCanvasTranslateY();
         if (parameterObject.isMouseInCanvas()) {
             GraphicsContext graphics = parameterObject.getCanvas();
             MouseEvent causeEvent = parameterObject.getMouseEvent().get();
 
             if (isMultiPixelSamplingRequested()) {
                 graphics.setStroke(javafx.scene.paint.Color.RED);
-                graphics.strokeRect(causeEvent.getX() - MULTISAMPLING_SIZE, causeEvent.getY() - MULTISAMPLING_SIZE, 2 * MULTISAMPLING_SIZE + 1, 2 * MULTISAMPLING_SIZE + 1);
+                graphics.strokeRect(causeEvent.getX() - MULTISAMPLING_SIZE + translateX, causeEvent.getY() - MULTISAMPLING_SIZE + translateY, 2 * MULTISAMPLING_SIZE + 1, 2 * MULTISAMPLING_SIZE + 1);
             }
         }
     }

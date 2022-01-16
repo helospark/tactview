@@ -61,6 +61,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private final MessagingService messagingService;
     private final ScheduledExecutorService scheduledExecutorService;
     private final SelectedNodeRepository selectedNodeRepository;
+    private final CanvasStateHolder canvasStateHolder;
 
     private FullScreenData fullscreenData = null;
 
@@ -83,7 +84,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     public DisplayUpdaterService(PlaybackFrameAccessor playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
             @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService, SelectedNodeRepository selectedNodeRepository,
-            ProjectRepository projectRepository) {
+            ProjectRepository projectRepository, CanvasStateHolder canvasStateHolder) {
         this.playbackFrameAccessor = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.uiTimelineManager = uiTimelineManager;
@@ -93,6 +94,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         this.scheduledExecutorService = scheduledExecutorService;
         this.selectedNodeRepository = selectedNodeRepository;
         this.projectRepository = projectRepository;
+        this.canvasStateHolder = canvasStateHolder;
     }
 
     @PostConstruct
@@ -230,15 +232,26 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     protected void displayFrameAsync(TimelinePosition currentPosition, long currentPostionLastModified, JavaDisplayableAudioVideoFragment actualAudioVideoFragment) {
         Platform.runLater(() -> {
             try {
-                Canvas canvasToUse = (fullscreenData == null ? canvas : fullscreenData.canvas);
-                int width = (fullscreenData == null ? uiProjectRepostiory.getPreviewWidth() : fullscreenData.width);
-                int height = (fullscreenData == null ? uiProjectRepostiory.getPreviewHeight() : fullscreenData.height);
+                boolean useDefaultCanvas = (fullscreenData == null);
+                Canvas canvasToUse = (useDefaultCanvas ? canvas : fullscreenData.canvas);
+                int width = (useDefaultCanvas ? uiProjectRepostiory.getPreviewWidth() : fullscreenData.width);
+                int height = (useDefaultCanvas ? uiProjectRepostiory.getPreviewHeight() : fullscreenData.height);
                 GraphicsContext gc = canvasToUse.getGraphicsContext2D();
-                gc.setFill(Color.BLACK);
-                gc.fillRect(0, 0, canvasToUse.getWidth(), canvasToUse.getHeight());
-                Image image = actualAudioVideoFragment.getImage();
-                gc.drawImage(image, 0, 0, width, height);
+                if (useDefaultCanvas) {
+                    gc.clearRect(0, 0, canvasToUse.getWidth(), canvasToUse.getHeight());
+                }
+                double translateX = 0.0;
+                double translateY = 0.0;
 
+                if (useDefaultCanvas) {
+                    translateX = canvasStateHolder.getTranslateX();
+                    translateY = canvasStateHolder.getTranslateY();
+                }
+
+                gc.setFill(Color.BLACK);
+                gc.fillRect(translateX, translateY, width, height);
+                Image image = actualAudioVideoFragment.getImage();
+                gc.drawImage(image, translateX, translateY, width, height);
                 drawSelectionRectangle(actualAudioVideoFragment, gc);
 
                 DisplayUpdatedRequest displayUpdateRequest = DisplayUpdatedRequest.builder()
@@ -274,16 +287,18 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     }
 
     private void drawRectangleWithDashedLine(GraphicsContext gc, RegularRectangle rect) {
+        double translateX = canvasStateHolder.getTranslateX();
+        double translateY = canvasStateHolder.getTranslateY();
         int boxOffset = selectionBoxUpdateCount;
         gc.setStroke(Color.WHITE);
         gc.setLineWidth(1.0);
         gc.setLineDashOffset(boxOffset);
         gc.setLineDashes(SELECTION_BOX_DASH_SIZE, SELECTION_BOX_DASH_SIZE);
-        gc.strokeRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+        gc.strokeRect(rect.getX() + translateX, rect.getY() + translateY, rect.getWidth(), rect.getHeight());
 
         gc.setStroke(Color.BLACK);
         gc.setLineDashOffset(boxOffset - SELECTION_BOX_DASH_SIZE);
-        gc.strokeRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+        gc.strokeRect(rect.getX() + translateX, rect.getY() + translateY, rect.getWidth(), rect.getHeight());
 
         gc.setLineDashes(null);
     }

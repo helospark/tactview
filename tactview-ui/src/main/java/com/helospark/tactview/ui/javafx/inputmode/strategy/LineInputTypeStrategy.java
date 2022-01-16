@@ -96,8 +96,9 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
 
     @Override
     public void draw(DrawRequestParameter parameterObject) {
-        drawPoint(parameterObject.getCanvas(), result.start.multiply(parameterObject.getWidth(), parameterObject.getHeight()), START_POINT_ID);
-        drawPoint(parameterObject.getCanvas(), result.end.multiply(parameterObject.getWidth(), parameterObject.getHeight()), ENDPOINT_ID);
+        Point translate = new Point(parameterObject.getCanvasTranslateX(), parameterObject.getCanvasTranslateY());
+        drawPoint(parameterObject.getCanvas(), result.start.multiply(parameterObject.getWidth(), parameterObject.getHeight()).add(translate), START_POINT_ID);
+        drawPoint(parameterObject.getCanvas(), result.end.multiply(parameterObject.getWidth(), parameterObject.getHeight()).add(translate), ENDPOINT_ID);
 
         parameterObject.getCanvas().strokeLine(result.start.x, result.start.y, result.end.x, result.end.y);
     }
