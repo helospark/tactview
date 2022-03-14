@@ -65,12 +65,13 @@ public class InputModeRepository implements CleanableMode {
     private SelectedNodeRepository selectedNodeRepository;
     private List<Consumer<Boolean>> inputModeConsumer = new ArrayList<>();
     private CanvasStateHolder canvasStateHolder;
+    private UiProjectRepository uiProjectRepository;
 
     public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService,
             SizeFunctionImplementation sizeFunctionImplementation, PlaybackFrameAccessor playbackController,
             UiTimelineManager timelineManager, VideoStatusBarUpdater videoStatusBarUpdater,
             CurrentlyPressedKeyRepository currentlyPressedKeyRepository, GeneralCanvasOperationStrategy generalCanvasOperationStrategy, SelectedNodeRepository selectedNodeRepository,
-            CanvasStateHolder canvasStateHolder) {
+            CanvasStateHolder canvasStateHolder, UiProjectRepository uiProjectRepository) {
         this.projectRepository = projectRepository;
         this.displayUpdaterService = displayUpdaterService;
         this.sizeFunctionImplementation = sizeFunctionImplementation;
@@ -81,6 +82,7 @@ public class InputModeRepository implements CleanableMode {
         this.generalCanvasOperationStrategy = generalCanvasOperationStrategy;
         this.selectedNodeRepository = selectedNodeRepository;
         this.canvasStateHolder = canvasStateHolder;
+        this.uiProjectRepository = uiProjectRepository;
     }
 
     // TODO: should this be in DI framework?
@@ -194,8 +196,8 @@ public class InputModeRepository implements CleanableMode {
         if (inputModeInput != null) {
             DrawRequestParameter request = DrawRequestParameter.builder()
                     .withCanvas(graphics)
-                    .withWidth((int) canvas.getWidth())
-                    .withHeight((int) canvas.getHeight())
+                    .withWidth(uiProjectRepository.getPreviewWidth())
+                    .withHeight(uiProjectRepository.getPreviewHeight())
                     .withMouseInCanvas(e != null)
                     .withMouseEvent(Optional.ofNullable(e))
                     .withCanvasTranslateX(canvasStateHolder.getTranslateX())

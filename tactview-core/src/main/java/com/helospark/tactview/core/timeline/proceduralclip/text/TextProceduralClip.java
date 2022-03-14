@@ -46,7 +46,7 @@ public class TextProceduralClip extends AbstractTextProceduralClip {
     protected void initializeValueProvider() {
         super.initializeValueProvider();
 
-        textProvider = new StringProvider(new StepStringInterpolator());
+        textProvider = new StringProvider(new StepStringInterpolator("Text"));
     }
 
     @Override

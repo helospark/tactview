@@ -10,6 +10,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -17,8 +18,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -60,6 +63,8 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
     private ValueListProvider<ValueListElement> alignmentProvider;
     private BooleanProvider italicProvider;
     private BooleanProvider boldProvider;
+    private BooleanProvider strikethroughProvider;
+    private DoubleProvider spacingProvider;
 
     private BufferedImageToClipFrameResultConverter bufferedImageToClipFrameResultConverter;
     private FontLoader fontLoader;
@@ -105,13 +110,29 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         }
         font = font.deriveFont((float) currentSize).deriveFont(fontHitsAt(relativePosition));
 
+        double spacing = spacingProvider.getValueAt(relativePosition);
+        Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
+        attributes.put(TextAttribute.TRACKING, spacing);
+        if (strikethroughProvider.getValueAt(relativePosition)) {
+            attributes.put(TextAttribute.STRIKETHROUGH, true);
+        }
+
+        font = font.deriveFont(attributes);
+
+        BufferedImage dummyBufferedImage = new BufferedImage((int) Math.ceil(10), (int) Math.ceil(10), BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics2D dummyGraphics = (Graphics2D) dummyBufferedImage.getGraphics();
+        dummyGraphics.setFont(font);
+
         FontMetrics fontMetrics = getFontMetrics(font);
 
         double maxWidth = 0;
         double totalHeight = 0;
         float lineHeightMultiplier = lineHeightMultiplierProvider.getValueAt(relativePosition).floatValue();
         for (var line : lines) {
-            double lineWidth = fontMetrics.getStringBounds(line, null).getWidth();
+            double lineWidth = dummyGraphics.getFontMetrics().stringWidth(line);
+            if (spacing < 0.0) {
+                lineWidth *= ((1.0 + Math.abs(spacing)) * 0.97); // TODO: seems like a Java bug with spacing < 0.0, the width will be incorrect
+            }
             totalHeight += getLineHeight(font, fontMetrics, lineHeightMultiplier);
             if (lineWidth > maxWidth) {
                 maxWidth = lineWidth;
@@ -241,9 +262,12 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         alignmentProvider = new ValueListProvider<>(createAlignmentList(), new StepStringInterpolator("center"));
         italicProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
         boldProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
+        strikethroughProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(0.0, new StepInterpolator()));
+
         lineHeightMultiplierProvider = new DoubleProvider(0.0, 10.0, new MultiKeyframeBasedDoubleInterpolator(1.0));
         outlineWidthProvider = new DoubleProvider(0.0, 100.0, new MultiKeyframeBasedDoubleInterpolator(0.0));
         outlineColorProvider = ColorProvider.fromDefaultValue(0.0, 0.0, 0.0);
+        spacingProvider = new DoubleProvider(-0.2, 1.0, new MultiKeyframeBasedDoubleInterpolator(0.0));
     }
 
     @Override
@@ -299,6 +323,16 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
                 .withName("italic")
                 .withGroup("font")
                 .build();
+        ValueProviderDescriptor strikethroughDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(strikethroughProvider)
+                .withName("strikethrough")
+                .withGroup("font")
+                .build();
+        ValueProviderDescriptor spacingDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(spacingProvider)
+                .withName("spacing")
+                .withGroup("font")
+                .build();
         ValueProviderDescriptor outlineWidthProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(outlineWidthProvider)
                 .withName("outline width")
@@ -317,6 +351,8 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         result.add(customFontProviderDescriptor);
         result.add(boldDescriptor);
         result.add(italicDescriptor);
+        result.add(strikethroughDescriptor);
+        result.add(spacingDescriptor);
         result.add(lineHeightMultiplierDescriptor);
         result.add(alignmentDescriptor);
         result.add(outlineWidthProviderDescriptor);

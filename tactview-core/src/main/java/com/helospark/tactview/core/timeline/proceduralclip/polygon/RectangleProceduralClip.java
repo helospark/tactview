@@ -49,6 +49,7 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
     private ColorProvider startColorGradientProvider;
     private ColorProvider endColorGradientProvider;
     private BooleanProvider horizontalGradientProvider;
+    private BooleanProvider extendedFrameProvider;
 
     public RectangleProceduralClip(VisualMediaMetadata visualMediaMetadata, TimelineInterval interval, IndependentPixelOperation independentPixelOperation) {
         super(visualMediaMetadata, interval);
@@ -71,6 +72,16 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
         Point startPositionNormalized = line.start;
         Point endPositionNormalized = line.end;
 
+        boolean isExtendedFrame = extendedFrameProvider.getValueAt(relativePosition);
+
+        if (isExtendedFrame) {
+            return extendedFrameDraw(request, relativePosition, startPositionNormalized, endPositionNormalized);
+        } else {
+            return nonExtendedFrameDraw(request, relativePosition, startPositionNormalized, endPositionNormalized);
+        }
+    }
+
+    private ClipImage nonExtendedFrameDraw(GetFrameRequest request, TimelinePosition relativePosition, Point startPositionNormalized, Point endPositionNormalized) {
         ClipImage result = ClipImage.fromSize((int) (Math.abs(endPositionNormalized.x - startPositionNormalized.x) * request.getExpectedWidth()),
                 (int) (Math.abs(endPositionNormalized.y - startPositionNormalized.y) * request.getExpectedHeight()));
 
@@ -82,20 +93,24 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
         double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition);
 
+        double fuzzyDistancePixel = fuzzyDistance * Math.min(result.getWidth(), result.getHeight());
+
         independentPixelOperation.executePixelTransformation(result.getWidth(), result.getHeight(), (x, y) -> {
             double normalizedX = (double) x / result.getWidth();
             double normalizedY = (double) y / result.getHeight();
 
             double alphaNormalized = 1.0;
             if (fuzzyDistance > 0) {
-                double minLeftXDistance = Math.abs(normalizedX);
-                double minRightXDistance = Math.abs(1.0 - normalizedX);
-                double maxTopYDistance = Math.abs(normalizedY);
-                double maxBottomYDistance = Math.abs(1.0 - normalizedY);
+                double minLeftXDistance = Math.abs(x);
+                double minRightXDistance = Math.abs(result.getWidth() - x);
+                double maxTopYDistance = Math.abs(y);
+                double maxBottomYDistance = Math.abs(result.getHeight() - y);
 
                 double minDistance = MathUtil.min(minLeftXDistance, minRightXDistance, maxTopYDistance, maxBottomYDistance);
 
-                alphaNormalized = Math.min(minDistance / fuzzyDistance, 1.0);
+                if (minDistance < fuzzyDistancePixel) {
+                    alphaNormalized = Math.min(minDistance / fuzzyDistancePixel, 1.0);
+                }
             }
             Color color = globalPixelColor;
             if (fillType.equals(GRADIENT_ID)) {
@@ -107,6 +122,58 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
             result.setGreen((int) color.green, x, y);
             result.setBlue((int) color.blue, x, y);
             result.setAlpha((int) (alphaNormalized * 255.0), x, y);
+        });
+        return result;
+    }
+
+    private ClipImage extendedFrameDraw(GetFrameRequest request, TimelinePosition relativePosition, Point startPositionNormalized, Point endPositionNormalized) {
+        ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
+
+        String fillType = fillTypeProvider.getValueAt(relativePosition).getId();
+        Color globalPixelColor = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
+        Color startGradientColor = startColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
+        Color endGradientColor = endColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
+        boolean horizontal = horizontalGradientProvider.getValueAt(relativePosition);
+
+        double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition);
+
+        double fuzzyDistancePixel = fuzzyDistance * Math.min(result.getWidth(), result.getHeight());
+
+        Point startPosition = startPositionNormalized.multiply(request.getExpectedWidth(), request.getExpectedHeight());
+        Point endPosition = endPositionNormalized.multiply(request.getExpectedWidth(), request.getExpectedHeight());
+
+        independentPixelOperation.executePixelTransformation(result.getWidth(), result.getHeight(), (x, y) -> {
+            if (x >= startPosition.x && x <= endPosition.x && y >= startPosition.y && y <= endPosition.y) {
+                double rectangleX = x - startPosition.x;
+                double rectangleY = y - startPosition.y;
+
+                double normalizedX = rectangleX / (endPosition.x - startPosition.x);
+                double normalizedY = rectangleY / (endPosition.y - startPosition.y);
+
+                double alphaNormalized = 1.0;
+                if (fuzzyDistance > 0) {
+                    double minLeftXDistance = Math.abs(rectangleX);
+                    double minRightXDistance = Math.abs(endPosition.x - x);
+                    double maxTopYDistance = Math.abs(rectangleY);
+                    double maxBottomYDistance = Math.abs(endPosition.y - y);
+
+                    double minDistance = MathUtil.min(minLeftXDistance, minRightXDistance, maxTopYDistance, maxBottomYDistance);
+
+                    if (minDistance < fuzzyDistancePixel) {
+                        alphaNormalized = Math.min(minDistance / fuzzyDistancePixel, 1.0);
+                    }
+                }
+                Color color = globalPixelColor;
+                if (fillType.equals(GRADIENT_ID)) {
+                    double percent = horizontal ? normalizedX : normalizedY;
+                    color = startGradientColor.interpolate(endGradientColor, percent);
+                }
+
+                result.setRed((int) color.red, x, y);
+                result.setGreen((int) color.green, x, y);
+                result.setBlue((int) color.blue, x, y);
+                result.setAlpha((int) (alphaNormalized * 255.0), x, y);
+            }
         });
         return result;
     }
@@ -128,6 +195,8 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
         PointProvider topLeftPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.3), doubleProviderWithDefaultValue(0.3));
         PointProvider bottomRightPointProvider = new PointProvider(doubleProviderWithDefaultValue(0.6), doubleProviderWithDefaultValue(0.6));
         lineProvider = new LineProvider(topLeftPointProvider, bottomRightPointProvider);
+
+        extendedFrameProvider = new BooleanProvider(new MultiKeyframeBasedDoubleInterpolator(1.0));
     }
 
     private List<ValueListElement> createFillTypeElements() {
@@ -180,8 +249,12 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
                 .withKeyframeableEffect(fuzzyDistanceProvider)
                 .withName("Fuzziness")
                 .build();
+        ValueProviderDescriptor extendedFrameProviderDescriptor = ValueProviderDescriptor.builder()
+                .withKeyframeableEffect(extendedFrameProvider)
+                .withName("Extended frame")
+                .build();
 
-        result.addAll(List.of(fillTypeDescriptor, colorDescriptor, startColorGradientDescriptor, endColorGradientDescriptor, horizontalGradientProviderDescriptor,
+        result.addAll(List.of(extendedFrameProviderDescriptor, fillTypeDescriptor, colorDescriptor, startColorGradientDescriptor, endColorGradientDescriptor, horizontalGradientProviderDescriptor,
                 lineProviderDescriptor, innerSaturationDiameterProviderDescriptor));
         return result;
     }
@@ -197,15 +270,23 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
     @Override
     public int getXPosition(GetPositionParameters parameterObject) {
-        InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
-        double xPos = Math.min(line.start.x, line.end.x);
-        return (int) (xPos * parameterObject.getWidth()) + super.getXPosition(parameterObject);
+        if (extendedFrameProvider.getValueAt(parameterObject.getTimelinePosition())) {
+            return super.getXPosition(parameterObject);
+        } else {
+            InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
+            double xPos = Math.min(line.start.x, line.end.x);
+            return (int) (xPos * parameterObject.getWidth()) + super.getXPosition(parameterObject);
+        }
     }
 
     @Override
     public int getYPosition(GetPositionParameters parameterObject) {
-        InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
-        double yPos = Math.min(line.start.y, line.end.y);
-        return (int) (yPos * parameterObject.getHeight()) + super.getYPosition(parameterObject);
+        if (extendedFrameProvider.getValueAt(parameterObject.getTimelinePosition())) {
+            return super.getYPosition(parameterObject);
+        } else {
+            InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
+            double yPos = Math.min(line.start.y, line.end.y);
+            return (int) (yPos * parameterObject.getHeight()) + super.getYPosition(parameterObject);
+        }
     }
 }

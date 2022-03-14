@@ -107,9 +107,11 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
 
     @Override
     public boolean onMouseDown(CurveEditorMouseRequest mouseEvent) {
-        draggedIndex = getElementIndex(mouseEvent);
-        if (draggedIndex != -1) {
-            originalPoint = getKeyframePoints((KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator).get(draggedIndex).deepClone();
+        if (mouseEvent.event.getButton().equals(MouseButton.PRIMARY)) {
+            draggedIndex = getElementIndex(mouseEvent);
+            if (draggedIndex != -1) {
+                originalPoint = getKeyframePoints((KeyframeSupportingDoubleInterpolator) mouseEvent.currentDoubleInterpolator).get(draggedIndex).deepClone();
+            }
         }
         return false;
     }

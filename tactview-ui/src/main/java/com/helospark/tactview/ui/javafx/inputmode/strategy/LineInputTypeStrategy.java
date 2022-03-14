@@ -76,6 +76,7 @@ public class LineInputTypeStrategy implements InputTypeStrategy<InterpolationLin
     @Override
     public void onMouseMovedEvent(StrategyMouseInput input) {
         Point currentPoint = new Point(input.x, input.y);
+        System.out.println(currentPoint);
         if (isTwoPointsClose(currentPoint, result.start)) {
             mouseCloseTo = Optional.of(START_POINT_ID);
         } else if (isTwoPointsClose(currentPoint, result.end)) {

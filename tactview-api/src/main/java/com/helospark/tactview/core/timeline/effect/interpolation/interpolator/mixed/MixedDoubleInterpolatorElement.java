@@ -35,4 +35,9 @@ public class MixedDoubleInterpolatorElement {
         return new MixedDoubleInterpolatorElement(value, easeFunction);
     }
 
+    @Override
+    public String toString() {
+        return "MixedDoubleInterpolatorElement [value=" + value + ", easeFunction=" + easeFunction + "]";
+    }
+
 }

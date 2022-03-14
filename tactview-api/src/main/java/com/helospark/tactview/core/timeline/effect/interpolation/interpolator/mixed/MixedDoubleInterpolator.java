@@ -3,7 +3,6 @@ package com.helospark.tactview.core.timeline.effect.interpolation.interpolator.m
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -72,8 +71,6 @@ public class MixedDoubleInterpolator extends KeyframeSupportingDoubleInterpolato
     }
 
     private Double doInterpolate(TimelinePosition position, TimelinePosition lowKey, TimelinePosition highKey, MixedDoubleInterpolatorElement lowElement, MixedDoubleInterpolatorElement highElement) {
-        Set<Entry<TimelinePosition, MixedDoubleInterpolatorElement>> tailMap = values.tailMap(position).entrySet();
-
         PennerFunction function = lowElement.easeFunction.getFunction();
 
         double lowValue = lowElement.value;

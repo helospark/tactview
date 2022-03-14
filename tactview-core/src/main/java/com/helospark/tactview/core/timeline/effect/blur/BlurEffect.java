@@ -49,12 +49,19 @@ public class BlurEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
+        Optional<Region> region = Optional.ofNullable(createBlurRegion(request));
+
+        if (region.isPresent()) {
+            if (region.get().getWidth() <= 0 || region.get().getHeight() <= 0) {
+                region = Optional.empty();
+            }
+        }
 
         BlurRequest blurRequest = BlurRequest.builder()
                 .withImage(request.getCurrentFrame())
                 .withKernelWidth((int) (kernelWidthProvider.getValueAt(request.getEffectPosition()) * request.getScale()))
                 .withKernelHeight((int) (kernelHeightProvider.getValueAt(request.getEffectPosition()) * request.getScale()))
-                .withRegion(Optional.ofNullable(createBlurRegion(request)))
+                .withRegion(region)
                 .build();
 
         return blurService.createBlurredImage(blurRequest);
@@ -73,11 +80,25 @@ public class BlurEffect extends StatelessVideoEffect {
         int height = rightY - y;
 
         // TODO: better clamping
+        if (x < 0) {
+            width += x;
+            x = 0;
+        }
+        if (y < 0) {
+            height += y;
+            y = 0;
+        }
         if (width < 10) {
             width = 10;
         }
         if (height < 10) {
             height = 10;
+        }
+        if (x + width >= request.getCurrentFrame().getWidth()) {
+            width = (request.getCurrentFrame().getWidth() - x - 1);
+        }
+        if (y + height >= request.getCurrentFrame().getHeight()) {
+            height = (request.getCurrentFrame().getHeight() - y - 1);
         }
 
         return Region.builder()
