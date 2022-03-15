@@ -66,6 +66,6 @@ public class RectangleProceduralClipIT {
 
         IntegrationTestUtil.pixelEquals(videoFrame, 0, 200, new ColorWithAlpha(0, 0, 0, 0));
         IntegrationTestUtil.pixelEquals(videoFrame, 300, 200, new ColorWithAlpha(255, 0, 0, 255));
-        IntegrationTestUtil.pixelEquals(videoFrame, 150, 200, new ColorWithAlpha(127, 0, 0, 127));
+        IntegrationTestUtil.pixelEquals(videoFrame, 100, 200, new ColorWithAlpha(127, 0, 0, 127));
     }
 }

@@ -63,7 +63,7 @@ public class ImageSequenceDecoderDecorator implements VisualMediaDecoder {
             imageRequest.width = request.getWidth();
             imageRequest.height = request.getHeight();
             imageRequest.path = foundFrame.get().getFile().getAbsolutePath();
-            imageRequest.data = memoryManager.requestBuffer(imageRequest.width * imageRequest.height * 4);
+
             ByteBuffer data = readImageFromFile(imageRequest);
 
             mediaCache.cacheMedia(createCacheKey(request), new MediaHashValue(List.of(new MediaDataFrame(data, frameStart)), frameEnd, frameStart));

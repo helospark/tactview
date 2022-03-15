@@ -11,26 +11,22 @@ import com.helospark.tactview.core.decoder.ImageMetadata;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VisualMediaDecoder;
-import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
-import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
 
 @Component
 public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
     public TimelineLength imageLength = TimelineLength.ofMillis(10000);
     private ImageMediaLoader implementation;
     private MediaCache mediaCache;
-    private MemoryOperations memoryOperations;
 
-    public OpenCvImageDecorderDecorator(ImageMediaLoader implementation, MediaCache mediaCache, MemoryOperations memoryOperations) {
+    public OpenCvImageDecorderDecorator(ImageMediaLoader implementation, MediaCache mediaCache) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
-        this.memoryOperations = memoryOperations;
     }
 
     @PreferenceValue(name = "Default image clip length (ms)", defaultValue = "10000", group = "Clip")
@@ -62,7 +58,6 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
         } else {
             ImageRequest imageRequest = new ImageRequest();
 
-            imageRequest.data = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4);
             imageRequest.width = request.getWidth();
             imageRequest.height = request.getHeight();
             imageRequest.path = request.getFile().getAbsolutePath();
@@ -73,16 +68,7 @@ public class OpenCvImageDecorderDecorator implements VisualMediaDecoder {
             mediaCache.cacheMedia(cacheKey, new MediaHashValue(Collections.singletonList(new MediaDataFrame(image, BigDecimal.ZERO)), BigDecimal.ONE, BigDecimal.ZERO));
         }
 
-        ByteBuffer resultFrame = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(request.getWidth() * request.getHeight() * 4);
-
-        copyToResult(resultFrame, image);
-
-        return new MediaDataResponse(resultFrame);
-    }
-
-    private void copyToResult(ByteBuffer result, ByteBuffer fromCopy) {
-        memoryOperations.copyBuffer(fromCopy, result, fromCopy.capacity());
-
+        return new MediaDataResponse(image);
     }
 
     public TimelineLength getImageLength() {

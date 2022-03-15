@@ -31,6 +31,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
 public class MediaCache {
+    private static final int MAX_CACHE_CLEAN_ITERATION = 20;
     private ConcurrentHashMap<String, NavigableMap<BigDecimal, MediaHashValue>> backCache = new ConcurrentHashMap<>();
     private Set<CacheRemoveDomain> accessTimeOrderedList = Collections.newSetFromMap(new ConcurrentHashMap<CacheRemoveDomain, Boolean>());
     private MemoryManager memoryManager;
@@ -76,7 +77,9 @@ public class MediaCache {
     private void doImmediateCleanup(int size) {
         TreeSet<CacheRemoveDomain> elements = new TreeSet<>((a, b) -> a.compareTo(b));
         elements.addAll(accessTimeOrderedList);
-        while (approximateSize >= size) {
+        int iteration = 0;
+        while (approximateSize >= size && iteration < MAX_CACHE_CLEAN_ITERATION) {
+            ++iteration;
             if (elements.isEmpty()) {
                 logger.debug("ToRemove elements is empty");
                 break;
@@ -97,7 +100,11 @@ public class MediaCache {
                 accessTimeOrderedList.remove(firstElement);
             }
         }
-        approximateSize = recalculateBufferSize();
+        long newSize = recalculateBufferSize();
+        if (newSize != approximateSize) {
+            logger.warn("Mismatch in cache size actual={}, expected={}", newSize, approximateSize);
+        }
+        approximateSize = newSize;
     }
 
     private long recalculateBufferSize() {
@@ -106,9 +113,7 @@ public class MediaCache {
         return copy.values()
                 .stream()
                 .flatMap(a -> a.values().stream())
-                .flatMap(a -> a.frames.stream())
-                .flatMap(a -> a.allDataFrames.stream())
-                .mapToInt(a -> a.capacity())
+                .mapToInt(a -> calculateSize(a))
                 .sum();
     }
 
@@ -123,13 +128,6 @@ public class MediaCache {
             clonedValue = cloneValue(value);
         } else {
             clonedValue = value;
-            int newCachedSize = value.frames
-                    .stream()
-                    .flatMap(a -> a.allDataFrames.stream())
-                    .map(a -> a.capacity())
-                    .mapToInt(Integer::valueOf)
-                    .sum();
-            approximateSize += newCachedSize;
         }
         NavigableMap<BigDecimal, MediaHashValue> cachedFrames = backCache.get(key);
         if (cachedFrames == null) {
@@ -139,6 +137,7 @@ public class MediaCache {
 
         BigDecimal startTime = clonedValue.frames.get(0).startTime;
         MediaHashValue previousValue = cachedFrames.put(startTime, clonedValue);
+        approximateSize += calculateSize(clonedValue);
 
         if (previousValue != null) {
             returnBuffers(previousValue.frames.stream().flatMap(a -> a.allDataFrames.stream()).collect(Collectors.toList()));
@@ -153,6 +152,16 @@ public class MediaCache {
         }
 
         logger.debug("{} added to cache, current buffer size: {}", clonedValue, approximateSize);
+    }
+
+    private int calculateSize(MediaHashValue clonedValue) {
+        int cacheSize = clonedValue.frames
+                .stream()
+                .flatMap(a -> a.allDataFrames.stream())
+                .map(a -> a.capacity())
+                .mapToInt(Integer::valueOf)
+                .sum();
+        return cacheSize;
     }
 
     private MediaHashValue cloneValue(MediaHashValue value) {
@@ -183,7 +192,6 @@ public class MediaCache {
     private ByteBuffer requestBuffersForCloning(ByteBuffer bufferToClone) {
         int requested = bufferToClone.capacity();
         ByteBuffer result = memoryManager.requestBuffer(requested);
-        approximateSize += requested;
         return result;
     }
 
@@ -318,7 +326,7 @@ public class MediaCache {
         public ByteBuffer frame;
         public BigDecimal startTime;
 
-        public List<ByteBuffer> allDataFrames; // for audio channels 
+        public List<ByteBuffer> allDataFrames; // for audio channels
 
         public MediaDataFrame(ByteBuffer frame, BigDecimal startTime) {
             this.frame = frame;
