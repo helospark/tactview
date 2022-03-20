@@ -66,7 +66,8 @@ public class DockableTabOpenerMenuItems implements DynamicallyGeneratedParentMen
         BooleanProperty booleanProperty = new SimpleBooleanProperty();
         booleanProperty.set(dockableTabRepository.isTabOpen(id));
         selectedProperties.put(id, booleanProperty);
-        return new DockableWindowMenuContribution(id, id, booleanProperty, dockableTabRepository, () -> dockableTabFromIdFactory.createTab(id), a.getPreferredMode(), a.getPreferredNextTo());
+        return new DockableWindowMenuContribution(id, id, booleanProperty, dockableTabRepository, () -> dockableTabFromIdFactory.createTab(id), a.getPreferredMode(), a.getPreferredNextTo(),
+                a.getPreferredDefaultWindowSize());
     }
 
 }

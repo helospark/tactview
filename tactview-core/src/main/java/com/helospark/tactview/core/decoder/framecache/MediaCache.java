@@ -107,7 +107,7 @@ public class MediaCache {
         approximateSize = newSize;
     }
 
-    private long recalculateBufferSize() {
+    public long recalculateBufferSize() {
         Map<String, NavigableMap<BigDecimal, MediaHashValue>> copy = new HashMap<>(backCache);
 
         return copy.values()
@@ -115,6 +115,10 @@ public class MediaCache {
                 .flatMap(a -> a.values().stream())
                 .mapToInt(a -> calculateSize(a))
                 .sum();
+    }
+
+    public long getMaximumSize() {
+        return maximumSizeHint;
     }
 
     public void cacheMedia(String key, MediaHashValue value) {

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.ui.javafx.menu.CheckboxMenuItemContribution;
 import com.helospark.tactview.ui.javafx.menu.SelectableMenuContribution;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
@@ -23,9 +24,10 @@ public class DockableWindowMenuContribution implements SelectableMenuContributio
     private DockableTabRepository dockableTabRepository;
     private OpenDetachableTabTarget openDetachableTabTarget;
     private Optional<String> preferredNextTo;
+    private Optional<Point> preferredDefaultSize;
 
     public DockableWindowMenuContribution(String path, String id, BooleanProperty booleanProperty, DockableTabRepository dockableTabRepository, Supplier<DetachableTab> tabFactory,
-            OpenDetachableTabTarget openDetachableTabTarget, Optional<String> preferredNextTo) {
+            OpenDetachableTabTarget openDetachableTabTarget, Optional<String> preferredNextTo, Optional<Point> preferredDefaultSize) {
         this.path = path;
         this.id = id;
         this.booleanProperty = booleanProperty;
@@ -33,6 +35,7 @@ public class DockableWindowMenuContribution implements SelectableMenuContributio
         this.tabFactory = tabFactory;
         this.openDetachableTabTarget = openDetachableTabTarget;
         this.preferredNextTo = preferredNextTo;
+        this.preferredDefaultSize = preferredDefaultSize;
     }
 
     @Override
@@ -44,6 +47,7 @@ public class DockableWindowMenuContribution implements SelectableMenuContributio
                     .withTabToOpen(tabFactory.get())
                     .withTarget(openDetachableTabTarget)
                     .withSameTabPaneAs(preferredNextTo)
+                    .withPreferredSize(preferredDefaultSize)
                     .build();
 
             dockableTabRepository.openTab(openTabRequest);

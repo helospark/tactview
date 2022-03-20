@@ -1,9 +1,13 @@
 package com.helospark.tactview.ui.javafx.uicomponents.window.factory;
 
+import java.util.Optional;
+
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.GraphingDialog;
 import com.helospark.tactview.ui.javafx.uicomponents.window.AudioSpectrumWindow;
+import com.helospark.tactview.ui.javafx.uicomponents.window.DebugWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.HistogramWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.RgbWaveformWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.VectorScopeWindow;
@@ -40,5 +44,15 @@ public class CustomDetachableWindowConfiguration {
     @Bean
     public CustomDetachableWindowTabFactory graphingWindow(GraphingDialog window) {
         return new CustomDetachableWindowTabFactory(window);
+    }
+
+    @Bean
+    public CustomDetachableWindowTabFactory debugWindow(DebugWindow window) {
+        return new CustomDetachableWindowTabFactory(window) {
+            @Override
+            public Optional<Point> getPreferredDefaultWindowSize() {
+                return Optional.of(new Point(650, 500));
+            }
+        };
     }
 }

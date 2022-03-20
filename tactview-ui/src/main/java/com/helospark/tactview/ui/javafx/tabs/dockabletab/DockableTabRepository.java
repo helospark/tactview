@@ -8,11 +8,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
+import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane;
+import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane.TabStage;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPaneLoadModel;
 
 import javafx.collections.ObservableList;
@@ -24,6 +30,7 @@ import javafx.scene.layout.Priority;
 
 @Component
 public class DockableTabRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockableTabRepository.class);
     public Parent dockContainer;
     private HBox parentPane;
 
@@ -36,10 +43,15 @@ public class DockableTabRepository {
     }
 
     public boolean isTabOpen(String id) {
-        if (dockContainer == null) {
-            return false;
+        try {
+            if (dockContainer == null) {
+                return false;
+            }
+            return findTabpaneOpenInternal(dockContainer, id).isPresent();
+        } catch (Exception e) {
+            LOGGER.error("Unable to determine if tab open", e);
         }
-        return findTabpaneOpenInternal(dockContainer, id).isPresent();
+        return false;
     }
 
     private Optional<DetachableTabPane> findTabpaneOpenInternal(Parent dockContainer2, String id) {
@@ -109,10 +121,18 @@ public class DockableTabRepository {
                 planeToAddTab.getSelectionModel().select(tab);
             } else {
                 DetachableTabPane mainStage = findMainStageTabPane();
-                mainStage.openStage(tab);
+                TabStage stage = mainStage.openStage(tab);
+                if (request.preferredSize.isPresent()) {
+                    stage.setWidth(request.preferredSize.get().x);
+                    stage.setHeight(request.preferredSize.get().y);
+                }
             }
         } else {
             optionalTabPane.get().getSelectionModel().select(request.tabToOpen);
+        }
+        var tabToOpen = request.tabToOpen;
+        if (tabToOpen instanceof TabOpenListener) {
+            ((TabOpenListener) tabToOpen).tabOpened();
         }
     }
 
@@ -219,11 +239,13 @@ public class DockableTabRepository {
         DetachableTab tabToOpen;
         OpenDetachableTabTarget target;
         Optional<String> sameTabPaneAs;
+        Optional<Point> preferredSize;
 
         private OpenTabRequest(Builder builder) {
             this.tabToOpen = builder.tabToOpen;
             this.target = builder.target;
             this.sameTabPaneAs = builder.sameTabPaneAs;
+            this.preferredSize = builder.preferredSize;
         }
 
         public static Builder builder() {
@@ -234,6 +256,7 @@ public class DockableTabRepository {
             private DetachableTab tabToOpen;
             private OpenDetachableTabTarget target;
             private Optional<String> sameTabPaneAs = Optional.empty();
+            private Optional<Point> preferredSize = Optional.empty();
 
             private Builder() {
             }
@@ -250,6 +273,11 @@ public class DockableTabRepository {
 
             public Builder withSameTabPaneAs(Optional<String> sameTabPaneAs) {
                 this.sameTabPaneAs = sameTabPaneAs;
+                return this;
+            }
+
+            public Builder withPreferredSize(Optional<Point> preferredSize) {
+                this.preferredSize = preferredSize;
                 return this;
             }
 

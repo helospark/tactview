@@ -6,6 +6,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,26 @@ public class MemoryManagerImpl implements MemoryManager {
                 logger.error("Error while cleaning buffer", e);
             }
         }, 1000, 1000, TimeUnit.MILLISECONDS);
+    }
+
+    public Long getMaximumSize() {
+        return maximumSizeHint;
+    }
+
+    public long getCurrentSize() {
+        return currentSize.get();
+    }
+
+    public long getReadyToBeFreedBuffers() {
+        Map<Integer, BufferInformation> freeBuffersMapClone = new HashMap<>(freeBuffersMap);
+
+        long result = 0;
+        for (var entry : freeBuffersMapClone.entrySet()) {
+            for (var a : entry.getValue().buffers) {
+                result += a.capacity();
+            }
+        }
+        return result;
     }
 
     private void doForcefulCleanup(double target) {
