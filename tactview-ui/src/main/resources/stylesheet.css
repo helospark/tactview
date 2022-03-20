@@ -669,3 +669,28 @@
 .subtimeline-descriptor-properties-grid > .check-box {
     -fx-padding: 0px 7px;
 }
+
+.table-view {
+    -fx-background-color: transparent;
+}
+
+.table-row-cell: hover {
+    -fx-background-color: #333;
+    -fx-text-background-color: red;
+}
+
+.table-row-cell: odd{
+    -fx-background-color: #252525;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em;
+}
+
+.table-row-cell: even{
+    -fx-background-color: #303030;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em;
+}
+
+.table-view .column-header {
+    -fx-background-color: #252525;
+}

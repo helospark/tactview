@@ -50,8 +50,8 @@ public class DockableTabRepository {
             return findTabpaneOpenInternal(dockContainer, id).isPresent();
         } catch (Exception e) {
             LOGGER.error("Unable to determine if tab open", e);
+            return false;
         }
-        return false;
     }
 
     private Optional<DetachableTabPane> findTabpaneOpenInternal(Parent dockContainer2, String id) {

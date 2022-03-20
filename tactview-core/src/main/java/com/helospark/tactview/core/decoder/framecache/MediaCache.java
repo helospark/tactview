@@ -426,4 +426,61 @@ public class MediaCache {
 
         approximateSize = recalculateBufferSize();
     }
+
+    public Set<CacheData> getCacheDistribution() {
+        Map<String, NavigableMap<BigDecimal, MediaHashValue>> copiedElements = new HashMap<>(backCache);
+
+        Set<CacheData> result = new TreeSet<>();
+        for (var entry : copiedElements.entrySet()) {
+            long data = 0;
+            for (var a : entry.getValue().values()) {
+                for (var frame : a.frames) {
+                    for (var frame1 : frame.allDataFrames) {
+                        data += frame1.capacity();
+                    }
+                }
+            }
+            String simplifiedKey = entry.getKey();
+            int index = simplifiedKey.lastIndexOf('/');
+            if (index == -1) {
+                index = simplifiedKey.lastIndexOf('\\');
+            }
+            if (index != -1) {
+                simplifiedKey = simplifiedKey.substring(index + 1);
+            }
+            result.add(new CacheData(data / 1024.0 / 1024.0, simplifiedKey));
+        }
+        return result;
+    }
+
+    public static class CacheData implements Comparable<CacheData> {
+        double dataSize;
+        String key;
+
+        public CacheData(double dataSize, String key) {
+            this.dataSize = dataSize;
+            this.key = key;
+        }
+
+        public double getDataSize() {
+            return dataSize;
+        }
+
+        public String getDataSizeString() {
+            return String.format("%.2f", dataSize);
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public int compareTo(CacheData o) {
+            if (dataSize == o.dataSize) {
+                return key.compareTo(o.key);
+            } else {
+                return Double.compare(o.dataSize, dataSize);
+            }
+        }
+    }
 }

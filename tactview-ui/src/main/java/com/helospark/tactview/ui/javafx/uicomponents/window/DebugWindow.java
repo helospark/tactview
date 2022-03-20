@@ -1,10 +1,15 @@
 package com.helospark.tactview.ui.javafx.uicomponents.window;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
+import com.helospark.tactview.core.decoder.framecache.MediaCache.CacheData;
 import com.helospark.tactview.core.decoder.framecache.MemoryManagerImpl;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
@@ -21,6 +27,7 @@ import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.Detac
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
@@ -28,6 +35,9 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -54,6 +64,9 @@ public class DebugWindow extends DetachableTab implements TabOpenListener, TabCl
             new PieChart.Data("Used", 0),
             new PieChart.Data("Free", 0));
 
+    ObservableList<PieChart.Data> mediaCacheDistributionData = FXCollections.observableArrayList();
+    ObservableList<CacheData> mediaCacheDistributionDataForTable = FXCollections.observableArrayList();
+
     XYChart.Series<Number, Number> mediaCacheUsedSeries = new XYChart.Series<Number, Number>();
     XYChart.Series<Number, Number> memoryManagerUsedSeries = new XYChart.Series<Number, Number>();
     XYChart.Series<Number, Number> jvmUsedSeries = new XYChart.Series<Number, Number>();
@@ -76,11 +89,31 @@ public class DebugWindow extends DetachableTab implements TabOpenListener, TabCl
         vbox.getChildren().add(new HBox(createPieChart(mediaCacheSizeData, "Media Cache"), createLineChart(mediaCacheUsedSeries, "MB")));
         vbox.getChildren().add(new HBox(createPieChart(memoryManagerSizeData, "Memory Manager"), createLineChart(memoryManagerUsedSeries, "MB")));
         vbox.getChildren().add(new HBox(createPieChart(jvmMemoryData, "JVM memory"), createLineChart(jvmUsedSeries, "MB")));
+        PieChart cacheDistriubtion = createPieChart(mediaCacheDistributionData, "Cache distribution");
+        cacheDistriubtion.setLegendVisible(false);
+        vbox.getChildren().add(new HBox(cacheDistriubtion, createDistributionTableView()));
 
         scrollPane.setContent(vbox);
 
         this.setContent(scrollPane);
         this.setText("Debug");
+    }
+
+    private Node createDistributionTableView() {
+        TableView<CacheData> tbv = new TableView<>();
+        TableColumn cl1 = new TableColumn("Cache key");
+        cl1.setCellValueFactory(new PropertyValueFactory<>("key"));
+
+        TableColumn cl2 = new TableColumn("Size (MB)");
+        cl2.setCellValueFactory(new PropertyValueFactory<>("dataSizeString"));
+
+        tbv.getColumns().setAll(cl2, cl1);
+
+        tbv.setItems(mediaCacheDistributionDataForTable);
+
+        tbv.setPrefWidth(400);
+
+        return tbv;
     }
 
     private void clearChart(Series<Number, Number> mediaCacheUsedSeries) {
@@ -153,10 +186,36 @@ public class DebugWindow extends DetachableTab implements TabOpenListener, TabCl
                 updateMediaCacheData();
                 updateMemoryManagerData();
                 updateJvmManagerData();
+                updateMediaCacheDistribution();
             } catch (Exception e) {
                 LOGGER.warn("Unable to refresh debug window", e);
             }
         }
+    }
+
+    private void updateMediaCacheDistribution() {
+        Platform.runLater(() -> {
+            Set<CacheData> cacheDistribution = mediaCache.getCacheDistribution();
+            mediaCacheDistributionDataForTable.setAll(cacheDistribution);
+
+            List<PieChart.Data> newList = new ArrayList<>();
+            for (var element : cacheDistribution) {
+                newList.add(new PieChart.Data(element.getKey(), element.getDataSize()));
+            }
+            if (!isEquals(mediaCacheDistributionData, newList)) {
+                mediaCacheDistributionData.setAll(newList);
+            }
+        });
+    }
+
+    private boolean isEquals(ObservableList<javafx.scene.chart.PieChart.Data> a, List<javafx.scene.chart.PieChart.Data> b) {
+        return convertList(a).equals(convertList(b));
+    }
+
+    private List<Entry<String, Double>> convertList(List<javafx.scene.chart.PieChart.Data> data) {
+        return data.stream()
+                .map(a -> Map.entry(a.getName(), a.getPieValue()))
+                .collect(Collectors.toList());
     }
 
     private void updateMediaCacheData() {
