@@ -82,7 +82,7 @@ echo "Downloading FFmpeg"
 # 4.3 onward has an issue with SSSE3, therefore cannot be used until that is fixed:
 # https://trac.ffmpeg.org/ticket/8747
 # fire.webm test fails with that and crashes when no scaling applied
-FFMPEG_VERSION=4.2.2
+FFMPEG_VERSION=5.0.1
 
 if [ ! -e ffmpeg-$FFMPEG_VERSION.tar.gz ]; then
   wget "http://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz"

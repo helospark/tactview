@@ -14,6 +14,8 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+#include <libavutil/error.h>
 
 #include <stdio.h>
 
@@ -22,7 +24,7 @@ extern "C" {
         AVFormatContext   *pFormatCtx = NULL;
         int               videoStream;
         AVCodecContext    *pCodecCtx = NULL;
-        AVCodec           *pCodec = NULL;
+        const AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
         struct SwsContext *sws_ctx = NULL;
         int width, height;
@@ -65,14 +67,15 @@ extern "C" {
     AVFrame* allocateFrame(int width, int height)
     {
         AVFrame* pFrameRGB=av_frame_alloc();
-        int numBytes=avpicture_get_size(AV_PIX_FMT_BGRA, width, height);
+        int numBytes=av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, 16);
 
         uint8_t* buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-        avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_BGRA,
-                       width, height);
+        av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer, AV_PIX_FMT_RGBA,
+                       width, height, 1);
         pFrameRGB->opaque = buffer;
         return pFrameRGB;
     }
+
 
     void freeFrame(AVFrame* frame)
     {
@@ -80,6 +83,42 @@ extern "C" {
         av_free(frame->opaque);
         av_frame_free(&frame);
     }
+
+    int receiveFrame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt) {
+        int ret = avcodec_receive_frame(avctx, frame);
+        if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
+            return ret;
+        if (ret >= 0)
+            *got_frame = 1;
+        return 0;
+    }
+
+
+    // From here: https://blogs.gentoo.org/lu_zero/2016/03/29/new-avcodec-api/
+    int decode_video_frame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt)
+    {
+        int ret;
+
+        *got_frame = 0;
+
+        if (pkt) {
+            ret = avcodec_send_packet(avctx, pkt);
+            // In particular, we don't expect AVERROR(EAGAIN), because we read all
+            // decoded frames with avcodec_receive_frame() until done.
+            
+            if ( ret == AVERROR(EAGAIN)) {
+                receiveFrame(avctx, frame, got_frame, pkt);
+                return AVERROR(EAGAIN);
+            }
+            
+            if (ret < 0) {
+                return ret == AVERROR_EOF ? 0 : ret;
+            }
+        }
+
+        return receiveFrame(avctx, frame, got_frame, pkt);
+    }
+
 
     EXPORTED int readFrames(QueryFramesRequest* request)
     {
@@ -101,7 +140,7 @@ extern "C" {
         AVFormatContext   *pFormatCtx = decodeStructure->pFormatCtx;
         int               videoStream = decodeStructure->videoStream;
         AVCodecContext    *pCodecCtx = decodeStructure->pCodecCtx;
-        AVCodec           *pCodec = decodeStructure->pCodec;
+        const AVCodec           *pCodec = decodeStructure->pCodec;
         AVFrame           *pFrame = decodeStructure->pFrame;
         AVPacket          packet;
         int               frameFinished = 0;
@@ -113,7 +152,7 @@ extern "C" {
             if(packet.stream_index==videoStream)
             {
                 DEBUG("Read pts=" << packet.pts << " dts=" << packet.dts );
-                int decodedFrame = avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+                int decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
 
                 if(frameFinished)
                 {
@@ -130,7 +169,7 @@ extern "C" {
                 }
             }
             // Free the packet that was allocated by av_read_frame
-            av_free_packet(&packet);
+            av_packet_unref(&packet);
         }
 
         return i;
@@ -150,12 +189,10 @@ extern "C" {
         AVFormatContext   *pFormatCtx = NULL;
         int               videoStream;
         AVCodecContext    *pCodecCtx = NULL;
-        AVCodecContext    *pCodecCtxOrig = NULL;
-        AVCodec           *pCodec = NULL;
+        AVCodecParameters *pCodecCtxOrig = NULL;
+        const AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
         struct SwsContext *sws_ctx = NULL;
-
-        av_register_all();
 
         if(avformat_open_input(&pFormatCtx, request->path, NULL, NULL)!=0)
         {
@@ -171,7 +208,7 @@ extern "C" {
 
         videoStream=-1;
         for(int i=0; i<pFormatCtx->nb_streams; i++)
-            if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+            if(pFormatCtx->streams[i]->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
             {
                 videoStream=i;
                 break;
@@ -182,8 +219,8 @@ extern "C" {
             return -1;
         }
 
-        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
-        pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
+        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codecpar;
+        int ret = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0);
         if(pCodec==NULL)
         {
             ERROR("Unsupported codec: " << pCodecCtxOrig->codec_id );
@@ -193,9 +230,8 @@ extern "C" {
 
         pCodecCtx = avcodec_alloc_context3(pCodec);
 
-        if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
-        {
-            ERROR("Couldn't copy codec context" );
+        if (avcodec_parameters_to_context(pCodecCtx, pCodecCtxOrig) < 0) {
+            ERROR("Cannot create context from parameters");
             return NULL;
         }
 
@@ -295,7 +331,7 @@ void saveFrame(int width, int height, FFmpegFrameWithFrameNumber* frame) {
 
 int main() {
     InitializeReadJobRequest initRequest;
-    initRequest.path = "/home/black/Documents/Time Lapse Video Of Night Sky.mp4";
+    initRequest.path = "/opt/testvideo.mp4";
     initRequest.width = 1280;
     initRequest.height = 720;
 

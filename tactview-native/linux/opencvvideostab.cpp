@@ -678,7 +678,7 @@ int main(int argc, char** args) {
     initializeStabilizer(initRequest);
 
 
-    VideoCapture cap("/home/black/shaky.mp4");
+    VideoCapture cap("/opt/testvideo.mp4");
 
     while (1) {
         Mat frame;
@@ -711,7 +711,7 @@ int main(int argc, char** args) {
     DEBUG("Before while");
 
 
-    VideoCapture cap2("/home/black/shaky.mp4");
+    VideoCapture cap2("/opt/testvideo.mp4");
     while(1){
         Mat inputFrame;
         // Capture frame-by-frame
@@ -739,7 +739,7 @@ int main(int argc, char** args) {
 
         // init writer (once) and save stabilized frame
             if (!writer.isOpened())
-                writer.open("/home/black/shaky_out13.mp4", VideoWriter::fourcc('X','V','I','D'),
+                writer.open("/tmp/shaky_out13.mp4", VideoWriter::fourcc('X','V','I','D'),
                             30, cv::Size(width, height));
             Mat rgb;
             cv::cvtColor(outputMat, rgb, cv::COLOR_BGRA2BGR, 3);

@@ -2,6 +2,9 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <experimental/filesystem>
 #include "common.h"
 
 const int QUEUE_SIZE = 10;
@@ -11,6 +14,10 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 #include <libavutil/display.h>
+#include <libavutil/imgutils.h>
+#include <libavfilter/avfilter.h>
+#include <libavfilter/buffersrc.h>
+#include <libavfilter/buffersink.h>
 
 #include <stdio.h>
 
@@ -28,7 +35,7 @@ extern "C" {
 
     struct PtsComparator
     {
-        bool operator()(const DecodedPackage& a, const DecodedPackage& b)
+        bool operator()(const DecodedPackage& a, const DecodedPackage& b) const
         {
             // According to the internet, we need to sort by pts, however that results in horrible video
             // http://dranger.com/ffmpeg/tutorial05.html says we need to sort by pts, however it sorts by timestamp
@@ -38,13 +45,22 @@ extern "C" {
         }
     };
 
+    struct HwDeviceScaleCapability {
+        const char* scaleFunction;
+        AVPixelFormat outputFormat;
+        const char* outputFormatStringDescriptor;
+
+        bool needsScaling;
+        bool needsFormatConversion;
+    };
+
     struct DecodeStructure
     {
         AVFormatContext   *pFormatCtx = NULL;
         int               videoStream;
-        AVCodecContext    *pCodecCtxOrig = NULL;
+        AVCodecParameters *pCodecCtxOrig = NULL;
         AVCodecContext    *pCodecCtx = NULL;
-        AVCodec           *pCodec = NULL;
+        const AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
         AVPacket          packet;
         uint8_t           *buffer = NULL;
@@ -53,6 +69,15 @@ extern "C" {
         std::set<DecodedPackage, PtsComparator> decodedPackages;
         int width, height;
         AVRational framerate;
+
+        AVPixelFormat hw_pix_fmt;
+        AVHWDeviceType hwDeviceType;
+        HwDeviceScaleCapability hwScaleCapability;
+        SwsContext* hwSwsContext;
+        AVBufferRef* hwContext = NULL;
+        AVFilterGraph* hwFilterGraph = NULL;
+        AVFilterContext *buffersink_ctx = NULL;
+        AVFilterContext *buffersrc_ctx = NULL;
     };
 
 
@@ -113,9 +138,9 @@ extern "C" {
         // Initalizing these to NULL prevents segfaults!
         AVFormatContext   *pFormatCtx = NULL;
         int               i, videoStream;
-        AVCodecContext    *pCodecCtxOrig = NULL;
+        AVCodecParameters *pCodecCtxOrig = NULL;
         AVCodecContext    *pCodecCtx = NULL;
-        AVCodec           *pCodec = NULL;
+        const AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
         MediaMetadata mediaMetadata;
         mediaMetadata.fps = -1;
@@ -123,9 +148,6 @@ extern "C" {
         mediaMetadata.height = -1;
         mediaMetadata.lengthInMicroseconds = -1;
         mediaMetadata.bitRate = 0;
-
-        av_register_all();
-        avcodec_register_all();
         
 
         if(avformat_open_input(&pFormatCtx, path, NULL, NULL)!=0)
@@ -138,7 +160,7 @@ extern "C" {
 
         videoStream=-1;
         for(i=0; i<pFormatCtx->nb_streams; i++)
-            if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+            if(pFormatCtx->streams[i]->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
             {
                 videoStream=i;
                 break;
@@ -146,24 +168,27 @@ extern "C" {
         if(videoStream==-1)
             return mediaMetadata;
 
-        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
+        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codecpar;
 
         DEBUG("Codec ID for decoding " << pCodecCtxOrig->codec_id);
 
-        pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
-        if(pCodec==NULL)
+
+        if (!(pCodecCtx = avcodec_alloc_context3(pCodec))) {
+            return mediaMetadata;
+        }
+        if (avcodec_parameters_to_context(pCodecCtx, pCodecCtxOrig) < 0) {
+            ERROR("Cannot create context from parameters");
+            return mediaMetadata;
+        }
+        int ret = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0);
+
+        if(pCodec==NULL || ret < 0)
         {
             fprintf(stderr, "Unsupported codec!\n");
             return mediaMetadata;
         }
 
         pCodecCtx = avcodec_alloc_context3(pCodec);
-
-        if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
-        {
-            fprintf(stderr, "Couldn't copy codec context");
-            return mediaMetadata;
-        }
 
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
             return mediaMetadata;
@@ -183,10 +208,10 @@ extern "C" {
             return mediaMetadata;
         }
 
-        mediaMetadata.width = pCodecCtx->width;
-        mediaMetadata.height = pCodecCtx->height;
+        mediaMetadata.width = pCodecCtxOrig->width;
+        mediaMetadata.height = pCodecCtxOrig->height;
         mediaMetadata.lengthInMicroseconds = durationInMicroseconds;
-        mediaMetadata.bitRate = st->codec->bit_rate;
+        mediaMetadata.bitRate = st->codecpar->bit_rate;
         mediaMetadata.rotationAngle = get_rotation(st);
 
         AVRational framerate = findFramerate(st);
@@ -201,7 +226,6 @@ extern "C" {
         av_frame_free(&pFrame);
 
         avcodec_close(pCodecCtx);
-        avcodec_close(pCodecCtxOrig);
 
         avformat_close_input(&pFormatCtx);
 
@@ -226,6 +250,8 @@ extern "C" {
 
         int actualNumberOfFramesRead;
         long long endTimeInMs;
+
+        int useHardwareDecoding;
     } FFmpegImageRequest;
 
     int decodedMinPts(DecodeStructure* decodeStructure)
@@ -243,11 +269,11 @@ extern "C" {
     AVFrame* allocateFrame(int width, int height)
     {
         AVFrame* pFrameRGB=av_frame_alloc();
-        int numBytes=avpicture_get_size(AV_PIX_FMT_RGBA, width, height);
+        int numBytes=av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, 16);
 
         uint8_t* buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-        avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_RGBA,
-                       width, height);
+        av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer, AV_PIX_FMT_RGBA,
+                       width, height, 1);
         pFrameRGB->opaque = buffer;
         return pFrameRGB;
     }
@@ -309,13 +335,224 @@ extern "C" {
         return receiveFrame(avctx, frame, got_frame, pkt);
     }
 
+    bool containsFormat(AVPixelFormat* formats, AVPixelFormat format) {
+        for (int i = 0; formats[i] != AV_PIX_FMT_NONE; i++) {
+            if (formats[i] == format) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int getScaleCapability(AVHWDeviceType type, AVBufferRef* hwBuffer, HwDeviceScaleCapability* result) {
+        AVPixelFormat *formats;
+        
+        int err = av_hwframe_transfer_get_formats(hwBuffer,
+                                          AV_HWFRAME_TRANSFER_DIRECTION_FROM,
+                                          &formats, 0);
+
+        if (containsFormat(formats, AV_PIX_FMT_RGBA)) {
+            result->needsFormatConversion = false;
+            result->outputFormatStringDescriptor = "rgba"; // av_get_pix_fmt_string
+            result->outputFormat = AV_PIX_FMT_RGBA;
+        } else if (containsFormat(formats, AV_PIX_FMT_YUV420P)) {
+            result->needsFormatConversion = true;
+            result->outputFormatStringDescriptor = "yuv420p"; // av_get_pix_fmt_string
+            result->outputFormat = AV_PIX_FMT_YUV420P;
+        } else if (containsFormat(formats, AV_PIX_FMT_RGB0)) {
+            result->needsFormatConversion = true;
+            result->outputFormatStringDescriptor = "rgb0"; // av_get_pix_fmt_string
+            result->outputFormat = AV_PIX_FMT_RGB0;
+        } else {
+            return -1;
+        }
+
+
+        av_freep(&formats);
+
+
+        if (type == AV_HWDEVICE_TYPE_VAAPI) {
+            result->scaleFunction = "scale_vaapi";
+            result->needsScaling = false;
+        } else {
+            result->needsScaling = true;
+        }
+        return 0;
+    }
+
+    static int createInputFilter(AVCodecContext* dec_ctx, AVFilterInOut *inputs, DecodeStructure* element) {
+        int ret;
+        char args[512];
+        const AVFilter *buffersrc  = avfilter_get_by_name("buffer");
+
+        snprintf(args, sizeof(args),
+            "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+            dec_ctx->width, dec_ctx->height, element->hw_pix_fmt,
+            1, 60,
+            dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
+        ret = avfilter_graph_create_filter(&element->buffersrc_ctx, buffersrc, "in",
+                                        args, NULL, element->hwFilterGraph);
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_ERROR, "Cannot create buffer source\n");
+            return ret;
+        }
+        AVBufferSrcParameters *par = av_buffersrc_parameters_alloc();
+        
+
+        if (!par)
+            return AVERROR(ENOMEM);
+        memset(par, 0, sizeof(*par));
+        par->format = AV_PIX_FMT_NONE;
+        par->hw_frames_ctx = element->hwContext;
+        ret = av_buffersrc_parameters_set(element->buffersrc_ctx, par);
+        av_freep(&par);
+        
+        if ((ret = avfilter_link(element->buffersrc_ctx, 0, inputs[0].filter_ctx, inputs[0].pad_idx)) < 0)
+            return ret;
+        return 0;
+    }
+
+
+    static int createOutputFilter(AVCodecContext* dec_ctx, AVFilterInOut *outputs, DecodeStructure* element) {
+        int ret;
+        char args[512];
+        const AVFilter *buffersink = avfilter_get_by_name("buffersink");
+
+        ret = avfilter_graph_create_filter(&element->buffersink_ctx, buffersink, "out",
+                                        NULL, NULL, element->hwFilterGraph);
+        
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_ERROR, "Cannot create buffer sink\n");
+            return ret;
+        }
+
+
+        if ((ret = avfilter_link(outputs[0].filter_ctx, 0, element->buffersink_ctx, 0)) < 0)
+            return ret;
+        return 0;
+    }
+
+    static int init_filters(AVCodecContext* dec_ctx, DecodeStructure* element)
+    {
+        char args[512];
+        int ret;
+        AVFilterInOut *outputs = NULL;
+        AVFilterInOut *inputs  = NULL;
+        char hwFilterExpression[400];
+
+
+        int res = getScaleCapability(element->hwDeviceType, element->hwContext, &element->hwScaleCapability);
+        
+        HwDeviceScaleCapability capability = element->hwScaleCapability;
+
+        if (res < 0) {
+            WARN("Cannot initialize scaling, disable HW acceleration");
+            element->hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+        } else {
+            if (!capability.needsScaling) {
+                snprintf(hwFilterExpression, 400, "%s=%d:%d,hwdownload,format=%s", 
+                    capability.scaleFunction,  element->width, element->height, capability.outputFormatStringDescriptor);
+            } else {
+                snprintf(hwFilterExpression, 400, "hwdownload,format=%s", 
+                    capability.outputFormatStringDescriptor);
+            }
+
+            if (capability.needsScaling || capability.needsFormatConversion) {
+                int fromW = capability.needsScaling ? element->pCodecCtx->width : element->width;
+                int fromH = capability.needsScaling ? element->pCodecCtx->height : element->height;
+                element->hwSwsContext = sws_getContext(fromW,
+                                                        fromH,
+                                                        capability.outputFormat,
+                                                        element->width,
+                                                        element->height,
+                                                        AV_PIX_FMT_RGBA,
+                                                        SWS_FAST_BILINEAR,
+                                                        NULL,
+                                                        NULL,
+                                                        NULL);
+            }
+        }
+
+
+
+        element->hwFilterGraph = avfilter_graph_alloc();
+
+        if ((ret = avfilter_graph_parse2(element->hwFilterGraph, hwFilterExpression,
+                                        &inputs, &outputs)) < 0)
+            return ret;
+
+        for (int i = 0; i < element->hwFilterGraph->nb_filters; ++i) {
+                element->hwFilterGraph->filters[i]->hw_device_ctx = av_buffer_ref(element->hwContext);
+        }
+
+        createInputFilter(dec_ctx, inputs, element);
+        createOutputFilter(dec_ctx, outputs, element);
+
+
+
+        if ((ret = avfilter_graph_config(element->hwFilterGraph, NULL)) < 0)
+            return ret;
+        return 0;
+    }
+
+    AVFrame* processFrame(DecodeStructure* element, AVFrame *pFrame) {
+        AVCodecContext    *pCodecCtx = element->pCodecCtx;
+        struct SwsContext *sws_ctx = element->sws_ctx;
+        AVCodecParameters *pCodecCtxOrig = element->pCodecCtxOrig;
+
+        AVFrame* pFrameRGB=allocateFrame(element->width, element->height);
+        if (element->hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
+            if (element->hwContext == NULL) {
+                element->hwContext = pFrame->hw_frames_ctx;
+            }
+
+            if (element->hwFilterGraph == NULL && init_filters(pCodecCtx, element) < 0) {
+                ERROR("Init filter fails\n");
+                return NULL;
+            }
+
+            // push the decoded frame into the filtergraph
+            if (av_buffersrc_add_frame_flags(element->buffersrc_ctx, pFrame, AV_BUFFERSRC_FLAG_KEEP_REF) < 0) {
+                av_log(NULL, AV_LOG_ERROR, "Error while feeding the filtergraph\n");
+                return NULL;
+            }
+            // pull filtered frames from the filtergraph
+            AVFrame* filt_frame = av_frame_alloc();
+            int ret = av_buffersink_get_frame(element->buffersink_ctx, filt_frame);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                return NULL;
+            }
+            if (ret < 0) {
+                av_log(NULL, AV_LOG_ERROR, "Error reading from buffersink\n");
+                return NULL;
+            }
+            
+
+            if (element->hwScaleCapability.needsFormatConversion || element->hwScaleCapability.needsScaling) {
+                sws_scale(element->hwSwsContext, (uint8_t const * const *)filt_frame->data,
+                        filt_frame->linesize, 0, filt_frame->height,
+                        pFrameRGB->data, pFrameRGB->linesize);
+            } else {
+                memcpy(pFrameRGB->data, filt_frame->data, element->width*element->height*4);
+            }
+
+
+            av_frame_free(&filt_frame);
+        } else {
+            sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
+                    pFrame->linesize, 0, pCodecCtxOrig->height,
+                    pFrameRGB->data, pFrameRGB->linesize);
+        }
+        return pFrameRGB;
+    }
+
     void fillQueue(DecodeStructure* element)
     {
         AVFormatContext   *pFormatCtx = element->pFormatCtx;
         int               videoStream = element->videoStream;
-        AVCodecContext    *pCodecCtxOrig = element->pCodecCtxOrig;
+        AVCodecParameters *pCodecCtxOrig = element->pCodecCtxOrig;
         AVCodecContext    *pCodecCtx = element->pCodecCtx;
-        AVCodec           *pCodec = element->pCodec;
+        const AVCodec           *pCodec = element->pCodec;
         AVFrame           *pFrame = element->pFrame;
         AVPacket          packet = element->packet;
         struct SwsContext *sws_ctx = element->sws_ctx;
@@ -329,26 +566,13 @@ extern "C" {
                     decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
                     if(frameFinished)
                     {
-                        AVFrame* pFrameRGB=allocateFrame(element->width, element->height);
+                        AVFrame* pFrameRGB = processFrame(element, pFrame);
 
-                        sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
-                                pFrame->linesize, 0, pCodecCtx->height,
-                                pFrameRGB->data, pFrameRGB->linesize);
-
-                        /** // debug for https://trello.com/c/otpORnEy/445-black-bar-on-the-right-if-width-is-not-divisable-by-8-ex-854px-width-there-is-6px-black-bar
-                        if (pCodecCtx->width >= 850) {
-                            for (int id = 850; id < 854; ++id) {
-                                DEBUG("Unexpected color: " << (int)(*(pFrame->data[0] + id + 0)) << " " << 
-                                    (int)(*(pFrame->data[0] + id + 1)) << " " << 
-                                    (int)(*(pFrame->data[0] + id + 2)) << " " << 
-                                    (int)(*(pFrame->data[0] + id + 3)) << " ");
-                            }
-                        } */
 
                         DecodedPackage decodedPackage;
                         decodedPackage.pts = packet.pts;
                         decodedPackage.dts = packet.dts;
-                        decodedPackage.timestamp = av_frame_get_best_effort_timestamp(pFrame);
+                        decodedPackage.timestamp = pFrame->best_effort_timestamp;
                         decodedPackage.pFrame = pFrameRGB;
 
                         element->decodedPackages.insert(decodedPackage);
@@ -360,15 +584,18 @@ extern "C" {
                 } while (decodedFrame == AVERROR(EAGAIN));
             }
             // Free the packet that was allocated by av_read_frame
-            av_free_packet(&packet);
+            av_packet_unref(&packet);
         }
         //DEBUG("Set filled: " << element->decodedPackages);
     }
 
+    std::string createKey(const char* path, int width, int height, bool enableHwAcceleration) {
+        return (std::string(path) + "_" + std::to_string(width) + "_" + std::to_string(height) + std::string("hwaccel=") + std::to_string(enableHwAcceleration));
+    }
+
     EXPORTED void readFrames(FFmpegImageRequest* request)
     {
-
-        std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
+        std::string key = createKey(request->path, request->width, request->height, request->useHardwareDecoding);
         std::map<std::string,DecodeStructure*>::iterator elementIterator = idTodecodeStructureMap.find(key);
 
         DecodeStructure* decodeStructure;
@@ -392,9 +619,9 @@ extern "C" {
         int i = 0;
         AVFormatContext   *pFormatCtx = decodeStructure->pFormatCtx;
         int               videoStream = decodeStructure->videoStream;
-        AVCodecContext    *pCodecCtxOrig = decodeStructure->pCodecCtxOrig;
+        AVCodecParameters *pCodecCtxOrig = decodeStructure->pCodecCtxOrig;
         AVCodecContext    *pCodecCtx = decodeStructure->pCodecCtx;
-        AVCodec           *pCodec = decodeStructure->pCodec;
+        const AVCodec           *pCodec = decodeStructure->pCodec;
         AVFrame           *pFrame = decodeStructure->pFrame;
         AVPacket          packet = decodeStructure->packet;
         int               frameFinished = 0;
@@ -450,13 +677,10 @@ extern "C" {
 
                     if(frameFinished)
                     {
-                        AVFrame*  pFrameRGB=allocateFrame(request->width, request->height);
-                        sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
-                                  pFrame->linesize, 0, pCodecCtx->height,
-                                  pFrameRGB->data, pFrameRGB->linesize);
+                        AVFrame* pFrameRGB = processFrame(decodeStructure, pFrame);
 
                         copyFrameData(pFrameRGB, request->width, request->height, i, request->frames[i].data);
-                        request->frames[i].startTimeInMs = av_rescale_q(av_frame_get_best_effort_timestamp(pFrame), timeframe, timeBaseQ);
+                        request->frames[i].startTimeInMs = av_rescale_q(pFrame->best_effort_timestamp, timeframe, timeBaseQ);
                         ++i;
                         freeFrame(pFrameRGB);
 
@@ -468,7 +692,7 @@ extern "C" {
                     //DEBUG("Read video package " << packet.dts << " " <<  packet.pts << " (" << (av_frame_get_best_effort_timestamp(pFrame) * av_q2d(pFormatCtx->streams[videoStream]->time_base)) << ")");
                 }
                 // Free the packet that was allocated by av_read_frame
-                av_free_packet(&packet);
+                av_packet_unref(&packet);
             }
         }
         else
@@ -515,6 +739,110 @@ extern "C" {
         DEBUG("Queue size: " << decodeStructure->decodedPackages.size());
     }
 
+    static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
+                                            const enum AVPixelFormat *pix_fmts)
+    {
+        const enum AVPixelFormat *p;
+
+        DecodeStructure* decodeStructure = (DecodeStructure*)ctx->opaque;
+
+        for (p = pix_fmts; *p != -1; p++) {
+            if (*p == decodeStructure->hw_pix_fmt)
+                return *p;
+        }
+
+        ERROR("Failed to get HW surface format.");
+        return AV_PIX_FMT_NONE;
+    }
+
+    struct HwDeviceDescriptor {
+        AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
+        const char* deviceTypeString = NULL;
+        std::string deviceString;
+        std::string driver;
+    };
+
+    static std::string getDriverForVaapi(std::string file) {
+        std::string line;
+        std::string filename = file + "/device/uevent";
+
+        std::ifstream input_file(filename);
+        if (!input_file.is_open()) {
+            WARN("Cannot open " << filename.c_str());
+            return std::string();
+        }
+
+        while (std::getline(input_file, line)){
+            if (line.find("DRIVER=") != std::string::npos) {
+                return line.replace(line.find("DRIVER="), 7, "");
+            }
+        }
+        return "";
+    }
+
+    static std::vector<HwDeviceDescriptor> getHwDescriptors() {
+        std::vector<HwDeviceDescriptor> hwDevices;
+
+        // vaapi
+        std::string path = "/sys/class/drm";
+        if (std::experimental::filesystem::is_directory(path)) {
+            for (const auto & entry : std::experimental::filesystem::directory_iterator(path)) {
+                const std::string path = entry.path().string();
+                std::size_t renderIndex = path.find("renderD");
+                if (path.find("renderD") != std::string::npos) {
+                    std::string driver = getDriverForVaapi(path);
+                    if (driver != "") {
+                        HwDeviceDescriptor device = HwDeviceDescriptor();
+                        device.type = AV_HWDEVICE_TYPE_VAAPI;
+                        device.deviceTypeString = "vaapi";
+                        device.deviceString = (std::string("/dev/dri/") + path.substr(renderIndex, 10));
+                        device.driver = std::string(driver);
+                        hwDevices.push_back(device);
+                    }
+                }
+            }
+        }
+        return hwDevices;
+    }
+
+    static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
+    {
+        int err = 0;
+
+        std::vector<HwDeviceDescriptor> desciptors = getHwDescriptors();
+
+        for (int i = 0; i < desciptors.size(); ++i) {
+            INFO("Found HW device with type=" << desciptors[i].deviceTypeString << ", driver=" << desciptors[i].driver << ", deviceString=" << desciptors[i].deviceString);
+        }
+
+        const char* usedDevice = NULL;
+
+        if (desciptors.size() == 1) {
+            usedDevice = desciptors[0].deviceString.c_str();
+        } else if (desciptors.size() > 1) {
+            for (int i = 0; i < desciptors.size(); ++i) {
+                if (desciptors[i].driver == "i915") { // Intel iGPU decoder preferred due to QuickSync
+                    usedDevice = desciptors[i].deviceString.c_str();
+                }
+            }
+            if (usedDevice == NULL) {
+                usedDevice = desciptors[0].deviceString.c_str();
+            }
+        }
+        INFO("Used HW device=" << usedDevice);
+
+        AVBufferRef *buffer = NULL;
+
+        if ((err = av_hwdevice_ctx_create(&buffer, type, usedDevice, NULL, 0)) < 0) {
+            WARN("Failed to create specified HW device.");
+            return err;
+        }
+        ctx->hw_device_ctx = av_buffer_ref(buffer);
+        
+        return err;
+    }
+
+
     DecodeStructure* openFile(FFmpegImageRequest* request)
     {
         DEBUG("Opening file " << request->path << " " << request->width << " " << request->height);
@@ -522,15 +850,26 @@ extern "C" {
         // Initalizing these to NULL prevents segfaults!
         AVFormatContext   *pFormatCtx = NULL;
         int               videoStream;
-        AVCodecContext    *pCodecCtxOrig = NULL;
+        AVCodecParameters    *pCodecCtxOrig = NULL;
         AVCodecContext    *pCodecCtx = NULL;
-        AVCodec           *pCodec = NULL;
+        const AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
         AVPacket          packet;
         uint8_t           *buffer = NULL;
         struct SwsContext *sws_ctx = NULL;
 
-        av_register_all();
+        // HW fields
+        AVHWDeviceType hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+        AVPixelFormat hw_pix_fmt = AV_PIX_FMT_NONE;
+        HwDeviceScaleCapability capability;
+        SwsContext* hwSwsContext = NULL;
+
+        if (request->useHardwareDecoding) {
+            hwDeviceType = av_hwdevice_find_type_by_name("vaapi");
+            if (hwDeviceType == AV_HWDEVICE_TYPE_NONE) {
+                INFO("VAAPI HW acceleration not available for " << request->path);
+            }
+        }
 
         if(avformat_open_input(&pFormatCtx, request->path, NULL, NULL)!=0)
         {
@@ -546,7 +885,7 @@ extern "C" {
 
         videoStream=-1;
         for(int i=0; i<pFormatCtx->nb_streams; i++)
-            if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
+            if(pFormatCtx->streams[i]->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
             {
                 videoStream=i;
                 break;
@@ -557,9 +896,20 @@ extern "C" {
             return NULL;
         }
 
-        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
-        pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
-        if(pCodec==NULL)
+        pCodecCtxOrig=pFormatCtx->streams[videoStream]->codecpar;
+
+
+        if (!(pCodecCtx = avcodec_alloc_context3(pCodec))) {
+            ERROR("Cannot create codec context " << request->path);
+            return NULL;
+        }
+        if (avcodec_parameters_to_context(pCodecCtx, pCodecCtxOrig) < 0) {
+            ERROR("Cannot create codec context " << request->path);
+            return NULL;
+        }
+        int ret = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0);
+
+        if(pCodec==NULL || ret < 0)
         {
             ERROR("Unsupported codec: " << pCodecCtxOrig->codec_id);
             return NULL;
@@ -573,16 +923,33 @@ extern "C" {
             INFO("Codec has frame slice level threading for file " << request->path);
         }
 
-        pCodecCtx = avcodec_alloc_context3(pCodec);
-
-        if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0)
-        {
-            ERROR("Couldn't copy codec context");
-            return NULL;
-        }
-
         pCodecCtx->thread_count = 0; // 0 = automatic
         pCodecCtx->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
+
+
+        if (hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
+            for (int i = 0;; i++) {
+                const AVCodecHWConfig *config = avcodec_get_hw_config(pCodec, i);
+                if (!config) {
+                    INFO("Decoder " << pCodec->name << " does not support device type " << av_hwdevice_get_type_name(hwDeviceType));
+                    hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+                }
+                if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == hwDeviceType) {
+                    hw_pix_fmt = config->pix_fmt;
+                    break;
+                }
+            }
+            pCodecCtx->get_format  = get_hw_format;
+
+            if (hw_decoder_init(pCodecCtx, hwDeviceType) < 0) {
+                WARN("Cannot initialize hw acceleration");
+                hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+            }
+
+        }
+
+
+
 
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
         {
@@ -594,8 +961,8 @@ extern "C" {
 
         INFO("Opening file with size " << request->width << "x" << request->height);
 
-        sws_ctx = sws_getContext(pCodecCtx->width,
-                                 pCodecCtx->height,
+        sws_ctx = sws_getContext(pCodecCtxOrig->width,
+                                 pCodecCtxOrig->height,
                                  pCodecCtx->pix_fmt,
                                  request->width,
                                  request->height,
@@ -619,13 +986,39 @@ extern "C" {
         element->width = request->width;
         element->height = request->height;
         element->framerate = findFramerate(pFormatCtx->streams[videoStream]);
+        element->hw_pix_fmt = hw_pix_fmt;
+        element->hwDeviceType = hwDeviceType;
+        element->hwScaleCapability = capability;
+        element->hwSwsContext = hwSwsContext;
 
-        std::string key = (std::string(request->path) + "_" + std::to_string(request->width) + "_" + std::to_string(request->height)); // copypaste merge
+        pCodecCtx->opaque = element;
+
+        std::string key = createKey(request->path, request->width, request->height, request->useHardwareDecoding);
 
         idTodecodeStructureMap.insert(std::pair<std::string, DecodeStructure*>(std::string(key), element));
 
         return element;
     }
+
+
+static void ppm_save(unsigned char* buf, int wrap, int xsize, int ysize, char* filename)
+{
+    FILE* f;
+    int i;
+
+    f = fopen(filename, "wb");
+    fprintf(f, "P3\n%d %d\n%d\n", xsize, ysize, 255);
+
+    for (int y = 0; y < ysize; ++y) {
+        for (int x = 0; x < xsize; ++x) {
+            unsigned char* basePtr = buf + y * wrap + x * 4;
+            fprintf(f, "%d %d %d\n", basePtr[0], basePtr[1], basePtr[2]);
+        }
+    }
+
+    fclose(f);
+}
+
 
 #ifdef DEBUG_BUILD
 
@@ -638,14 +1031,20 @@ int main() {
 
     const int framesPerRequest = 30;
 
-    const int outWidth = result.width;
-    const int outHeight = result.height;
+    const int outWidth = 400;
+    const int outHeight = 300;
 
     long long start = time(NULL);
     long startTime = 0;
     int framesRead = 0;
+    
+    FFMpegFrame* frames = new FFMpegFrame[framesPerRequest];
 
-    for (int i = 0; i < 300; ++i) {
+    for (int j = 0; j < framesPerRequest; ++j) {
+        frames[j].data = new char[outWidth * outHeight * 4];
+    }
+
+    for (int i = 0; i < 100; ++i) {
 
         int frameToRequest = i * framesPerRequest;
 
@@ -657,24 +1056,28 @@ int main() {
         request->startMicroseconds = startTime;
         request->endTimeInMs = startTime + (framesPerRequest * (1.0/result.fps) * 1000000);
         request->useApproximatePosition = false;
-        request->frames = new FFMpegFrame[framesPerRequest];
+        request->useHardwareDecoding = 1;
+        request->frames = frames;
 
-        for (int j = 0; j < framesPerRequest; ++j) {
-            request->frames[j].data = new char[outWidth * outHeight * 4];
-        }
 
         readFrames(request);
+
+        if (i % 10 == 0) {
+            char buf[100];
+            snprintf(buf, sizeof(buf), "/tmp/%s_%03d.ppm", "decode", i);
+            ppm_save((unsigned char*)request->frames[0].data, request->width * 4, request->width, request->height, buf);
+        }
 
         int newFramesRead = request->actualNumberOfFramesRead + framesRead;
 
         startTime = request->endTimeInMs;
-        for (int j = 0; j < framesPerRequest; ++j) {
-            delete[] request->frames[j].data;
-        }
 
         delete request;
         INFO("read frames " << framesRead << " " << newFramesRead);
         framesRead = newFramesRead;
+    }
+    for (int j = 0; j < framesPerRequest; ++j) {
+        delete[] frames[j].data;
     }
 
     long long end = time(NULL);

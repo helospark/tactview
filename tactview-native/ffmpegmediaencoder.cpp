@@ -32,6 +32,7 @@ extern "C" {
     #include <libswscale/swscale.h>
     #include <libswresample/swresample.h>
     #include "libavutil/pixdesc.h"
+    #include <libavcodec/avcodec.h>
 
     #define SCALE_FLAGS SWS_BICUBIC
 
@@ -83,6 +84,9 @@ extern "C" {
         AVFrame *frame;
         AVFrame *tmp_frame;
 
+
+        AVPacket *tmp_pkt;
+
         // data about sound may no belong here
         AVSampleFormat sampleFormat;
         int bytesPerSample;
@@ -95,9 +99,9 @@ extern "C" {
         OutputStream* video_st = NULL;
         OutputStream* audio_st = NULL;
         const char *filename;
-        AVOutputFormat *fmt;
+        const AVOutputFormat *fmt;
         AVFormatContext *oc;
-        AVCodec *audio_codec, *video_codec;
+        const AVCodec *audio_codec, *video_codec;
         int ret;
         int have_video = 0, have_audio = 0;
         int encode_video = 0, encode_audio = 0;
@@ -135,19 +139,57 @@ extern "C" {
     };
 
 
-    static int write_frame(AVFormatContext *fmt_ctx, const AVRational *time_base, AVStream *st, AVPacket *pkt)
-    {
-        /* rescale output packet timestamp values from codec to stream timebase */
-        av_packet_rescale_ts(pkt, *time_base, st->time_base);
-
-        pkt->stream_index = st->index;
-
-        return av_interleaved_write_frame(fmt_ctx, pkt);
+    std::string av_err2string(int errnum) {
+        char str[AV_ERROR_MAX_STRING_SIZE];
+        return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
     }
+
+
+    static int write_frame(AVFormatContext *fmt_ctx, AVCodecContext *c,
+                        AVStream *st, AVFrame *frame, AVPacket *pkt)
+    {
+        int ret;
+
+        // send the frame to the encoder
+        ret = avcodec_send_frame(c, frame);
+        if (ret < 0) {
+            fprintf(stderr, "Error sending a frame to the encoder: %s\n",
+                    av_err2string(ret));
+            exit(1);
+        }
+
+        while (ret >= 0) {
+            ret = avcodec_receive_packet(c, pkt);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+                break;
+            else if (ret < 0) {
+                fprintf(stderr, "Error encoding a frame: %s\n", av_err2string(ret));
+                exit(1);
+            }
+
+            /* rescale output packet timestamp values from codec to stream timebase */
+            av_packet_rescale_ts(pkt, c->time_base, st->time_base);
+            pkt->stream_index = st->index;
+
+            /* Write the compressed frame to the media file. */
+
+            ret = av_interleaved_write_frame(fmt_ctx, pkt);
+            /* pkt is now blank (av_interleaved_write_frame() takes ownership of
+            * its contents and resets pkt), so that no unreferencing is necessary.
+            * This would be different if one used av_write_frame(). */
+            if (ret < 0) {
+                fprintf(stderr, "Error while writing output packet: %s\n", av_err2string(ret));
+                exit(1);
+            }
+        }
+
+        return ret == AVERROR_EOF ? 1 : 0;
+    }
+
 
     /* Add an output stream. */
     static int add_video_stream(OutputStream *ost, AVFormatContext *oc,
-                           AVCodec **codec,
+                           const AVCodec **codec,
                            enum AVCodecID codec_id,
                            FFmpegInitEncoderRequest* request,
                            AVPixelFormat videoPixelFormat)
@@ -160,6 +202,13 @@ extern "C" {
         if (!(*codec)) {
             ERROR("[ERROR] Could not find encoder for '" << avcodec_get_name(codec_id) << "'");
             return -1;
+        }
+
+        
+        ost->tmp_pkt = av_packet_alloc();
+        if (!ost->tmp_pkt) {
+            fprintf(stderr, "Could not allocate AVPacket\n");
+            exit(1);
         }
 
         ost->st = avformat_new_stream(oc, NULL);
@@ -211,9 +260,9 @@ extern "C" {
         return 0;
     }
 
-/* Add an output stream. */
+    /* Add an output stream. */
     static int add_audio_stream(OutputStream *ost, AVFormatContext *oc,
-                           AVCodec **codec,
+                           const AVCodec **codec,
                            enum AVCodecID codec_id,
                            FFmpegInitEncoderRequest* request)
     {
@@ -225,6 +274,12 @@ extern "C" {
         if (!(*codec)) {
             ERROR("[ERROR] Could not find encoder for '" << avcodec_get_name(codec_id) << "'");
             return -1;
+        }
+
+        ost->tmp_pkt = av_packet_alloc();
+        if (!ost->tmp_pkt) {
+            fprintf(stderr, "Could not allocate AVPacket\n");
+            exit(1);
         }
 
         ost->st = avformat_new_stream(oc, NULL);
@@ -309,7 +364,7 @@ extern "C" {
         return frame;
     }
 
-    static int open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request)
+    static int open_audio(AVFormatContext *oc, const AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request)
     {
         AVCodecContext *c;
         int nb_samples;
@@ -410,68 +465,41 @@ extern "C" {
     static int write_audio_frame(AVFormatContext *oc, OutputStream *ost, AVFrame *frame)
     {
         AVCodecContext *c;
-        AVPacket pkt = { 0 }; // data and size must be 0;
         int ret;
-        int got_packet;
         int dst_nb_samples;
 
-        av_init_packet(&pkt);
         c = ost->enc;
-        DEBUG("Writing audio frame " << ((double)ost->next_pts * c->time_base.num / c->time_base.den) << " " << ost->samples_count << " " << dst_nb_samples);
 
         if (frame) {
             /* convert samples from native format to destination codec format, using the resampler */
-                /* compute destination number of samples */
-                int a = swr_get_delay(ost->swr_ctx, renderContext.sampleRate) + frame->nb_samples;
-                dst_nb_samples = av_rescale_rnd(a, c->sample_rate, renderContext.sampleRate, AV_ROUND_UP);
-                //DEBUG(a << " , " << c->sample_rate << " , " << renderContext.sampleRate << " , " << frame->nb_samples);
-                DEBUG(dst_nb_samples << " == " << ost->frame->nb_samples << " | ");
-                dst_nb_samples = ost->frame->nb_samples < dst_nb_samples ? ost->frame->nb_samples : dst_nb_samples;
-                //av_assert0(dst_nb_samples == frame->nb_samples);
+            /* compute destination number of samples */
+            dst_nb_samples = av_rescale_rnd(swr_get_delay(ost->swr_ctx, c->sample_rate) + frame->nb_samples,
+                                            c->sample_rate, c->sample_rate, AV_ROUND_UP);
+            av_assert0(dst_nb_samples == frame->nb_samples);
 
             /* when we pass a frame to the encoder, it may keep a reference to it
-             * internally;
-             * make sure we do not overwrite it here
-             */
+            * internally;
+            * make sure we do not overwrite it here
+            */
             ret = av_frame_make_writable(ost->frame);
             if (ret < 0)
-                return ret;
+                exit(1);
 
             /* convert to destination format */
             ret = swr_convert(ost->swr_ctx,
-                              ost->frame->data, dst_nb_samples,
-                              (const uint8_t **)frame->data, frame->nb_samples);
+                            ost->frame->data, dst_nb_samples,
+                            (const uint8_t **)frame->data, frame->nb_samples);
             if (ret < 0) {
-                ERROR("[ERROR] Error while converting " << ret);
-                return ret;
+                fprintf(stderr, "Error while converting\n");
+                exit(1);
             }
-            DEBUG("Encoded " << ret << " expected " << dst_nb_samples << " | " << ost->samples_count);
             frame = ost->frame;
 
-			AVRational scale;
-			scale.num = 1;
-			scale.den = c->sample_rate;
-
-            frame->pts = av_rescale_q(ost->samples_count, scale, c->time_base);
-            ost->samples_count += ret;
+            frame->pts = av_rescale_q(ost->samples_count, (AVRational){1, c->sample_rate}, c->time_base);
+            ost->samples_count += dst_nb_samples;
         }
 
-        ret = avcodec_encode_audio2(c, &pkt, frame, &got_packet);
-        if (ret < 0) {
-            ERROR("[ERROR] Error encoding audio frame: " << ret);
-            return ret;
-        }
-
-        if (got_packet) {
-            ret = write_frame(oc, &c->time_base, ost->st, &pkt);
-            if (ret < 0) {
-                ERROR("[ERROR] Error while writing audio frame: " << ret);
-                return ret;
-            }
-            av_free_packet(&pkt);
-        }
-
-        return (frame || got_packet) ? 0 : 1;
+        return write_frame(oc, c, ost->st, frame, ost->tmp_pkt);
     }
 
     /**************************************************************/
@@ -500,7 +528,7 @@ extern "C" {
         return picture;
     }
 
-    static int open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request, AVPixelFormat videoPixelFormat)
+    static int open_video(AVFormatContext *oc, const AVCodec *codec, OutputStream *ost, AVDictionary *opt_arg, FFmpegInitEncoderRequest* request, AVPixelFormat videoPixelFormat)
     {
         int ret;
         AVCodecContext *c = ost->enc;
@@ -572,38 +600,7 @@ extern "C" {
      */
     static int write_video_frame(AVFormatContext *oc, OutputStream *ost, AVFrame* frame)
     {
-        int ret;
-        AVCodecContext *c;
-        int got_packet = 0;
-        AVPacket pkt = { 0 };
-
-        c = ost->enc;
-
-        if (frame != NULL) {
-            DEBUG("Writing video frame " << ((double)frame->pts * c->time_base.num / c->time_base.den));
-        }
-        av_init_packet(&pkt);
-
-        /* encode the image */
-        ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
-        if (ret < 0) {
-            ERROR("Error encoding video frame");
-            return -1;
-        }
-
-        if (got_packet) {
-            ret = write_frame(oc, &c->time_base, ost->st, &pkt);
-            av_free_packet(&pkt);
-        } else {
-            ret = 0;
-        }
-
-        if (ret < 0) {
-            ERROR("Error while writing video frame, write_frame returned " << ret);
-            return -1;
-        }
-
-        return (frame || got_packet) ? 0 : 1;
+        return write_frame(oc, ost->enc, ost->st, frame, ost->tmp_pkt);
     }
 
     static void close_stream(AVFormatContext *oc, OutputStream *ost)
@@ -615,7 +612,7 @@ extern "C" {
         swr_free(&ost->swr_ctx);
     }
 
-    AVPixelFormat getPixelFormat(FFmpegInitEncoderRequest* request, AVCodec *videoCodec) {
+    AVPixelFormat getPixelFormat(FFmpegInitEncoderRequest* request, const AVCodec *videoCodec) {
         if (strcmp(request->videoPixelFormat, "default") == 0) {
           return videoCodec->pix_fmts[0];
         } else {
@@ -628,14 +625,14 @@ extern "C" {
 
     EXPORTED int initEncoder(FFmpegInitEncoderRequest* request) {
         INFO("Initializing encoder: width=" << request->actualWidth << " height=" << request->actualHeight << " fps=" << request->fps);
-        av_register_all();
+
         AVFormatContext *oc;
-        AVOutputFormat *fmt;
+        const AVOutputFormat *fmt;
         OutputStream* video_st = new OutputStream;
         OutputStream* audio_st = new OutputStream;
         memset(video_st, 0, sizeof(OutputStream));
         memset(audio_st, 0, sizeof(OutputStream));
-        AVCodec *audio_codec, *video_codec;
+        const AVCodec *audio_codec, *video_codec;
         int ret;
         int have_video = 0, have_audio = 0;
         int encode_video = 0, encode_audio = 0;
@@ -691,17 +688,18 @@ extern "C" {
          * and initialize the codecs. */
         DEBUG("Video fmt->video_codec=" << fmt->video_codec << " request->videoCodec=" << request->videoCodec);
         if (fmt->video_codec != AV_CODEC_ID_NONE && strcmp(request->videoCodec, "none") != 0) {
+            AVCodecID codec = fmt->video_codec;
             if (strcmp(request->videoCodec, "default") != 0) {            
-                fmt->video_codec = avcodec_find_encoder_by_name(request->videoCodec)->id;
+                codec = avcodec_find_encoder_by_name(request->videoCodec)->id;
             }
 
 
-            videoPixelFormat = getPixelFormat(request, avcodec_find_encoder(fmt->video_codec));
+            videoPixelFormat = getPixelFormat(request, avcodec_find_encoder(codec));
             
             const char* videoPixelFormatStr = av_get_pix_fmt_name(videoPixelFormat);
             DEBUG("Using pixel format " << videoPixelFormatStr);
 
-            ret = add_video_stream(video_st, oc, &video_codec, fmt->video_codec, request, videoPixelFormat);
+            ret = add_video_stream(video_st, oc, &video_codec, codec, request, videoPixelFormat);
             if (ret < 0) {
                 return ret;
             }
@@ -711,10 +709,11 @@ extern "C" {
             renderContext.videoPixelFormat =  videoPixelFormat;
         }
         if (fmt->audio_codec != AV_CODEC_ID_NONE && request->audioChannels > 0 && strcmp(request->audioCodec, "none") != 0) {
+            AVCodecID codec = fmt->audio_codec;
             if (strcmp(request->audioCodec, "default") != 0) {            
-                fmt->audio_codec = avcodec_find_encoder_by_name(request->audioCodec)->id;
+                codec = avcodec_find_encoder_by_name(request->audioCodec)->id;
             }
-            ret = add_audio_stream(audio_st, oc, &audio_codec, fmt->audio_codec, request);
+            ret = add_audio_stream(audio_st, oc, &audio_codec, codec, request);
             if (ret < 0) {
                 return ret;
             }
@@ -868,13 +867,12 @@ extern "C" {
 
     EXPORTED void queryCodecs(QueryCodecRequest* request)
     {
-        av_register_all();
 
         request->videoCodecNumber = 0;
         request->audioCodecNumber = 0;
-        AVCodec * codec = av_codec_next(NULL);
-        while(codec != NULL)
-        {
+        const AVCodec * codec;
+        void* i = 0;
+        while ((codec = av_codec_iterate(&i))) {
             if (av_codec_is_encoder(codec)) {
                 //fprintf(stderr, "%s - %s\n", codec->long_name, codec->name);
                 if (codec->type == AVMediaType::AVMEDIA_TYPE_AUDIO) {
@@ -886,12 +884,10 @@ extern "C" {
                     request->videoCodecs[request->videoCodecNumber++].longName = codec->long_name;
                 }
             }
-
-            codec = av_codec_next(codec);
         }
 
     }
-
+    
     struct CodecExtraDataRequest {
         const char* fileName;
         const char* videoCodec;
@@ -902,11 +898,7 @@ extern "C" {
 
     EXPORTED void queryCodecExtraData(CodecExtraDataRequest* request)
     {
-        av_register_all();
-
         request->availablePixelFormatNumber = 0;
-
-        av_register_all();
         AVFormatContext *oc;
 
 
@@ -914,10 +906,10 @@ extern "C" {
         if (!oc)
             return;
 
-        AVOutputFormat* fmt = oc->oformat;
+        const AVOutputFormat* fmt = oc->oformat;
 
         if (fmt->video_codec != AV_CODEC_ID_NONE) {
-            AVCodec* videoCodec;
+            const AVCodec* videoCodec;
             if (strcmp(request->videoCodec, "default") != 0) {
                 videoCodec = avcodec_find_encoder_by_name(request->videoCodec);
             } else {
@@ -944,3 +936,100 @@ extern "C" {
 
 }
 
+#ifdef DEBUG_BUILD
+int main() {
+        const int AUDIO_SAMPLE_PER_SEC = 8000;
+        const int WIDTH = 400;
+        const int HEIGHT = 300;
+        const int FPS = 30;
+
+        FFmpegInitEncoderRequest initRequest;
+        initRequest.fileName = "/tmp/testout.mp4";
+        initRequest.actualWidth = WIDTH;
+        initRequest.actualHeight = HEIGHT;
+        initRequest.renderWidth = WIDTH;
+        initRequest.renderHeight = HEIGHT;
+        initRequest.fps = FPS;
+
+        initRequest.audioChannels = 1;
+        initRequest.bytesPerSample = 1;
+        initRequest.sampleRate = AUDIO_SAMPLE_PER_SEC;
+
+        initRequest.videoBitRate = 3200000;
+        initRequest.audioBitRate = 192000;
+        initRequest.audioSampleRate = AUDIO_SAMPLE_PER_SEC;
+        initRequest.videoCodec = "default";
+        initRequest.audioCodec = "default";
+        initRequest.videoPixelFormat = "default";
+        initRequest.videoPreset = "medium";
+
+        initRequest.metadata = NULL;
+
+        initRequest.numberOfChapters = 0;
+        initRequest.totalLengthInMicroseconds = 10000;
+        initRequest.chapters = NULL;
+
+        int encoderIndex = initEncoder(&initRequest);
+
+        double seconds = 0.0;
+        double frequency = 600.0;
+
+        for (int i = 0; i < 30 * 10; ++i) {
+            RenderFFMpegFrame frame;
+            int audioSamples = AUDIO_SAMPLE_PER_SEC / FPS;
+            frame.numberOfAudioSamples = audioSamples;
+            frame.audioData = new unsigned char[audioSamples];
+            
+            double sampleSeconds = seconds;
+            for (int i = 0; i < audioSamples; ++i) {
+                double sampleSecondChange = 1.0 / (FPS * audioSamples);
+                sampleSeconds += sampleSecondChange;
+                frame.audioData[i] = sin(sampleSeconds * frequency * 2.0 * M_PI) * 255 / 2 + 128;
+            }
+            
+            frame.imageData = new unsigned char[WIDTH * HEIGHT * 4];
+
+            for (int y = 0; y < HEIGHT; ++y) {
+                for (int x = 0; x < WIDTH; ++x) {
+                    frame.imageData[y * WIDTH * 4 + x * 4 + 0] = (unsigned char)(std::fabs(std::fmod(seconds * 0.1, 1.0)) * 255);
+                    frame.imageData[y * WIDTH * 4 + x * 4 + 1] = (unsigned char)(std::fabs(std::fmod(seconds * 0.1 - 0.5, 1.0)) * 255);
+                    frame.imageData[y * WIDTH * 4 + x * 4 + 2] = (unsigned char)(std::fabs(std::fmod(seconds * 0.1 + 0.3, 1.0)) * 255);
+                    frame.imageData[y * WIDTH * 4 + x * 4 + 3] = (unsigned char) 255;
+                }    
+            }
+
+            // draw a black + to left corner
+            for (int i = 0; i < 40; ++i) {
+                int y = 10 + i;
+                int x = 50;
+                frame.imageData[y * WIDTH * 4 + x * 4 + 0] = 0;
+                frame.imageData[y * WIDTH * 4 + x * 4 + 1] = 0;
+                frame.imageData[y * WIDTH * 4 + x * 4 + 2] = 0;
+            }
+            for (int i = 0; i < 40; ++i) {
+                int y = 30;
+                int x = 30 + i;
+                frame.imageData[y * WIDTH * 4 + x * 4 + 0] = 0;
+                frame.imageData[y * WIDTH * 4 + x * 4 + 1] = 0;
+                frame.imageData[y * WIDTH * 4 + x * 4 + 2] = 0;
+            }
+
+            FFmpegEncodeFrameRequest frameRequest;
+            frameRequest.encoderIndex = encoderIndex;
+            frameRequest.startFrameIndex = i;
+            frameRequest.frame = &frame;
+
+            encodeFrames(&frameRequest);
+
+            delete[] frameRequest.frame->imageData;
+            delete[] frameRequest.frame->audioData;
+            seconds += 1.0 / FPS;
+        }
+
+        FFmpegClearEncoderRequest clearRequest;
+        clearRequest.encoderIndex = encoderIndex;
+
+        clearEncoder(&clearRequest);
+
+}
+#endif

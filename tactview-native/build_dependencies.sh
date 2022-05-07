@@ -72,7 +72,7 @@ cd ..
 
 echo "Downloading FFmpeg"
 
-FFMPEG_VERSION=4.4
+FFMPEG_VERSION=5.0.1
 
 if [ ! -e ffmpeg-$FFMPEG_VERSION.tar.gz ]; then
   wget "http://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz"

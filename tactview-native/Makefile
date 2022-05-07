@@ -38,7 +38,7 @@ libgenericconvolutionmatrix.so : genericconvolutionmatrix.cpp $(COMMON_HEADERS)
 
 
 libffmpegmediadecoder.so : ffmpegmediadecoder.cpp $(COMMON_HEADERS)
-	$(CXX) $(CXXFLAGS)  -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
+	$(CXX) $(CXXFLAGS)  -w -shared -fPIC -Wl,-soname,libffmpegmediadecoder.so -o libffmpegmediadecoder.so ffmpegmediadecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale libavfilter` -lstdc++fs
 	cp libffmpegmediadecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 
@@ -48,7 +48,7 @@ libffmpegconinousimagequeryservice.so : ffmpegconinousimagequeryservice.cpp $(CO
 
 
 libavcodecaudiodecoder.so : avcodecaudiodecoder.cpp $(COMMON_HEADERS)
-	$(CXX) $(CXXFLAGS)  -w -shared -fPIC -Wl,-soname,libavcodecaudiodecoder.so -o libavcodecaudiodecoder.so avcodecaudiodecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale`
+	$(CXX) $(CXXFLAGS)  -w -shared -fPIC -Wl,-soname,libavcodecaudiodecoder.so -o libavcodecaudiodecoder.so avcodecaudiodecoder.cpp  `pkg-config --libs libavcodec libavformat libavutil libswscale libswresample`
 	cp libavcodecaudiodecoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 
@@ -88,7 +88,7 @@ libopencvrotate.so : opencvrotate.cpp $(COMMON_HEADERS)
 
 
 libffmpegmediaencoder.so : ffmpegmediaencoder.cpp $(COMMON_HEADERS)
-	g++ -w -shared -fPIC -Wl,-soname,libffmpegmediaencoder.so -o libffmpegmediaencoder.so ffmpegmediaencoder.cpp `pkg-config --libs libavcodec libavformat libavutil libswscale`
+	$(CXX) $(CXXFLAGS) -w -shared -fPIC -Wl,-soname,libffmpegmediaencoder.so -o libffmpegmediaencoder.so ffmpegmediaencoder.cpp `pkg-config --libs libavcodec libavformat libavutil libswscale libswresample`
 	cp libffmpegmediaencoder.so ../tactview-core/src/main/resources/linux-x86-64/.
 
 

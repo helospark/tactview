@@ -27,6 +27,7 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.message.DropCachesMessage;
+import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
@@ -42,6 +43,8 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private MediaCache mediaCache;
     private MessagingService messagingService;
     private MemoryOperations memoryOperations;
+
+    private boolean enableHardwareAcceleration = true;
 
     public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService, MemoryOperations memoryOperations) {
         this.implementation = implementation;
@@ -204,6 +207,8 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         ffmpegRequest.startMicroseconds = startTime.multiply(MICROSECONDS).longValue();
         ffmpegRequest.endTimeInMs = endTime.multiply(MICROSECONDS).longValue();
 
+        ffmpegRequest.useHardwareDecoding = enableHardwareAcceleration ? 1 : 0;
+
         ByteBuffer[] buffers = new ByteBuffer[numberOfFrames];
         ffmpegRequest.frames = new FFMpegFrame();
         LOGGER.debug("Requesting '{}' number of frames {} from {} to {}", filePath, numberOfFrames, startTime, endTime);
@@ -236,6 +241,11 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
     private void copyToResult(ByteBuffer result, ByteBuffer fromBuffer) {
         memoryOperations.copyBuffer(fromBuffer, result, fromBuffer.capacity());
+    }
+
+    @PreferenceValue(name = "Enable hardware acceleration", defaultValue = "true", group = "Performance")
+    public void setEnableHardwareAcceleration(boolean enableHardwareAcceleration) {
+        this.enableHardwareAcceleration = enableHardwareAcceleration;
     }
 
 }

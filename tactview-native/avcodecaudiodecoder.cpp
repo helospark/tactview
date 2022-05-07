@@ -56,7 +56,6 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
     }
 
     EXPORTED AVCodecAudioMetadataResponse readMetadata(const char* path) {
-        av_register_all();
 
         // get format from audio file
         AVFormatContext* format = avformat_alloc_context();
@@ -72,7 +71,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         // Find the index of the first audio stream
         int stream_index =- 1;
         for (int i=0; i<format->nb_streams; i++) {
-            if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+            if (format->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
                 stream_index = i;
                 break;
             }
@@ -83,16 +82,29 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         }
         AVStream* stream = format->streams[stream_index];
 
-        AVCodecContext* codec = stream->codec;
-        if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0) {
+        AVCodecParameters* codecParams = stream->codecpar;
+
+        AVCodecContext* pCodecCtx = NULL;
+        const AVCodec* pCodec = NULL;
+        if (!(pCodecCtx = avcodec_alloc_context3(pCodec))) {
+            ERROR("Cannot create codec context " << path);
+            return AVCodecAudioMetadataResponse();
+        }
+
+        if (avcodec_parameters_to_context(pCodecCtx, codecParams) < 0) {
+            ERROR("Cannot create codec context " << path);
+            return AVCodecAudioMetadataResponse();
+        }
+
+        if (avcodec_open2(pCodecCtx, avcodec_find_decoder(codecParams->codec_id), NULL) < 0) {
             ERROR("Failed to open decoder for stream " << stream_index << " in file " << path);
             return AVCodecAudioMetadataResponse();
         }
-        AVCodec* pCodec = avcodec_find_decoder(codec->codec_id);
+        int ret = av_find_best_stream(format, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0);
 
         AVCodecAudioMetadataResponse response;
 
-        AVSampleFormat sampleFormat = codec->sample_fmt;
+        AVSampleFormat sampleFormat = pCodecCtx->sample_fmt;
 
         long long durationInMicroseconds = format->duration / (AV_TIME_BASE / 1000000);
 
@@ -101,13 +113,13 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
             return AVCodecAudioMetadataResponse();
         }
 
-        response.channels = codec->channels;
-        response.sampleRate = codec->sample_rate;
+        response.channels = pCodecCtx->channels;
+        response.sampleRate = pCodecCtx->sample_rate;
         response.lengthInMicroseconds = durationInMicroseconds;
-        response.bitRate = codec->bit_rate;
+        response.bitRate = pCodecCtx->bit_rate;
         response.bytesPerSample = av_get_bytes_per_sample(sampleFormat);
 
-        avcodec_close(codec);
+        avcodec_close(pCodecCtx);
         avformat_free_context(format);
 
         return response;
@@ -132,10 +144,43 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         FFMpegFrame* channels;
     };
 
+
+    int receiveFrame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt) {
+        int ret = avcodec_receive_frame(avctx, frame);
+        if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
+            return ret;
+        if (ret >= 0)
+            *got_frame = 1;
+        return 0;
+    }
+
+    // From here: https://blogs.gentoo.org/lu_zero/2016/03/29/new-avcodec-api/
+    int decode_audio_frame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt)
+    {
+        int ret;
+
+        *got_frame = 0;
+
+        if (pkt) {
+            ret = avcodec_send_packet(avctx, pkt);
+            // In particular, we don't expect AVERROR(EAGAIN), because we read all
+            // decoded frames with avcodec_receive_frame() until done.
+            
+            if ( ret == AVERROR(EAGAIN)) {
+                receiveFrame(avctx, frame, got_frame, pkt);
+                return AVERROR(EAGAIN);
+            }
+            
+            if (ret < 0) {
+                return ret == AVERROR_EOF ? 0 : ret;
+            }
+        }
+
+        return receiveFrame(avctx, frame, got_frame, pkt);
+    }
+
     EXPORTED int readAudio(AVCodecAudioRequest* request) {
         //DEBUG("Audio size: " << request->bufferSize << " " << request->path << " " << request->startMicroseconds << " " << request->numberOfChannels);
-
-        av_register_all();
 
         // get format from audio file
         AVFormatContext* format = avformat_alloc_context();
@@ -151,7 +196,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         // Find the index of the first audio stream
         int stream_index =- 1;
         for (int i=0; i<format->nb_streams; i++) {
-            if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+            if (format->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
                 stream_index = i;
                 break;
             }
@@ -163,10 +208,19 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         }
         AVStream* stream = format->streams[stream_index];
 
-        // find & open codec
-        AVCodecContext* codec = stream->codec;
-        AVCodec* pCodec = avcodec_find_decoder(codec->codec_id);
-        if (avcodec_open2(codec, pCodec, NULL) < 0) {
+        AVCodecContext* codec = NULL;
+        const AVCodec* pCodec = NULL;
+        if (!(codec = avcodec_alloc_context3(pCodec))) {
+            ERROR("Cannot create codec context " << request->path);
+            return -1;
+        }
+
+        if (avcodec_parameters_to_context(codec, stream->codecpar) < 0) {
+            ERROR("Cannot create codec context " << request->path);
+            return -1;
+        }
+
+        if (avcodec_open2(codec, avcodec_find_decoder(stream->codecpar->codec_id), NULL) < 0) {
             ERROR("Failed to open decoder for stream " << stream_index << " in file " << request->path);
             return -1;
         }
@@ -259,7 +313,9 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
         while ((returnStatusCode=av_read_frame(format, &packet)) >= 0 && running) {
             if(packet.stream_index==stream_index) {
                 int gotFrame;
-                int readBytes = avcodec_decode_audio4(codec, frame, &gotFrame, &packet);
+                int readBytes;
+                // TODO: handle EAGAIN?
+                readBytes = decode_audio_frame(codec, frame, &gotFrame, &packet);
                 if (readBytes < 0) {
                     ERROR("Cannot decode package");
                     break;
@@ -336,7 +392,7 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
                   tmp_frame = NULL;
                 }
             }
-            av_free_packet(&packet);
+            av_packet_unref(&packet);
         }
 
         if (returnStatusCode < 0) {
@@ -365,32 +421,39 @@ const AVSampleFormat RESAMPLE_FORMAT = AV_SAMPLE_FMT_S32P;
 
 
 
-/**
+#ifdef DEBUG_BUILD
+
     int main() {
+        const char* PATH = "/opt/testvideo.mp4";
+        AVCodecAudioMetadataResponse metadata = readMetadata(PATH);
+        
+        INFO("bitRate=" << metadata.bitRate << " bps=" << metadata.bytesPerSample << " channels" << metadata.channels << " length=" << metadata.lengthInMicroseconds);
+        
         double* data = NULL;
         int size = 0;
         AVCodecAudioRequest request;
-        request.path = "/home/black/Documents/pic_tetris.mp4";
-        request.numberOfChannels = 2;
-        request.channels = new FFMpegFrame[2];
+        request.path = PATH;
+        request.numberOfChannels = metadata.channels;
+        request.channels = new FFMpegFrame[metadata.channels];
+        request.bytesPerSample = metadata.bytesPerSample;
+        request.sampleRate = metadata.sampleRate;
 
-        FFMpegFrame frame1;
-        frame1.data = new char[100000];
-        FFMpegFrame frame2;
-        frame2.data = new char[100000];
-
-        request.channels[0] = frame1;
-        request.channels[1] = frame2;
+        for (int i = 0; i < metadata.channels; ++i) {
+            FFMpegFrame frame;
+            frame.data = new char[100000];
+            request.channels[i] = frame;
+        }
         request.startMicroseconds = 0;
         request.bufferSize = 100000;
 
-        int readSamples = decode_audio_file(&request);
-        DEBUG(readSamples);
-        for (int i = 0; i < 50000; ++i) {
-         //   DEBUG((int)request.channels[1].data[i] << " ";
+        int readSamples = readAudio(&request);
+
+        INFO(readSamples);
+        for (int i = 0; i < 100000; ++i) {
+            std::cout << (int)request.channels[0].data[i] << " ";
         }
-        DEBUG(std::endl;
+        std::cout << std::endl;
     }
-    */
+#endif
 }
 

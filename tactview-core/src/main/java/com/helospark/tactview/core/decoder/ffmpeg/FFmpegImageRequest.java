@@ -18,8 +18,10 @@ public class FFmpegImageRequest extends Structure implements Structure.ByReferen
     public int actualNumberOfFramesRead;
     public long endTimeInMs;
 
+    public int useHardwareDecoding;
+
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("width", "height", "numberOfFrames", "useApproximatePosition", "startMicroseconds", "path", "frames", "actualNumberOfFramesRead", "endTimeInMs");
+        return Arrays.asList("width", "height", "numberOfFrames", "useApproximatePosition", "startMicroseconds", "path", "frames", "actualNumberOfFramesRead", "endTimeInMs", "useHardwareDecoding");
     }
 }
