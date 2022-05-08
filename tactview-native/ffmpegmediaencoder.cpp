@@ -475,7 +475,6 @@ extern "C" {
             /* compute destination number of samples */
             dst_nb_samples = av_rescale_rnd(swr_get_delay(ost->swr_ctx, c->sample_rate) + frame->nb_samples,
                                             c->sample_rate, c->sample_rate, AV_ROUND_UP);
-            av_assert0(dst_nb_samples == frame->nb_samples);
 
             /* when we pass a frame to the encoder, it may keep a reference to it
             * internally;
@@ -938,13 +937,13 @@ extern "C" {
 
 #ifdef DEBUG_BUILD
 int main() {
-        const int AUDIO_SAMPLE_PER_SEC = 8000;
+        const int AUDIO_SAMPLE_PER_SEC = 22050;
         const int WIDTH = 400;
         const int HEIGHT = 300;
         const int FPS = 30;
 
         FFmpegInitEncoderRequest initRequest;
-        initRequest.fileName = "/tmp/testout.mp4";
+        initRequest.fileName = "/tmp/testout.webm";
         initRequest.actualWidth = WIDTH;
         initRequest.actualHeight = HEIGHT;
         initRequest.renderWidth = WIDTH;

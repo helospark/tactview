@@ -326,7 +326,6 @@ extern "C" {
             return mediaMetadata;
         }
 
-        pCodecCtx = avcodec_alloc_context3(pCodec);
 
 
         AVPixelFormat hw_pix_fmt = getPixelFormatAndSetCallback(pCodecCtx, hwDeviceType, pCodec);
@@ -435,8 +434,8 @@ extern "C" {
     void freeFrame(AVFrame* frame)
     {
         // DEBUG("Preparing to free " << frame << " " << frame->opaque);
-        //av_free(frame->opaque);
-        //av_frame_free(&frame);
+        av_free(frame->opaque);
+        av_frame_free(&frame);
     }
 
     DecodeStructure* openFile(FFmpegImageRequest* request);
@@ -863,12 +862,12 @@ extern "C" {
                 }
                 else if (time < end_target)
                 {
-                    //copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
-                    //request->frames[i].startTimeInMs = time;
+                    copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
+                    request->frames[i].startTimeInMs = time;
                    // std::cout << "########### reading: " << i << " " << time << " " << element.timestamp << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
                     ++i;
                 } else {
-                    /*
+                   // std::cout << "End reading " << time << std::endl;
                     if (decodeStructure->decodedPackages.size() == 0) {
                         //  fillQueue(decodeStructure);
                     }
@@ -880,7 +879,7 @@ extern "C" {
                         request->endTimeInMs = nextFrameTime;
                         ++i;
                     }
-                    */
+
                     break;
                 }
                 decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
@@ -1054,10 +1053,10 @@ static void ppm_save(unsigned char* buf, int wrap, int xsize, int ysize, char* f
 }
 
 
-//#ifdef DEBUG_BUILD
+#ifdef DEBUG_BUILD
 
 int main() {
-    char* path = "/home/black/Videos/tactview_samples/20051210-w50s.flv";
+    char* path = "/tmp/tactview_render_test.wmv";
 
     MediaMetadata result = readMediaMetadata(path);
 
@@ -1065,8 +1064,8 @@ int main() {
 
     const int framesPerRequest = 30;
 
-    const int outWidth = 400;
-    const int outHeight = 300;
+    const int outWidth = 360;
+    const int outHeight = 288;
 
     long long start = time(NULL);
     long startTime = 0;
@@ -1122,6 +1121,6 @@ int main() {
     std::cout << ((double)framesRead / took) << " fps; took: " << took << " seconds" << std::endl;
 
 }
-//#endif
+#endif
 
 }
