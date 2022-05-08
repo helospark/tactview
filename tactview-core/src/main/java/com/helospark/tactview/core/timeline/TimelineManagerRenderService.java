@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import static com.helospark.tactview.core.util.async.ExceptionLoggerDecorator.withExceptionLogging;
+
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -88,64 +90,71 @@ public class TimelineManagerRenderService {
                 if (clip instanceof VisualTimelineClip && request.isNeedVideo()) { // TODO: rest later
                     VisualTimelineClip visualClip = (VisualTimelineClip) clip;
 
-                    futures.add(CompletableFuture.supplyAsync(() -> {
-                        Map<String, ReadOnlyClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
-                                .stream()
-                                .filter(a -> clipsToFrames.containsKey(a))
-                                .map(a -> clipsToFrames.get(a))
-                                .collect(Collectors.toMap(a -> a.id, a -> a.clipFrameResult));
-                        Map<String, ReadOnlyClipImage> channelCopiedClips = visualClip.getChannelDependency(request.getPosition())
-                                .stream()
-                                .flatMap(channelId -> timelineManagerAccessor.findChannelWithId(channelId).stream())
-                                .flatMap(channel -> channel.getDataAt(request.getPosition()).stream())
-                                .filter(a -> clipsToFrames.containsKey(a.getId()))
-                                .map(a -> clipsToFrames.get(a.getId()))
-                                .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult, (a, b) -> a, HashMap::new));
-
+                    futures.add(CompletableFuture.supplyAsync(withExceptionLogging(() -> {
                         ReadOnlyClipImage adjustmentImage = null;
-                        if (clip instanceof AdjustmentLayerProceduralClip) {
-                            Map<String, RenderFrameData> framesBelow = new TreeMap<>();
-                            int startChannel = timelineManagerAccessor.findChannelIndexForClipId(visualClip.getId()).get() + 1;
+                        ReadOnlyClipImage frameResult = null;
+                        ReadOnlyClipImage expandedFrame = null;
+                        try {
+                            Map<String, ReadOnlyClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
+                                    .stream()
+                                    .filter(a -> clipsToFrames.containsKey(a))
+                                    .map(a -> clipsToFrames.get(a))
+                                    .collect(Collectors.toMap(a -> a.id, a -> a.clipFrameResult));
+                            Map<String, ReadOnlyClipImage> channelCopiedClips = visualClip.getChannelDependency(request.getPosition())
+                                    .stream()
+                                    .flatMap(channelId -> timelineManagerAccessor.findChannelWithId(channelId).stream())
+                                    .flatMap(channel -> channel.getDataAt(request.getPosition()).stream())
+                                    .filter(a -> clipsToFrames.containsKey(a.getId()))
+                                    .map(a -> clipsToFrames.get(a.getId()))
+                                    .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult, (a, b) -> a, HashMap::new));
 
-                            for (int k = startChannel; k < timelineManager.channels.size(); ++k) {
-                                Optional<TimelineClip> clipAtChannel = timelineManager.channels.get(k).getDataAt(request.getPosition());
-                                if (clipAtChannel.isPresent()) {
-                                    String clipId = clipAtChannel.get().getId();
-                                    framesBelow.put(clipId, clipsToFrames.get(clipId));
+                            if (clip instanceof AdjustmentLayerProceduralClip) {
+                                Map<String, RenderFrameData> framesBelow = new TreeMap<>();
+                                int startChannel = timelineManagerAccessor.findChannelIndexForClipId(visualClip.getId()).get() + 1;
+
+                                for (int k = startChannel; k < timelineManager.channels.size(); ++k) {
+                                    Optional<TimelineClip> clipAtChannel = timelineManager.channels.get(k).getDataAt(request.getPosition());
+                                    if (clipAtChannel.isPresent()) {
+                                        String clipId = clipAtChannel.get().getId();
+                                        framesBelow.put(clipId, clipsToFrames.get(clipId));
+                                    }
                                 }
+
+                                adjustmentImage = renderBelowLayers(request, renderOrder, framesBelow);
+                                channelCopiedClips.put(AdjustmentLayerProceduralClip.LAYER_ID, adjustmentImage);
                             }
 
-                            adjustmentImage = renderBelowLayers(request, renderOrder, framesBelow);
-                            channelCopiedClips.put(AdjustmentLayerProceduralClip.LAYER_ID, adjustmentImage);
+                            GetFrameRequest frameRequest = GetFrameRequest.builder()
+                                    .withScale(request.getScale())
+                                    .withPosition(request.getPosition())
+                                    .withExpectedWidth(request.getPreviewWidth())
+                                    .withExpectedHeight(request.getPreviewHeight())
+                                    .withApplyEffects(request.isEffectsEnabled())
+                                    .withRequestedClips(requiredClips)
+                                    .withRequestedChannelClips(channelCopiedClips)
+                                    .withLowResolutionPreview(request.isLowResolutionPreview())
+                                    .withLivePlayback(request.isLivePlayback())
+                                    .build();
+
+                            frameResult = visualClip.getFrame(frameRequest);
+                            expandedFrame = expandFrame(request, visualClip, frameResult, clipToExpandedPosition);
+
+                            BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
+                            double alpha = visualClip.getAlpha(request.getPosition());
+
+                            String channelId = timelineManagerAccessor.findChannelForClipId(visualClip.getId()).get().getId();
+                            return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame,
+                                    clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class),
+                                    channelId);
+                        } finally {
+                            if (frameResult != null) {
+                                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
+                            }
+                            if (adjustmentImage != null) {
+                                GlobalMemoryManagerAccessor.memoryManager.returnBuffer(adjustmentImage.getBuffer());
+                            }
                         }
-
-                        GetFrameRequest frameRequest = GetFrameRequest.builder()
-                                .withScale(request.getScale())
-                                .withPosition(request.getPosition())
-                                .withExpectedWidth(request.getPreviewWidth())
-                                .withExpectedHeight(request.getPreviewHeight())
-                                .withApplyEffects(request.isEffectsEnabled())
-                                .withRequestedClips(requiredClips)
-                                .withRequestedChannelClips(channelCopiedClips)
-                                .withLowResolutionPreview(request.isLowResolutionPreview())
-                                .build();
-
-                        ReadOnlyClipImage frameResult = visualClip.getFrame(frameRequest);
-                        ReadOnlyClipImage expandedFrame = expandFrame(request, visualClip, frameResult, clipToExpandedPosition);
-
-                        BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
-                        double alpha = visualClip.getAlpha(request.getPosition());
-
-                        GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frameResult.getBuffer());
-                        if (adjustmentImage != null) {
-                            GlobalMemoryManagerAccessor.memoryManager.returnBuffer(adjustmentImage.getBuffer());
-                        }
-
-                        String channelId = timelineManagerAccessor.findChannelForClipId(visualClip.getId()).get().getId();
-                        return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame,
-                                clip.getEffectsAtGlobalPosition(request.getPosition(), AbstractVideoTransitionEffect.class),
-                                channelId);
-                    }, executorService).thenAccept(a -> {
+                    }), executorService).thenAccept(a -> {
                         clipsToFrames.put(visualClip.getId(), a);
                     }).exceptionally(e -> {
                         logger.error("Unable to render", e);
@@ -154,7 +163,7 @@ public class TimelineManagerRenderService {
                 } else if (clip instanceof AudibleTimelineClip && request.isNeedSound()) {
                     AudibleTimelineClip audibleClip = (AudibleTimelineClip) clip;
 
-                    futures.add(CompletableFuture.supplyAsync(() -> {
+                    futures.add(CompletableFuture.supplyAsync(withExceptionLogging(() -> {
                         int sampleRateToUse = request.getAudioSampleRate().orElse(projectRepository.getSampleRate());
                         int bytesPerSampleToUse = request.getAudioBytesPerSample().orElse(projectRepository.getBytesPerSample());
                         int numberOfChannels = request.getNumberOfChannels().orElse(projectRepository.getNumberOfChannels());
@@ -171,7 +180,7 @@ public class TimelineManagerRenderService {
 
                         return audibleClip.requestAudioFrame(audioRequest);
 
-                    }, executorService).exceptionally(e -> {
+                    }), executorService).exceptionally(e -> {
                         logger.error("Unable to get audio", e);
                         return null;
                     }).thenAccept(a -> {

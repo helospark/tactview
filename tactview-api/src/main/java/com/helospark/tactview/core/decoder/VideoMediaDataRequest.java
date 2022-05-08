@@ -19,6 +19,8 @@ public class VideoMediaDataRequest {
     private int width;
     private int height;
 
+    private boolean avoidPrefetch;
+
     @Generated("SparkTools")
     private VideoMediaDataRequest(Builder builder) {
         this.filePath = builder.filePath;
@@ -29,6 +31,7 @@ public class VideoMediaDataRequest {
         this.useApproximatePosition = builder.useApproximatePosition;
         this.width = builder.width;
         this.height = builder.height;
+        this.avoidPrefetch = builder.avoidPrefetch;
     }
 
     @Generated("SparkTools")
@@ -71,17 +74,38 @@ public class VideoMediaDataRequest {
         return useApproximatePosition;
     }
 
+    public boolean isAvoidPrefetch() {
+        return avoidPrefetch;
+    }
+
     @Override
     public String toString() {
         return "VideoMediaDataRequest [filePath=" + filePath + ", metadata=" + metadata + ", start=" + start + ", length=" + length + ", shouldRescale=" + shouldRescale + ", useApproximatePosition="
-                + useApproximatePosition + ", width=" + width + ", height=" + height + "]";
+                + useApproximatePosition + ", width=" + width + ", height=" + height + ", avoidPrefetch=" + avoidPrefetch + "]";
     }
 
+    /**
+     * Creates builder to build {@link VideoMediaDataRequest}.
+     * @return created builder
+     */
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Creates a builder to build {@link VideoMediaDataRequest} and initialize it with the given object.
+     * @param videoMediaDataRequest to initialize the builder with
+     * @return created builder
+     */
+    @Generated("SparkTools")
+    public static Builder builderFrom(VideoMediaDataRequest videoMediaDataRequest) {
+        return new Builder(videoMediaDataRequest);
+    }
+
+    /**
+     * Builder to build {@link VideoMediaDataRequest}.
+     */
     @Generated("SparkTools")
     public static final class Builder {
         private String filePath;
@@ -92,8 +116,21 @@ public class VideoMediaDataRequest {
         private boolean useApproximatePosition;
         private int width;
         private int height;
+        private boolean avoidPrefetch;
 
         private Builder() {
+        }
+
+        private Builder(VideoMediaDataRequest videoMediaDataRequest) {
+            this.filePath = videoMediaDataRequest.filePath;
+            this.metadata = videoMediaDataRequest.metadata;
+            this.start = videoMediaDataRequest.start;
+            this.length = videoMediaDataRequest.length;
+            this.shouldRescale = videoMediaDataRequest.shouldRescale;
+            this.useApproximatePosition = videoMediaDataRequest.useApproximatePosition;
+            this.width = videoMediaDataRequest.width;
+            this.height = videoMediaDataRequest.height;
+            this.avoidPrefetch = videoMediaDataRequest.avoidPrefetch;
         }
 
         public Builder withFilePath(String filePath) {
@@ -133,6 +170,11 @@ public class VideoMediaDataRequest {
 
         public Builder withHeight(int height) {
             this.height = height;
+            return this;
+        }
+
+        public Builder withAvoidPrefetch(boolean avoidPrefetch) {
+            this.avoidPrefetch = avoidPrefetch;
             return this;
         }
 

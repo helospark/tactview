@@ -10,6 +10,7 @@ public class VideoMetadata extends VisualMediaMetadata {
     protected double fps;
     protected int bitRate;
     protected double rotation;
+    protected boolean hwDecodingSupported; // Not ideal that this leaks here
 
     @Generated("SparkTools")
     private VideoMetadata(Builder builder) {
@@ -20,6 +21,7 @@ public class VideoMetadata extends VisualMediaMetadata {
         this.fps = builder.fps;
         this.bitRate = builder.bitRate;
         this.rotation = builder.rotation;
+        this.hwDecodingSupported = builder.hwDecodingSupported;
     }
 
     protected VideoMetadata() {
@@ -38,6 +40,10 @@ public class VideoMetadata extends VisualMediaMetadata {
         return rotation;
     }
 
+    public boolean isHwDecodingSupported() {
+        return hwDecodingSupported;
+    }
+
     @Override
     public TimelineLength getLength() {
         return length;
@@ -53,14 +59,22 @@ public class VideoMetadata extends VisualMediaMetadata {
 
     @Override
     public String toString() {
-        return "VideoMetadata [fps=" + fps + ", bitRate=" + bitRate + ", width=" + width + ", height=" + height + ", resizable=" + resizable + ", length=" + length + ", rotation=" + rotation + "]";
+        return "VideoMetadata [fps=" + fps + ", bitRate=" + bitRate + ", width=" + width + ", height=" + height + ", resizable=" + resizable + ", length=" + length + ", rotation=" + rotation
+                + ", hwDecodingSupported=" + hwDecodingSupported + "]";
     }
 
+    /**
+     * Creates builder to build {@link VideoMetadata}.
+     * @return created builder
+     */
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Builder to build {@link VideoMetadata}.
+     */
     @Generated("SparkTools")
     public static final class Builder {
         private TimelineLength length;
@@ -70,6 +84,7 @@ public class VideoMetadata extends VisualMediaMetadata {
         private double fps;
         private int bitRate;
         private double rotation;
+        private boolean hwDecodingSupported;
 
         private Builder() {
         }
@@ -99,13 +114,18 @@ public class VideoMetadata extends VisualMediaMetadata {
             return this;
         }
 
+        public Builder withBitRate(int bitRate) {
+            this.bitRate = bitRate;
+            return this;
+        }
+
         public Builder withRotation(double rotation) {
             this.rotation = rotation;
             return this;
         }
 
-        public Builder withBitRate(int bitRate) {
-            this.bitRate = bitRate;
+        public Builder withHwDecodingSupported(boolean hwDecodingSupported) {
+            this.hwDecodingSupported = hwDecodingSupported;
             return this;
         }
 

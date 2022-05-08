@@ -6,7 +6,12 @@ import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
@@ -18,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.Striped;
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VideoMetadata;
@@ -29,6 +35,7 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.util.cacheable.Cacheable;
 import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
@@ -39,18 +46,23 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private static final BigDecimal MICROSECONDS = new BigDecimal("1000000");
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedMediaDecoderDecorator.class);
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
+    private Map<PrefetchCacheKey, CompletableFuture<Void>> readFutures = new ConcurrentHashMap<>();
     private FFmpegBasedMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MessagingService messagingService;
     private MemoryOperations memoryOperations;
+    private ScheduledExecutorService prefetchExecutor;
 
     private boolean enableHardwareAcceleration = true;
+    private boolean enableVideoPrefetch = true;
 
-    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService, MemoryOperations memoryOperations) {
+    public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService, MemoryOperations memoryOperations,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService prefetchExecutor) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.messagingService = messagingService;
         this.memoryOperations = memoryOperations;
+        this.prefetchExecutor = prefetchExecutor;
     }
 
     @PostConstruct
@@ -72,6 +84,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
                 .withBitRate(result.bitRate)
                 .withLength(TimelineLength.ofMicroseconds(result.lengthInMicroseconds))
                 .withRotation(result.rotationAngle)
+                .withHwDecodingSupported(result.hwDecodingSupported != 0)
                 .build();
 
         System.out.println("Video metadata read: " + resultMetadata);
@@ -86,8 +99,36 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         BigDecimal frameNeeded = request.getStart().getSeconds();
         BigDecimal readStart = request.getStart().getSeconds().divideToIntegralValue(chunkSize).multiply(chunkSize);
         BigDecimal readEnd = readStart.add(chunkSize);
+        String computeFutureCacheKey = createHashKey(request.getFilePath(), request);
+
+        boolean enablePrefetch = enableVideoPrefetch && !request.useApproximatePosition() && !request.isAvoidPrefetch();
+
+        if (enablePrefetch) {
+            if (readFutures.size() < 5) {
+                schedulePrefetchJobIfNeeded(request, computeFutureCacheKey, readStart, chunkSize);
+            } else {
+                LOGGER.warn("Too many prefetching is in-progress, skipping prefetch: {}", readFutures.size());
+            }
+        }
 
         Optional<ByteBuffer> framesFromCache = findInCacheAndClone(request, frameNeeded, request.getFilePath());
+        if (framesFromCache.isPresent()) {
+            return new MediaDataResponse(framesFromCache.get());
+        }
+
+        if (enablePrefetch) {
+            Optional<CompletableFuture<Void>> futureCache = findInFuture(computeFutureCacheKey, request.getStart().getSeconds());
+            if (futureCache.isPresent()) {
+                try {
+                    LOGGER.debug("Found future at {}", request.getStart().getSeconds());
+                    futureCache.get().get(1000, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    LOGGER.error("Unable to prefetch frames for {}", request, e);
+                }
+            }
+        }
+        // Possible loaded above from futures
+        framesFromCache = findInCacheAndClone(request, frameNeeded, request.getFilePath());
         if (framesFromCache.isPresent()) {
             return new MediaDataResponse(framesFromCache.get());
         }
@@ -103,11 +144,57 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         } catch (InterruptedException e) {
             e.printStackTrace(); // previous thread stuck?
         }
+
         try {
             return readFramesInternal(request, readStart, readEnd, frameNeeded);
         } finally {
             lock.unlock();
         }
+    }
+
+    private void schedulePrefetchJobIfNeeded(VideoMediaDataRequest request, String cacheKey, BigDecimal readStart, BigDecimal chunkSize) {
+        BigDecimal nextChunkPosition = readStart.add(chunkSize);
+        Optional<MediaDataFrame> found = mediaCache.findInCache(createHashKey(request.getFilePath(), request), nextChunkPosition);
+        Optional<CompletableFuture<Void>> readFuture = findInFuture(cacheKey, request.getStart().getSeconds());
+        if (found.isEmpty() && readFuture.isEmpty()) {
+            PrefetchCacheKey prefetchKey = new PrefetchCacheKey();
+            prefetchKey.fileCache = cacheKey;
+            prefetchKey.startTime = nextChunkPosition;
+            prefetchKey.endTime = nextChunkPosition.add(chunkSize);
+            LOGGER.debug("Prefetching video at {} due to read at {}", nextChunkPosition, request.getStart().getSeconds());
+
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    LOGGER.debug("Started working for {}", prefetchKey);
+                    Optional<MediaDataFrame> found2 = mediaCache.findInCache(createHashKey(request.getFilePath(), request), nextChunkPosition);
+                    Optional<CompletableFuture<Void>> readFuture2 = findInFuture(cacheKey, request.getStart().getSeconds());
+                    if (found2.isEmpty() && readFuture2.isEmpty()) {
+                        VideoMediaDataRequest newRequest = VideoMediaDataRequest.builderFrom(request)
+                                .withAvoidPrefetch(true)
+                                .withStart(new TimelinePosition(nextChunkPosition))
+                                .build();
+
+                        MediaDataResponse result = readFrames(newRequest);
+
+                        GlobalMemoryManagerAccessor.memoryManager.returnBuffers(result.getFrames()); // TODO: it could be optimized to avoid cloning
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Unable to prefetch frames at {}", prefetchKey, e);
+                }
+                LOGGER.debug("Finished working for {}, removing key", prefetchKey);
+                readFutures.remove(prefetchKey);
+            }, prefetchExecutor);
+            readFutures.put(prefetchKey, future);
+        }
+    }
+
+    private Optional<CompletableFuture<Void>> findInFuture(String cacheKey, BigDecimal seconds) {
+        return readFutures.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().fileCache.equals(cacheKey))
+                .filter(entry -> seconds.compareTo(entry.getKey().startTime) >= 0 && seconds.compareTo(entry.getKey().endTime) <= 0)
+                .map(entry -> entry.getValue())
+                .findFirst();
     }
 
     // simple logic for now to determine how many frames to cache
@@ -195,7 +282,8 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private MediaHashValue readFromFile(VideoMediaDataRequest request, BigDecimal startTime, BigDecimal endTime, String filePath) {
         FFmpegImageRequest ffmpegRequest = new FFmpegImageRequest();
 
-        BigDecimal fps = new BigDecimal(((VideoMetadata) request.getMetadata()).getFps());
+        VideoMetadata videoMetadata = (VideoMetadata) request.getMetadata();
+        BigDecimal fps = new BigDecimal(videoMetadata.getFps());
         int numberOfFrames = endTime.subtract(startTime).multiply(fps).intValue() + 5;
 
         ffmpegRequest.numberOfFrames = numberOfFrames;
@@ -207,7 +295,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         ffmpegRequest.startMicroseconds = startTime.multiply(MICROSECONDS).longValue();
         ffmpegRequest.endTimeInMs = endTime.multiply(MICROSECONDS).longValue();
 
-        ffmpegRequest.useHardwareDecoding = enableHardwareAcceleration ? 1 : 0;
+        ffmpegRequest.useHardwareDecoding = videoMetadata.isHwDecodingSupported() && enableHardwareAcceleration ? 1 : 0;
 
         ByteBuffer[] buffers = new ByteBuffer[numberOfFrames];
         ffmpegRequest.frames = new FFMpegFrame();
@@ -246,6 +334,40 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     @PreferenceValue(name = "Enable hardware acceleration", defaultValue = "true", group = "Performance")
     public void setEnableHardwareAcceleration(boolean enableHardwareAcceleration) {
         this.enableHardwareAcceleration = enableHardwareAcceleration;
+    }
+
+    @PreferenceValue(name = "Enable video prefetch", defaultValue = "true", group = "Performance")
+    public void setEnableVideoPrefetch(boolean enableVideoPrefetch) {
+        this.enableVideoPrefetch = enableVideoPrefetch;
+    }
+
+    static class PrefetchCacheKey {
+        String fileCache;
+        BigDecimal startTime;
+        BigDecimal endTime;
+
+        @Override
+        public String toString() {
+            return "PrefetchCacheKey [fileCache=" + fileCache + ", startTime=" + startTime + ", endTime=" + endTime + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(endTime, fileCache, startTime);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            PrefetchCacheKey other = (PrefetchCacheKey) obj;
+            return Objects.equals(endTime, other.endTime) && Objects.equals(fileCache, other.fileCache) && Objects.equals(startTime, other.startTime);
+        }
+
     }
 
 }

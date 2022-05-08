@@ -12,10 +12,11 @@ public class FFmpegResult extends Structure implements Structure.ByValue {
     public int bitRate;
     public long lengthInMicroseconds;
     public double rotationAngle;
+    public int hwDecodingSupported;
 
     @Override
     protected List<String> getFieldOrder() {
-        return Arrays.asList("fps", "width", "height", "bitRate", "lengthInMicroseconds", "rotationAngle");
+        return Arrays.asList("fps", "width", "height", "bitRate", "lengthInMicroseconds", "rotationAngle", "hwDecodingSupported");
     }
 
 }

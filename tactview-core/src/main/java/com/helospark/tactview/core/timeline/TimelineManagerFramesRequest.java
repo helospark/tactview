@@ -10,6 +10,7 @@ public class TimelineManagerFramesRequest {
     private boolean needVideo;
     private boolean effectsEnabled;
     private boolean lowResolutionPreview;
+    private boolean isLivePlayback;
     private Integer previewWidth;
     private Integer previewHeight;
     private TimelinePosition position;
@@ -32,6 +33,7 @@ public class TimelineManagerFramesRequest {
         this.audioSampleRate = builder.audioSampleRate;
         this.audioBytesPerSample = builder.audioBytesPerSample;
         this.numberOfChannels = builder.numberOfChannels;
+        this.isLivePlayback = builder.isLivePlayback;
     }
 
     public boolean isNeedSound() {
@@ -48,6 +50,10 @@ public class TimelineManagerFramesRequest {
 
     public boolean isLowResolutionPreview() {
         return lowResolutionPreview;
+    }
+
+    public boolean isLivePlayback() {
+        return isLivePlayback;
     }
 
     public double getScale() {
@@ -94,6 +100,7 @@ public class TimelineManagerFramesRequest {
         private boolean needVideo = true;
         private boolean effectsEnabled = true;
         private boolean lowResolutionPreview = false;
+        private boolean isLivePlayback = false;
         private Integer previewWidth;
         private Integer previewHeight;
         private TimelinePosition position;
@@ -112,6 +119,11 @@ public class TimelineManagerFramesRequest {
 
         public Builder withNeedSound(boolean needSound) {
             this.needSound = needSound;
+            return this;
+        }
+
+        public Builder withLivePlayback(boolean livePlayback) {
+            this.isLivePlayback = livePlayback;
             return this;
         }
 

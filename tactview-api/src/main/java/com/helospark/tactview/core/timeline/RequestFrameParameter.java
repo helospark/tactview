@@ -6,6 +6,7 @@ public class RequestFrameParameter {
     private int height;
     private boolean useApproximatePosition;
     private boolean lowResolutionPreview;
+    private boolean isLivePlayback;
     private double scale;
 
     private RequestFrameParameter(Builder builder) {
@@ -15,6 +16,7 @@ public class RequestFrameParameter {
         this.useApproximatePosition = builder.useApproximatePosition;
         this.lowResolutionPreview = builder.lowResolutionPreview;
         this.scale = builder.scale;
+        this.isLivePlayback = builder.isLivePlayback;
     }
 
     public TimelinePosition getPosition() {
@@ -27,6 +29,10 @@ public class RequestFrameParameter {
 
     public int getHeight() {
         return height;
+    }
+
+    public boolean isLivePlayback() {
+        return isLivePlayback;
     }
 
     public boolean useApproximatePosition() {
@@ -51,7 +57,9 @@ public class RequestFrameParameter {
         private int height;
         private boolean useApproximatePosition;
         private boolean lowResolutionPreview;
+        private boolean isLivePlayback;
         private double scale;
+
         private Builder() {
         }
 
@@ -77,6 +85,11 @@ public class RequestFrameParameter {
 
         public Builder withLowResolutionPreview(boolean lowResolutionPreview) {
             this.lowResolutionPreview = lowResolutionPreview;
+            return this;
+        }
+
+        public Builder withLivePlayback(boolean isLivePlayback) {
+            this.isLivePlayback = isLivePlayback;
             return this;
         }
 

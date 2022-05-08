@@ -279,11 +279,12 @@ public class MemoryManagerImpl implements MemoryManager {
 
     private void clearBuffer(ByteBuffer buffer) {
         if (buffer.capacity() % 8 == 0) {
+            buffer.position(0);
             LongBuffer longBuffer = buffer.asLongBuffer();
-            longBuffer.position(0);
             for (int i = 0; i < buffer.capacity() / 8; ++i) {
                 longBuffer.put(0L);
             }
+            buffer.position(0);
             longBuffer.position(0);
         } else {
             for (int i = 0; i < buffer.capacity(); ++i) {

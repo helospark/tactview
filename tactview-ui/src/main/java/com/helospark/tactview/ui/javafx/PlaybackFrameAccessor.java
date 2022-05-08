@@ -53,12 +53,12 @@ public class PlaybackFrameAccessor {
         this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
     }
 
-    public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position, Optional<FrameSize> frameSize) {
-        ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(position, true, frameSize);
+    public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position, Optional<FrameSize> frameSize, boolean livePlayback) {
+        ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(position, true, frameSize, livePlayback);
 
         ImageWithExpandedFramePositions result;
         if (uiPlaybackPreferenceRepository.isHalfEffect()) {
-            ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(position, false, frameSize);
+            ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(position, false, frameSize, livePlayback);
             Image sharedImageResult = mergeImages(imageWithEffects.image, javafxImageWithoutEffects.image);
             result = new ImageWithExpandedFramePositions(sharedImageResult, imageWithEffects.clipRectangle);
         } else {
@@ -88,7 +88,7 @@ public class PlaybackFrameAccessor {
         return result;
     }
 
-    private ImageWithExpandedFramePositions getImageWithEffectEnabled(TimelinePosition position, boolean enableEffect, Optional<FrameSize> frameSize) {
+    private ImageWithExpandedFramePositions getImageWithEffectEnabled(TimelinePosition position, boolean enableEffect, Optional<FrameSize> frameSize, boolean livePlayback) {
         Integer width = frameSize.map(size -> (int) size.width).orElse(uiProjectRepository.getPreviewWidth());
         Integer height = frameSize.map(size -> (int) size.height).orElse(uiProjectRepository.getPreviewHeight());
         double scale = frameSize.map(size -> size.scale).orElse(uiProjectRepository.getScaleFactor());
@@ -101,6 +101,7 @@ public class PlaybackFrameAccessor {
                 .withNeedVideo(true)
                 .withLowResolutionPreview(true)
                 .withEffectsEnabled(enableEffect)
+                .withLivePlayback(livePlayback)
                 .build();
         TimelineRenderResult renderResult = timelineManager.getFrame(request);
         AudioVideoFragment frame = renderResult.getAudioVideoFragment();

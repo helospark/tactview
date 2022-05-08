@@ -183,7 +183,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             if (cachedKey != null) {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             } else {
-                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize());
+                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize(), true);
             }
 
             numberOfDroppedFrames = 0;
@@ -214,7 +214,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         } else {
             Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
             if (cachedKey == null) {
-                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize());
+                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize(), true);
             } else {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             }
@@ -316,7 +316,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                     if (recentlyDroppedFrames.contains(nextFrameTime)) {
                         return null; // result is ignored, we dropped this frame
                     } else {
-                        return playbackFrameAccessor.getVideoFrameAt(nextFrameTime, getFrameSize());
+                        return playbackFrameAccessor.getVideoFrameAt(nextFrameTime, getFrameSize(), true);
                     }
                 });
                 framecache.put(nextFrameTime, task);

@@ -89,6 +89,7 @@ public class VideoClip extends VisualTimelineClip {
                 .withMetadata(metadataToUse)
                 .withStart(frameRequest.getPosition())
                 .withUseApproximatePosition(frameRequest.useApproximatePosition())
+                .withAvoidPrefetch(!frameRequest.isLivePlayback())
                 .build();
         ByteBuffer frame = mediaSourceToUse.decoder.readFrames(request)
                 .getFrame();

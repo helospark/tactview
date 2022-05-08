@@ -103,6 +103,7 @@ extern "C" {
         int bitRate;
         long long lengthInMicroseconds;
         double rotationAngle;
+        int hwDecodingSupported;
     };
 
     AVRational findFramerate(AVStream* st) {
@@ -133,6 +134,136 @@ extern "C" {
         return theta;
     }
 
+        static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
+                                            const enum AVPixelFormat *pix_fmts)
+    {
+        const enum AVPixelFormat *p;
+
+        DecodeStructure* decodeStructure = (DecodeStructure*)ctx->opaque;
+
+        for (p = pix_fmts; *p != -1; p++) {
+            if (*p == decodeStructure->hw_pix_fmt)
+                return *p;
+        }
+
+        ERROR("Failed to get HW surface format.");
+        return AV_PIX_FMT_NONE;
+    }
+
+    struct HwDeviceDescriptor {
+        AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
+        const char* deviceTypeString = NULL;
+        std::string deviceString;
+        std::string driver;
+    };
+
+    static std::string getDriverForVaapi(std::string file) {
+        std::string line;
+        std::string filename = file + "/device/uevent";
+
+        std::ifstream input_file(filename);
+        if (!input_file.is_open()) {
+            WARN("Cannot open " << filename.c_str());
+            return std::string();
+        }
+
+        while (std::getline(input_file, line)){
+            if (line.find("DRIVER=") != std::string::npos) {
+                return line.replace(line.find("DRIVER="), 7, "");
+            }
+        }
+        return "";
+    }
+
+    static std::vector<HwDeviceDescriptor> getHwDescriptors() {
+        std::vector<HwDeviceDescriptor> hwDevices;
+
+        // vaapi
+        std::string path = "/sys/class/drm";
+        if (std::experimental::filesystem::is_directory(path)) {
+            for (const auto & entry : std::experimental::filesystem::directory_iterator(path)) {
+                const std::string path = entry.path().string();
+                std::size_t renderIndex = path.find("renderD");
+                if (path.find("renderD") != std::string::npos) {
+                    std::string driver = getDriverForVaapi(path);
+                    if (driver != "") {
+                        HwDeviceDescriptor device = HwDeviceDescriptor();
+                        device.type = AV_HWDEVICE_TYPE_VAAPI;
+                        device.deviceTypeString = "vaapi";
+                        device.deviceString = (std::string("/dev/dri/") + path.substr(renderIndex, 10));
+                        device.driver = std::string(driver);
+                        hwDevices.push_back(device);
+                    }
+                }
+            }
+        }
+        return hwDevices;
+    }
+
+    static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
+    {
+        int err = 0;
+
+        std::vector<HwDeviceDescriptor> desciptors = getHwDescriptors();
+
+        for (int i = 0; i < desciptors.size(); ++i) {
+            INFO("Found HW device with type=" << desciptors[i].deviceTypeString << ", driver=" << desciptors[i].driver << ", deviceString=" << desciptors[i].deviceString);
+        }
+
+        const char* usedDevice = NULL;
+
+        if (desciptors.size() == 1) {
+            usedDevice = desciptors[0].deviceString.c_str();
+        } else if (desciptors.size() > 1) {
+            for (int i = 0; i < desciptors.size(); ++i) {
+                if (desciptors[i].driver == "i915") { // Intel iGPU decoder preferred due to QuickSync
+                    usedDevice = desciptors[i].deviceString.c_str();
+                }
+            }
+            if (usedDevice == NULL) {
+                usedDevice = desciptors[0].deviceString.c_str();
+            }
+        }
+        INFO("Used HW device=" << usedDevice);
+
+        AVBufferRef *buffer = NULL;
+
+        if ((err = av_hwdevice_ctx_create(&buffer, type, usedDevice, NULL, 0)) < 0) {
+            WARN("Failed to create specified HW device.");
+            return err;
+        }
+        ctx->hw_device_ctx = av_buffer_ref(buffer);
+
+        
+        return err;
+    }
+
+    AVPixelFormat getPixelFormatAndSetCallback(AVCodecContext* pCodecCtx, AVHWDeviceType hwDeviceType, const AVCodec* pCodec) {
+        AVPixelFormat hw_pix_fmt = AV_PIX_FMT_NONE;
+        if (hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
+            for (int i = 0;; i++) {
+                const AVCodecHWConfig *config = avcodec_get_hw_config(pCodec, i);
+                if (!config) {
+                    INFO("Decoder " << pCodec->name << " does not support device type");
+                    hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+                    break;
+                } else if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == hwDeviceType) {
+                    hw_pix_fmt = config->pix_fmt;
+                    break;
+                }
+            }
+
+            if (hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
+                if (hw_decoder_init(pCodecCtx, hwDeviceType) < 0) {
+                    WARN("Cannot initialize hw acceleration");
+                    return AV_PIX_FMT_NONE;
+                }
+                pCodecCtx->get_format  = get_hw_format;
+            }
+        }
+        return hw_pix_fmt;
+    }
+
     EXPORTED MediaMetadata readMediaMetadata(const char* path)
     {
         // Initalizing these to NULL prevents segfaults!
@@ -155,6 +286,13 @@ extern "C" {
 
         if(avformat_find_stream_info(pFormatCtx, NULL)<0)
             return mediaMetadata;
+
+
+        /*AVHWDeviceType hwDeviceType = av_hwdevice_find_type_by_name("vaapi");
+        if (hwDeviceType == AV_HWDEVICE_TYPE_NONE) {
+            INFO("VAAPI HW acceleration not available for " << path);
+        }*/
+        AVHWDeviceType hwDeviceType = AV_HWDEVICE_TYPE_NONE;
 
         av_dump_format(pFormatCtx, 0, path, 0);
 
@@ -190,6 +328,12 @@ extern "C" {
 
         pCodecCtx = avcodec_alloc_context3(pCodec);
 
+
+        AVPixelFormat hw_pix_fmt = getPixelFormatAndSetCallback(pCodecCtx, hwDeviceType, pCodec);
+        if (hw_pix_fmt == AV_PIX_FMT_NONE) {
+            hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+        }
+
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
             return mediaMetadata;
 
@@ -208,11 +352,21 @@ extern "C" {
             return mediaMetadata;
         }
 
+        if (hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
+            AVBufferRef* ref;
+            int supported = avcodec_get_hw_frames_parameters(pCodecCtx, pCodecCtx->hw_device_ctx, hw_pix_fmt, &ref);
+            if (supported < 0) {
+                hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+                pCodecCtx->hw_device_ctx = NULL;
+            }
+        }
+
         mediaMetadata.width = pCodecCtxOrig->width;
         mediaMetadata.height = pCodecCtxOrig->height;
         mediaMetadata.lengthInMicroseconds = durationInMicroseconds;
         mediaMetadata.bitRate = st->codecpar->bit_rate;
         mediaMetadata.rotationAngle = get_rotation(st);
+        mediaMetadata.hwDecodingSupported = (hwDeviceType != AV_HWDEVICE_TYPE_NONE);
 
         AVRational framerate = findFramerate(st);
 
@@ -281,8 +435,8 @@ extern "C" {
     void freeFrame(AVFrame* frame)
     {
         // DEBUG("Preparing to free " << frame << " " << frame->opaque);
-        av_free(frame->opaque);
-        av_frame_free(&frame);
+        //av_free(frame->opaque);
+        //av_frame_free(&frame);
     }
 
     DecodeStructure* openFile(FFmpegImageRequest* request);
@@ -590,7 +744,7 @@ extern "C" {
     }
 
     std::string createKey(const char* path, int width, int height, bool enableHwAcceleration) {
-        return (std::string(path) + "_" + std::to_string(width) + "_" + std::to_string(height) + std::string("hwaccel=") + std::to_string(enableHwAcceleration));
+        return (std::string(path) + "_" + std::to_string(width) + "_" + std::to_string(height) + "_" + std::string("hwaccel=") + std::to_string(enableHwAcceleration));
     }
 
     EXPORTED void readFrames(FFmpegImageRequest* request)
@@ -709,12 +863,12 @@ extern "C" {
                 }
                 else if (time < end_target)
                 {
-                    copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
-                    request->frames[i].startTimeInMs = time;
+                    //copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
+                    //request->frames[i].startTimeInMs = time;
                    // std::cout << "########### reading: " << i << " " << time << " " << element.timestamp << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
                     ++i;
                 } else {
-                   // std::cout << "End reading " << time << std::endl;
+                    /*
                     if (decodeStructure->decodedPackages.size() == 0) {
                         //  fillQueue(decodeStructure);
                     }
@@ -726,7 +880,7 @@ extern "C" {
                         request->endTimeInMs = nextFrameTime;
                         ++i;
                     }
-
+                    */
                     break;
                 }
                 decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
@@ -737,109 +891,6 @@ extern "C" {
         request->actualNumberOfFramesRead = i;
 
         DEBUG("Queue size: " << decodeStructure->decodedPackages.size());
-    }
-
-    static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
-                                            const enum AVPixelFormat *pix_fmts)
-    {
-        const enum AVPixelFormat *p;
-
-        DecodeStructure* decodeStructure = (DecodeStructure*)ctx->opaque;
-
-        for (p = pix_fmts; *p != -1; p++) {
-            if (*p == decodeStructure->hw_pix_fmt)
-                return *p;
-        }
-
-        ERROR("Failed to get HW surface format.");
-        return AV_PIX_FMT_NONE;
-    }
-
-    struct HwDeviceDescriptor {
-        AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
-        const char* deviceTypeString = NULL;
-        std::string deviceString;
-        std::string driver;
-    };
-
-    static std::string getDriverForVaapi(std::string file) {
-        std::string line;
-        std::string filename = file + "/device/uevent";
-
-        std::ifstream input_file(filename);
-        if (!input_file.is_open()) {
-            WARN("Cannot open " << filename.c_str());
-            return std::string();
-        }
-
-        while (std::getline(input_file, line)){
-            if (line.find("DRIVER=") != std::string::npos) {
-                return line.replace(line.find("DRIVER="), 7, "");
-            }
-        }
-        return "";
-    }
-
-    static std::vector<HwDeviceDescriptor> getHwDescriptors() {
-        std::vector<HwDeviceDescriptor> hwDevices;
-
-        // vaapi
-        std::string path = "/sys/class/drm";
-        if (std::experimental::filesystem::is_directory(path)) {
-            for (const auto & entry : std::experimental::filesystem::directory_iterator(path)) {
-                const std::string path = entry.path().string();
-                std::size_t renderIndex = path.find("renderD");
-                if (path.find("renderD") != std::string::npos) {
-                    std::string driver = getDriverForVaapi(path);
-                    if (driver != "") {
-                        HwDeviceDescriptor device = HwDeviceDescriptor();
-                        device.type = AV_HWDEVICE_TYPE_VAAPI;
-                        device.deviceTypeString = "vaapi";
-                        device.deviceString = (std::string("/dev/dri/") + path.substr(renderIndex, 10));
-                        device.driver = std::string(driver);
-                        hwDevices.push_back(device);
-                    }
-                }
-            }
-        }
-        return hwDevices;
-    }
-
-    static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
-    {
-        int err = 0;
-
-        std::vector<HwDeviceDescriptor> desciptors = getHwDescriptors();
-
-        for (int i = 0; i < desciptors.size(); ++i) {
-            INFO("Found HW device with type=" << desciptors[i].deviceTypeString << ", driver=" << desciptors[i].driver << ", deviceString=" << desciptors[i].deviceString);
-        }
-
-        const char* usedDevice = NULL;
-
-        if (desciptors.size() == 1) {
-            usedDevice = desciptors[0].deviceString.c_str();
-        } else if (desciptors.size() > 1) {
-            for (int i = 0; i < desciptors.size(); ++i) {
-                if (desciptors[i].driver == "i915") { // Intel iGPU decoder preferred due to QuickSync
-                    usedDevice = desciptors[i].deviceString.c_str();
-                }
-            }
-            if (usedDevice == NULL) {
-                usedDevice = desciptors[0].deviceString.c_str();
-            }
-        }
-        INFO("Used HW device=" << usedDevice);
-
-        AVBufferRef *buffer = NULL;
-
-        if ((err = av_hwdevice_ctx_create(&buffer, type, usedDevice, NULL, 0)) < 0) {
-            WARN("Failed to create specified HW device.");
-            return err;
-        }
-        ctx->hw_device_ctx = av_buffer_ref(buffer);
-        
-        return err;
     }
 
 
@@ -927,27 +978,10 @@ extern "C" {
         pCodecCtx->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
 
 
-        if (hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
-            for (int i = 0;; i++) {
-                const AVCodecHWConfig *config = avcodec_get_hw_config(pCodec, i);
-                if (!config) {
-                    INFO("Decoder " << pCodec->name << " does not support device type " << av_hwdevice_get_type_name(hwDeviceType));
-                    hwDeviceType = AV_HWDEVICE_TYPE_NONE;
-                }
-                if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == hwDeviceType) {
-                    hw_pix_fmt = config->pix_fmt;
-                    break;
-                }
-            }
-            pCodecCtx->get_format  = get_hw_format;
-
-            if (hw_decoder_init(pCodecCtx, hwDeviceType) < 0) {
-                WARN("Cannot initialize hw acceleration");
-                hwDeviceType = AV_HWDEVICE_TYPE_NONE;
-            }
-
+        hw_pix_fmt = getPixelFormatAndSetCallback(pCodecCtx, hwDeviceType, pCodec);
+        if (hw_pix_fmt == AV_PIX_FMT_NONE) {
+            hwDeviceType = AV_HWDEVICE_TYPE_NONE;
         }
-
 
 
 
@@ -1020,10 +1054,10 @@ static void ppm_save(unsigned char* buf, int wrap, int xsize, int ysize, char* f
 }
 
 
-#ifdef DEBUG_BUILD
+//#ifdef DEBUG_BUILD
 
 int main() {
-    char* path = "/opt/testvideo.mp4";
+    char* path = "/home/black/Videos/tactview_samples/20051210-w50s.flv";
 
     MediaMetadata result = readMediaMetadata(path);
 
@@ -1058,6 +1092,7 @@ int main() {
         request->useApproximatePosition = false;
         request->useHardwareDecoding = 1;
         request->frames = frames;
+        request->useHardwareDecoding = result.hwDecodingSupported;
 
 
         readFrames(request);
@@ -1087,6 +1122,6 @@ int main() {
     std::cout << ((double)framesRead / took) << " fps; took: " << took << " seconds" << std::endl;
 
 }
-#endif
+//#endif
 
 }

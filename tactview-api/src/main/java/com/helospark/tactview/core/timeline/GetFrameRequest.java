@@ -17,6 +17,7 @@ public class GetFrameRequest {
     private boolean applyEffects;
     private boolean useApproximatePosition;
     private boolean lowResolutionPreview;
+    private boolean livePlayback;
     private Optional<Integer> applyEffectsLessThanEffectChannel;
     private Map<String, ReadOnlyClipImage> requestedClips;
     private Map<String, ReadOnlyClipImage> requestedChannelClips;
@@ -34,6 +35,7 @@ public class GetFrameRequest {
         this.requestedClips = builder.requestedClips;
         this.requestedChannelClips = builder.requestedChannelClips;
         this.lowResolutionPreview = builder.lowResolutionPreview;
+        this.livePlayback = builder.livePlayback;
     }
 
     public TimelinePosition getGlobalPosition() {
@@ -62,6 +64,10 @@ public class GetFrameRequest {
 
     public boolean isApplyEffects() {
         return applyEffects;
+    }
+
+    public boolean isLivePlayback() {
+        return livePlayback;
     }
 
     public Map<String, ReadOnlyClipImage> getRequestedClips() {
@@ -108,6 +114,7 @@ public class GetFrameRequest {
         private boolean applyEffects;
         private boolean useApproximatePosition;
         private boolean lowResolutionPreview;
+        private boolean livePlayback;
         private Optional<Integer> applyEffectsLessThanEffectChannel = Optional.empty();
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
@@ -156,6 +163,11 @@ public class GetFrameRequest {
 
         public Builder withApplyEffects(boolean applyEffects) {
             this.applyEffects = applyEffects;
+            return this;
+        }
+
+        public Builder withLivePlayback(boolean livePlayback) {
+            this.livePlayback = livePlayback;
             return this;
         }
 
