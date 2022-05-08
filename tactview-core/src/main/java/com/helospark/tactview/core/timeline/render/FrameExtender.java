@@ -14,9 +14,15 @@ import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangl
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
 
 @Component
 public class FrameExtender {
+    private MemoryOperations memoryOperations;
+
+    public FrameExtender(MemoryOperations memoryOperations) {
+        this.memoryOperations = memoryOperations;
+    }
 
     public ClipImage expandFrame(FrameExtendRequest request) {
         ReadOnlyClipImage frameResult = request.getFrameResult();
@@ -43,28 +49,33 @@ public class FrameExtender {
         ByteBuffer outputBuffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(previewHeight * previewWidth * 4);
         ByteBuffer inputBuffer = frameResult.getBuffer();
 
-        int destinationStartX = Math.max(requestedXPosition, 0);
-        int destinationStartY = Math.max(requestedYPosition, 0);
+        if (previewWidth == frameResult.getWidth() && previewHeight == frameResult.getHeight() &&
+                requestedXPosition == 0 && requestedYPosition == 0) {
+            memoryOperations.copyBuffer(inputBuffer, outputBuffer, inputBuffer.capacity());
+        } else {
+            int destinationStartX = Math.max(requestedXPosition, 0);
+            int destinationStartY = Math.max(requestedYPosition, 0);
 
-        int destinationEndX = Math.min(requestedXPosition + frameResult.getWidth(), previewWidth);
-        int destinationEndY = Math.min(requestedYPosition + frameResult.getHeight(), previewHeight);
+            int destinationEndX = Math.min(requestedXPosition + frameResult.getWidth(), previewWidth);
+            int destinationEndY = Math.min(requestedYPosition + frameResult.getHeight(), previewHeight);
 
-        int sourceX = Math.max(0, -requestedXPosition);
-        int sourceY = Math.max(0, -requestedYPosition);
+            int sourceX = Math.max(0, -requestedXPosition);
+            int sourceY = Math.max(0, -requestedYPosition);
 
-        int width = Math.max(0, destinationEndX - destinationStartX);
-        int height = Math.max(0, destinationEndY - destinationStartY);
+            int width = Math.max(0, destinationEndX - destinationStartX);
+            int height = Math.max(0, destinationEndY - destinationStartY);
 
-        int numberOfBytesInARow = width * 4;
-        byte[] tmpBuffer = new byte[numberOfBytesInARow];
+            int numberOfBytesInARow = width * 4;
+            byte[] tmpBuffer = new byte[numberOfBytesInARow];
 
-        int toY = sourceY + height;
-        for (int i = sourceY; i < toY; ++i) {
-            inputBuffer.position(i * frameResult.getWidth() * 4 + sourceX * 4);
-            inputBuffer.get(tmpBuffer, 0, numberOfBytesInARow);
+            int toY = sourceY + height;
+            for (int i = sourceY; i < toY; ++i) {
+                inputBuffer.position(i * frameResult.getWidth() * 4 + sourceX * 4);
+                inputBuffer.get(tmpBuffer, 0, numberOfBytesInARow);
 
-            outputBuffer.position((destinationStartY + (i - sourceY)) * previewWidth * 4 + destinationStartX * 4);
-            outputBuffer.put(tmpBuffer, 0, numberOfBytesInARow);
+                outputBuffer.position((destinationStartY + (i - sourceY)) * previewWidth * 4 + destinationStartX * 4);
+                outputBuffer.put(tmpBuffer, 0, numberOfBytesInARow);
+            }
         }
         return new ClipImage(outputBuffer, previewWidth, previewHeight);
     }

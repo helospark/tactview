@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.util.cacheable.Cacheable;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
@@ -42,6 +43,7 @@ public class DockableTabRepository {
         this.stylesheetAdderService = stylesheetAdderService;
     }
 
+    @Cacheable(cacheTimeInMilliseconds = 500, size = 200)
     public boolean isTabOpen(String id) {
         try {
             if (dockContainer == null) {
@@ -231,6 +233,7 @@ public class DockableTabRepository {
         this.parentPane = upperPane;
     }
 
+    @Cacheable(cacheTimeInMilliseconds = 500, size = 200)
     public boolean isTabVisibleWithId(String id) {
         return isTabOpen(id); // TODO: check if tab is selected
     }

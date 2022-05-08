@@ -63,8 +63,8 @@ public class TimelineImagePatternService {
         int index = 0;
         for (double seconds = visibleStartPosition; seconds < visibleEndPosition; seconds += timejump, ++index) {
             TimelinePosition position = TimelinePosition.ofSeconds(seconds);
-            int width = isDynamicallyGenerated ? uiProjectRepository.getPreviewWidth() : videoClip.getMediaMetadata().getWidth();
-            int height = isDynamicallyGenerated ? uiProjectRepository.getPreviewHeight() : videoClip.getMediaMetadata().getHeight();
+            int width = isDynamicallyGenerated ? uiProjectRepository.getPreviewWidth() : scaledFrameWidth;
+            int height = isDynamicallyGenerated ? uiProjectRepository.getPreviewHeight() : scaledFrameHeight;
             GetFrameRequest frameRequest = GetFrameRequest.builder()
                     .withApplyEffects(false)
                     .withUseApproximatePosition(true)
@@ -94,8 +94,7 @@ public class TimelineImagePatternService {
                 graphics.drawImage(img, index * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
             } else {
                 BufferedImage bf = byteBufferToImageConverter.byteBufferToBufferedImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
-                java.awt.Image img = bf.getScaledInstance(scaledFrameWidth, scaledFrameHeight, BufferedImage.SCALE_SMOOTH);
-                graphics.drawImage(img, index * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
+                graphics.drawImage(bf, index * (scaledFrameWidth + BLACK_FILM_TAPE_LINE_WIDTH) + BLACK_FILM_TAPE_LINE_WIDTH, FILM_TAPE_SIZE, null);
                 GlobalMemoryManagerAccessor.memoryManager.returnBuffer(frame.getBuffer());
             }
         }

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.decoder.framecache;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -277,8 +278,17 @@ public class MemoryManagerImpl implements MemoryManager {
     }
 
     private void clearBuffer(ByteBuffer buffer) {
-        for (int i = 0; i < buffer.capacity(); ++i) {
-            buffer.put(i, (byte) 0);
+        if (buffer.capacity() % 8 == 0) {
+            LongBuffer longBuffer = buffer.asLongBuffer();
+            longBuffer.position(0);
+            for (int i = 0; i < buffer.capacity() / 8; ++i) {
+                longBuffer.put(0L);
+            }
+            longBuffer.position(0);
+        } else {
+            for (int i = 0; i < buffer.capacity(); ++i) {
+                buffer.put(i, (byte) 0);
+            }
         }
     }
 
