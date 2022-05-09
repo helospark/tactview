@@ -80,7 +80,7 @@ public class RenderAndLoadIT {
     private static Stream<Arguments> containerProvider() {
         return Stream.of(
                 Arguments.of("mp4"),
-                // Arguments.of("ogg")// investigation required on ogg decode
+                // Arguments.of("ogg"), // investigation required on ogg decode
                 Arguments.of("wmv"),
                 Arguments.of("flv"),
                 Arguments.of("webm"),
@@ -144,7 +144,11 @@ public class RenderAndLoadIT {
                 .moveToPosition(TimelinePosition.ofSeconds(0.5))
                 .addKeyframe(Color.of(1.0, 0.0, 0.0))
                 .moveToPosition(TimelinePosition.ofSeconds(1.0))
-                .addKeyframe(Color.of(0.0, 0.0, 1.0));
+                .addKeyframe(Color.of(0.0, 0.0, 1.0))
+                .moveToPosition(TimelinePosition.ofSeconds(2.6))
+                .addKeyframe(Color.of(0.0, 0.0, 1.0))
+                .moveToPosition(TimelinePosition.ofSeconds(3.0))
+                .addKeyframe(Color.of(1.0, 1.0, 1.0));
         return clip;
     }
 }

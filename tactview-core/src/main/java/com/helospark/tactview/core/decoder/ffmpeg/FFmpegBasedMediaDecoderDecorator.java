@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.Striped;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
+import com.helospark.tactview.core.decoder.DecoderPreferences;
 import com.helospark.tactview.core.decoder.MediaDataResponse;
 import com.helospark.tactview.core.decoder.VideoMediaDataRequest;
 import com.helospark.tactview.core.decoder.VideoMetadata;
@@ -33,7 +34,6 @@ import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
 import com.helospark.tactview.core.message.DropCachesMessage;
-import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -52,17 +52,16 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private MessagingService messagingService;
     private MemoryOperations memoryOperations;
     private ScheduledExecutorService prefetchExecutor;
-
-    private boolean enableHardwareAcceleration = true;
-    private boolean enableVideoPrefetch = true;
+    private DecoderPreferences decoderPreferences;
 
     public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService, MemoryOperations memoryOperations,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService prefetchExecutor) {
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService prefetchExecutor, DecoderPreferences decoderPreferences) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.messagingService = messagingService;
         this.memoryOperations = memoryOperations;
         this.prefetchExecutor = prefetchExecutor;
+        this.decoderPreferences = decoderPreferences;
     }
 
     @PostConstruct
@@ -101,7 +100,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         BigDecimal readEnd = readStart.add(chunkSize);
         String computeFutureCacheKey = createHashKey(request.getFilePath(), request);
 
-        boolean enablePrefetch = enableVideoPrefetch && !request.useApproximatePosition() && !request.isAvoidPrefetch();
+        boolean enablePrefetch = decoderPreferences.isEnableVideoPrefetch() && !request.useApproximatePosition() && !request.isAvoidPrefetch();
 
         if (enablePrefetch) {
             if (readFutures.size() < 5) {
@@ -295,7 +294,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         ffmpegRequest.startMicroseconds = startTime.multiply(MICROSECONDS).longValue();
         ffmpegRequest.endTimeInMs = endTime.multiply(MICROSECONDS).longValue();
 
-        ffmpegRequest.useHardwareDecoding = videoMetadata.isHwDecodingSupported() && enableHardwareAcceleration ? 1 : 0;
+        ffmpegRequest.useHardwareDecoding = videoMetadata.isHwDecodingSupported() && decoderPreferences.isEnableHardwareAcceleration() ? 1 : 0;
 
         ByteBuffer[] buffers = new ByteBuffer[numberOfFrames];
         ffmpegRequest.frames = new FFMpegFrame();
@@ -329,16 +328,6 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
     private void copyToResult(ByteBuffer result, ByteBuffer fromBuffer) {
         memoryOperations.copyBuffer(fromBuffer, result, fromBuffer.capacity());
-    }
-
-    @PreferenceValue(name = "Enable hardware acceleration", defaultValue = "true", group = "Performance")
-    public void setEnableHardwareAcceleration(boolean enableHardwareAcceleration) {
-        this.enableHardwareAcceleration = enableHardwareAcceleration;
-    }
-
-    @PreferenceValue(name = "Enable video prefetch", defaultValue = "true", group = "Performance")
-    public void setEnableVideoPrefetch(boolean enableVideoPrefetch) {
-        this.enableVideoPrefetch = enableVideoPrefetch;
     }
 
     static class PrefetchCacheKey {

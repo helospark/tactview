@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.helospark.lightdi.LightDiContext;
+import com.helospark.tactview.core.decoder.DecoderPreferences;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.it.util.IntegrationTestUtil;
 import com.helospark.tactview.core.it.util.parameterresolver.DownloadedResourceName;
@@ -28,6 +29,7 @@ public class ClipLoadIT {
     private FakeUi fakeUi;
     private TimelineManagerAccessor timelineManager;
     private TimelineManagerRenderService timelineManagerRenderService;
+    private DecoderPreferences decoderPreferences;
 
     @BeforeEach
     public void init() {
@@ -35,6 +37,10 @@ public class ClipLoadIT {
         fakeUi = lightDi.getBean(FakeUi.class);
         timelineManager = lightDi.getBean(TimelineManagerAccessor.class);
         timelineManagerRenderService = lightDi.getBean(TimelineManagerRenderService.class);
+        decoderPreferences = lightDi.getBean(DecoderPreferences.class);
+
+        // disable as some hardware produces slightly different images
+        decoderPreferences.setEnableHardwareAcceleration(false);
     }
 
     @AfterEach

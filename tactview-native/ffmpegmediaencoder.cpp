@@ -153,9 +153,8 @@ extern "C" {
         // send the frame to the encoder
         ret = avcodec_send_frame(c, frame);
         if (ret < 0) {
-            fprintf(stderr, "Error sending a frame to the encoder: %s\n",
-                    av_err2string(ret));
-            exit(1);
+            ERROR("Error sending a frame to the encoder: " << av_err2string(ret));
+            return -1;
         }
 
         while (ret >= 0) {
@@ -163,8 +162,8 @@ extern "C" {
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
                 break;
             else if (ret < 0) {
-                fprintf(stderr, "Error encoding a frame: %s\n", av_err2string(ret));
-                exit(1);
+                ERROR("Error encoding a frame: " << av_err2string(ret));
+                return -1;
             }
 
             /* rescale output packet timestamp values from codec to stream timebase */
@@ -178,8 +177,8 @@ extern "C" {
             * its contents and resets pkt), so that no unreferencing is necessary.
             * This would be different if one used av_write_frame(). */
             if (ret < 0) {
-                fprintf(stderr, "Error while writing output packet: %s\n", av_err2string(ret));
-                exit(1);
+                ERROR("Error while writing output packet: " << av_err2string(ret));
+                return -1;
             }
         }
 
@@ -473,8 +472,9 @@ extern "C" {
         if (frame) {
             /* convert samples from native format to destination codec format, using the resampler */
             /* compute destination number of samples */
-            dst_nb_samples = av_rescale_rnd(swr_get_delay(ost->swr_ctx, c->sample_rate) + frame->nb_samples,
-                                            c->sample_rate, c->sample_rate, AV_ROUND_UP);
+           /* dst_nb_samples = av_rescale_rnd(swr_get_delay(ost->swr_ctx, c->sample_rate) + frame->nb_samples,
+                                            c->sample_rate, c->sample_rate, AV_ROUND_UP);*/
+            dst_nb_samples = ost->frame->nb_samples;
 
             /* when we pass a frame to the encoder, it may keep a reference to it
             * internally;
@@ -579,8 +579,10 @@ extern "C" {
 
         /* when we pass a frame to the encoder, it may keep a reference to it
          * internally; make sure we do not overwrite it here */
-        if (av_frame_make_writable(ost->frame) < 0)
+        if (av_frame_make_writable(ost->frame) < 0) {
+            WARN("Image cannot be made writable");
             return NULL;
+        }
 
 
         SwsContext * ctx = ost->sws_ctx;
@@ -605,8 +607,8 @@ extern "C" {
     static void close_stream(AVFormatContext *oc, OutputStream *ost)
     {
         avcodec_free_context(&ost->enc);
-        av_frame_free(&ost->frame);
         av_frame_free(&ost->tmp_frame);
+        av_frame_free(&ost->frame);
         sws_freeContext(ost->sws_ctx);
         swr_free(&ost->swr_ctx);
     }
@@ -822,8 +824,10 @@ extern "C" {
             OutputStream* video_st = renderContext.video_st;
             OutputStream* audio_st = renderContext.audio_st;
 
+            DEBUG("Encoding " << request->startFrameIndex << " color: " << (int)request->frame->imageData[0] << " " << (int)request->frame->imageData[1] <<" " << (int)request->frame->imageData[2] << " " << (int)request->frame->imageData[3]);
+
             if (renderContext.encode_audio) {
-              int nbSamples = renderContext.numberOfSamplesPerAudioFrame;
+              DEBUG("Encoding audio data");
 
               for (int i = 0; i < request->frame->numberOfAudioSamples * renderContext.bytesPerSample * renderContext.audioChannels; ++i) {
                   renderContext.audioBuffer[renderContext.audioBufferPointer++] = request->frame->audioData[i];
@@ -838,12 +842,14 @@ extern "C" {
         
 
             if (renderContext.encode_video && request->frame->imageData != NULL) {
+              DEBUG("Encoding image data");
               AVFrame *frame = get_video_frame(video_st, request->frame);
               if (frame == NULL) {
                 return -1;
               }
               int ret = write_video_frame(renderContext.oc, video_st, frame);
               if (ret < 0) {
+                WARN("Cannot write frame " << ret);
                 return ret;
               }
               renderContext.encode_video = !ret;
@@ -933,17 +939,16 @@ extern "C" {
     }
 
 
-}
 
 #ifdef DEBUG_BUILD
 int main() {
-        const int AUDIO_SAMPLE_PER_SEC = 22050;
+        const int AUDIO_SAMPLE_PER_SEC = 44100;
         const int WIDTH = 400;
-        const int HEIGHT = 300;
+        const int HEIGHT = 266;
         const int FPS = 30;
 
         FFmpegInitEncoderRequest initRequest;
-        initRequest.fileName = "/tmp/testout.webm";
+        initRequest.fileName = "/tmp/testout.ogg";
         initRequest.actualWidth = WIDTH;
         initRequest.actualHeight = HEIGHT;
         initRequest.renderWidth = WIDTH;
@@ -965,7 +970,7 @@ int main() {
         initRequest.metadata = NULL;
 
         initRequest.numberOfChapters = 0;
-        initRequest.totalLengthInMicroseconds = 10000;
+        initRequest.totalLengthInMicroseconds = 3000000;
         initRequest.chapters = NULL;
 
         int encoderIndex = initEncoder(&initRequest);
@@ -973,7 +978,7 @@ int main() {
         double seconds = 0.0;
         double frequency = 600.0;
 
-        for (int i = 0; i < 30 * 10; ++i) {
+        for (int i = 0; i < FPS * 3; ++i) {
             RenderFFMpegFrame frame;
             int audioSamples = AUDIO_SAMPLE_PER_SEC / FPS;
             frame.numberOfAudioSamples = audioSamples;
@@ -1030,5 +1035,6 @@ int main() {
 
         clearEncoder(&clearRequest);
 
+}
 }
 #endif

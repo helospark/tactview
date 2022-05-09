@@ -326,7 +326,7 @@ public class FFmpegBasedRenderService extends AbstractRenderService {
                         long nextSampleCount = allAudioSamples + frame.getAudioResult().getNumberSamples();
                         int deltaSamples = (int) (nextSampleCount - expectedNumberOfSamples);
 
-                        LOGGER.debug("Audio rendering delta samples = {}", deltaSamples);
+                        LOGGER.trace("Audio rendering delta samples = {}", deltaSamples);
 
                         int numberOfSamples = frame.getAudioResult().getNumberSamples();
                         if (deltaSamples > 0) {

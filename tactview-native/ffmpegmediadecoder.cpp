@@ -139,10 +139,10 @@ extern "C" {
     {
         const enum AVPixelFormat *p;
 
-        DecodeStructure* decodeStructure = (DecodeStructure*)ctx->opaque;
+        AVPixelFormat hw_pix_fmt = (AVPixelFormat)((long)ctx->opaque);
 
         for (p = pix_fmts; *p != -1; p++) {
-            if (*p == decodeStructure->hw_pix_fmt)
+            if (*p == hw_pix_fmt)
                 return *p;
         }
 
@@ -264,6 +264,41 @@ extern "C" {
         return hw_pix_fmt;
     }
 
+    int receiveFrame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt) {
+        int ret = avcodec_receive_frame(avctx, frame);
+        if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
+            return ret;
+        if (ret >= 0)
+            *got_frame = 1;
+        return 0;
+    }
+
+    // From here: https://blogs.gentoo.org/lu_zero/2016/03/29/new-avcodec-api/
+    int decode_video_frame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt)
+    {
+        int ret;
+
+        *got_frame = 0;
+
+        if (pkt) {
+            ret = avcodec_send_packet(avctx, pkt);
+            // In particular, we don't expect AVERROR(EAGAIN), because we read all
+            // decoded frames with avcodec_receive_frame() until done.
+            
+            if ( ret == AVERROR(EAGAIN)) {
+                receiveFrame(avctx, frame, got_frame, pkt);
+                return AVERROR(EAGAIN);
+            }
+            
+            if (ret < 0) {
+                return ret == AVERROR_EOF ? 0 : ret;
+            }
+        }
+
+        return receiveFrame(avctx, frame, got_frame, pkt);
+    }
+
+
     EXPORTED MediaMetadata readMediaMetadata(const char* path)
     {
         // Initalizing these to NULL prevents segfaults!
@@ -279,20 +314,18 @@ extern "C" {
         mediaMetadata.height = -1;
         mediaMetadata.lengthInMicroseconds = -1;
         mediaMetadata.bitRate = 0;
-        
+
+
+        AVHWDeviceType hwDeviceType = av_hwdevice_find_type_by_name("vaapi");
+        if (hwDeviceType == AV_HWDEVICE_TYPE_NONE) {
+            INFO("VAAPI HW acceleration not available for " << path);
+        }
 
         if(avformat_open_input(&pFormatCtx, path, NULL, NULL)!=0)
             return mediaMetadata;
 
         if(avformat_find_stream_info(pFormatCtx, NULL)<0)
             return mediaMetadata;
-
-
-        /*AVHWDeviceType hwDeviceType = av_hwdevice_find_type_by_name("vaapi");
-        if (hwDeviceType == AV_HWDEVICE_TYPE_NONE) {
-            INFO("VAAPI HW acceleration not available for " << path);
-        }*/
-        AVHWDeviceType hwDeviceType = AV_HWDEVICE_TYPE_NONE;
 
         av_dump_format(pFormatCtx, 0, path, 0);
 
@@ -335,6 +368,7 @@ extern "C" {
 
         if(avcodec_open2(pCodecCtx, pCodec, NULL)<0)
             return mediaMetadata;
+        pCodecCtx->opaque = (void*)(int)hw_pix_fmt;
 
         pFrame=av_frame_alloc();
 
@@ -351,6 +385,27 @@ extern "C" {
             return mediaMetadata;
         }
 
+        // read one frame, otherwise some things are not initialized regarding HW accel
+        AVPacket packet;
+        i = 0;
+        while(av_read_frame(pFormatCtx, &packet)>=0 && i < 1)
+        {
+            if(packet.stream_index==videoStream)
+            {
+                int frameFinished;
+                int decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
+
+                if (decodedFrame < 0) {
+                    hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+                    break;
+                }
+
+                if(frameFinished) {
+                    ++i;
+                }
+            }
+            av_packet_unref(&packet);
+        }
         if (hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
             AVBufferRef* ref;
             int supported = avcodec_get_hw_frames_parameters(pCodecCtx, pCodecCtx->hw_device_ctx, hw_pix_fmt, &ref);
@@ -451,41 +506,6 @@ extern "C" {
 
             freeFrame(element.pFrame);
         }
-    }
-
-    int receiveFrame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt) {
-        int ret = avcodec_receive_frame(avctx, frame);
-        if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
-            return ret;
-        if (ret >= 0)
-            *got_frame = 1;
-        return 0;
-    }
-
-
-    // From here: https://blogs.gentoo.org/lu_zero/2016/03/29/new-avcodec-api/
-    int decode_video_frame(AVCodecContext *avctx, AVFrame *frame, int *got_frame, AVPacket *pkt)
-    {
-        int ret;
-
-        *got_frame = 0;
-
-        if (pkt) {
-            ret = avcodec_send_packet(avctx, pkt);
-            // In particular, we don't expect AVERROR(EAGAIN), because we read all
-            // decoded frames with avcodec_receive_frame() until done.
-            
-            if ( ret == AVERROR(EAGAIN)) {
-                receiveFrame(avctx, frame, got_frame, pkt);
-                return AVERROR(EAGAIN);
-            }
-            
-            if (ret < 0) {
-                return ret == AVERROR_EOF ? 0 : ret;
-            }
-        }
-
-        return receiveFrame(avctx, frame, got_frame, pkt);
     }
 
     bool containsFormat(AVPixelFormat* formats, AVPixelFormat format) {
@@ -699,7 +719,7 @@ extern "C" {
         return pFrameRGB;
     }
 
-    void fillQueue(DecodeStructure* element)
+    int fillQueue(DecodeStructure* element)
     {
         AVFormatContext   *pFormatCtx = element->pFormatCtx;
         int               videoStream = element->videoStream;
@@ -717,6 +737,11 @@ extern "C" {
             {
                 do {
                     decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
+                    if (decodedFrame < 0 && decodedFrame != AVERROR(EAGAIN)) {
+                        WARN("Unable to read more frames, statusCode=" << decodedFrame);
+                        return decodedFrame;
+                    }
+                    
                     if(frameFinished)
                     {
                         AVFrame* pFrameRGB = processFrame(element, pFrame);
@@ -740,6 +765,7 @@ extern "C" {
             av_packet_unref(&packet);
         }
         //DEBUG("Set filled: " << element->decodedPackages);
+        return 0;
     }
 
     std::string createKey(const char* path, int width, int height, bool enableHwAcceleration) {
@@ -827,6 +853,11 @@ extern "C" {
                 if(packet.stream_index==videoStream)
                 {
                     int decodedFrame = decode_video_frame(pCodecCtx, pFrame, &frameFinished, &packet);
+
+                    if (decodedFrame < 0 && decodedFrame != AVERROR(EAGAIN)) {
+                        WARN("Unable to read more frames, statusCode=" << decodedFrame);
+                        break;
+                    }
 
                     if(frameFinished)
                     {
@@ -1024,7 +1055,7 @@ extern "C" {
         element->hwScaleCapability = capability;
         element->hwSwsContext = hwSwsContext;
 
-        pCodecCtx->opaque = element;
+        pCodecCtx->opaque = (void*)(int)hw_pix_fmt;
 
         std::string key = createKey(request->path, request->width, request->height, request->useHardwareDecoding);
 
@@ -1060,7 +1091,7 @@ int main() {
 
     MediaMetadata result = readMediaMetadata(path);
 
-    INFO(result.width << " " << result.height << " " << result.fps << " " << result.lengthInMicroseconds << " " << result.bitRate);
+    INFO("METADATA: width=" << result.width << " height=" << result.height << " fps=" << result.fps << " lengthInMs=" << result.lengthInMicroseconds << " bitRate=" << result.bitRate << " hwAccel=" << result.hwDecodingSupported);
 
     const int framesPerRequest = 30;
 
@@ -1073,11 +1104,18 @@ int main() {
     
     FFMpegFrame* frames = new FFMpegFrame[framesPerRequest];
 
+    if (result.width < 0) {
+        INFO("File not supported");
+        return 0;
+    }
+
     for (int j = 0; j < framesPerRequest; ++j) {
         frames[j].data = new char[outWidth * outHeight * 4];
     }
 
-    for (int i = 0; i < 100; ++i) {
+    int lengthInMs = (framesPerRequest * (1.0/result.fps) * 1000000);
+
+    for (int i = 0; i < 50 && startTime + lengthInMs < result.lengthInMicroseconds; ++i) {
 
         int frameToRequest = i * framesPerRequest;
 
@@ -1087,7 +1125,7 @@ int main() {
         request->numberOfFrames = framesPerRequest;
         request->path = path;
         request->startMicroseconds = startTime;
-        request->endTimeInMs = startTime + (framesPerRequest * (1.0/result.fps) * 1000000);
+        request->endTimeInMs = startTime + lengthInMs;
         request->useApproximatePosition = false;
         request->useHardwareDecoding = 1;
         request->frames = frames;
@@ -1096,7 +1134,7 @@ int main() {
 
         readFrames(request);
 
-        if (i % 10 == 0) {
+        if (i % 5 == 0) {
             char buf[100];
             snprintf(buf, sizeof(buf), "/tmp/%s_%03d.ppm", "decode", i);
             ppm_save((unsigned char*)request->frames[0].data, request->width * 4, request->width, request->height, buf);

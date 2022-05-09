@@ -71,7 +71,7 @@ public class TimelineImagePatternService {
                     .withExpectedWidth(width)
                     .withExpectedHeight(height)
                     .withRelativePosition(position)
-                    .withScale(uiProjectRepository.getScaleFactor())
+                    .withScale((double) width / metadata.getWidth())
                     .build();
             ReadOnlyClipImage frame = videoClip.getFrame(frameRequest);
 
