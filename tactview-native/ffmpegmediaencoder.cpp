@@ -312,14 +312,14 @@ extern "C" {
         if ((*codec)->channel_layouts) {
             c->channel_layout = (*codec)->channel_layouts[0];
             for (i = 0; (*codec)->channel_layouts[i]; i++) {
-                if ((*codec)->channel_layouts[i] == expectedChannelLayout) {
+                if ((*codec)->channel_layouts[i] & expectedChannelLayout != 0) {
                     DEBUG("Supported channel layout " << (*codec)->channel_layouts[i] << " " << av_get_channel_layout_nb_channels((*codec)->channel_layouts[i])); 
                     c->channel_layout = expectedChannelLayout;
                     break;
                 }
             }
         } else {
-            DEBUG("Channel layouts are unknown, falling back to stereo");
+            INFO("Channel layouts are unknown '" << request->audioChannels << "', falling back to stereo");
         }
         c->channels        = av_get_channel_layout_nb_channels(c->channel_layout);
         ost->st->time_base.num = 1;
@@ -400,6 +400,7 @@ extern "C" {
             ost->sampleFormat = AV_SAMPLE_FMT_S64;
         }
         ost->bytesPerSample = request->bytesPerSample;
+        DEBUG("Audio bytes per sample = " << ost->bytesPerSample);
         renderContext.numberOfSamplesPerAudioFrame = nb_samples;
 
 
@@ -1036,5 +1037,5 @@ int main() {
         clearEncoder(&clearRequest);
 
 }
-}
 #endif
+}
