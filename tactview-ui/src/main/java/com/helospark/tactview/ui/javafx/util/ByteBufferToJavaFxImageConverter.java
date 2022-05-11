@@ -24,7 +24,6 @@ public class ByteBufferToJavaFxImageConverter {
         ByteBuffer bgraImage;
         if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN) && ((width * height * 4) % 8 == 0)) {
             bgraImage = longRgbaToBgra(frame, width, height);
-
         } else {
             bgraImage = rgbaToBgra(frame, width, height);
         }
