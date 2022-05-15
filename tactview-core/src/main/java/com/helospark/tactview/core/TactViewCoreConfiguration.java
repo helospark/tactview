@@ -62,4 +62,10 @@ public class TactViewCoreConfiguration {
         return new ThreadPoolExecutor(0, availableProcessors, 5000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(100), namedThreadFactory);
     }
 
+    @Bean
+    public ThreadPoolExecutor prefetchThreadPoolExecutorService(@Value("${prefetch.threads}") int threads) {
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("prefetch-job-executors-%d").build();
+        return new ThreadPoolExecutor(0, threads, 100000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(100), namedThreadFactory);
+    }
+
 }

@@ -29,4 +29,12 @@ public class MemoryOperations {
         nativeImplementation.copyBuffer(request);
     }
 
+    public void clearBuffer(ByteBuffer data) {
+        ClearMemoryRequest request = new ClearMemoryRequest();
+        request.data = data;
+        request.size = data.capacity();
+
+        nativeImplementation.clearBuffer(request);
+    }
+
 }

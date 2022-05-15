@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
@@ -51,11 +51,11 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private MediaCache mediaCache;
     private MessagingService messagingService;
     private MemoryOperations memoryOperations;
-    private ScheduledExecutorService prefetchExecutor;
+    private ThreadPoolExecutor prefetchExecutor;
     private DecoderPreferences decoderPreferences;
 
     public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService, MemoryOperations memoryOperations,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService prefetchExecutor, DecoderPreferences decoderPreferences) {
+            @Qualifier("prefetchThreadPoolExecutorService") ThreadPoolExecutor prefetchExecutor, DecoderPreferences decoderPreferences) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.messagingService = messagingService;
@@ -154,7 +154,7 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private void schedulePrefetchJobIfNeeded(VideoMediaDataRequest request, String cacheKey, BigDecimal readStart, BigDecimal chunkSize) {
         BigDecimal nextChunkPosition = readStart.add(chunkSize);
         Optional<MediaDataFrame> found = mediaCache.findInCache(createHashKey(request.getFilePath(), request), nextChunkPosition);
-        Optional<CompletableFuture<Void>> readFuture = findInFuture(cacheKey, request.getStart().getSeconds());
+        Optional<CompletableFuture<Void>> readFuture = findInFuture(cacheKey, nextChunkPosition);
         if (found.isEmpty() && readFuture.isEmpty()) {
             PrefetchCacheKey prefetchKey = new PrefetchCacheKey();
             prefetchKey.fileCache = cacheKey;
@@ -164,10 +164,10 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
 
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
-                    LOGGER.debug("Started working for {}", prefetchKey);
                     Optional<MediaDataFrame> found2 = mediaCache.findInCache(createHashKey(request.getFilePath(), request), nextChunkPosition);
                     Optional<CompletableFuture<Void>> readFuture2 = findInFuture(cacheKey, request.getStart().getSeconds());
                     if (found2.isEmpty() && readFuture2.isEmpty()) {
+                        LOGGER.debug("Started working for {}", prefetchKey);
                         VideoMediaDataRequest newRequest = VideoMediaDataRequest.builderFrom(request)
                                 .withAvoidPrefetch(true)
                                 .withStart(new TimelinePosition(nextChunkPosition))

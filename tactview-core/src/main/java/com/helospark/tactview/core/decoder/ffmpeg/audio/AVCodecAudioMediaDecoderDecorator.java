@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +35,10 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     private AVCodecBasedAudioMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
-    private ScheduledExecutorService prefetchExecutor;
+    private ThreadPoolExecutor prefetchExecutor;
 
     public AVCodecAudioMediaDecoderDecorator(AVCodecBasedAudioMediaDecoderImplementation implementation, MediaCache mediaCache, MemoryManager memoryManager,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService prefetchExecutor) {
+            @Qualifier("prefetchThreadPoolExecutorService") ThreadPoolExecutor prefetchExecutor) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.memoryManager = memoryManager;

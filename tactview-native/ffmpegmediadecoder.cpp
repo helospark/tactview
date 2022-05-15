@@ -1092,7 +1092,7 @@ static void ppm_save(unsigned char* buf, int wrap, int xsize, int ysize, char* f
 #ifdef DEBUG_BUILD
 
 int main() {
-    char* path = "/home/black/Videos/tactview_samples/Time Lapse Video Of Night Sky.mp4";
+    char* path = "/tmp/tactview_render_test.wmv";
 
     MediaMetadata result = readMediaMetadata(path);
 

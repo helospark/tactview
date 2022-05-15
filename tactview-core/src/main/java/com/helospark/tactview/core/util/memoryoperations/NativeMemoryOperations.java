@@ -8,4 +8,6 @@ public interface NativeMemoryOperations extends Library {
 
     public void copyBuffer(CopyMemoryRequest request);
 
+    public void clearBuffer(ClearMemoryRequest request);
+
 }

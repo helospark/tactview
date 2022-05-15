@@ -3,7 +3,6 @@ package com.helospark.tactview.core.decoder.framecache;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +28,7 @@ import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.lightdi.annotation.Value;
 import com.helospark.tactview.core.util.DebugImageRenderer;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 import sun.misc.Unsafe;
@@ -44,6 +44,7 @@ public class MemoryManagerImpl implements MemoryManager {
 
     private MessagingService messagingService;
     private ScheduledExecutorService executorService;
+    private MemoryOperations memoryOperations;
 
     private Unsafe unsafe;
 
@@ -52,12 +53,13 @@ public class MemoryManagerImpl implements MemoryManager {
     private boolean firstOutOfMemoryError = true;
 
     public MemoryManagerImpl(@Value("${memory.manager.size}") Long maximumSizeHint, @Value("${memory.manager.debug}") boolean debug, MessagingService messagingService,
-            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService) {
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService executorService, MemoryOperations memoryOperations) {
         this.maximumSizeHint = maximumSizeHint;
         this.unsafe = getUnsafe();
         this.debug = debug;
         this.messagingService = messagingService;
         this.executorService = executorService;
+        this.memoryOperations = memoryOperations;
     }
 
     @PostConstruct
@@ -278,6 +280,8 @@ public class MemoryManagerImpl implements MemoryManager {
     }
 
     private void clearBuffer(ByteBuffer buffer) {
+        memoryOperations.clearBuffer(buffer);
+        /*
         if (buffer.capacity() % 8 == 0) {
             buffer.position(0);
             LongBuffer longBuffer = buffer.asLongBuffer();
@@ -290,7 +294,7 @@ public class MemoryManagerImpl implements MemoryManager {
             for (int i = 0; i < buffer.capacity(); ++i) {
                 buffer.put(i, (byte) 0);
             }
-        }
+        }*/
     }
 
     static class BufferInformation implements Comparable<BufferInformation> {

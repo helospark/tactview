@@ -179,7 +179,7 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         long hours = wholePartOfTime / 3600;
         long minutes = (wholePartOfTime - hours * 3600) / 60;
         long seconds = (wholePartOfTime - hours * 3600 - minutes * 60);
-        long millis = position.getSeconds().remainder(BigDecimal.ONE).multiply(BigDecimal.valueOf(1000)).longValue();
+        long millis = position.getSeconds().subtract(BigDecimal.valueOf(wholePartOfTime)).multiply(BigDecimal.valueOf(1000)).longValue();
 
         String newLabel = String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
 
