@@ -15,13 +15,13 @@ RUN wget -O maven.tar.gz https://downloads.apache.org/maven/maven-3/3.6.3/binari
     rm maven.tar.gz
 
 
-RUN wget -O jdk.tar.gz https://download.java.net/java/GA/jdk15/779bf45e88a44cbd9ea6621d33e33db1/36/GPL/openjdk-15_linux-x64_bin.tar.gz && \
+RUN wget -O jdk.tar.gz https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz && \
     tar -xvzf jdk.tar.gz && \
-    mv jdk-15 /opt/jdk-15 && \
+    mv jdk-18.0.1.1 /opt/jdk-18.0.1.1 && \
     rm jdk.tar.gz
 
-ENV JAVA_HOME=/opt/jdk-15
-ENV PATH="/opt/jdk-15/bin:/opt/apache-maven/bin:${PATH}"
+ENV JAVA_HOME=/opt/jdk-18.0.1.1
+ENV PATH="/opt/jdk-18.0.1.1/bin:/opt/apache-maven/bin:${PATH}"
 
 # Separate out this step, so the layer can be cached
 ADD tactview-native/dependency_fragments/install_apt_dependencies.sh /tmp/dependency_fragments/install_apt_dependencies.sh

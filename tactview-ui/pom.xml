@@ -10,6 +10,10 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
+  <properties>
+    <javafx.version>18.0.1</javafx.version> <!-- should be the same as Java version -->
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.helospark</groupId>
@@ -23,18 +27,18 @@
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx</artifactId>
-      <version>15</version>
+      <version>${javafx.version}</version>
       <type>pom</type>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
-      <version>15</version>
+      <version>${javafx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-swing</artifactId>
-      <version>15</version>
+      <version>${javafx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>

@@ -118,7 +118,7 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
 
             stabilizationMotions_.resize(frameCount_);
             motionStabilizer_->stabilize(
-                frameCount_, motions_, std::make_pair(0, frameCount_ - 1), &stabilizationMotions_[0]);
+                frameCount_, motions_, cv::Range(0, frameCount_ - 1), &stabilizationMotions_[0]);
 
             if (mustEstTrimRatio_)
             {
@@ -183,7 +183,8 @@ class CustomTwoPassStabilizer : public TwoPassStabilizer {
             if (doDeblurring_)
             {
                 frame.copyTo(preprocessedFrame); // TODO: local variable
-                deblurer_->deblur(index, preprocessedFrame);
+                cv::Range range(index - deblurer_->radius(), index + deblurer_->radius());
+                deblurer_->deblur(index, preprocessedFrame, range);
             }
             else
                 preprocessedFrame = frame;

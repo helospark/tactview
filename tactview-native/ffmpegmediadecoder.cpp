@@ -481,7 +481,7 @@ extern "C" {
 
         uint8_t* buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
         av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer, AV_PIX_FMT_RGBA,
-                       width, height, 1);
+                       width, height, 16);
         pFrameRGB->opaque = buffer;
         return pFrameRGB;
     }
@@ -528,6 +528,10 @@ extern "C" {
             result->needsFormatConversion = false;
             result->outputFormatStringDescriptor = "rgba"; // av_get_pix_fmt_string
             result->outputFormat = AV_PIX_FMT_RGBA;
+        } else if (containsFormat(formats, AV_PIX_FMT_RGB0)) {
+            result->needsFormatConversion = true;
+            result->outputFormatStringDescriptor = "rgb0"; // av_get_pix_fmt_string
+            result->outputFormat = AV_PIX_FMT_RGB0;
         } else if (containsFormat(formats, AV_PIX_FMT_YUV420P)) {
             result->needsFormatConversion = true;
             result->outputFormatStringDescriptor = "yuv420p"; // av_get_pix_fmt_string
@@ -629,6 +633,7 @@ extern "C" {
                 snprintf(hwFilterExpression, 400, "hwdownload,format=%s", 
                     capability.outputFormatStringDescriptor);
             }
+            DEBUG("Using FFMPEG filter expression " << hwFilterExpression);
 
             if (capability.needsScaling || capability.needsFormatConversion) {
                 int fromW = capability.needsScaling ? element->pCodecCtx->width : element->width;
@@ -1087,7 +1092,7 @@ static void ppm_save(unsigned char* buf, int wrap, int xsize, int ysize, char* f
 #ifdef DEBUG_BUILD
 
 int main() {
-    char* path = "/tmp/tactview_render_test.wmv";
+    char* path = "/home/black/Videos/tactview_samples/Time Lapse Video Of Night Sky.mp4";
 
     MediaMetadata result = readMediaMetadata(path);
 
@@ -1095,8 +1100,8 @@ int main() {
 
     const int framesPerRequest = 30;
 
-    const int outWidth = 360;
-    const int outHeight = 288;
+    const int outWidth = 412;
+    const int outHeight = 301;
 
     long long start = time(NULL);
     long startTime = 0;
@@ -1134,9 +1139,9 @@ int main() {
 
         readFrames(request);
 
-        if (i % 5 == 0) {
+        if (i % 1 == 0) {
             char buf[100];
-            snprintf(buf, sizeof(buf), "/tmp/%s_%03d.ppm", "decode", i);
+            snprintf(buf, sizeof(buf), "/tmp/%s_%03d_%03d_%03d.ppm", "decode", i, outWidth, outHeight);
             ppm_save((unsigned char*)request->frames[0].data, request->width * 4, request->width, request->height, buf);
         }
 
@@ -1157,7 +1162,6 @@ int main() {
     long took = (end - start);
 
     std::cout << ((double)framesRead / took) << " fps; took: " << took << " seconds" << std::endl;
-
 }
 #endif
 

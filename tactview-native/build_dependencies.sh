@@ -50,15 +50,18 @@ else
   git pull
 fi
 
-cmake ./aom -DBUILD_SHARED_LIBS=1 && \
+# Test disabled because they cannot run against shared libs
+cmake ./aom -DBUILD_SHARED_LIBS=1 -DENABLE_TESTS=false && \
 make -j$(nproc) && \
 make install
+
+ldconfig -v
 
 cd /tmp
 
 echo "Installing Nvidia headers"
 if [ ! -d nv-codec-headers ]; then
-  git clone --depth 1 https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+  git clone --depth 1 https://github.com/FFmpeg/nv-codec-headers.git
   cd nv-codec-headers
 else
   cd nv-codec-headers
@@ -117,8 +120,8 @@ echo "Installing OpenCV"
 
 echo "Cloning OpenCV"
 
-OPENCV_VERSION=4.1.0
-OPENCV_CONTRIB_VERSION=4.1.1
+OPENCV_VERSION=4.5.5
+OPENCV_CONTRIB_VERSION=4.5.5
 
 if [ ! -e opencv-$OPENCV_VERSION.tar.gz ]; then
   wget -O opencv-$OPENCV_VERSION.tar.gz https://github.com/opencv/opencv/archive/$OPENCV_VERSION.tar.gz
@@ -135,7 +138,7 @@ mv  opencv_contrib-$OPENCV_CONTRIB_VERSION opencv_contrib
 cd ./opencv
 mkdir build
 cd build
-cmake  -D OPENCV_GENERATE_PKGCONFIG=YES -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
+cmake -DWITH_FFMPEG=OFF -D OPENCV_GENERATE_PKGCONFIG=YES -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
 
 make -j$(nproc)
 
