@@ -44,9 +44,11 @@ public class AddClipsCommand implements UiCommand {
                     .withAddClipRequestMetadataKey(addClipRequestMetadataKey)
                     .build();
 
-            TimelineClip result = timelineManager.addClip(addClipRequest);
-            positionToAddClipTo = result.getInterval().getEndPosition();
-            addedClipIds.add(result.getId());
+            List<TimelineClip> result = timelineManager.addClip(addClipRequest);
+            positionToAddClipTo = result.get(0).getInterval().getEndPosition();
+            for (var clip : result) {
+                addedClipIds.add(clip.getId());
+            }
         }
         if (proceduralClipId != null) {
             AddClipRequest addClipRequest = AddClipRequest.builder()
@@ -56,8 +58,10 @@ public class AddClipsCommand implements UiCommand {
                     .withProceduralClipId(proceduralClipId)
                     .build();
 
-            TimelineClip result = timelineManager.addClip(addClipRequest);
-            addedClipIds.add(result.getId());
+            List<TimelineClip> result = timelineManager.addClip(addClipRequest);
+            for (var clip : result) {
+                addedClipIds.add(clip.getId());
+            }
         }
     }
 
@@ -66,6 +70,7 @@ public class AddClipsCommand implements UiCommand {
         for (var id : addedClipIds) {
             timelineManager.removeClip(id);
         }
+        addedClipIds.clear();
     }
 
     public TimelinePosition getRequestedPosition() {
@@ -78,6 +83,12 @@ public class AddClipsCommand implements UiCommand {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    @Override
+    public String toString() {
+        return "AddClipsCommand [channelId=" + channelId + ", position=" + position + ", filePaths=" + filePaths + ", proceduralClipId=" + proceduralClipId + ", addClipRequestMetadataKey="
+                + addClipRequestMetadataKey + ", timelineManager=" + timelineManager + ", addedClipIds=" + addedClipIds + "]";
     }
 
     public static final class Builder {

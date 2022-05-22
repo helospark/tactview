@@ -10,4 +10,7 @@ public interface FFmpegBasedMediaDecoderImplementation extends Library {
 
     public void readFrames(FFmpegImageRequest ffmpegRequest);
 
+    public void clearState();
+
+    public void runGc();
 }

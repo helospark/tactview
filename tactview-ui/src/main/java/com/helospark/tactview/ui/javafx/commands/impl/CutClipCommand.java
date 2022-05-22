@@ -83,6 +83,12 @@ public class CutClipCommand implements UiCommand {
         for (var entry : originalLinkedClips.entrySet()) {
             linkClipRepository.linkClip(entry.getKey(), entry.getValue());
         }
+
+        originalCuttedClip.clear();
+        originalChannel.clear();
+        originalLinkedClips.clear();
+        cuttedPartIds.clear();
+        createdLinks.clear();
     }
 
     @Generated("SparkTools")

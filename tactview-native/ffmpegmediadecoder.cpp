@@ -7,7 +7,7 @@
 #include <experimental/filesystem>
 #include "common.h"
 
-const int QUEUE_SIZE = 10;
+const int QUEUE_SIZE = 3;
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -20,6 +20,7 @@ extern "C" {
 #include <libavfilter/buffersink.h>
 
 #include <stdio.h>
+#include <unistd.h>
 
     struct DecodedPackage
     {
@@ -56,6 +57,7 @@ extern "C" {
 
     struct DecodeStructure
     {
+        long long lastAccessTime;
         AVFormatContext   *pFormatCtx = NULL;
         int               videoStream;
         AVCodecParameters *pCodecCtxOrig = NULL;
@@ -63,7 +65,6 @@ extern "C" {
         const AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
         AVPacket          packet;
-        uint8_t           *buffer = NULL;
         struct SwsContext *sws_ctx = NULL;
         int64_t lastPts = -1;
         std::set<DecodedPackage, PtsComparator> decodedPackages;
@@ -82,6 +83,7 @@ extern "C" {
 
 
     std::map<std::string, DecodeStructure*> idTodecodeStructureMap;
+    std::vector<DecodeStructure*> toRemoveList;
 
     void copyFrameData(AVFrame *pFrame, int width, int height, int iFrame, char* frames)
     {
@@ -462,6 +464,15 @@ extern "C" {
         int useHardwareDecoding;
     } FFmpegImageRequest;
 
+    typedef struct
+    {
+        int width;
+        int height;
+        char* path;
+        FFMpegFrame* frames;
+        int useHardwareDecoding;
+    } FFmpegClearStateRequest;
+
     int decodedMinPts(DecodeStructure* decodeStructure)
     {
         if (decodeStructure->decodedPackages.size())
@@ -799,6 +810,7 @@ extern "C" {
         {
             return;
         }
+        decodeStructure->lastAccessTime = time(0);
 
         int i = 0;
         AVFormatContext   *pFormatCtx = decodeStructure->pFormatCtx;
@@ -809,7 +821,6 @@ extern "C" {
         AVFrame           *pFrame = decodeStructure->pFrame;
         AVPacket          packet = decodeStructure->packet;
         int               frameFinished = 0;
-        uint8_t           *buffer = decodeStructure->buffer;
         struct SwsContext *sws_ctx = decodeStructure->sws_ctx;
 
         // AV_TIME_BASE_Q   (AVRational){1, AV_TIME_BASE} -> VC++ causes error
@@ -900,10 +911,8 @@ extern "C" {
                 {
                     copyFrameData(element.pFrame, request->width, request->height, i, request->frames[i].data);
                     request->frames[i].startTimeInMs = time;
-                   // std::cout << "########### reading: " << i << " " << time << " " << element.timestamp << " " << end_target << " " << timeframe.num << "/" << timeframe.den << std::endl;
                     ++i;
                 } else {
-                   // std::cout << "End reading " << time << std::endl;
                     if (decodeStructure->decodedPackages.size() == 0) {
                         //  fillQueue(decodeStructure);
                     }
@@ -928,6 +937,76 @@ extern "C" {
         DEBUG("Queue size: " << decodeStructure->decodedPackages.size());
     }
 
+    void closeDecodeStructure(DecodeStructure* decodeStructure) {
+        av_frame_free(&decodeStructure->pFrame);
+        sws_freeContext(decodeStructure->sws_ctx);
+        avformat_close_input(&decodeStructure->pFormatCtx);
+
+        if (decodeStructure->hwSwsContext != NULL) {
+            sws_freeContext(decodeStructure->hwSwsContext);
+        }
+        if (decodeStructure->buffersink_ctx != NULL) {
+            avfilter_free(decodeStructure->buffersink_ctx);
+        }
+        if (decodeStructure->buffersrc_ctx != NULL) {
+            avfilter_free(decodeStructure->buffersrc_ctx);
+        }
+        if (decodeStructure->hwFilterGraph != NULL) {
+            avfilter_graph_free(&decodeStructure->hwFilterGraph);
+        }
+        avcodec_free_context(&decodeStructure->pCodecCtx);
+    }
+
+    void clearElementWithPtr(DecodeStructure* decodeStructure) {
+        DEBUG("Removing native memory for " << decodeStructure->pFormatCtx->url << " " << decodeStructure->width << "x" << decodeStructure->height);
+        while (decodeStructure->decodedPackages.size() > 0) {
+            DecodedPackage element = *(decodeStructure->decodedPackages.begin());
+            decodeStructure->decodedPackages.erase(decodeStructure->decodedPackages.begin());
+            freeFrame(element.pFrame);
+        }
+        closeDecodeStructure(decodeStructure);
+    }
+
+    void clearElementWithKey(const std::string& key) {
+        std::map<std::string,DecodeStructure*>::iterator elementIterator = idTodecodeStructureMap.find(key);
+
+        if (elementIterator != idTodecodeStructureMap.end()) {            
+            DecodeStructure* decodeStructure = elementIterator->second;
+            clearElementWithPtr(decodeStructure);
+        } else {
+            DEBUG("Trying to close " << key << " but it's not found");
+        }
+    }
+
+    EXPORTED void clearState() {
+        while (idTodecodeStructureMap.size() > 0) {
+            auto it = idTodecodeStructureMap.begin();
+            clearElementWithKey(it->first);
+            idTodecodeStructureMap.erase(it);
+        }
+    }
+
+    EXPORTED void runGc() {
+        for (int i = 0; i < toRemoveList.size(); ++i) {
+            auto it = toRemoveList[i];
+            clearElementWithPtr(it);
+            delete it;
+        }
+        toRemoveList.clear();
+
+        for (auto it = idTodecodeStructureMap.cbegin(); it != idTodecodeStructureMap.cend();) {
+            DecodeStructure* decodeStructure = it->second;
+            std::string key = it->first;
+            if (time(0) - decodeStructure->lastAccessTime > 60) {
+                idTodecodeStructureMap.erase(it++);
+                toRemoveList.push_back(decodeStructure);
+                DEBUG("Scheduled for cleanup: " << key);
+            } else {
+                it++;
+            }
+        }
+
+    }
 
     DecodeStructure* openFile(FFmpegImageRequest* request)
     {
@@ -941,7 +1020,6 @@ extern "C" {
         const AVCodec           *pCodec = NULL;
         AVFrame           *pFrame = NULL;
         AVPacket          packet;
-        uint8_t           *buffer = NULL;
         struct SwsContext *sws_ctx = NULL;
 
         // HW fields
@@ -1043,6 +1121,7 @@ extern "C" {
                                 );
 
         DecodeStructure* element = new DecodeStructure();
+        element->lastAccessTime = time(0);
         element->pFormatCtx = pFormatCtx;
         element->videoStream = videoStream;
         element->pCodecCtxOrig = pCodecCtxOrig;
@@ -1050,7 +1129,6 @@ extern "C" {
         element->pCodec = pCodec;
         element->pFrame = pFrame;
         element->packet = packet;
-        element->buffer = buffer;
         element->sws_ctx = sws_ctx;
         element->width = request->width;
         element->height = request->height;
@@ -1092,7 +1170,7 @@ static void ppm_save(unsigned char* buf, int wrap, int xsize, int ysize, char* f
 #ifdef DEBUG_BUILD
 
 int main() {
-    char* path = "/tmp/tactview_render_test.wmv";
+    char* path = "/opt/testvideo.mp4";
 
     MediaMetadata result = readMediaMetadata(path);
 
@@ -1100,8 +1178,8 @@ int main() {
 
     const int framesPerRequest = 30;
 
-    const int outWidth = 412;
-    const int outHeight = 301;
+    const int outWidth = 426;
+    const int outHeight = 240;
 
     long long start = time(NULL);
     long startTime = 0;
@@ -1153,15 +1231,18 @@ int main() {
         INFO("read frames " << framesRead << " " << newFramesRead);
         framesRead = newFramesRead;
     }
-    for (int j = 0; j < framesPerRequest; ++j) {
-        delete[] frames[j].data;
-    }
 
     long long end = time(NULL);
 
     long took = (end - start);
 
     std::cout << ((double)framesRead / took) << " fps; took: " << took << " seconds" << std::endl;
+
+    for (int j = 0; j < framesPerRequest; ++j) {
+        delete[] frames[j].data;
+    }
+    clearState();
+
 }
 #endif
 

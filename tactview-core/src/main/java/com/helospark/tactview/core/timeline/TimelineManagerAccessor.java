@@ -116,7 +116,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
     }
 
-    public TimelineClip addClip(AddClipRequest request) {
+    public List<TimelineClip> addClip(AddClipRequest request) {
         String channelId = request.getChannelId();
         List<TimelineClip> clips = clipFactoryChain.createClips(request);
 
@@ -131,7 +131,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
             throw new RuntimeException("Unable to add any clips");
         }
 
-        return clips.get(0);
+        return clips;
     }
 
     private TimelineChannel findChannelToAddClipTo(List<TimelineClip> clips, Integer channelIndex, TimelineClip clip) {
@@ -238,7 +238,7 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
                     .orElseThrow(() -> new IllegalArgumentException("No channel contains " + clipId));
             channel.removeClip(clipId);
         }
-        messagingService.sendMessage(new ClipRemovedMessage(clipId, originalInterval));
+        messagingService.sendMessage(new ClipRemovedMessage(clipId, originalInterval, originalClip));
     }
 
     public void removeClipWithoutMessage(String clipId) {

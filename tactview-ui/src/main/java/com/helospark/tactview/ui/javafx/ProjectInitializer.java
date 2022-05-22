@@ -41,6 +41,7 @@ public class ProjectInitializer {
             commandInterpreter.synchronousSend(new CreateChannelCommand(timelineManager, LAST_INDEX));
         }
         dirtyRepository.setDirty(false);
+        commandInterpreter.resetDefaults();
     }
 
     public void clearState() {

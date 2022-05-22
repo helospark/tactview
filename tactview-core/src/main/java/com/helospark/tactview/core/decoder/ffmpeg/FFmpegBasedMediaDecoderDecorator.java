@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.decoder.ffmpeg;
 
+import static com.helospark.tactview.core.util.async.RunnableExceptionLoggerDecorator.withExceptionLogging;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -33,6 +36,7 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.decoder.framecache.MediaCache;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaDataFrame;
 import com.helospark.tactview.core.decoder.framecache.MediaCache.MediaHashValue;
+import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -42,7 +46,7 @@ import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
-public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
+public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder, ResettableBean {
     private static final BigDecimal MICROSECONDS = new BigDecimal("1000000");
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegBasedMediaDecoderDecorator.class);
     private Striped<Lock> duplicateReadLocks = Striped.lock(100);
@@ -52,21 +56,31 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
     private MessagingService messagingService;
     private MemoryOperations memoryOperations;
     private ThreadPoolExecutor prefetchExecutor;
+    private ScheduledExecutorService scheduledExecutorService;
     private DecoderPreferences decoderPreferences;
 
     public FFmpegBasedMediaDecoderDecorator(FFmpegBasedMediaDecoderImplementation implementation, MediaCache mediaCache, MessagingService messagingService, MemoryOperations memoryOperations,
-            @Qualifier("prefetchThreadPoolExecutorService") ThreadPoolExecutor prefetchExecutor, DecoderPreferences decoderPreferences) {
+            @Qualifier("prefetchThreadPoolExecutorService") ThreadPoolExecutor prefetchExecutor, DecoderPreferences decoderPreferences,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
         this.implementation = implementation;
         this.mediaCache = mediaCache;
         this.messagingService = messagingService;
         this.memoryOperations = memoryOperations;
         this.prefetchExecutor = prefetchExecutor;
         this.decoderPreferences = decoderPreferences;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @PostConstruct
     public void init() {
-        messagingService.register(DropCachesMessage.class, message -> mediaCache.dropCaches());
+        messagingService.register(DropCachesMessage.class, message -> {
+            mediaCache.dropCaches();
+            clearNativeState();
+        });
+        scheduledExecutorService.scheduleAtFixedRate(withExceptionLogging(() -> {
+            LOGGER.debug("Clearing native memory for FFMPEG");
+            //   implementation.runGc();
+        }), 10, 10, TimeUnit.SECONDS);
     }
 
     @Cacheable
@@ -149,6 +163,11 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
         } finally {
             lock.unlock();
         }
+    }
+
+    private void clearNativeState() {
+        // TODO: should be synchronized
+        implementation.clearState();
     }
 
     private void schedulePrefetchJobIfNeeded(VideoMediaDataRequest request, String cacheKey, BigDecimal readStart, BigDecimal chunkSize) {
@@ -357,6 +376,11 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder {
             return Objects.equals(endTime, other.endTime) && Objects.equals(fileCache, other.fileCache) && Objects.equals(startTime, other.startTime);
         }
 
+    }
+
+    @Override
+    public void resetDefaults() {
+        implementation.clearState();
     }
 
 }

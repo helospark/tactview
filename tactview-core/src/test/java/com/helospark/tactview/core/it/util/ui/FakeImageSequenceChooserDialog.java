@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AddClipRequestMetaDataKey;
-import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.clipfactory.sequence.FileNamePatternToFileResolverService;
@@ -50,7 +49,7 @@ public class FakeImageSequenceChooserDialog {
         return this;
     }
 
-    public TimelineClip clickOkButton() {
+    public void clickOkButton() {
         Map<AddClipRequestMetaDataKey, Object> metadata = new HashMap<>();
         metadata.put(AddClipRequestMetaDataKey.FPS, new BigDecimal(fps.toString()));
 
@@ -62,7 +61,7 @@ public class FakeImageSequenceChooserDialog {
                 .withAddClipRequestMetadataKey(metadata)
                 .withFilePath(filePath)
                 .build();
-        return timelineManagerAccessor.addClip(clipRequest);
+        timelineManagerAccessor.addClip(clipRequest);
     }
 
 }

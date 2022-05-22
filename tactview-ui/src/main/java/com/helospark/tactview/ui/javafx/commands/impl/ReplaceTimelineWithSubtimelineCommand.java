@@ -78,11 +78,15 @@ public class ReplaceTimelineWithSubtimelineCommand implements UiCommand {
         for (var clipChannelPair : clipsRemoved) {
             timelineManagerAccessor.addClip(clipChannelPair.channel, clipChannelPair.clip);
         }
+
+        clipsRemoved.clear();
+        addedIds.clear();
     }
 
     static class ChannelClipPair {
         TimelineChannel channel;
         TimelineClip clip;
+
         public ChannelClipPair(TimelineChannel channel, TimelineClip clip) {
             this.channel = channel;
             this.clip = clip;

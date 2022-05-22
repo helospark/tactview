@@ -22,6 +22,7 @@ public class ByteBufferToJavaFxImageConverter {
 
     public Image convertToJavafxImage(ByteBuffer frame, int width, int height) {
         ByteBuffer bgraImage;
+
         if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN) && ((width * height * 4) % 8 == 0)) {
             bgraImage = longRgbaToBgra(frame, width, height);
         } else {
@@ -49,9 +50,10 @@ public class ByteBufferToJavaFxImageConverter {
         ByteBuffer byteDstBuffer = ByteBuffer.allocate(width * height * 4);
         byteDstBuffer.order(ByteOrder.nativeOrder());
         LongBuffer longDstBuffer = byteDstBuffer.asLongBuffer();
+        frame.position(0);
         LongBuffer longSrcBuffer = frame.asLongBuffer();
 
-        for (int i = 0; i < width * height / 2; ++i) {
+        for (int i = 0; i < longSrcBuffer.capacity(); ++i) {
             long data = longSrcBuffer.get(i);
             long result = ((data & 0xFF00FF00_FF00FF00L)) |
                     ((data & 0x000000FF_000000FFL) << 16) |

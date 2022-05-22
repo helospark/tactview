@@ -106,4 +106,5 @@ public class UiCommandInterpreterService implements ResettableBean {
         commandHistory.clear();
         redoHistory.clear();
     }
+
 }

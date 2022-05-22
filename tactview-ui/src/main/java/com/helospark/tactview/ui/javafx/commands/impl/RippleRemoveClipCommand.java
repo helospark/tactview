@@ -44,6 +44,9 @@ public class RippleRemoveClipCommand implements UiCommand {
 
     @Override
     public void execute() {
+        preDestroy();
+        movedClips.clear();
+        removedClips.clear();
         List<TimelineClip> clipsToRemove = clipIds.stream()
                 .flatMap(a -> timelineManager.findClipById(a).stream())
                 .collect(Collectors.toList());
@@ -165,7 +168,6 @@ public class RippleRemoveClipCommand implements UiCommand {
         for (var entry : removedClips.entries()) {
             timelineManager.addClip(entry.getKey(), entry.getValue());
         }
-
     }
 
     @Override

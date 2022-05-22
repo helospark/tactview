@@ -10,7 +10,7 @@
   <artifactId>tactview-core</artifactId>
 
   <properties>
-    <imageio.version>3.4.1</imageio.version>
+    <imageio.version>3.8.2</imageio.version>
   </properties>
 
   <dependencies>
@@ -64,12 +64,12 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5.10</version>
+      <version>4.5.13</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.6</version>
+      <version>2.7</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>

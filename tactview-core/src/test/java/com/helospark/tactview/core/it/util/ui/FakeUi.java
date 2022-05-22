@@ -78,7 +78,7 @@ public class FakeUi {
                 .withProceduralClipId(proceduralClipId)
                 .build();
 
-        return timelineManagerAccessor.addClip(request);
+        return timelineManagerAccessor.addClip(request).get(0);
     }
 
     public void enableKeyframesFor(String clipId, String descriptorName) {
@@ -139,7 +139,7 @@ public class FakeUi {
                 .withPosition(position)
                 .build();
 
-        return timelineManagerAccessor.addClip(request);
+        return timelineManagerAccessor.addClip(request).get(0);
     }
 
     public TestRenderDialogUi openRenderDialog() {
