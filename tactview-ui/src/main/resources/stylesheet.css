@@ -694,3 +694,7 @@
 .table-view .column-header {
     -fx-background-color: #252525;
 }
+
+.clips-window-pane .clip-entry {
+    -fx-padding: 3px;
+}

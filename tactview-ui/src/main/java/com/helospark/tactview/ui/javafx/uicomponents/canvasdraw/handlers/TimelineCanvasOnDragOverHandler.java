@@ -35,7 +35,10 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineDragAndDropHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheElement;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheType;
+import com.helospark.tactview.ui.javafx.uicomponents.window.ClipsWindow;
+import com.helospark.tactview.ui.javafx.uicomponents.window.ClipsWindowsElement;
 
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -83,6 +86,8 @@ public class TimelineCanvasOnDragOverHandler {
                 onClipDraggedToCanvas(event, db, request);
             } else if (db.getString().startsWith("effect:")) {
                 onEffectDraggedToCanvas(event, db, request);
+            } else if (db.getString().startsWith(ClipsWindow.CLIP_ENTRY)) {
+                onClipEntryDraggedToCanvas(event, db, request);
             }
         } else {
             onDrag(event.getX(), event.getY(), false, request);
@@ -114,6 +119,54 @@ public class TimelineCanvasOnDragOverHandler {
                     db.clear();
                 } catch (Exception e1) {
                     e1.printStackTrace();
+                } finally {
+                    isLoadingInprogress = false;
+                }
+            }
+        }
+    }
+
+    private void onClipEntryDraggedToCanvas(DragEvent event, Dragboard db, TimelineCanvasOnDragOverHandlerRequest request) {
+        Optional<TimelineChannel> optionalChannel = request.channel;
+        if (optionalChannel.isPresent()) {
+            ClipsWindowsElement element = (ClipsWindowsElement) db.getContent(DataFormat.RTF);
+            double currentX = event.getX();
+            String channelId = optionalChannel.get().getId();
+            TimelinePosition position = timelineState.pixelsToSeconds(currentX);
+            if (!isLoadingInprogress && dragRepository.currentlyDraggedClip() == null && element != null) {
+                selectedNodeRepository.clearAllSelectedItems();
+                isLoadingInprogress = true;
+
+                try {
+                    List<TimelineClip> clipsToAdd = element.getTemplateClips().stream()
+                            .map(clip -> clip.cloneClip(CloneRequestMetadata.ofDefault()))
+                            .collect(Collectors.toList());
+                    List<String> addedClipIds = clipsToAdd.stream().map(a -> a.getId()).collect(Collectors.toList());
+
+                    List<ClipChannelPair> additionalClips = new ArrayList<>(clipsToAdd.size() - 1);
+                    for (int i = 1; i < clipsToAdd.size(); ++i) {
+                        additionalClips.add(new ClipChannelPair(clipsToAdd.get(i), null));
+                    }
+
+                    linkClipRepository.linkClips(addedClipIds);
+
+                    AddExistingClipRequest addExistingClipsRequest = AddExistingClipRequest.builder()
+                            .withClipToAdd(clipsToAdd.get(0))
+                            .withChannel(optionalChannel.get())
+                            .withPosition(Optional.of(position))
+                            .withAdditionalClipsToAdd(additionalClips)
+                            .build();
+
+                    AddExistingClipsCommand command = commandInterpreter.synchronousSend(new AddExistingClipsCommand(addExistingClipsRequest, timelineAccessor));
+                    if (addedClipIds.size() > 0 && command.isSuccess()) {
+                        TimelineInterval originalInterval = timelineAccessor.findClipById(addedClipIds.get(0)).get().getInterval();
+                        selectedNodeRepository.clearAndSetSelectedClips(addedClipIds);
+                        ClipDragInformation clipDragInformation = new ClipDragInformation(position, addedClipIds, channelId, 0, originalInterval);
+                        dragRepository.onClipDragged(clipDragInformation);
+                        db.clear();
+                    }
+                } catch (Exception e1) {
+                    LOGGER.warn("Unable to add clip", e1);
                 } finally {
                     isLoadingInprogress = false;
                 }

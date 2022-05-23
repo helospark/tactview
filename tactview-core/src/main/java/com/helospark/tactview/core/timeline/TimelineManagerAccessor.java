@@ -997,17 +997,30 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         TimelinePosition position = request.getPosition()
                 .orElseGet(() -> channel.findPositionWhereIntervalWithLengthCanBeInserted(clip.getInterval().getLength()));
 
+        int channelIndex = findChannelIndex(channel.getId()).get();
+
         TimelinePosition relativeMove = position.subtract(clip.getInterval().getStartPosition());
 
         clip.setInterval(clip.getInterval().butMoveStartPostionTo(position));
         if (!request.getChannel().canAddResourceAt(clip.getInterval())) {
             return false;
         }
+        channelIndex += 1;
         for (var additionalClip : request.getAdditionalClipsToAdd()) {
             additionalClip.clip.setInterval(additionalClip.clip.getInterval().butAddOffset(relativeMove));
-            if (!additionalClip.channel.canAddResourceAt(additionalClip.clip.getInterval())) {
-                return false;
+            if (additionalClip.channel != null) {
+                if (!additionalClip.channel.canAddResourceAt(additionalClip.clip.getInterval())) {
+                    return false;
+                }
+            } else {
+                Optional<TimelineChannel> maybeNewChannel = findChannelOnIndex(channelIndex);
+                if (maybeNewChannel.isPresent() && maybeNewChannel.get().canAddResourceAt(additionalClip.clip.getInterval())) {
+                    additionalClip.channel = maybeNewChannel.get();
+                } else {
+                    additionalClip.channel = createChannel(channelIndex);
+                }
             }
+            ++channelIndex;
         }
         addClip(request.getChannel(), clip);
         for (var additionalClip : request.getAdditionalClipsToAdd()) {
