@@ -5,7 +5,9 @@ import static com.helospark.tactview.core.util.async.RunnableExceptionLoggerDeco
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -13,10 +15,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
+import com.helospark.tactview.core.markers.ResettableBean;
+import com.helospark.tactview.core.save.LoadMetadata;
+import com.helospark.tactview.core.save.SaveLoadContributor;
+import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.ClipFactoryChain;
@@ -30,9 +38,12 @@ import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.AudioImagePatternService;
+import com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia.ProjectMediaElement;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
+import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
@@ -47,13 +58,16 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
 @Component
-public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCloseListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClipsWindow.class);
-    public static final String CLIP_ENTRY = "clip-entry";
+public class ProjectMediaWindow extends DetachableTab implements TabOpenListener, TabCloseListener, ResettableBean, SaveLoadContributor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectMediaWindow.class);
+    public static final String PROJECT_MEDIA_ENTRY = "project-media-entry";
     private static final BigDecimal defaultImagePositionPercent = new BigDecimal("0.1");
     private static final int ELEMENT_WIDTH = 120;
     private static final int NUMBER_OF_PREVIEW_FRAMES = 20;
-    public static final String ID = "clips-window";
+    public static final String ID = "project-media-window";
+
+    private FlowPane pane;
+    private ScrollPane scrollPane;
 
     private boolean isTabOpen = false;
 
@@ -62,28 +76,31 @@ public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCl
     private ByteBufferToJavaFxImageConverter imageConverter;
     private AudioImagePatternService audioImagePatternService;
     private ThreadPoolExecutor executorService;
+    private ObjectMapper objectMapper;
 
-    List<ClipsWindowsElement> elements = new ArrayList<>();
+    List<ProjectMediaElement> elements = new ArrayList<>();
 
-    public ClipsWindow(ClipFactoryChain clipFactoryChain, MemoryManager memoryManager, ByteBufferToJavaFxImageConverter imageConverter,
-            AudioImagePatternService audioImagePatternService, @Qualifier("longRunningTaskExecutorService") ThreadPoolExecutor executorService) {
+    public ProjectMediaWindow(ClipFactoryChain clipFactoryChain, MemoryManager memoryManager, ByteBufferToJavaFxImageConverter imageConverter,
+            AudioImagePatternService audioImagePatternService, @Qualifier("longRunningTaskExecutorService") ThreadPoolExecutor executorService,
+            @Qualifier("simpleObjectMapper") ObjectMapper objectMapper) {
         super(ID);
         this.clipFactoryChain = clipFactoryChain;
         this.memoryManager = memoryManager;
         this.imageConverter = imageConverter;
         this.audioImagePatternService = audioImagePatternService;
         this.executorService = executorService;
+        this.objectMapper = objectMapper;
     }
 
     protected void openTab() {
-        ScrollPane scrollPane = new ScrollPane();
+        scrollPane = new ScrollPane();
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
         scrollPane.getStyleClass().add("clips-window-pane");
 
-        FlowPane pane = new FlowPane();
+        pane = new FlowPane();
 
         scrollPane.setOnDragOver(event -> {
             Dragboard db = event.getDragboard();
@@ -101,14 +118,8 @@ public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCl
                             .build();
                     List<TimelineClip> templateClips = clipFactoryChain.createClips(request);
                     if (templateClips.size() > 0) {
-                        Image defaultImage = getDefaultImageFor(templateClips);
                         String label = file.getName();
-                        ClipsWindowsElement element = new ClipsWindowsElement(UUID.randomUUID().toString(), templateClips, defaultImage, label);
-                        elements.add(element);
-                        if (getFirstClipOfType(templateClips, VisualTimelineClip.class).isPresent()) {
-                            executorService.execute(withExceptionLogging(() -> fillImages(element)));
-                        }
-                        pane.getChildren().add(createEntry(element));
+                        addClips(templateClips, label);
                         success = true;
                     }
                 }
@@ -119,10 +130,25 @@ public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCl
             }
         });
 
+        refreshPaneContent();
+
+        ContextMenu contextMenu = new ContextMenu();
+        scrollPane.setContextMenu(contextMenu);
+
         scrollPane.setContent(pane);
 
         this.setContent(scrollPane);
-        this.setText("Clips");
+        this.setText("Project media");
+    }
+
+    public void addClips(List<TimelineClip> templateClips, String label) {
+        Image defaultImage = getDefaultImageFor(templateClips);
+        ProjectMediaElement element = new ProjectMediaElement(UUID.randomUUID().toString(), templateClips, defaultImage, label);
+        elements.add(element);
+        if (getFirstClipOfType(templateClips, VisualTimelineClip.class).isPresent()) {
+            executorService.execute(withExceptionLogging(() -> fillImages(element)));
+        }
+        pane.getChildren().add(createEntry(element));
     }
 
     private Image getDefaultImageFor(List<TimelineClip> templateClips) {
@@ -162,9 +188,9 @@ public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCl
         return templateClips.stream().filter(clip -> type.isAssignableFrom(clip.getClass())).map(clip -> type.cast(clip)).findFirst();
     }
 
-    private Node createEntry(ClipsWindowsElement element) {
+    private Node createEntry(ProjectMediaElement element) {
         VBox vbox = new VBox();
-        vbox.getStyleClass().add(CLIP_ENTRY);
+        vbox.getStyleClass().add(PROJECT_MEDIA_ENTRY);
 
         ImageView imageView = new ImageView(element.getDefaultImage());
         imageView.maxWidth(ELEMENT_WIDTH);
@@ -194,7 +220,7 @@ public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCl
             db.setDragView(element.getDefaultImage());
 
             ClipboardContent content = new ClipboardContent();
-            content.putString(CLIP_ENTRY);
+            content.putString(PROJECT_MEDIA_ENTRY);
             content.put(DataFormat.RTF, element);
             db.setContent(content);
 
@@ -204,7 +230,7 @@ public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCl
         return vbox;
     }
 
-    private void fillImages(ClipsWindowsElement element) {
+    private void fillImages(ProjectMediaElement element) {
         List<Image> images = new ArrayList<>(NUMBER_OF_PREVIEW_FRAMES);
         TimelineLength length = element.getTemplateClips().get(0).getInterval().getLength();
         for (int i = 0; i < NUMBER_OF_PREVIEW_FRAMES; ++i) {
@@ -227,6 +253,68 @@ public class ClipsWindow extends DetachableTab implements TabOpenListener, TabCl
     @Override
     public void tabClosed() {
         isTabOpen = false;
+    }
+
+    @Override
+    public void resetDefaults() {
+        if (pane != null) {
+            pane.getChildren().clear();
+        }
+        elements.clear();
+    }
+
+    @Override
+    public void generateSavedContent(Map<String, Object> generatedContent, SaveMetadata saveMetadata) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (var element : elements) {
+            Map<String, Object> savedElementFragment = new HashMap<>();
+            savedElementFragment.put("id", element.getId());
+            savedElementFragment.put("label", element.getLabel());
+            List<Object> clips = new ArrayList<>();
+            for (var clip : element.getTemplateClips()) {
+                Object savedClipContent = clip.generateSavedContent(saveMetadata);
+                clips.add(savedClipContent);
+            }
+            savedElementFragment.put("clips", clips);
+            result.add(savedElementFragment);
+        }
+
+        generatedContent.put("project_media", result);
+    }
+
+    @Override
+    public void loadFrom(JsonNode tree, LoadMetadata metadata) {
+        JsonNode list = tree.get("project_media");
+        for (int i = 0; i < list.size(); ++i) {
+            try {
+                JsonNode listElement = list.get(i);
+                String id = listElement.get("id").asText();
+                String label = listElement.get("label").asText();
+                List<TimelineClip> templateClips = new ArrayList<>();
+                for (int clipIndex = 0; clipIndex < listElement.get("clips").size(); ++clipIndex) {
+                    templateClips.add(clipFactoryChain.restoreClip(listElement.get("clips").get(clipIndex), metadata));
+                }
+
+                Image defaultImage = getDefaultImageFor(templateClips);
+                ProjectMediaElement result = new ProjectMediaElement(id, templateClips, defaultImage, label);
+                if (getFirstClipOfType(templateClips, VisualTimelineClip.class).isPresent()) {
+                    executorService.execute(withExceptionLogging(() -> fillImages(result)));
+                }
+                elements.add(result);
+            } catch (Exception e) {
+                LOGGER.warn("Error while loading project media at index {}", i, e);
+            }
+        }
+        Platform.runLater(() -> refreshPaneContent());
+    }
+
+    private void refreshPaneContent() {
+        if (pane != null) {
+            for (var element : elements) {
+                pane.getChildren().add(createEntry(element));
+            }
+        }
     }
 
 }

@@ -35,8 +35,8 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineDragAndDropHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheElement;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.domain.TimelineUiCacheType;
-import com.helospark.tactview.ui.javafx.uicomponents.window.ClipsWindow;
-import com.helospark.tactview.ui.javafx.uicomponents.window.ClipsWindowsElement;
+import com.helospark.tactview.ui.javafx.uicomponents.window.ProjectMediaWindow;
+import com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia.ProjectMediaElement;
 
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
@@ -86,8 +86,8 @@ public class TimelineCanvasOnDragOverHandler {
                 onClipDraggedToCanvas(event, db, request);
             } else if (db.getString().startsWith("effect:")) {
                 onEffectDraggedToCanvas(event, db, request);
-            } else if (db.getString().startsWith(ClipsWindow.CLIP_ENTRY)) {
-                onClipEntryDraggedToCanvas(event, db, request);
+            } else if (db.getString().startsWith(ProjectMediaWindow.PROJECT_MEDIA_ENTRY)) {
+                onProjectMediaDraggedToCanvas(event, db, request);
             }
         } else {
             onDrag(event.getX(), event.getY(), false, request);
@@ -126,10 +126,10 @@ public class TimelineCanvasOnDragOverHandler {
         }
     }
 
-    private void onClipEntryDraggedToCanvas(DragEvent event, Dragboard db, TimelineCanvasOnDragOverHandlerRequest request) {
+    private void onProjectMediaDraggedToCanvas(DragEvent event, Dragboard db, TimelineCanvasOnDragOverHandlerRequest request) {
         Optional<TimelineChannel> optionalChannel = request.channel;
         if (optionalChannel.isPresent()) {
-            ClipsWindowsElement element = (ClipsWindowsElement) db.getContent(DataFormat.RTF);
+            ProjectMediaElement element = (ProjectMediaElement) db.getContent(DataFormat.RTF);
             double currentX = event.getX();
             String channelId = optionalChannel.get().getId();
             TimelinePosition position = timelineState.pixelsToSeconds(currentX);

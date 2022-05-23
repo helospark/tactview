@@ -1312,4 +1312,11 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         }
     }
 
+    public List<TimelineClip> resolveClipsWithAllLinkedClip(List<TimelineClip> allClips) {
+        List<String> ids = allClips.stream()
+                .map(a -> a.getId())
+                .collect(Collectors.toList());
+        return resolveClipIdsWithAllLinkedClip(ids);
+    }
+
 }

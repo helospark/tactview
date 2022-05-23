@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx.uicomponents.window;
+package com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import com.helospark.tactview.core.timeline.TimelineClip;
 
 import javafx.scene.image.Image;
 
-public class ClipsWindowsElement {
+public class ProjectMediaElement {
     String id;
     String label;
     List<TimelineClip> templateClips;
@@ -15,10 +15,11 @@ public class ClipsWindowsElement {
     Image defaultImage;
     List<Image> previewImages = List.of();
 
-    public ClipsWindowsElement(String id, List<TimelineClip> templateClips, Image defaultImage, String label) {
+    public ProjectMediaElement(String id, List<TimelineClip> templateClips, Image defaultImage, String label) {
         this.id = id;
         this.templateClips = templateClips;
         this.defaultImage = defaultImage;
+        this.label = label;
     }
 
     public String getId() {
