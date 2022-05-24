@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -122,6 +123,39 @@ public class LinkClipRepository implements SaveLoadContributor {
             return;
         }
         entries.removeAll(linkedClipIds);
+    }
+
+    public Map<String, List<String>> getLinkedClips(List<String> clipIds) {
+        Map<String, List<String>> result = new HashMap<>();
+        for (var clip : clipIds) {
+            result.put(clip, getLinkedClips(clip));
+        }
+        return result;
+    }
+
+    public Map<String, List<String>> mapLinksWithChangedClipsIds(Map<String, String> oldToNewClipIds, Map<String, List<String>> originalLinks) {
+        Map<String, List<String>> result = new HashMap<>();
+        for (var originalLink : originalLinks.entrySet()) {
+            List<String> elements = new ArrayList<>();
+            String newLink = oldToNewClipIds.get(originalLink.getKey());
+            if (newLink != null) {
+                for (var link : originalLink.getValue()) {
+                    if (oldToNewClipIds.containsKey(link)) {
+                        elements.add(oldToNewClipIds.get(link));
+                    }
+                    result.put(newLink, elements);
+                }
+            }
+        }
+        return result;
+    }
+
+    public void linkClips(Map<String, List<String>> newLinks) {
+        for (var entry : newLinks.entrySet()) {
+            for (var element : entry.getValue()) {
+                linkClip(entry.getKey(), element);
+            }
+        }
     }
 
 }

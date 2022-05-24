@@ -30,10 +30,11 @@ public class StandardClipContextMenuChainItemConfiguration {
 
     @Bean
     @Order(100)
-    public ClipContextMenuChainItem copyMenuItem(CopyPasteRepository copyPasteRepository) {
+    public ClipContextMenuChainItem copyMenuItem(CopyPasteRepository copyPasteRepository, TimelineManagerAccessor timelineManagerAccessor) {
         return alwaysSupportedContextMenuItem(request -> {
             MenuItem copyClip = new MenuItem("Copy");
-            copyClip.setOnAction(e -> copyPasteRepository.copyClip(List.of(request.getPrimaryClip().getId())));
+            List<String> clips = timelineManagerAccessor.findLinkedClipsWithSameInterval(request.getPrimaryClip().getId());
+            copyClip.setOnAction(e -> copyPasteRepository.copyClip(clips));
             return copyClip;
         });
     }

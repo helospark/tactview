@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -34,6 +34,9 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
+import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
+import com.helospark.tactview.ui.javafx.repository.copypaste.ClipCopyPasteDomain;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
@@ -42,9 +45,11 @@ import com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia.Project
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
@@ -53,6 +58,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
@@ -68,6 +74,7 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
 
     private FlowPane pane;
     private ScrollPane scrollPane;
+    ContextMenu elementContextMenu = null;
 
     private boolean isTabOpen = false;
 
@@ -76,20 +83,22 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
     private ByteBufferToJavaFxImageConverter imageConverter;
     private AudioImagePatternService audioImagePatternService;
     private ThreadPoolExecutor executorService;
-    private ObjectMapper objectMapper;
+    private AlertDialogFactory alertDialogFactory;
+    private CopyPasteRepository copyPasteRepository;
 
     List<ProjectMediaElement> elements = new ArrayList<>();
 
     public ProjectMediaWindow(ClipFactoryChain clipFactoryChain, MemoryManager memoryManager, ByteBufferToJavaFxImageConverter imageConverter,
             AudioImagePatternService audioImagePatternService, @Qualifier("longRunningTaskExecutorService") ThreadPoolExecutor executorService,
-            @Qualifier("simpleObjectMapper") ObjectMapper objectMapper) {
+            AlertDialogFactory alertDialogFactory, CopyPasteRepository copyPasteRepository) {
         super(ID);
         this.clipFactoryChain = clipFactoryChain;
         this.memoryManager = memoryManager;
         this.imageConverter = imageConverter;
         this.audioImagePatternService = audioImagePatternService;
         this.executorService = executorService;
-        this.objectMapper = objectMapper;
+        this.alertDialogFactory = alertDialogFactory;
+        this.copyPasteRepository = copyPasteRepository;
     }
 
     protected void openTab() {
@@ -127,6 +136,11 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
                     event.consume();
                     db.clear();
                 }
+            }
+        });
+        scrollPane.setOnMouseClicked(event -> {
+            if (elementContextMenu != null) {
+                elementContextMenu.hide();
             }
         });
 
@@ -195,6 +209,7 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
         ImageView imageView = new ImageView(element.getDefaultImage());
         imageView.maxWidth(ELEMENT_WIDTH);
         Label text = new Label(element.getLabel());
+        text.setAlignment(Pos.TOP_CENTER);
         text.setWrapText(true);
         text.setMaxWidth(ELEMENT_WIDTH);
 
@@ -227,7 +242,65 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
             event.consume();
         });
 
+        vbox.setOnMouseClicked(event -> {
+            if (elementContextMenu != null) {
+                elementContextMenu.hide();
+            }
+            if (event.getButton().equals(MouseButton.SECONDARY)) {
+                elementContextMenu = createContextMenu(element);
+                elementContextMenu.show(this.pane, event.getScreenX(), event.getScreenY());
+                event.consume();
+            }
+        });
+
         return vbox;
+    }
+
+    private ContextMenu createContextMenu(ProjectMediaElement element) {
+        MenuItem renameItem = new MenuItem("Rename");
+        renameItem.setOnAction(e -> {
+            Optional<String> result = alertDialogFactory.showTextInputDialog("Rename", "Rename", element.getLabel());
+            if (result.isPresent()) {
+                element.setLabel(result.get());
+            }
+            refreshPaneContent();
+        });
+        MenuItem copyItem = new MenuItem("Copy");
+        copyItem.setOnAction(e -> {
+            Map<String, List<String>> links = new HashMap<>();
+            for (var clip : element.getTemplateClips()) {
+                List<String> allLinks = element.getTemplateClips().stream().map(a -> a.getId()).collect(Collectors.toList());
+                links.put(clip.getId(), allLinks);
+            }
+
+            copyPasteRepository.copyRawClips(element.getTemplateClips(), links);
+        });
+        MenuItem pasteItem = new MenuItem("Paste");
+        pasteItem.setOnAction(e -> {
+            if (copyPasteRepository.hasClipInClipboard()) {
+                ClipCopyPasteDomain clipDomain = copyPasteRepository.getClipDomain();
+                List<TimelineClip> clips = clipDomain.copiedData.stream()
+                        .map(data -> data.clipboardContent)
+                        .collect(Collectors.toList());
+                String label = clips.get(0).getClass().getSimpleName();
+                addClips(clips, label);
+                refreshPaneContent();
+            }
+        });
+        if (!copyPasteRepository.hasClipInClipboard()) {
+            pasteItem.setDisable(true);
+        }
+        MenuItem deleteItem = new MenuItem("Delete");
+        deleteItem.setOnAction(e -> {
+            elements.remove(element);
+            refreshPaneContent();
+        });
+        ContextMenu contextMenu = new ContextMenu();
+        contextMenu.getItems().add(renameItem);
+        contextMenu.getItems().add(copyItem);
+        contextMenu.getItems().add(pasteItem);
+        contextMenu.getItems().add(deleteItem);
+        return contextMenu;
     }
 
     private void fillImages(ProjectMediaElement element) {
@@ -311,6 +384,7 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
 
     private void refreshPaneContent() {
         if (pane != null) {
+            pane.getChildren().clear();
             for (var element : elements) {
                 pane.getChildren().add(createEntry(element));
             }

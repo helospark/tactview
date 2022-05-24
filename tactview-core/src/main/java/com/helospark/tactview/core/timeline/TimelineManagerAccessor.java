@@ -1044,6 +1044,10 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return endPosition;
     }
 
+    public Optional<TimelinePosition> findEndPosition(String channelId) {
+        return findChannelWithId(channelId).map(channel -> channel.findMaximumEndPosition());
+    }
+
     public void moveEffectToChannel(TimelineClip clip, String effectId, int newChannelIndex) {
         StatelessEffect effect = clip.getEffect(effectId).get();
         Integer currentIndex = clip.getEffectChannelIndex(effectId).get();

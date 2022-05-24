@@ -85,11 +85,12 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1500)
-    public SelectableMenuContribution copyContributionMenuItem(SelectedNodeRepository selectedNodeRepository, CopyPasteRepository copyPasteRepository) {
+    public SelectableMenuContribution copyContributionMenuItem(SelectedNodeRepository selectedNodeRepository, CopyPasteRepository copyPasteRepository, TimelineManagerAccessor timelineManager) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, "_Copy"), event -> {
             List<String> selectedClipIds = selectedNodeRepository.getSelectedClipIds();
-            if (selectedClipIds.size() > 0) { // copy ony the first for now
-                copyPasteRepository.copyClip(selectedClipIds);
+            if (selectedClipIds.size() > 0) {
+                List<String> clips = timelineManager.resolveClipIdsWithAllLinkedClip(selectedClipIds).stream().map(a -> a.getId()).collect(Collectors.toList());
+                copyPasteRepository.copyClip(clips);
             } else {
                 List<String> selectedEffects = selectedNodeRepository.getSelectedEffectIds();
                 if (selectedEffects.size() > 0) {

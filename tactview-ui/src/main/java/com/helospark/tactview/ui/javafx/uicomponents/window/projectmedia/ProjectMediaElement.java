@@ -46,4 +46,8 @@ public class ProjectMediaElement {
         this.previewImages = images;
     }
 
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
 }

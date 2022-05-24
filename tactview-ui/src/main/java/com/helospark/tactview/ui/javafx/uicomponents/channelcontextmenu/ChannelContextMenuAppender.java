@@ -16,6 +16,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.DuplicateChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.MoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveChannelCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveGapCommand;
+import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEditModeRepository;
 
@@ -31,14 +32,16 @@ public class ChannelContextMenuAppender {
     private UiMessagingService messagingService;
     private TimelineEditModeRepository timelineEditModeRepository;
     private SelectedNodeRepository selectedNodeRepository;
+    private CopyPasteRepository copyPasteRepository;
 
     public ChannelContextMenuAppender(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreterService, UiMessagingService messagingService,
-            TimelineEditModeRepository timelineEditModeRepository, SelectedNodeRepository selectedNodeRepository) {
+            TimelineEditModeRepository timelineEditModeRepository, SelectedNodeRepository selectedNodeRepository, CopyPasteRepository copyPasteRepository) {
         this.timelineManager = timelineManager;
         this.commandInterpreterService = commandInterpreterService;
         this.messagingService = messagingService;
         this.timelineEditModeRepository = timelineEditModeRepository;
         this.selectedNodeRepository = selectedNodeRepository;
+        this.copyPasteRepository = copyPasteRepository;
     }
 
     public void addContextMenu(Node node, String channelId) {
@@ -58,6 +61,9 @@ public class ChannelContextMenuAppender {
             addRemoveGapCommandMenuItemIfNeeded(position.get(), channelIndex, contextMenu);
         }
 
+        contextMenu.getItems().add(createPasteMenuItem(channelId, position));
+        contextMenu.getItems().add(new SeparatorMenuItem());
+
         contextMenu.getItems().add(createMoveChannelUpMenuItem(channelId));
         contextMenu.getItems().add(createMoveChannelDownMenuItem(channelId));
 
@@ -76,6 +82,21 @@ public class ChannelContextMenuAppender {
         contextMenu.getItems().add(deleteChannelMenuItem(channelId));
 
         return contextMenu;
+    }
+
+    private MenuItem createPasteMenuItem(String channelId, Optional<TimelinePosition> position) {
+        MenuItem menuItem = new MenuItem("Paste");
+        menuItem.setOnAction(e -> {
+            if (copyPasteRepository.hasClipInClipboard()) {
+                TimelinePosition actualPosition = position.orElse(timelineManager.findEndPosition(channelId).orElse(timelineManager.findEndPosition()));
+
+                copyPasteRepository.pasteClipToPosition(channelId, actualPosition);
+            }
+        });
+        if (!copyPasteRepository.hasClipInClipboard()) {
+            menuItem.setDisable(true);
+        }
+        return menuItem;
     }
 
     private MenuItem selectClipsInTabsMenuItem(String channelId) {
