@@ -71,7 +71,7 @@ public class InputModeRepository implements CleanableMode {
             SizeFunctionImplementation sizeFunctionImplementation, PlaybackFrameAccessor playbackController,
             UiTimelineManager timelineManager, VideoStatusBarUpdater videoStatusBarUpdater,
             CurrentlyPressedKeyRepository currentlyPressedKeyRepository, GeneralCanvasOperationStrategy generalCanvasOperationStrategy, SelectedNodeRepository selectedNodeRepository,
-            CanvasStateHolder canvasStateHolder, UiProjectRepository uiProjectRepository) {
+            UiProjectRepository uiProjectRepository) {
         this.projectRepository = projectRepository;
         this.displayUpdaterService = displayUpdaterService;
         this.sizeFunctionImplementation = sizeFunctionImplementation;
@@ -81,13 +81,13 @@ public class InputModeRepository implements CleanableMode {
         this.currentlyPressedKeyRepository = currentlyPressedKeyRepository;
         this.generalCanvasOperationStrategy = generalCanvasOperationStrategy;
         this.selectedNodeRepository = selectedNodeRepository;
-        this.canvasStateHolder = canvasStateHolder;
         this.uiProjectRepository = uiProjectRepository;
     }
 
     // TODO: should this be in DI framework?
-    public void setCanvas(Canvas canvas) {
-        this.canvas = canvas;
+    public void registerFor(CanvasStateHolder canvasStateHolder) {
+        this.canvasStateHolder = canvasStateHolder;
+        this.canvas = canvasStateHolder.getCanvas();
         processStrategy();
     }
 
@@ -172,7 +172,7 @@ public class InputModeRepository implements CleanableMode {
             updateCanvas(e);
         });
         canvas.setOnMouseExited(e -> {
-            displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+            displayUpdaterService.updateCurrentPositionWithInvalidatedCache(canvasStateHolder);
             generalCanvasOperationStrategy.onMouseExited(canvas);
             updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null);
         });
@@ -182,7 +182,7 @@ public class InputModeRepository implements CleanableMode {
         GraphicsContext graphics = canvas.getGraphicsContext2D();
         if (inputModeInput != null) {
             // TODO: should not be here
-            displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+            displayUpdaterService.updateCurrentPositionWithInvalidatedCache(canvasStateHolder);
             Platform.runLater(() -> {
                 graphics.setStroke(javafx.scene.paint.Color.RED);
                 graphics.strokeLine(0, e.getY(), canvas.getWidth(), e.getY());
@@ -253,6 +253,7 @@ public class InputModeRepository implements CleanableMode {
                         .withy(unmodifiedY / projectRepository.getPreviewHeight())
                         .withMouseEvent(e)
                         .withRectangles(filteredRectangles)
+                        .withCanvasStateHolder(canvasStateHolder)
                         .build();
                 fallbackHandler.accept(fallbackRequest);
             }

@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.preference.PreferenceValue;
@@ -46,7 +45,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import sonic.Sonic;
 
-@Component
 public class UiTimelineManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(UiTimelineManager.class);
     private ThreadPoolExecutor playbackExecutorService = createExecutorService();
@@ -59,6 +57,7 @@ public class UiTimelineManager {
     private volatile TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
     private volatile boolean isPlaying;
     private final Object timelineLock = new Object();
+    private CanvasStateHolder canvasStateHolder;
 
     private Sonic sonic = null;
 
@@ -76,19 +75,20 @@ public class UiTimelineManager {
 
     private long lastTimeScreenUpdated = 0;
 
-    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
+    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackFrameAccessor,
             AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository, JavaByteArrayConverter javaByteArrayConverter,
             List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
-            UiProjectRepository uiProjectRepository) {
+            UiProjectRepository uiProjectRepository, CanvasStateHolder canvasStateHolder) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
-        this.playbackFrameAccessor = playbackController;
+        this.playbackFrameAccessor = playbackFrameAccessor;
         this.audioStreamService = audioStreamService;
         this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
         this.javaByteArrayConverter = javaByteArrayConverter;
         this.audioPlayedListeners = audioPlayedListeners;
         this.scheduledExecutorService = scheduledExecutorService;
         this.uiProjectRepository = uiProjectRepository;
+        this.canvasStateHolder = canvasStateHolder;
 
         scheduledExecutorService.scheduleAtFixedRate(() -> handleStuckPlayback(), 5000, 5000, TimeUnit.MILLISECONDS);
     }
@@ -161,6 +161,7 @@ public class UiTimelineManager {
                         .withCanDropFrames(true)
                         .withCurrentPosition(currentPosition)
                         .withExpectedNextPositions(expectedNextFramesWithDroppedFrameModulo(10, CACHE_MODULO, frame + 1))
+                        .withCanvasStateHolder(canvasStateHolder)
                         .build();
 
                 audioVideoFragment.free();
@@ -251,9 +252,9 @@ public class UiTimelineManager {
 
     public void refreshDisplay(boolean invalidateCache) {
         if (invalidateCache) {
-            displayUpdaterService.updateDisplayWithCacheInvalidation(this.getCurrentPosition());
+            displayUpdaterService.updateDisplayWithCacheInvalidation(this.getCurrentPosition(), canvasStateHolder);
         } else {
-            displayUpdaterService.updateDisplay(this.getCurrentPosition());
+            displayUpdaterService.updateDisplay(this.getCurrentPosition(), canvasStateHolder);
         }
         notifyConsumers();
 
@@ -433,7 +434,7 @@ public class UiTimelineManager {
         FullScreenData fullscreenData = new FullScreenData(canvas, (int) videoWidth, (int) videoHeight, videoWidth / projectRepository.getWidth());
 
         displayUpdaterService.startFullscreenPreview(fullscreenData);
-        displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+        displayUpdaterService.updateCurrentPositionWithInvalidatedCache(canvasStateHolder);
     }
 
     public void stopFullscreen() {

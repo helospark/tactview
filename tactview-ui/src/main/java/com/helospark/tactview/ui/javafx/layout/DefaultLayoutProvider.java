@@ -5,7 +5,7 @@ import java.util.List;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.AddableContentDockableTabFactory;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.CurveEditorDockableTabFactory;
-import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTabFactory;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTab;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PropertyEditorDockableTabFactory;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPaneLoadModel;
@@ -17,10 +17,10 @@ public class DefaultLayoutProvider {
     private PropertyEditorDockableTabFactory propertyEditorDockableTabFactory;
     private AddableContentDockableTabFactory addableContentDockableTabFactory;
     private CurveEditorDockableTabFactory curveEditorDockableTabFactory;
-    private PreviewDockableTabFactory previewDockableTabFactory;
+    private PreviewDockableTab previewDockableTabFactory;
 
     public DefaultLayoutProvider(PropertyEditorDockableTabFactory propertyEditorDockableTabFactory, AddableContentDockableTabFactory addableContentDockableTabFactory,
-            CurveEditorDockableTabFactory curveEditorDockableTabFactory, PreviewDockableTabFactory previewDockableTabFactory) {
+            CurveEditorDockableTabFactory curveEditorDockableTabFactory, PreviewDockableTab previewDockableTabFactory) {
         this.propertyEditorDockableTabFactory = propertyEditorDockableTabFactory;
         this.addableContentDockableTabFactory = addableContentDockableTabFactory;
         this.curveEditorDockableTabFactory = curveEditorDockableTabFactory;

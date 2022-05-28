@@ -5,16 +5,18 @@ import java.math.BigDecimal;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
-import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
+import com.helospark.tactview.ui.javafx.CanvasStates;
 import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.UiTimelineManagerFactory;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
-import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
+import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponentFactory;
 
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -31,36 +33,47 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-@Component
-public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory {
-    public static final String ID = "preview";
+public abstract class AbstractPreviewDockableTabFactory extends AbstractCachingDockableTabFactory {
     private UiPlaybackPreferenceRepository playbackPreferenceRepository;
-    private AudioVisualizationComponent audioVisualazationComponent;
     private UiProjectRepository uiProjectRepository;
     private UiTimelineManager uiTimelineManager;
     private SingleFullImageViewController fullScreenRenderer;
     private ScaleComboBoxFactory scaleComboBoxFactory;
-    private CanvasStateHolder canvasStateHolder;
+    private MessagingService messagingService;
+    private CanvasStates canvasStates;
+    private AudioVisualizationComponentFactory audioVisualizationComponentFactory;
+    private UiTimelineManagerFactory uiTimelineManagerFactory;
 
     public Label videoTimestampLabel;
+    private String id;
+    private CanvasStateHolder canvasStateHolder;
 
-    public PreviewDockableTabFactory(UiPlaybackPreferenceRepository playbackPreferenceRepository, AudioVisualizationComponent audioVisualazationComponent, UiProjectRepository uiProjectRepository,
-            UiTimelineManager uiTimelineManager, SingleFullImageViewController fullScreenRenderer, ScaleComboBoxFactory scaleComboBoxFactory,
-            CanvasStateHolder canvasStateHolder) {
+    public AbstractPreviewDockableTabFactory(String id, UiPlaybackPreferenceRepository playbackPreferenceRepository,
+            UiProjectRepository uiProjectRepository, AudioVisualizationComponentFactory audioVisualizationComponentFactory,
+            SingleFullImageViewController fullScreenRenderer, ScaleComboBoxFactory scaleComboBoxFactory,
+            MessagingService messagingService, CanvasStates canvasStates, UiTimelineManagerFactory uiTimelineManagerFactory) {
         this.playbackPreferenceRepository = playbackPreferenceRepository;
-        this.audioVisualazationComponent = audioVisualazationComponent;
         this.uiProjectRepository = uiProjectRepository;
-        this.uiTimelineManager = uiTimelineManager;
         this.fullScreenRenderer = fullScreenRenderer;
         this.scaleComboBoxFactory = scaleComboBoxFactory;
-        this.canvasStateHolder = canvasStateHolder;
+        this.messagingService = messagingService;
+        this.id = id;
+        this.canvasStates = canvasStates;
+        this.audioVisualizationComponentFactory = audioVisualizationComponentFactory;
+        this.uiTimelineManagerFactory = uiTimelineManagerFactory;
     }
 
-    private BorderPane createPreviewRightVBox() {
-        Canvas canvas = canvasStateHolder.getCanvas();
-        BorderPane previewScrollPane = createCentered(canvas);
+    protected BorderPane createPreviewRightVBox() {
+        canvasStateHolder = new CanvasStateHolder(messagingService);
+        Canvas canvas = new Canvas();
+        canvasStateHolder.setCanvas(canvas);
+        canvasStates.registerCanvas(id, canvasStateHolder);
+        uiTimelineManager = uiTimelineManagerFactory.create(canvasStateHolder);
+        BorderPane previewScrollPane = createCentered(canvas, canvasStateHolder);
         canvas.widthProperty().bind(previewScrollPane.widthProperty().subtract(20.0));
         canvas.heightProperty().bind(previewScrollPane.heightProperty().subtract(30.0));
+
+        AudioVisualizationComponent audioVisualazationComponent = audioVisualizationComponentFactory.create(canvasStateHolder);
 
         VBox rightVBox = new VBox(3);
         rightVBox.setAlignment(Pos.TOP_CENTER);
@@ -128,7 +141,7 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
         jumpForwardButton.setTooltip(new Tooltip("Step 10s forward"));
 
-        ComboBox<String> sizeDropDown = scaleComboBoxFactory.create();
+        ComboBox<String> sizeDropDown = scaleComboBoxFactory.create(canvasStateHolder);
 
         ComboBox<String> playbackSpeedDropDown = new ComboBox<>();
         playbackSpeedDropDown.getStyleClass().add("size-drop-down");
@@ -186,7 +199,7 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         videoTimestampLabel.setText(newLabel);
     }
 
-    private BorderPane createCentered(Canvas canvas2) {
+    private BorderPane createCentered(Canvas canvas2, CanvasStateHolder canvasStateHolder) {
         BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("preview-canvas-border-pane");
         borderPane.setCenter(canvas2);
@@ -213,16 +226,16 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         bottomScroll.setVisibleAmount(500);
 
         uiProjectRepository.getPreviewWidthProperty().addListener((listener, oldValue, newValue) -> {
-            showBottomScrollBarIfNeeded(bottomScroll, newValue);
+            showBottomScrollBarIfNeeded(bottomScroll, newValue, canvasStateHolder);
         });
         uiProjectRepository.getPreviewHeightProperty().addListener((listener, oldValue, newValue) -> {
-            showRightScrollBarIfNeeded(rightScroll, newValue);
+            showRightScrollBarIfNeeded(rightScroll, newValue, canvasStateHolder);
         });
 
         return borderPane;
     }
 
-    private void showRightScrollBarIfNeeded(ScrollBar rightScroll, Number newValue) {
+    private void showRightScrollBarIfNeeded(ScrollBar rightScroll, Number newValue, CanvasStateHolder canvasStateHolder) {
         if (canvasStateHolder.getCanvas().getHeight() < newValue.doubleValue()) {
             rightScroll.setMin(-1.0 * newValue.doubleValue());
             rightScroll.setMax(1.0 * newValue.doubleValue());
@@ -232,7 +245,7 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         }
     }
 
-    private void showBottomScrollBarIfNeeded(ScrollBar bottomScroll, Number newValue) {
+    private void showBottomScrollBarIfNeeded(ScrollBar bottomScroll, Number newValue, CanvasStateHolder canvasStateHolder) {
         if (canvasStateHolder.getCanvas().getWidth() < newValue.doubleValue()) {
             bottomScroll.setMin(-1.0 * newValue.doubleValue());
             bottomScroll.setMax(1.0 * newValue.doubleValue());
@@ -248,18 +261,21 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
     }
 
     @Override
-    public DetachableTab createTabInternal() {
-        return new DetachableTab("Preview", createPreviewRightVBox(), ID);
-    }
-
-    @Override
     public boolean doesSupport(String id) {
-        return ID.equals(id);
+        return this.id.equals(id);
     }
 
     @Override
     public String getId() {
-        return ID;
+        return this.id;
+    }
+
+    public CanvasStateHolder getCanvasStateHolder() {
+        return canvasStateHolder;
+    }
+
+    public UiTimelineManager getUiTimelineManager() {
+        return uiTimelineManager;
     }
 
 }

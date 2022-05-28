@@ -5,13 +5,8 @@ import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 
 @Component
 public class DefaultCanvasTranslateSetter {
-    private CanvasStateHolder canvasStateHolder;
 
-    public DefaultCanvasTranslateSetter(CanvasStateHolder canvasStateHolder) {
-        this.canvasStateHolder = canvasStateHolder;
-    }
-
-    public void setDefaultCanvasTranslate(int previewWidth, int previewHeight) {
+    public void setDefaultCanvasTranslate(int previewWidth, int previewHeight, CanvasStateHolder canvasStateHolder) {
         double canvasWidth = canvasStateHolder.getCanvas().getWidth();
         double canvasHeight = canvasStateHolder.getCanvas().getHeight();
         if (canvasWidth > previewWidth) {

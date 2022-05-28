@@ -37,7 +37,6 @@ import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
-import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
@@ -309,7 +308,7 @@ public class TimelineCanvas implements ScenePostProcessor {
 
         canvas.setOnMousePressed(event -> {
             if (scene.getFocusOwner() instanceof Control) {
-                JavaFXUiMain.canvas.requestFocus(); // remove focus from any control element
+                canvas.requestFocus(); // remove focus from any control element
             }
             double position = mapCanvasPixelToTime(event.getX());
             double currentX = position;
@@ -966,19 +965,19 @@ public class TimelineCanvas implements ScenePostProcessor {
         for (var chapter : markerRepository.getMarkers().entrySet()) {
             Color colorToUse = null;
             switch (chapter.getValue().getType()) {
-                case CHAPTER :
+                case CHAPTER:
                     colorToUse = Color.GREENYELLOW;
                     break;
-                case GENERAL :
+                case GENERAL:
                     colorToUse = Color.SIENNA;
                     break;
-                case INPOINT :
+                case INPOINT:
                     colorToUse = Color.GREEN;
                     break;
-                case OUTPOINT :
+                case OUTPOINT:
                     colorToUse = Color.RED;
                     break;
-                default :
+                default:
                     colorToUse = Color.PINK;
                     break;
             }

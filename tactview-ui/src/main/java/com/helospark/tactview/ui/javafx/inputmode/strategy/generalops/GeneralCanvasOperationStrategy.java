@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointP
 import com.helospark.tactview.core.timeline.effect.scale.ScaleEffect;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.util.messaging.MessagingService;
-import com.helospark.tactview.ui.javafx.CanvasStateHolder;
+import com.helospark.tactview.ui.javafx.CanvasStates;
 import com.helospark.tactview.ui.javafx.DisplayUpdateRequestMessage;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiTimelineManager;
@@ -36,23 +36,22 @@ public class GeneralCanvasOperationStrategy {
     private UiTimelineManager uiTimelineManager;
     private UiProjectRepository projectRepository;
     private TimelineManagerAccessor timelineManagerAccessor;
-    private CanvasStateHolder canvasStateHolder;
     private MessagingService messagingService;
     private DefaultCanvasTranslateSetter defaultCanvasTranslateSetter;
+    private CanvasStates canvasStates;
 
     private DragData dragData;
     private Point dragStartPoint = null;
     private Point dragStartPointAbsoluteCanvasPos = null;
 
     public GeneralCanvasOperationStrategy(UiCommandInterpreterService commandInterpreterService, EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager,
-            UiProjectRepository projectRepository, TimelineManagerAccessor timelineManagerAccessor, CanvasStateHolder canvasStateHolder,
+            UiProjectRepository projectRepository, TimelineManagerAccessor timelineManagerAccessor, CanvasStates canvasStates,
             MessagingService messagingService, DefaultCanvasTranslateSetter defaultCanvasTranslateSetter) {
         this.commandInterpreterService = commandInterpreterService;
         this.effectParametersRepository = effectParametersRepository;
         this.uiTimelineManager = uiTimelineManager;
         this.projectRepository = projectRepository;
         this.timelineManagerAccessor = timelineManagerAccessor;
-        this.canvasStateHolder = canvasStateHolder;
         this.messagingService = messagingService;
         this.defaultCanvasTranslateSetter = defaultCanvasTranslateSetter;
     }
@@ -81,7 +80,7 @@ public class GeneralCanvasOperationStrategy {
         if (input.mouseEvent.getButton().equals(MouseButton.MIDDLE)
                 && input.mouseEvent.getClickCount() > 0
                 && input.mouseEvent.isStillSincePress()) {
-            defaultCanvasTranslateSetter.setDefaultCanvasTranslate(projectRepository.getPreviewWidth(), projectRepository.getPreviewHeight());
+            defaultCanvasTranslateSetter.setDefaultCanvasTranslate(projectRepository.getPreviewWidth(), projectRepository.getPreviewHeight(), input.canvasStateHolder);
         }
         dragData = null;
     }
@@ -91,8 +90,8 @@ public class GeneralCanvasOperationStrategy {
             Point relativeMoveNormalized = new Point(input.canvasRelativeX, input.canvasRelativeY).subtract(dragStartPointAbsoluteCanvasPos);
 
             if (Math.abs(relativeMoveNormalized.distanceFrom(0.0, 0.0)) >= 1.0) {
-                canvasStateHolder.increaseTranslateX(relativeMoveNormalized.x);
-                canvasStateHolder.increaseTranslateY(relativeMoveNormalized.y);
+                input.canvasStateHolder.increaseTranslateX(relativeMoveNormalized.x);
+                input.canvasStateHolder.increaseTranslateY(relativeMoveNormalized.y);
                 messagingService.sendMessage(new DisplayUpdateRequestMessage(false));
             }
 

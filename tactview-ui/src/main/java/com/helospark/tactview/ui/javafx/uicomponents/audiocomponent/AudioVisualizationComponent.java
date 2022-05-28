@@ -1,7 +1,5 @@
 package com.helospark.tactview.ui.javafx.uicomponents.audiocomponent;
 
-import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
@@ -16,8 +14,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-@Component
-public class AudioVisualizationComponent implements AudioPlayedListener, PostInitializationArgsCallback {
+public class AudioVisualizationComponent implements AudioPlayedListener {
     private static final int EXPECTED_NUMBER_OF_CHANNELS = 2;
     private static final int BAR_RADIUS = 6;
     Color startColor = Color.GREEN;
@@ -41,10 +38,10 @@ public class AudioVisualizationComponent implements AudioPlayedListener, PostIni
         this.audioRmsCalculator = audioRmsCalculator;
         this.canvasStateHolder = canvasStateHolder;
 
+        initialize();
     }
 
-    @Override
-    public void call(String[] args) {
+    private void initialize() {
         canvasStateHolder.getPreviewAvailableWidthProperty().addListener((e, oldV, newV) -> {
             if (newV.doubleValue() <= 0.0) {
                 return;

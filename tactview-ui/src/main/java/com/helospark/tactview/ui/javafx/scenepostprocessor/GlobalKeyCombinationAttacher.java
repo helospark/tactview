@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
-import com.helospark.tactview.ui.javafx.JavaFXUiMain;
+import com.helospark.tactview.ui.javafx.CanvasStates;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
@@ -65,6 +65,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     private TimelineEditModeRepository editModeRepository;
     private HotKeyRepository hotKeyRepository;
     private MoveByUnitService moveByUnitService;
+    private CanvasStates canvasStates;
 
     private Scene scene;
 
@@ -78,7 +79,8 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
             UiSaveHandler uiSaveHandler,
             TimelineEditModeRepository editModeRepository,
             HotKeyRepository hotKeyRepository,
-            MoveByUnitService moveByUnitService) {
+            MoveByUnitService moveByUnitService,
+            CanvasStates canvasStates) {
         this.keyCombinationRepository = keyCombinationRepository;
         this.selectedNodeRepository = selectedNodeRepository;
         this.removeClipService = removeClipService;
@@ -88,6 +90,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         this.editModeRepository = editModeRepository;
         this.hotKeyRepository = hotKeyRepository;
         this.moveByUnitService = moveByUnitService;
+        this.canvasStates = canvasStates;
     }
 
     @Override
@@ -119,7 +122,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
         keyCombinationRepository.registerKeyCombination(hotKeyRepository.getHotKeyById(EXIT_EVERYTHING),
                 useHandler(event -> {
                     if (scene.getFocusOwner() instanceof Control) {
-                        JavaFXUiMain.canvas.requestFocus(); // remove focus from any control element
+                        canvasStates.getActiveCanvas().getCanvas().requestFocus(); // remove focus from any control element
                     }
                     context.getListOfBeans(CleanableMode.class)
                             .stream()

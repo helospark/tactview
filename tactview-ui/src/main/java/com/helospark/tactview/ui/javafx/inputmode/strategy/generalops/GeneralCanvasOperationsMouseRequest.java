@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
+import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
@@ -20,6 +21,7 @@ public class GeneralCanvasOperationsMouseRequest {
     MouseEvent mouseEvent;
     Map<String, RegularRectangle> rectangles;
     Canvas canvas;
+    CanvasStateHolder canvasStateHolder;
 
     @Generated("SparkTools")
     private GeneralCanvasOperationsMouseRequest(Builder builder) {
@@ -32,6 +34,7 @@ public class GeneralCanvasOperationsMouseRequest {
         this.mouseEvent = builder.mouseEvent;
         this.rectangles = builder.rectangles;
         this.canvas = builder.canvas;
+        this.canvasStateHolder = builder.canvasStateHolder;
     }
 
     @Generated("SparkTools")
@@ -50,6 +53,7 @@ public class GeneralCanvasOperationsMouseRequest {
         private MouseEvent mouseEvent;
         private Map<String, RegularRectangle> rectangles = Collections.emptyMap();
         private Canvas canvas;
+        private CanvasStateHolder canvasStateHolder;
 
         private Builder() {
         }
@@ -96,6 +100,11 @@ public class GeneralCanvasOperationsMouseRequest {
 
         public Builder withCanvas(Canvas canvas) {
             this.canvas = canvas;
+            return this;
+        }
+
+        public Builder withCanvasStateHolder(CanvasStateHolder canvasStateHolder) {
+            this.canvasStateHolder = canvasStateHolder;
             return this;
         }
 
