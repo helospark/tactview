@@ -7,6 +7,7 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.ScrollBar;
 
 @Component
 public class CanvasStateHolder implements ResettableBean {
@@ -15,6 +16,9 @@ public class CanvasStateHolder implements ResettableBean {
     private Canvas canvas;
     private DoubleProperty translateX = new SimpleDoubleProperty(0.0);
     private DoubleProperty translateY = new SimpleDoubleProperty(0.0);
+
+    private ScrollBar rightScrollBar;
+    private ScrollBar bottomScrollBar;
 
     public CanvasStateHolder(MessagingService messagingService) {
         this.messagingService = messagingService;
@@ -36,19 +40,19 @@ public class CanvasStateHolder implements ResettableBean {
     }
 
     public double getTranslateX() {
-        return translateX.doubleValue();
+        return translateX.doubleValue() * -1.0;
     }
 
     public double getTranslateY() {
-        return translateY.doubleValue();
+        return translateY.doubleValue() * -1.0;
     }
 
     public void increaseTranslateX(double x) {
-        translateX.set(translateX.get() + x);
+        translateX.set(translateX.get() + x * -1.0);
     }
 
     public void increaseTranslateY(double y) {
-        translateY.set(translateY.get() + y);
+        translateY.set(translateY.get() + y * -1.0);
     }
 
     @Override
@@ -58,11 +62,11 @@ public class CanvasStateHolder implements ResettableBean {
     }
 
     public void setTranslateX(double x) {
-        this.translateX.set(x);
+        this.translateX.set(x * -1.0);
     }
 
     public void setTranslateY(double y) {
-        this.translateY.set(y);
+        this.translateY.set(y * -1.0);
     }
 
     public DoubleProperty getTranslateXProperty() {

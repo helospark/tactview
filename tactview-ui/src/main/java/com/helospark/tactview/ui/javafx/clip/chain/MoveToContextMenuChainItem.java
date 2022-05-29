@@ -134,9 +134,9 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
     }
 
     private MenuItem createMoveToRightMenuItem(ClipContextMenuChainItemRequest request) {
-        MenuItem moveToLeftMenuItem = new MenuItem("to furthest right");
+        MenuItem moveToRightMenuItem = new MenuItem("to furthest right");
 
-        moveToLeftMenuItem.setOnAction(e -> {
+        moveToRightMenuItem.setOnAction(e -> {
             ClipToRightCommand clipMovedCommand = ClipToRightCommand.builder()
                     .withAdditionalClipIds(request.getAllClips().stream().map(a -> a.getId()).collect(Collectors.toList()))
                     .withClipId(request.getPrimaryClip().getId())
@@ -151,7 +151,7 @@ public class MoveToContextMenuChainItem implements ClipContextMenuChainItem {
             }
         });
 
-        return moveToLeftMenuItem;
+        return moveToRightMenuItem;
     }
 
     private MenuItem createMoveRelativeMenuItem(ClipContextMenuChainItemRequest request) {

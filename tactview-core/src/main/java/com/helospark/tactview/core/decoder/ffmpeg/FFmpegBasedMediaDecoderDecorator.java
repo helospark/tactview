@@ -78,8 +78,8 @@ public class FFmpegBasedMediaDecoderDecorator implements VisualMediaDecoder, Res
             clearNativeState();
         });
         scheduledExecutorService.scheduleAtFixedRate(withExceptionLogging(() -> {
-            LOGGER.debug("Clearing native memory for FFMPEG");
-            //   implementation.runGc();
+            LOGGER.trace("Clearing native memory for FFMPEG");
+            implementation.runGc();
         }), 10, 10, TimeUnit.SECONDS);
     }
 

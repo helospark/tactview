@@ -407,14 +407,16 @@ public class TimelineCanvas implements ScenePostProcessor {
         });
 
         canvas.setOnDragOver(event -> {
-            TimelineCanvasOnDragOverHandlerRequest request = TimelineCanvasOnDragOverHandlerRequest.builder()
-                    .withChannel(findChannelAtPosition(event.getX(), event.getY()))
-                    .withEvent(event)
-                    .withSelectedElement(findElementAt(event.getX(), event.getY()))
-                    .withXPosition(TimelinePosition.ofSeconds(mapCanvasPixelToTime(event.getX())))
-                    .build();
+            if (dragRepository.currentlyDraggedClip() == null) {
+                TimelineCanvasOnDragOverHandlerRequest request = TimelineCanvasOnDragOverHandlerRequest.builder()
+                        .withChannel(findChannelAtPosition(event.getX(), event.getY()))
+                        .withEvent(event)
+                        .withSelectedElement(findElementAt(event.getX(), event.getY()))
+                        .withXPosition(TimelinePosition.ofSeconds(mapCanvasPixelToTime(event.getX())))
+                        .build();
 
-            timelineCanvasOnDragOverHandler.onDragOver(request);
+                timelineCanvasOnDragOverHandler.onDragOver(request);
+            }
         });
 
         canvas.setOnMouseClicked(event -> {
@@ -966,19 +968,19 @@ public class TimelineCanvas implements ScenePostProcessor {
         for (var chapter : markerRepository.getMarkers().entrySet()) {
             Color colorToUse = null;
             switch (chapter.getValue().getType()) {
-                case CHAPTER :
+                case CHAPTER:
                     colorToUse = Color.GREENYELLOW;
                     break;
-                case GENERAL :
+                case GENERAL:
                     colorToUse = Color.SIENNA;
                     break;
-                case INPOINT :
+                case INPOINT:
                     colorToUse = Color.GREEN;
                     break;
-                case OUTPOINT :
+                case OUTPOINT:
                     colorToUse = Color.RED;
                     break;
-                default :
+                default:
                     colorToUse = Color.PINK;
                     break;
             }

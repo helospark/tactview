@@ -15,6 +15,7 @@ import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
+import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
@@ -25,13 +26,16 @@ public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem 
     private UiCommandInterpreterService commandInterpreter;
     private TimelineManagerAccessor timelineManager;
     private AlertDialogFactory alertFactory;
+    private StylesheetAdderService stylesheetAdderService;
     @Slf4j
     private Logger logger;
 
-    public ResizeClipContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager, AlertDialogFactory alertFactory) {
+    public ResizeClipContextMenuChainItem(UiCommandInterpreterService commandInterpreter, TimelineManagerAccessor timelineManager, AlertDialogFactory alertFactory,
+            StylesheetAdderService stylesheetAdderService) {
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
         this.alertFactory = alertFactory;
+        this.stylesheetAdderService = stylesheetAdderService;
     }
 
     @Override
@@ -49,6 +53,7 @@ public class ResizeClipContextMenuChainItem implements ClipContextMenuChainItem 
             dialog.setTitle("New length");
             dialog.setHeaderText("Enter length in seconds:");
             dialog.setContentText("Length:");
+            stylesheetAdderService.setDefaultStylesheets(dialog.getDialogPane());
 
             Optional<String> result = dialog.showAndWait();
 

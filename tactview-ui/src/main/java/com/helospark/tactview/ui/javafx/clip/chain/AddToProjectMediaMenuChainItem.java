@@ -33,7 +33,7 @@ public class AddToProjectMediaMenuChainItem implements ClipContextMenuChainItem 
         Menu menu = new Menu("Project media");
         String name = getName(request);
 
-        MenuItem addClipItem = new MenuItem("Add clip");
+        MenuItem addClipItem = new MenuItem("Add clip(s) and linked");
         addClipItem.setOnAction(e -> {
             List<TimelineClip> allClips = timelineManagerAccessor.resolveClipsWithAllLinkedClip(request.getAllClips())
                     .stream()

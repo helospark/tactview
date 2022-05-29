@@ -20,7 +20,6 @@ public class AlphaBlitServiceImpl implements AlphaBlitService {
 
     // Expensive method, during preview & render uses 30% of all CPU
     // TODO: optimize this. Also create a HW accelerated version.
-    // Consider native JNA implementation as well
     @Override
     public void alphaBlitFrame(ClipImage result, ReadOnlyClipImage clipFrameResult, Integer width, Integer height, BlendModeStrategy blendMode, double globalAlpha) {
 
