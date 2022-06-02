@@ -300,6 +300,7 @@ extern "C" {
         return receiveFrame(avctx, frame, got_frame, pkt);
     }
 
+    static int init_filters(AVCodecContext* dec_ctx, DecodeStructure* element);
 
     EXPORTED MediaMetadata readMediaMetadata(const char* path)
     {
@@ -387,6 +388,30 @@ extern "C" {
             return mediaMetadata;
         }
 
+
+        HwDeviceScaleCapability capability;
+        SwsContext* hwSwsContext = NULL;
+
+        DecodeStructure* element = new DecodeStructure();
+        element->lastAccessTime = time(0);
+        element->pFormatCtx = pFormatCtx;
+        element->videoStream = videoStream;
+        element->pCodecCtxOrig = pCodecCtxOrig;
+        element->pCodecCtx = pCodecCtx;
+        element->pCodec = pCodec;
+        element->pFrame = pFrame;
+        //element->packet = packet;
+        //element->sws_ctx = sws_ctx;
+        element->width = 800;
+        element->height = 600;
+        element->framerate = findFramerate(pFormatCtx->streams[videoStream]);
+        element->hw_pix_fmt = hw_pix_fmt;
+        element->hwDeviceType = hwDeviceType;
+        element->hwScaleCapability = capability;
+        element->hwSwsContext = hwSwsContext;
+
+        pCodecCtx->opaque = (void*)(int)hw_pix_fmt;
+
         // read one frame, otherwise some things are not initialized regarding HW accel
         AVPacket packet;
         i = 0;
@@ -404,6 +429,20 @@ extern "C" {
 
                 if(frameFinished) {
                     ++i;
+                    if (hwDeviceType != AV_HWDEVICE_TYPE_NONE) {
+                        if (element->hwContext == NULL) {
+                            element->hwContext = pFrame->hw_frames_ctx;
+                        } else {
+                            hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+                        }
+
+                        if (element->hwFilterGraph == NULL && 
+                            hwDeviceType != AV_HWDEVICE_TYPE_NONE &&
+                            init_filters(pCodecCtx, element) < 0) {
+                            ERROR("Init filter fails, HW acceleration disabled\n");
+                            hwDeviceType = AV_HWDEVICE_TYPE_NONE;
+                        }
+                    }
                 }
             }
             av_packet_unref(&packet);
