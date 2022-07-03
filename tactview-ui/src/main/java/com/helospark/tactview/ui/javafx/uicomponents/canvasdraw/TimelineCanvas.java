@@ -407,16 +407,14 @@ public class TimelineCanvas implements ScenePostProcessor {
         });
 
         canvas.setOnDragOver(event -> {
-            if (dragRepository.currentlyDraggedClip() == null) {
-                TimelineCanvasOnDragOverHandlerRequest request = TimelineCanvasOnDragOverHandlerRequest.builder()
-                        .withChannel(findChannelAtPosition(event.getX(), event.getY()))
-                        .withEvent(event)
-                        .withSelectedElement(findElementAt(event.getX(), event.getY()))
-                        .withXPosition(TimelinePosition.ofSeconds(mapCanvasPixelToTime(event.getX())))
-                        .build();
+            TimelineCanvasOnDragOverHandlerRequest request = TimelineCanvasOnDragOverHandlerRequest.builder()
+                    .withChannel(findChannelAtPosition(event.getX(), event.getY()))
+                    .withEvent(event)
+                    .withSelectedElement(findElementAt(event.getX(), event.getY()))
+                    .withXPosition(TimelinePosition.ofSeconds(mapCanvasPixelToTime(event.getX())))
+                    .build();
 
-                timelineCanvasOnDragOverHandler.onDragOver(request);
-            }
+            timelineCanvasOnDragOverHandler.onDragOver(request);
         });
 
         canvas.setOnMouseClicked(event -> {
@@ -452,7 +450,6 @@ public class TimelineCanvas implements ScenePostProcessor {
     }
 
     private void disableToolsOnMouseRelease() {
-        dragRepository.clean();
         selectionBox = null;
         timelineState.disableSpecialPointLineProperties();
         closeTooltip();
