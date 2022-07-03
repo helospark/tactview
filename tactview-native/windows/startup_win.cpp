@@ -3,7 +3,12 @@
 #include <windows.h>
 #include <experimental/filesystem>
 #include <numeric>
+#include <iostream>
+#include <ctime>
+#include <thread>
+#include <string>
 
+#define SHOULD_NOT_DEFINE_ERROR_LOG
 #include "../common.h"
 
 inline bool ends_with(std::string const & value, std::string const & ending) {

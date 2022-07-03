@@ -495,7 +495,11 @@ extern "C" {
             }
             frame = ost->frame;
 
-            frame->pts = av_rescale_q(ost->samples_count, (AVRational){1, c->sample_rate}, c->time_base);
+            AVRational scaler;
+            scaler.num = 1;
+            scaler.den = c->sample_rate;
+
+            frame->pts = av_rescale_q(ost->samples_count, scaler, c->time_base);
             ost->samples_count += dst_nb_samples;
         }
 

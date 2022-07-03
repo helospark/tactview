@@ -29,7 +29,8 @@ std::string getCurrentTime() {
 
 #define INFO(x) std::cout << getCurrentTime() << " [" << std::this_thread::get_id() << "] INFO " << __FILE__ << ":" << __LINE__ << " - " << x << std::endl
 #define WARN(x) std::cout << getCurrentTime() << " [" << std::this_thread::get_id() << "] WARN " << __FILE__ << ":" << __LINE__ << " - " << x << std::endl
+#ifndef SHOULD_NOT_DEFINE_ERROR_LOG
 #define ERROR(x) std::cout << getCurrentTime() << " [" << std::this_thread::get_id() << "] ERROR " << __FILE__ << ":" << __LINE__ << " - " << x << std::endl
-
+#endif
 
 #endif
