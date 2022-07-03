@@ -80,11 +80,8 @@ public class TimelineCanvasOnDragOverHandler {
         var event = request.event.get();
         Dragboard db = event.getDragboard();
 
-        System.out.println("DragOver 0 " + dragRepository.currentlyDraggedClip());
-
         boolean hasFile = db.getFiles() != null && !db.getFiles().isEmpty();
         if (dragRepository.currentlyDraggedClip() == null && (db.hasString() || hasFile)) {
-            System.out.println("DragOver 1");
             if (hasFile || db.getString().startsWith("clip:")) {
                 onClipDraggedToCanvas(event, db, request);
             } else if (db.getString().startsWith("effect:")) {
@@ -93,7 +90,6 @@ public class TimelineCanvasOnDragOverHandler {
                 onProjectMediaDraggedToCanvas(event, db, request);
             }
         } else {
-            System.out.println("DragOver 2 ");
             onDrag(event.getX(), event.getY(), false, request);
         }
     }
