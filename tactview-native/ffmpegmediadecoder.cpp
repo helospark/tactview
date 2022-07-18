@@ -20,7 +20,12 @@ extern "C" {
 #include <libavfilter/buffersink.h>
 
 #include <stdio.h>
+#ifdef _WIN32
+#include <io.h>
+#elif
 #include <unistd.h>
+#endif
+
 
     struct DecodedPackage
     {
@@ -159,48 +164,57 @@ extern "C" {
         std::string driver;
     };
 
-    static std::string getDriverForVaapi(std::string file) {
-        std::string line;
-        std::string filename = file + "/device/uevent";
+} // extern C
 
-        std::ifstream input_file(filename);
-        if (!input_file.is_open()) {
-            WARN("Cannot open " << filename.c_str());
-            return std::string();
-        }
+static std::string getDriverForVaapi(std::string file) {
+    std::string line;
+    std::string filename = file + "/device/uevent";
 
-        while (std::getline(input_file, line)){
-            if (line.find("DRIVER=") != std::string::npos) {
-                return line.replace(line.find("DRIVER="), 7, "");
-            }
-        }
-        return "";
+    std::ifstream input_file(filename);
+    if (!input_file.is_open()) {
+        WARN("Cannot open " << filename.c_str());
+        return std::string();
     }
 
-    static std::vector<HwDeviceDescriptor> getHwDescriptors() {
-        std::vector<HwDeviceDescriptor> hwDevices;
+    while (std::getline(input_file, line)){
+        if (line.find("DRIVER=") != std::string::npos) {
+            return line.replace(line.find("DRIVER="), 7, "");
+        }
+    }
+    return "";
+}
 
-        // vaapi
-        std::string path = "/sys/class/drm";
-        if (std::experimental::filesystem::is_directory(path)) {
-            for (const auto & entry : std::experimental::filesystem::directory_iterator(path)) {
-                const std::string path = entry.path().string();
-                std::size_t renderIndex = path.find("renderD");
-                if (path.find("renderD") != std::string::npos) {
-                    std::string driver = getDriverForVaapi(path);
-                    if (driver != "") {
-                        HwDeviceDescriptor device = HwDeviceDescriptor();
-                        device.type = AV_HWDEVICE_TYPE_VAAPI;
-                        device.deviceTypeString = "vaapi";
-                        device.deviceString = (std::string("/dev/dri/") + path.substr(renderIndex, 10));
-                        device.driver = std::string(driver);
-                        hwDevices.push_back(device);
-                    }
+std::string createKey(const char* path, int width, int height, bool enableHwAcceleration) {
+    return (std::string(path) + "_" + std::to_string(width) + "_" + std::to_string(height) + "_" + std::string("hwaccel=") + std::to_string(enableHwAcceleration));
+}
+
+
+static std::vector<HwDeviceDescriptor> getHwDescriptors() {
+    std::vector<HwDeviceDescriptor> hwDevices;
+
+    // vaapi
+    std::string path = "/sys/class/drm";
+    if (std::experimental::filesystem::is_directory(path)) {
+        for (const auto & entry : std::experimental::filesystem::directory_iterator(path)) {
+            const std::string path = entry.path().string();
+            std::size_t renderIndex = path.find("renderD");
+            if (path.find("renderD") != std::string::npos) {
+                std::string driver = getDriverForVaapi(path);
+                if (driver != "") {
+                    HwDeviceDescriptor device = HwDeviceDescriptor();
+                    device.type = AV_HWDEVICE_TYPE_VAAPI;
+                    device.deviceTypeString = "vaapi";
+                    device.deviceString = (std::string("/dev/dri/") + path.substr(renderIndex, 10));
+                    device.driver = std::string(driver);
+                    hwDevices.push_back(device);
                 }
             }
         }
-        return hwDevices;
     }
+    return hwDevices;
+}
+
+extern "C" {
 
     static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
     {
@@ -821,10 +835,6 @@ extern "C" {
         }
         //DEBUG("Set filled: " << element->decodedPackages);
         return 0;
-    }
-
-    std::string createKey(const char* path, int width, int height, bool enableHwAcceleration) {
-        return (std::string(path) + "_" + std::to_string(width) + "_" + std::to_string(height) + "_" + std::string("hwaccel=") + std::to_string(enableHwAcceleration));
     }
 
     EXPORTED void readFrames(FFmpegImageRequest* request)
