@@ -17,34 +17,31 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
-import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
-import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor.FrameSize;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
-import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedRequest;
 
 import javafx.application.Platform;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-@Component
-public class DisplayUpdaterService implements ScenePostProcessor {
+public class DisplayUpdaterService {
+    private Logger logger = LoggerFactory.getLogger(DisplayUpdaterService.class);
+
     private static final int NUMBER_OF_CACHE_JOBS_TO_RUN = 2;
     private static final int SELECTION_BOX_DASH_SIZE = 5;
     private final ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(NUMBER_OF_CACHE_JOBS_TO_RUN,
@@ -52,14 +49,15 @@ public class DisplayUpdaterService implements ScenePostProcessor {
     private final Map<TimelinePosition, Future<JavaDisplayableAudioVideoFragment>> framecache = new ConcurrentHashMap<>();
     private volatile long currentPositionLastRendered = -1;
 
-    private final PlaybackFrameAccessor playbackFrameAccessor;
-    private final UiProjectRepository uiProjectRepostiory;
-    private final ProjectRepository projectRepository;
-    private final UiTimelineManager uiTimelineManager;
-    private final GlobalDirtyClipManager globalDirtyClipManager;
-    private final List<DisplayUpdatedListener> displayUpdateListeners;
     private final MessagingService messagingService;
     private final ScheduledExecutorService scheduledExecutorService;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
+    private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
+
+    private final PlaybackFrameAccessor playbackFrameAccessor;
+    private final UiProjectRepository uiProjectRepostiory;
+    private final GlobalDirtyClipManager globalDirtyClipManager;
+    private final List<DisplayUpdatedListener> displayUpdateListeners;
     private final SelectedNodeRepository selectedNodeRepository;
     private final CanvasStateHolder canvasStateHolder;
 
@@ -76,25 +74,23 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     private final Queue<TimelinePosition> recentlyDroppedFrames = new CircularFifoQueue<>(4);
 
-    @Slf4j
-    private Logger logger;
-
     private Canvas canvas;
 
-    public DisplayUpdaterService(PlaybackFrameAccessor playbackController, UiProjectRepository uiProjectRepostiory, UiTimelineManager uiTimelineManager,
+    public DisplayUpdaterService(PlaybackFrameAccessor playbackController, UiProjectRepository uiProjectRepostiory,
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
             @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService, SelectedNodeRepository selectedNodeRepository,
-            ProjectRepository projectRepository, CanvasStateHolder canvasStateHolder) {
+            CanvasStateHolder canvasStateHolder, GlobalTimelinePositionHolder globalTimelinePositionHolder,
+            UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
         this.playbackFrameAccessor = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
-        this.uiTimelineManager = uiTimelineManager;
         this.globalDirtyClipManager = globalDirtyClipManager;
         this.displayUpdateListeners = displayUpdateListeners;
         this.messagingService = messagingService;
         this.scheduledExecutorService = scheduledExecutorService;
         this.selectedNodeRepository = selectedNodeRepository;
-        this.projectRepository = projectRepository;
         this.canvasStateHolder = canvasStateHolder;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
+        this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
     }
 
     @PostConstruct
@@ -111,13 +107,10 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             framecache.clear();
         });
         messagingService.register(ClipSelectionChangedMessage.class, message -> updateCurrentPositionWithoutInvalidatedCache());
-    }
 
-    @Override
-    public void postProcess(Scene scene) {
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
-                TimelinePosition currentPosition = uiTimelineManager.getCurrentPosition();
+                TimelinePosition currentPosition = globalTimelinePositionHolder.getCurrentPosition();
                 long currentPostionLastModified = globalDirtyClipManager.positionLastModified(currentPosition);
                 if (currentPostionLastModified > currentPositionLastRendered) {
                     updateCurrentPositionWithInvalidatedCache();
@@ -130,7 +123,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             ++selectionBoxUpdateCount;
-            if (hasSelectedElement && canUseCacheAt(uiTimelineManager.getCurrentPosition())) {
+            if (hasSelectedElement && canUseCacheAt(globalTimelinePositionHolder.getCurrentPosition())) {
                 Platform.runLater(() -> drawSelectionRectangle(cacheCurrentImage, canvas.getGraphicsContext2D()));
             }
         }, 200, 200, TimeUnit.MILLISECONDS);
@@ -143,12 +136,12 @@ public class DisplayUpdaterService implements ScenePostProcessor {
 
     public void updateCurrentPositionWithInvalidatedCache() {
         cacheCurrentImage = null;
-        updateDisplay(uiTimelineManager.getCurrentPosition());
+        updateDisplay(globalTimelinePositionHolder.getCurrentPosition());
     }
 
     public void updateCurrentPositionWithoutInvalidatedCache() {
         cacheCurrentImage = null;
-        updateDisplay(uiTimelineManager.getCurrentPosition());
+        updateDisplay(globalTimelinePositionHolder.getCurrentPosition());
     }
 
     public void updateDisplayWithCacheInvalidation(TimelinePosition currentPosition) {
@@ -183,7 +176,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
             if (cachedKey != null) {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             } else {
-                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize(), true);
+                actualAudioVideoFragment = getVideoFrameAt(currentPosition);
             }
 
             numberOfDroppedFrames = 0;
@@ -214,7 +207,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         } else {
             Future<JavaDisplayableAudioVideoFragment> cachedKey = framecache.remove(currentPosition);
             if (cachedKey == null) {
-                actualAudioVideoFragment = playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize(), true);
+                actualAudioVideoFragment = getVideoFrameAt(currentPosition);
             } else {
                 actualAudioVideoFragment = getValueFromCache(cachedKey);
             }
@@ -223,6 +216,11 @@ public class DisplayUpdaterService implements ScenePostProcessor {
         }
         displayFrameAsync(currentPosition, currentPostionLastModified, actualAudioVideoFragment);
         //        startCacheJobs(request.);
+    }
+
+    private JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition currentPosition) {
+        boolean halfEffect = uiPlaybackPreferenceRepository.isHalfEffect();
+        return playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize(), true, halfEffect);
     }
 
     private boolean canUseCacheAt(TimelinePosition currentPosition) {
@@ -316,7 +314,7 @@ public class DisplayUpdaterService implements ScenePostProcessor {
                     if (recentlyDroppedFrames.contains(nextFrameTime)) {
                         return null; // result is ignored, we dropped this frame
                     } else {
-                        return playbackFrameAccessor.getVideoFrameAt(nextFrameTime, getFrameSize(), true);
+                        return getVideoFrameAt(nextFrameTime);
                     }
                 });
                 framecache.put(nextFrameTime, task);

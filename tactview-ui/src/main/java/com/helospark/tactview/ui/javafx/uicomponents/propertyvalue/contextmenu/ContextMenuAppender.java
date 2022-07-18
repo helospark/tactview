@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.EffectLine;
 
 import javafx.scene.Node;
@@ -17,9 +17,9 @@ import javafx.scene.input.ContextMenuEvent;
 @Component
 public class ContextMenuAppender {
     private List<PropertyValueContextMenuItem> contextMenuList;
-    private UiTimelineManager timelineManager;
+    private GlobalTimelinePositionHolder timelineManager;
 
-    public ContextMenuAppender(List<PropertyValueContextMenuItem> contextMenuList, UiTimelineManager timelineManager) {
+    public ContextMenuAppender(List<PropertyValueContextMenuItem> contextMenuList, GlobalTimelinePositionHolder timelineManager) {
         this.contextMenuList = contextMenuList;
         this.timelineManager = timelineManager;
     }

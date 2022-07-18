@@ -26,9 +26,9 @@ import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeEnabledWasChangedMessage;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
 import com.helospark.tactview.ui.javafx.notification.NotificationService;
@@ -70,7 +70,7 @@ public class PropertyView implements CleanableMode {
     private final Map<String, EffectPropertyPage> componentProperties = new HashMap<>();
 
     private final UiMessagingService messagingService;
-    private final UiTimelineManager uiTimelineManager;
+    private final GlobalTimelinePositionHolder uiTimelineManager;
     private EffectPropertyPage shownEntries;
     private final PropertyValueSetterChain propertyValueSetterChain;
     private final DetailsGridChain detailsGridChain;
@@ -82,7 +82,7 @@ public class PropertyView implements CleanableMode {
     @Slf4j
     private Logger logger;
 
-    public PropertyView(UiMessagingService messagingService, UiTimelineManager uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain,
+    public PropertyView(UiMessagingService messagingService, GlobalTimelinePositionHolder uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain,
             DetailsGridChain detailsGridChain, NameToIdRepository nameToIdRepository, NotificationService notificationService, UiCommandInterpreterService commandInterpreter,
             EffectParametersRepository effectParametersRepository) {
         this.messagingService = messagingService;

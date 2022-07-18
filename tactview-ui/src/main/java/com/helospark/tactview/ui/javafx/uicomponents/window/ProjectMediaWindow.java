@@ -136,6 +136,8 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
                     event.consume();
                     db.clear();
                 }
+            } else if (db.hasString() && db.getString().startsWith("cutclip")) {
+
             }
         });
         scrollPane.setOnMouseClicked(event -> {
@@ -192,7 +194,7 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
         } else if (audioClip.isPresent()) {
             AudibleTimelineClip actualClip = audioClip.get();
             double endPosition = actualClip.getInterval().getLength().getSeconds().doubleValue();
-            return audioImagePatternService.createAudioImagePattern(actualClip, ELEMENT_WIDTH, 0.0, endPosition);
+            return audioImagePatternService.createAudioImagePattern(actualClip, ELEMENT_WIDTH, AudioImagePatternService.DEFAULT_HEIGHT, 0.0, endPosition);
         } else {
             return new WritableImage(ELEMENT_WIDTH, ELEMENT_WIDTH);
         }

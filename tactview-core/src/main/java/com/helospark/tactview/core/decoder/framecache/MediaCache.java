@@ -462,7 +462,7 @@ public class MediaCache {
             this.key = key;
         }
 
-        public double getDataSize() {
+        public double rawDataSize() {
             return dataSize;
         }
 

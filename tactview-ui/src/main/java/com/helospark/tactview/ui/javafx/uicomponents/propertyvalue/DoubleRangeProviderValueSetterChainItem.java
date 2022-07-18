@@ -14,7 +14,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleRangeProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
@@ -25,11 +25,11 @@ public class DoubleRangeProviderValueSetterChainItem extends TypeBasedPropertyVa
     private DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem;
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager timelineManager;
+    private GlobalTimelinePositionHolder timelineManager;
     private ContextMenuAppender contextMenuAppender;
 
     public DoubleRangeProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
+            EffectParametersRepository effectParametersRepository, GlobalTimelinePositionHolder timelineManager, ContextMenuAppender contextMenuAppender) {
         super(DoubleRangeProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;

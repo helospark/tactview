@@ -10,7 +10,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueL
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
@@ -27,11 +27,11 @@ public class ValueListPropertyValueSetterChainItem extends TypeBasedPropertyValu
     private static final int COMBOBOX_THRESHOLD = 3;
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager timelineManager;
+    private GlobalTimelinePositionHolder timelineManager;
     private ContextMenuAppender contextMenuAppender;
 
     public ValueListPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager timelineManager, ContextMenuAppender contextMenuAppender) {
+            UiCommandInterpreterService commandInterpreter, GlobalTimelinePositionHolder timelineManager, ContextMenuAppender contextMenuAppender) {
         super(ValueListProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;

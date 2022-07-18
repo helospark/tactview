@@ -19,9 +19,9 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.B
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.JavaDisplayableAudioVideoFragment;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.inputmode.sizefunction.SizeFunctionImplementation;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.BezierPolygonInputTypeStrategy;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ColorInputTypeStrategy;
@@ -41,6 +41,7 @@ import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.VideoStatusBarUpdater;
 
 import javafx.application.Platform;
@@ -54,11 +55,11 @@ import javafx.scene.input.MouseEvent;
 public class InputModeRepository implements CleanableMode {
     private SizeFunctionImplementation sizeFunctionImplementation;
     private Canvas canvas;
-    private UiProjectRepository projectRepository;
     private DisplayUpdaterService displayUpdaterService;
+    private UiProjectRepository projectRepository;
     private InputModeInput<?> inputModeInput;
     private PlaybackFrameAccessor playbackController;
-    private UiTimelineManager timelineManager;
+    private GlobalTimelinePositionHolder timelineManager;
     private VideoStatusBarUpdater videoStatusBarUpdater;
     private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
     private GeneralCanvasOperationStrategy generalCanvasOperationStrategy;
@@ -67,13 +68,12 @@ public class InputModeRepository implements CleanableMode {
     private CanvasStateHolder canvasStateHolder;
     private UiProjectRepository uiProjectRepository;
 
-    public InputModeRepository(UiProjectRepository projectRepository, DisplayUpdaterService displayUpdaterService,
+    public InputModeRepository(UiProjectRepository projectRepository,
             SizeFunctionImplementation sizeFunctionImplementation, PlaybackFrameAccessor playbackController,
-            UiTimelineManager timelineManager, VideoStatusBarUpdater videoStatusBarUpdater,
+            GlobalTimelinePositionHolder timelineManager, VideoStatusBarUpdater videoStatusBarUpdater,
             CurrentlyPressedKeyRepository currentlyPressedKeyRepository, GeneralCanvasOperationStrategy generalCanvasOperationStrategy, SelectedNodeRepository selectedNodeRepository,
-            CanvasStateHolder canvasStateHolder, UiProjectRepository uiProjectRepository) {
+            CanvasStateHolder canvasStateHolder, UiProjectRepository uiProjectRepository, PreviewDockableTab previewDockableTab) {
         this.projectRepository = projectRepository;
-        this.displayUpdaterService = displayUpdaterService;
         this.sizeFunctionImplementation = sizeFunctionImplementation;
         this.playbackController = playbackController;
         this.timelineManager = timelineManager;
@@ -83,6 +83,7 @@ public class InputModeRepository implements CleanableMode {
         this.selectedNodeRepository = selectedNodeRepository;
         this.canvasStateHolder = canvasStateHolder;
         this.uiProjectRepository = uiProjectRepository;
+        this.displayUpdaterService = previewDockableTab.getDisplayUpdaterService();
     }
 
     // TODO: should this be in DI framework?
@@ -223,7 +224,7 @@ public class InputModeRepository implements CleanableMode {
                         .withUnscaledX(unmodifiedX)
                         .withUnscaledY(unmodifiedY)
                         .withCanvasImage(() -> {
-                            return playbackController.getVideoFrameAt(timelineManager.getCurrentPosition(), Optional.empty(), false).getImage();
+                            return playbackController.getVideoFrameAt(timelineManager.getCurrentPosition(), Optional.empty(), false, false).getImage();
                         })
                         .withCurrentlyPressedKeyRepository(currentlyPressedKeyRepository)
                         .build();

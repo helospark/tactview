@@ -1,12 +1,9 @@
 package com.helospark.tactview.ui.javafx.uicomponents.audiocomponent;
 
-import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.util.MathUtil;
-import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
-import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
 import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
@@ -16,7 +13,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-@Component
 public class AudioVisualizationComponent implements AudioPlayedListener, PostInitializationArgsCallback {
     private static final int EXPECTED_NUMBER_OF_CHANNELS = 2;
     private static final int BAR_RADIUS = 6;
@@ -33,19 +29,17 @@ public class AudioVisualizationComponent implements AudioPlayedListener, PostIni
     private int numberOfBars = 45;
 
     private final AudioRmsCalculator audioRmsCalculator;
-    private final CanvasStateHolder canvasStateHolder;
+    private final Canvas previewCanvas;
 
-    public AudioVisualizationComponent(PlaybackFrameAccessor playbackController, AudioRmsCalculator audioRmsCalculator, CanvasStateHolder canvasStateHolder,
-            UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
+    public AudioVisualizationComponent(PlaybackFrameAccessor playbackController, AudioRmsCalculator audioRmsCalculator, Canvas previewCanvas) {
         canvas = new Canvas(numberOfBars * (BAR_WIDTH + BAR_SPACE_WIDTH) + 2, (CHANNEL_HEIGHT + CHANNEL_HEIGHT_GAP) * EXPECTED_NUMBER_OF_CHANNELS + 2);
         this.audioRmsCalculator = audioRmsCalculator;
-        this.canvasStateHolder = canvasStateHolder;
-
+        this.previewCanvas = previewCanvas;
     }
 
     @Override
     public void call(String[] args) {
-        canvasStateHolder.getPreviewAvailableWidthProperty().addListener((e, oldV, newV) -> {
+        previewCanvas.widthProperty().addListener((e, oldV, newV) -> {
             if (newV.doubleValue() <= 0.0) {
                 return;
             }
@@ -55,6 +49,9 @@ public class AudioVisualizationComponent implements AudioPlayedListener, PostIni
             numberOfBars = newNumberOfBars;
 
             clearCanvas();
+            Platform.runLater(() -> {
+                updateUI(new double[] { 0.0, 0.0 });
+            });
         });
     }
 

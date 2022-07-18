@@ -9,9 +9,9 @@ import com.helospark.tactview.ui.javafx.tabs.dockabletab.OpenDetachableTabTarget
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.AddableContentDockableTabFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.graph.GraphingDialog;
 import com.helospark.tactview.ui.javafx.uicomponents.window.AudioSpectrumWindow;
-import com.helospark.tactview.ui.javafx.uicomponents.window.ProjectMediaWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.DebugWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.HistogramWindow;
+import com.helospark.tactview.ui.javafx.uicomponents.window.ProjectMediaWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.RgbWaveformWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.VectorScopeWindow;
 import com.helospark.tactview.ui.javafx.uicomponents.window.WaveformWindow;
@@ -54,7 +54,7 @@ public class CustomDetachableWindowConfiguration {
         return new CustomDetachableWindowTabFactory(window) {
             @Override
             public Optional<Point> getPreferredDefaultWindowSize() {
-                return Optional.of(new Point(650, 500));
+                return Optional.of(new Point(DebugWindow.DEFAULT_WIDTH, 500));
             }
         };
     }

@@ -10,8 +10,8 @@ import com.helospark.lightdi.annotation.Configuration;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ResetDefaultValuesCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PrimitiveEffectLine;
@@ -28,7 +28,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(-20)
-    public PropertyValueContextMenuItem copyValue(UiTimelineManager timelineManager) {
+    public PropertyValueContextMenuItem copyValue() {
         return allPrimitiveEffectLineSupportingMenuIfRequired(request -> {
             MenuItem copyKeyframeMenuItem = new MenuItem("Copy");
             copyKeyframeMenuItem.setOnAction(e -> {
@@ -45,7 +45,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(-10)
-    public PropertyValueContextMenuItem pasteValue(UiTimelineManager timelineManager) {
+    public PropertyValueContextMenuItem pasteValue() {
         return allPrimitiveEffectLineSupportingMenuIfRequired(request -> {
             MenuItem pasteKeyframeMenuItem = new MenuItem("Paste");
             pasteKeyframeMenuItem.setOnAction(e -> {
@@ -65,7 +65,8 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(0)
-    public PropertyValueContextMenuItem addKeyframeItem(UiTimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+    public PropertyValueContextMenuItem addKeyframeItem(GlobalTimelinePositionHolder timelineManager, UiCommandInterpreterService commandInterpreter,
+            EffectParametersRepository effectParametersRepository) {
         return contextMenuEnabledIfKeyframesEnabled(request -> {
             MenuItem addKeyframeMenuItem = new MenuItem("Add keyframe");
             addKeyframeMenuItem.setOnAction(e -> {
@@ -84,7 +85,8 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(10)
-    public PropertyValueContextMenuItem removeKeyframeItem(UiTimelineManager timelineManager, EffectParametersRepository effectParametersRepository, UiCommandInterpreterService commandInterpreter) {
+    public PropertyValueContextMenuItem removeKeyframeItem(GlobalTimelinePositionHolder timelineManager, EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter) {
         return contextMenuEnabledIfKeyframesEnabled(request -> {
             MenuItem removeKeyframeMenuItem = new MenuItem("Remove keyframe");
             removeKeyframeMenuItem.setOnAction(e -> {
@@ -96,7 +98,8 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(20)
-    public PropertyValueContextMenuItem removeAllAndSet(UiTimelineManager timelineManager, EffectParametersRepository effectParametersRepository, UiCommandInterpreterService commandInterpreter) {
+    public PropertyValueContextMenuItem removeAllAndSet(GlobalTimelinePositionHolder timelineManager, EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter) {
         return contextMenuEnabledIfKeyframesEnabled(request -> {
             MenuItem removeAllAndSetMenuItemw = new MenuItem("Remove all and set");
             removeAllAndSetMenuItemw.setOnAction(e -> {
@@ -108,7 +111,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(30)
-    public PropertyValueContextMenuItem resetDefaultsValues(UiTimelineManager timelineManager, UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+    public PropertyValueContextMenuItem resetDefaultsValues(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
         return alwaysEnableContextMenu(request -> {
             MenuItem resetDefaultsMenuItem = new MenuItem("Reset defaults");
             resetDefaultsMenuItem.setOnAction(e -> {

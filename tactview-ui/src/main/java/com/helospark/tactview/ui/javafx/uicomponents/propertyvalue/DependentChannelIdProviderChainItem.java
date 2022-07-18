@@ -9,8 +9,8 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentChannelIdProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
@@ -29,11 +29,11 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
     private EffectParametersRepository effectParametersRepository;
     private TimelineManagerAccessor timelineManager;
     private NameToIdRepository nameToIdRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private ContextMenuAppender contextMenuAppender;
 
     public DependentChannelIdProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
-            TimelineManagerAccessor timelineManager, NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
+            TimelineManagerAccessor timelineManager, NameToIdRepository nameToIdRepository, GlobalTimelinePositionHolder uiTimelineManager, ContextMenuAppender contextMenuAppender) {
         super(DependentChannelIdProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;

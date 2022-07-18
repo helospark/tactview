@@ -2,9 +2,6 @@ package com.helospark.tactview.ui.javafx;
 
 import java.math.BigDecimal;
 
-import com.helospark.lightdi.annotation.Component;
-
-@Component
 public class UiPlaybackPreferenceRepository {
     private boolean mute;
     private boolean halfEffect;

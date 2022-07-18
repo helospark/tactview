@@ -24,7 +24,7 @@ import javafx.scene.image.Image;
 @Service
 public class AudioImagePatternService {
     private static final int NUMBER_OF_PIXELS_FOR_SAMPLE = 1;
-    private static final int RECTANGLE_HEIGHT = 50;
+    public static final int DEFAULT_HEIGHT = 50;
 
     private final ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private final ProjectRepository projectRepository;
@@ -40,9 +40,9 @@ public class AudioImagePatternService {
         this.renderAvgLine = renderAvgLine;
     }
 
-    public Image createAudioImagePattern(AudibleTimelineClip audibleTimelineClip, int width, double visibleStartPosition, double visibleEndPosition) {
+    public Image createAudioImagePattern(AudibleTimelineClip audibleTimelineClip, int width, int height, double visibleStartPosition, double visibleEndPosition) {
         int scaledFrameWidth = width;
-        int scaledFrameHeight = RECTANGLE_HEIGHT;
+        int scaledFrameHeight = height;
         int numberOfChannels = projectRepository.getNumberOfChannels();
         int channelHeight = scaledFrameHeight / numberOfChannels;
 

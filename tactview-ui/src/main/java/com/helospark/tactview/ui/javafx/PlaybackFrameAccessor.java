@@ -21,7 +21,6 @@ import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
-import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
@@ -39,25 +38,20 @@ public class PlaybackFrameAccessor {
     private final UiProjectRepository uiProjectRepository;
     private final ProjectRepository projectRepository;
     private final ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
-    private final JavaByteArrayConverter javaByteArrayConverter;
-    private final UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
 
     public PlaybackFrameAccessor(TimelineManagerRenderService timelineManager, UiProjectRepository uiProjectRepository, ProjectRepository projectRepository,
-            ByteBufferToJavaFxImageConverter byteBufferToImageConverter, JavaByteArrayConverter javaByteArrayConverter,
-            UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
+            ByteBufferToJavaFxImageConverter byteBufferToImageConverter) {
         this.timelineManager = timelineManager;
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
-        this.javaByteArrayConverter = javaByteArrayConverter;
         this.projectRepository = projectRepository;
-        this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
     }
 
-    public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position, Optional<FrameSize> frameSize, boolean livePlayback) {
+    public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position, Optional<FrameSize> frameSize, boolean livePlayback, boolean isHalfEffect) {
         ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(position, true, frameSize, livePlayback);
 
         ImageWithExpandedFramePositions result;
-        if (uiPlaybackPreferenceRepository.isHalfEffect()) {
+        if (isHalfEffect) {
             ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(position, false, frameSize, livePlayback);
             Image sharedImageResult = mergeImages(imageWithEffects.image, javafxImageWithoutEffects.image);
             result = new ImageWithExpandedFramePositions(sharedImageResult, imageWithEffects.clipRectangle);

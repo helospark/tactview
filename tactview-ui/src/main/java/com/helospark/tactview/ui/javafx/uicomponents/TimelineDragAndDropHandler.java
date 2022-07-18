@@ -19,8 +19,8 @@ import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddClipsCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ChangeClipForEffectCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipInsertCommand;
@@ -50,7 +50,7 @@ public class TimelineDragAndDropHandler {
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
     private CurrentlyPressedKeyRepository currentlyPressedKeyRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private TimelineEditModeRepository timelineEditModeRepository;
     private MessagingService messagingService;
 
@@ -59,7 +59,7 @@ public class TimelineDragAndDropHandler {
 
     public TimelineDragAndDropHandler(TimelineManagerAccessor timelineManager, UiCommandInterpreterService commandInterpreter, TimelineState timelineState,
             DragRepository dragRepository, SelectedNodeRepository selectedNodeRepository, CurrentlyPressedKeyRepository currentlyPressedKeyRepository,
-            UiTimelineManager uiTimelineManager, TimelineEditModeRepository timelineEditModeRepository, MessagingService messagingService) {
+            GlobalTimelinePositionHolder uiTimelineManager, TimelineEditModeRepository timelineEditModeRepository, MessagingService messagingService) {
         this.timelineManager = timelineManager;
         this.commandInterpreter = commandInterpreter;
         this.timelineState = timelineState;

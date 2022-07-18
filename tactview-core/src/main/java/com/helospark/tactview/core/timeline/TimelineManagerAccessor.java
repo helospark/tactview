@@ -1323,4 +1323,12 @@ public class TimelineManagerAccessor implements SaveLoadContributor, TimelineMan
         return resolveClipIdsWithAllLinkedClip(ids);
     }
 
+    public void removeAllClips() {
+        for (var channel : timelineChannelsState.channels) {
+            for (var clipId : channel.getAllClipId()) {
+                this.removeClip(clipId);
+            }
+        }
+    }
+
 }

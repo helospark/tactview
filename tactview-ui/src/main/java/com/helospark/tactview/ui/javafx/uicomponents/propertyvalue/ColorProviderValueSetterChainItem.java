@@ -16,8 +16,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderType
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.control.ColorWheelPicker;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
@@ -36,12 +36,12 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     private DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem;
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private InputModeRepository inputModeRepository;
     private ContextMenuAppender contextMenuAppender;
 
     public ColorProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, InputModeRepository inputModeRepository, ContextMenuAppender contextMenuAppender) {
+            EffectParametersRepository effectParametersRepository, GlobalTimelinePositionHolder uiTimelineManager, InputModeRepository inputModeRepository, ContextMenuAppender contextMenuAppender) {
         super(ColorProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;

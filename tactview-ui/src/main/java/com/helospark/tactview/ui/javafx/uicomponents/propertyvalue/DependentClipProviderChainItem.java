@@ -13,8 +13,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DependentClipProvider;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
@@ -41,14 +41,14 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
     private ByteBufferToJavaFxImageConverter imageConverter;
     private UiProjectRepository uiProjectRepository;
     private NameToIdRepository nameToIdRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
     private ContextMenuAppender contextMenuAppender;
 
     private Image noLayerMaskImage;
 
     public DependentClipProviderChainItem(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository,
             TimelineManagerAccessor timelineManager, ByteBufferToJavaFxImageConverter imageConverter, UiProjectRepository uiProjectRepository,
-            NameToIdRepository nameToIdRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
+            NameToIdRepository nameToIdRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder, ContextMenuAppender contextMenuAppender) {
         super(DependentClipProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
@@ -56,7 +56,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         this.imageConverter = imageConverter;
         this.uiProjectRepository = uiProjectRepository;
         this.nameToIdRepository = nameToIdRepository;
-        this.uiTimelineManager = uiTimelineManager;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.contextMenuAppender = contextMenuAppender;
 
         noLayerMaskImage = new Image(getClass().getResourceAsStream("/noLayerMask.png"));
@@ -130,7 +130,7 @@ public class DependentClipProviderChainItem extends TypeBasedPropertyValueSetter
         String id = nameToIdRepository.getIdForName(textArea.getText());
         KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                 .withDescriptorId(stringProvider.getId())
-                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                .withGlobalTimelinePosition(globalTimelinePositionHolder.getCurrentPosition())
                 .withValue(id)
                 .withRevertable(true)
                 .build();

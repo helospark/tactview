@@ -13,8 +13,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Interpolat
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.LineProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
@@ -31,17 +31,18 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
     private ContextMenuAppender contextMenuAppender;
 
     public LineProviderValueSetterChainItem(PointProviderValueSetterChainItem pointProviderValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder,
+            ContextMenuAppender contextMenuAppender) {
         super(LineProvider.class);
         this.pointProviderValueSetterChainItem = pointProviderValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.inputModeRepository = inputModeRepository;
-        this.uiTimelineManager = uiTimelineManager;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.contextMenuAppender = contextMenuAppender;
     }
 
@@ -76,13 +77,13 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                InterpolationLine previousValue = lineProvider.getValueAt(uiTimelineManager.getCurrentPosition());
+                InterpolationLine previousValue = lineProvider.getValueAt(globalTimelinePositionHolder.getCurrentPosition());
                 inputModeRepository.requestLine(line -> {
                     boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
 
                     KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                             .withDescriptorId(lineProvider.getId())
-                            .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                            .withGlobalTimelinePosition(globalTimelinePositionHolder.getCurrentPosition())
                             .withValue(line)
                             .withPreviousValue(Optional.ofNullable(previousValue))
                             .withRevertable(revertable)

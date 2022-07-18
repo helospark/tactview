@@ -11,8 +11,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraphAccessor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.GraphProvider;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
@@ -29,7 +29,7 @@ import javafx.scene.layout.VBox;
 public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<GraphProvider> implements ScenePostProcessor {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
     private GraphingDialog graphingDialog;
     private EffectGraphAccessor effectGraphAccessor;
     private MessagingService messagingService;
@@ -42,13 +42,13 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
     private List<GraphingComponentFactory> menuItemFactories;
 
     public GraphSetterChainItem(UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, GraphingDialog graphingDialog, EffectGraphAccessor effectGraphAccessor,
+            EffectParametersRepository effectParametersRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder, GraphingDialog graphingDialog, EffectGraphAccessor effectGraphAccessor,
             MessagingService messagingService, List<GraphingComponentFactory> menuItemFactories, StylesheetAdderService stylesheetAdderService, NameToIdRepository nameToIdRepository,
             DockableTabRepository dockableTabRepository) {
         super(GraphProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
-        this.uiTimelineManager = uiTimelineManager;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.graphingDialog = graphingDialog;
         this.effectGraphAccessor = effectGraphAccessor;
         this.messagingService = messagingService;
@@ -72,7 +72,7 @@ public class GraphSetterChainItem extends TypeBasedPropertyValueSetterChainItem<
 
         PrimitiveEffectLine result = PrimitiveEffectLine
                 .builder()
-                .withCurrentValueProvider(() -> effectParametersRepository.getValueAtAsObject(graphingProvider.getId(), uiTimelineManager.getCurrentPosition()))
+                .withCurrentValueProvider(() -> effectParametersRepository.getValueAtAsObject(graphingProvider.getId(), globalTimelinePositionHolder.getCurrentPosition()))
                 .withVisibleNode(vbox)
                 .withDescriptorId(graphingProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)

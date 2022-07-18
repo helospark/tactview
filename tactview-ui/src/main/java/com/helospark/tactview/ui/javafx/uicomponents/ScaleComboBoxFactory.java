@@ -1,29 +1,27 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
-import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
+import com.helospark.tactview.ui.javafx.DisplayUpdateRequestMessage;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 
 import javafx.application.Platform;
 import javafx.scene.control.ComboBox;
 
-@Component
 public class ScaleComboBoxFactory implements ResettableBean {
-    private final UiTimelineManager uiTimelineManager;
     private final ProjectRepository projectRepository;
     private final UiProjectRepository uiProjectRepository;
     private final DefaultCanvasTranslateSetter defaultCanvasTranslateSetter;
     private final CanvasStateHolder canvasStateHolder;
+    private UiMessagingService messagingService;
 
     private ComboBox<String> sizeDropDown;
 
-    public ScaleComboBoxFactory(UiTimelineManager uiTimelineManager, ProjectRepository projectRepository, UiProjectRepository uiProjectRepository, UiMessagingService messagingService,
+    public ScaleComboBoxFactory(ProjectRepository projectRepository, UiProjectRepository uiProjectRepository, UiMessagingService messagingService,
             DefaultCanvasTranslateSetter defaultCanvasTranslateSetter, CanvasStateHolder canvasStateHolder) {
-        this.uiTimelineManager = uiTimelineManager;
+        this.messagingService = messagingService;
         this.projectRepository = projectRepository;
         this.uiProjectRepository = uiProjectRepository;
         this.defaultCanvasTranslateSetter = defaultCanvasTranslateSetter;
@@ -84,7 +82,7 @@ public class ScaleComboBoxFactory implements ResettableBean {
         defaultCanvasTranslateSetter.setDefaultCanvasTranslate(uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
 
         Platform.runLater(() -> {
-            uiTimelineManager.refreshDisplay(true);
+            messagingService.sendMessage(new DisplayUpdateRequestMessage(true));
         });
     }
 

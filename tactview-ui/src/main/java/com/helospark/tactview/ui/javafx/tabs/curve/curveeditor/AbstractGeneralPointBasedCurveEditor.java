@@ -12,8 +12,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.message.KeyframeRemovedRequest;
 import com.helospark.tactview.core.timeline.message.ModifyKeyframeRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ModifyKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.RemoveKeyframeCommand;
@@ -31,7 +31,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     protected final UiCommandInterpreterService commandInterpreter;
     protected final EffectParametersRepository effectParametersRepository;
 
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
 
     public AbstractGeneralPointBasedCurveEditor(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
         this.commandInterpreter = commandInterpreter;
@@ -255,7 +255,7 @@ public abstract class AbstractGeneralPointBasedCurveEditor extends AbstractNoOpC
     }
 
     @Autowired
-    public void setUiTimeline(UiTimelineManager uiTimelineManager) {
+    public void setUiTimeline(GlobalTimelinePositionHolder uiTimelineManager) {
         this.uiTimelineManager = uiTimelineManager;
     }
 

@@ -8,8 +8,8 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 
@@ -17,11 +17,12 @@ import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 public class ClipCutService {
     private UiCommandInterpreterService commandInterpreter;
     private SelectedNodeRepository selectedNodeRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private TimelineManagerAccessor timelineManager;
     private LinkClipRepository linkClipRepository;
 
-    public ClipCutService(UiCommandInterpreterService commandInterpreter, SelectedNodeRepository selectedNodeRepository, UiTimelineManager uiTimelineManager, TimelineManagerAccessor timelineManager,
+    public ClipCutService(UiCommandInterpreterService commandInterpreter, SelectedNodeRepository selectedNodeRepository, GlobalTimelinePositionHolder uiTimelineManager,
+            TimelineManagerAccessor timelineManager,
             LinkClipRepository linkClipRepository) {
         this.commandInterpreter = commandInterpreter;
         this.selectedNodeRepository = selectedNodeRepository;

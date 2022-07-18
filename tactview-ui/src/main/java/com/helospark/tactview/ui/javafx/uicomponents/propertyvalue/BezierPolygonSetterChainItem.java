@@ -5,15 +5,14 @@ import java.util.Optional;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BezierPolygonProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
@@ -23,14 +22,13 @@ import javafx.scene.input.MouseButton;
 
 @Component
 public class BezierPolygonSetterChainItem extends TypeBasedPropertyValueSetterChainItem<BezierPolygonProvider> {
-    private ObjectMapper objectMapper = new ObjectMapper();
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
 
     public BezierPolygonSetterChainItem(UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, GlobalTimelinePositionHolder uiTimelineManager) {
         super(BezierPolygonProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;

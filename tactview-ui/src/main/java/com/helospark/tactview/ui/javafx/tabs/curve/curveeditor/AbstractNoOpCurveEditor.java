@@ -3,10 +3,10 @@ package com.helospark.tactview.ui.javafx.tabs.curve.curveeditor;
 import java.math.BigDecimal;
 
 import com.helospark.lightdi.annotation.Autowired;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 
 public abstract class AbstractNoOpCurveEditor implements CurveEditor {
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
 
     @Override
     public void initializeControl(ControlInitializationRequest request) {
@@ -56,7 +56,7 @@ public abstract class AbstractNoOpCurveEditor implements CurveEditor {
     }
 
     @Autowired
-    public void setUiTimelineManager(UiTimelineManager uiTimelineManager) {
+    public void setUiTimelineManager(GlobalTimelinePositionHolder uiTimelineManager) {
         this.uiTimelineManager = uiTimelineManager;
     }
 }

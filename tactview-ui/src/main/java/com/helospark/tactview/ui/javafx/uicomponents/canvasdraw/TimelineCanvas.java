@@ -37,8 +37,8 @@ import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
 import com.helospark.tactview.core.util.messaging.EffectMovedToDifferentClipMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
@@ -104,7 +104,7 @@ public class TimelineCanvas implements ScenePostProcessor {
     private MessagingService messagingService;
     private DragRepository dragRepository;
     private SelectedNodeRepository selectedNodeRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private NameToIdRepository nameToIdRepository;
     private ScheduledExecutorService scheduledExecutorService;
     private MarkerRepository markerRepository;
@@ -131,7 +131,7 @@ public class TimelineCanvas implements ScenePostProcessor {
     public TimelineCanvas(TimelineState timelineState, TimelineManagerAccessor timelineAccessor, MessagingService messagingService,
             TimelinePatternRepository timelinePatternRepository, DragRepository dragRepository,
             SelectedNodeRepository selectedNodeRepository,
-            UiTimelineManager uiTimelineManager, TimelineCanvasContextMenuRequestedHandler timelineCanvasContextMenuRequestedHandler,
+            GlobalTimelinePositionHolder uiTimelineManager, TimelineCanvasContextMenuRequestedHandler timelineCanvasContextMenuRequestedHandler,
             NameToIdRepository nameToIdRepository, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
             MarkerRepository markerRepository, TimelineCanvasClickHandler timelineCanvasClickHandler,
             TimelineCanvasOnDragOverHandler timelineCanvasOnDragOverHandler, TimelineCanvasElementClickHandler timelineCanvasElementClickHandler,

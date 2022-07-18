@@ -10,9 +10,9 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.FileProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
@@ -26,15 +26,15 @@ import javafx.stage.FileChooser.ExtensionFilter;
 public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<FileProvider> {
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
     private ContextMenuAppender contextMenuAppender;
 
     public FilePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
+            UiCommandInterpreterService commandInterpreter, GlobalTimelinePositionHolder globalTimelinePositionHolder, ContextMenuAppender contextMenuAppender) {
         super(FileProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
-        this.uiTimelineManager = uiTimelineManager;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.contextMenuAppender = contextMenuAppender;
     }
 
@@ -77,7 +77,7 @@ public class FilePropertyValueSetterChainItem extends TypeBasedPropertyValueSett
             if (file != null) {
                 KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                         .withDescriptorId(fileProvider.getId())
-                        .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                        .withGlobalTimelinePosition(globalTimelinePositionHolder.getCurrentPosition())
                         .withValue(file.getAbsolutePath())
                         .withRevertable(true)
                         .build();

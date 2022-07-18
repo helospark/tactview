@@ -14,8 +14,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderType
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
@@ -31,17 +31,18 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
     private ContextMenuAppender contextMenuAppender;
 
     public PointProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder,
+            ContextMenuAppender contextMenuAppender) {
         super(PointProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.inputModeRepository = inputModeRepository;
-        this.uiTimelineManager = uiTimelineManager;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.contextMenuAppender = contextMenuAppender;
     }
 
@@ -75,7 +76,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 Object renderHint = descriptor.getRenderHints().get(RenderTypeHint.TYPE);
-                Point previousValue = pointProvider.getValueAt(uiTimelineManager.getCurrentPosition());
+                Point previousValue = pointProvider.getValueAt(globalTimelinePositionHolder.getCurrentPosition());
                 if (renderHint != null && renderHint.equals(MovementType.RELATIVE)) {
                     inputModeRepository.requestRelativePoint(point -> {
                         sendKeyframe(pointProvider, point, previousValue);
@@ -98,7 +99,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
 
         KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                 .withDescriptorId(pointProvider.getId())
-                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                .withGlobalTimelinePosition(globalTimelinePositionHolder.getCurrentPosition())
                 .withValue(currentPoint)
                 .withRevertable(revertable)
                 .withPreviousValue(Optional.ofNullable(previousValue))

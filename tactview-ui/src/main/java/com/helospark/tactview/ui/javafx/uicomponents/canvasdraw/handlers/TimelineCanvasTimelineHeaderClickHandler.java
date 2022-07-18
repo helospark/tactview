@@ -12,7 +12,7 @@ import com.helospark.tactview.core.timeline.marker.markers.GeneralMarker;
 import com.helospark.tactview.core.timeline.marker.markers.InpointMarker;
 import com.helospark.tactview.core.timeline.marker.markers.Marker;
 import com.helospark.tactview.core.timeline.marker.markers.OutpointMarker;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 
@@ -25,12 +25,12 @@ import javafx.stage.Window;
 
 @Component
 public class TimelineCanvasTimelineHeaderClickHandler {
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private MarkerRepository markerRepository;
     private TimelineState timelineState;
     private AlertDialogFactory dialogFactory;
 
-    public TimelineCanvasTimelineHeaderClickHandler(UiTimelineManager uiTimelineManager, MarkerRepository markerRepository,
+    public TimelineCanvasTimelineHeaderClickHandler(GlobalTimelinePositionHolder uiTimelineManager, MarkerRepository markerRepository,
             TimelineState timelineState, AlertDialogFactory dialogFactory) {
         this.uiTimelineManager = uiTimelineManager;
         this.markerRepository = markerRepository;
@@ -219,6 +219,7 @@ public class TimelineCanvasTimelineHeaderClickHandler {
             private MouseEvent event;
             private TimelinePosition position;
             private Window parentWindow;
+
             private Builder() {
             }
 

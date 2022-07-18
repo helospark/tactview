@@ -34,7 +34,7 @@ import com.helospark.tactview.ui.javafx.save.ExitWithSaveService;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.DockableTabRepository;
-import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTabFactory;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.PreviewDockableTab;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.common.TiwulFXUtil;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPane;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTabPaneLoadModel;
@@ -83,13 +83,11 @@ public class JavaFXUiMain extends Application {
     private Stage splashStage;
     private ImageView splasViewh;
 
-    static UiTimelineManager uiTimelineManager;
     public static Canvas canvas;
     static UiTimeline uiTimeline;
     static UiProjectRepository uiProjectRepository;
     static PropertyView effectPropertyView;
     static RenderDialogOpener renderService;
-    static DisplayUpdaterService displayUpdateService;
     static ProjectSizeInitializer projectSizeInitializer;
 
     @Override
@@ -147,13 +145,11 @@ public class JavaFXUiMain extends Application {
         mainContentPane.setPadding(new Insets(1)); // space between vbox border and child nodes column
         mainContentPane.setDividerPositions(0.6);
 
-        canvas = new Canvas();
+        canvas = lightDi.getBean(PreviewDockableTab.class).getCanvas();
         lightDi.getBean(CanvasStateHolder.class).setCanvas(canvas);
         lightDi.getBean(DefaultCanvasTranslateSetter.class).setDefaultCanvasTranslate(uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
         InputModeRepository inputModeRepository = lightDi.getBean(InputModeRepository.class);
         inputModeRepository.setCanvas(canvas);
-        displayUpdateService.setCanvas(canvas);
-        displayUpdateService.updateCurrentPositionWithInvalidatedCache();
 
         Tooltip tooltip = new Tooltip();
 
@@ -253,7 +249,7 @@ public class JavaFXUiMain extends Application {
 
     private static Consumer<Boolean> onClassChangeDisableTabs() {
         return enabled -> {
-            List<DetachableTabPane> tabRepos = lightDi.getBean(DockableTabRepository.class).findNodesNotContainingId(PreviewDockableTabFactory.ID);
+            List<DetachableTabPane> tabRepos = lightDi.getBean(DockableTabRepository.class).findNodesNotContainingId(PreviewDockableTab.ID);
             for (var element : tabRepos) {
                 if (enabled) {
                     element.getStyleClass().add("input-mode-enabled");
@@ -303,15 +299,13 @@ public class JavaFXUiMain extends Application {
         lightDi.loadDependencies(List.of(), allClasses);
 
         uiTimeline = lightDi.getBean(UiTimeline.class);
-        uiTimelineManager = lightDi.getBean(UiTimelineManager.class);
+        GlobalTimelinePositionHolder globalTimelinePositionHolder = lightDi.getBean(GlobalTimelinePositionHolder.class);
         effectPropertyView = lightDi.getBean(PropertyView.class);
 
-        uiTimelineManager.registerUiPlaybackConsumer(position -> uiTimeline.updateLine(position));
-        uiTimelineManager.registerUiPlaybackConsumer(position -> effectPropertyView.updateValues(position));
+        globalTimelinePositionHolder.registerUiPlaybackConsumer(position -> uiTimeline.updateLine(position));
+        globalTimelinePositionHolder.registerUiPlaybackConsumer(position -> effectPropertyView.updateValues(position));
 
-        displayUpdateService = lightDi.getBean(DisplayUpdaterService.class);
         projectSizeInitializer = lightDi.getBean(ProjectSizeInitializer.class);
-        uiTimelineManager.setDisplayUpdaterService(lightDi.getBean(DisplayUpdaterService.class));
 
         uiProjectRepository = lightDi.getBean(UiProjectRepository.class);
         renderService = lightDi.getBean(RenderDialogOpener.class);

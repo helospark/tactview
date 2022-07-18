@@ -1,20 +1,40 @@
 package com.helospark.tactview.ui.javafx.tabs.dockabletab.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
+import com.helospark.tactview.core.init.PostInitializationArgsCallback;
+import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
+import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
+import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
+import com.helospark.tactview.ui.javafx.UiPlaybackManager;
 import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
+import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
+import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
+import com.helospark.tactview.ui.javafx.uicomponents.DefaultCanvasTranslateSetter;
 import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
+import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
+import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
+import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
+import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
 
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -32,32 +52,77 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 @Component
-public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory {
+public class PreviewDockableTab extends AbstractCachingDockableTabFactory implements PostInitializationArgsCallback {
     public static final String ID = "preview";
     private UiPlaybackPreferenceRepository playbackPreferenceRepository;
     private AudioVisualizationComponent audioVisualazationComponent;
     private UiProjectRepository uiProjectRepository;
-    private UiTimelineManager uiTimelineManager;
+    private UiPlaybackManager uiPlaybackManager;
     private SingleFullImageViewController fullScreenRenderer;
     private ScaleComboBoxFactory scaleComboBoxFactory;
     private CanvasStateHolder canvasStateHolder;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
+    private DisplayUpdaterService displayUpdaterService;
 
     public Label videoTimestampLabel;
+    private Canvas canvas;
 
-    public PreviewDockableTabFactory(UiPlaybackPreferenceRepository playbackPreferenceRepository, AudioVisualizationComponent audioVisualazationComponent, UiProjectRepository uiProjectRepository,
-            UiTimelineManager uiTimelineManager, SingleFullImageViewController fullScreenRenderer, ScaleComboBoxFactory scaleComboBoxFactory,
-            CanvasStateHolder canvasStateHolder) {
-        this.playbackPreferenceRepository = playbackPreferenceRepository;
-        this.audioVisualazationComponent = audioVisualazationComponent;
+    public PreviewDockableTab(UiProjectRepository uiProjectRepository,
+            SingleFullImageViewController fullScreenRenderer,
+            GlobalTimelinePositionHolder globalTimelinePositionHolder,
+
+            MessagingService messagingService,
+
+            ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
+            AudioStreamService audioStreamService, JavaByteArrayConverter javaByteArrayConverter,
+            List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
+
+            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners,
+            SelectedNodeRepository selectedNodeRepository,
+
+            CanvasStateHolder canvasStateHolder, AudioRmsCalculator audioRmsCalculator,
+
+            UiMessagingService uiMessagingService, DefaultCanvasTranslateSetter defaultCanvasTranslateSetter) {
         this.uiProjectRepository = uiProjectRepository;
-        this.uiTimelineManager = uiTimelineManager;
         this.fullScreenRenderer = fullScreenRenderer;
-        this.scaleComboBoxFactory = scaleComboBoxFactory;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
+
         this.canvasStateHolder = canvasStateHolder;
+
+        // instance specific data
+        this.canvas = new Canvas();
+        canvasStateHolder.setCanvas(canvas);
+
+        this.scaleComboBoxFactory = new ScaleComboBoxFactory(projectRepository, uiProjectRepository, uiMessagingService, defaultCanvasTranslateSetter, canvasStateHolder);
+
+        this.audioVisualazationComponent = new AudioVisualizationComponent(playbackController, audioRmsCalculator, canvas);
+
+        this.playbackPreferenceRepository = new UiPlaybackPreferenceRepository();
+
+        this.displayUpdaterService = new DisplayUpdaterService(playbackController, uiProjectRepository, globalDirtyClipManager, displayUpdateListeners,
+                messagingService, scheduledExecutorService, selectedNodeRepository, canvasStateHolder, globalTimelinePositionHolder, playbackPreferenceRepository);
+        this.displayUpdaterService.setCanvas(canvas);
+        displayUpdaterService.init();
+
+        List<AudioPlayedListener> newListeners = new ArrayList<>();
+        newListeners.addAll(audioPlayedListeners);
+        newListeners.add(audioVisualazationComponent);
+        this.uiPlaybackManager = new UiPlaybackManager(projectRepository, timelineState, playbackController,
+                audioStreamService, playbackPreferenceRepository, javaByteArrayConverter,
+                newListeners, scheduledExecutorService, uiProjectRepository,
+                globalTimelinePositionHolder, displayUpdaterService);
+    }
+
+    @Override
+    public void call(String[] args) {
+        this.audioVisualazationComponent.call(args);
+    }
+
+    public Canvas getCanvas() {
+        return canvas;
     }
 
     private BorderPane createPreviewRightVBox() {
-        Canvas canvas = canvasStateHolder.getCanvas();
         BorderPane previewScrollPane = createCentered(canvas);
         canvas.widthProperty().bind(previewScrollPane.widthProperty().subtract(20.0));
         canvas.heightProperty().bind(previewScrollPane.heightProperty().subtract(30.0));
@@ -89,43 +154,43 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         maximalFrameButton.setTooltip(new Tooltip("Show maximal preview frame"));
 
         Button fullscreenButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXPAND));
-        fullscreenButton.setOnMouseClicked(e -> uiTimelineManager.startFullscreenPlayback());
+        fullscreenButton.setOnMouseClicked(e -> uiPlaybackManager.startFullscreenPlayback());
         fullscreenButton.setTooltip(new Tooltip("Fullscreen"));
 
         ToggleButton halfImageEffectButton = new ToggleButton("", new Glyph("FontAwesome", FontAwesome.Glyph.STAR_HALF_ALT));
         halfImageEffectButton.setSelected(false);
         halfImageEffectButton.setOnAction(e -> {
             playbackPreferenceRepository.setHalfEffect(halfImageEffectButton.isSelected());
-            uiTimelineManager.refreshDisplay(true);
+            uiPlaybackManager.refreshDisplay(true);
         });
         halfImageEffectButton.setTooltip(new Tooltip("Apply effects only on left side of preview"));
 
         Button playButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.PLAY));
-        playButton.setOnMouseClicked(e -> uiTimelineManager.startPlayback());
+        playButton.setOnMouseClicked(e -> uiPlaybackManager.startPlayback());
         playButton.setTooltip(new Tooltip("Play"));
 
         Button stopButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.STOP));
-        stopButton.setOnMouseClicked(e -> uiTimelineManager.stopPlayback());
+        stopButton.setOnMouseClicked(e -> uiPlaybackManager.stopPlayback());
         stopButton.setTooltip(new Tooltip("Stop"));
 
         Button jumpBackOnFrameButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.STEP_BACKWARD));
-        jumpBackOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveBackOneFrame());
+        jumpBackOnFrameButton.setOnMouseClicked(e -> globalTimelinePositionHolder.moveBackOneFrame());
         jumpBackOnFrameButton.setTooltip(new Tooltip("Step one frame back"));
 
         Button jumpForwardOnFrameButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.STEP_FORWARD));
-        jumpForwardOnFrameButton.setOnMouseClicked(e -> uiTimelineManager.moveForwardOneFrame());
+        jumpForwardOnFrameButton.setOnMouseClicked(e -> globalTimelinePositionHolder.moveForwardOneFrame());
         jumpForwardOnFrameButton.setTooltip(new Tooltip("Step one frame forward"));
 
         Button jumpBackButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.BACKWARD));
-        jumpBackButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(-10)));
+        jumpBackButton.setOnMouseClicked(e -> globalTimelinePositionHolder.jumpRelative(BigDecimal.valueOf(-10)));
         jumpBackButton.setTooltip(new Tooltip("Step 10s back"));
 
         Button jumpForwardButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.FORWARD));
-        jumpForwardButton.setOnMouseClicked(e -> uiTimelineManager.jumpRelative(BigDecimal.valueOf(10)));
+        jumpForwardButton.setOnMouseClicked(e -> globalTimelinePositionHolder.jumpRelative(BigDecimal.valueOf(10)));
         jumpForwardButton.setTooltip(new Tooltip("Step 10s forward"));
 
         ComboBox<String> sizeDropDown = scaleComboBoxFactory.create();
@@ -164,7 +229,7 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
         BorderPane rightBorderPane = new BorderPane();
         rightBorderPane.setCenter(rightVBox);
 
-        uiTimelineManager.registerUiPlaybackConsumer(position -> updateTime(position));
+        globalTimelinePositionHolder.registerUiPlaybackConsumer(position -> updateTime(position));
         return rightBorderPane;
     }
 
@@ -260,6 +325,10 @@ public class PreviewDockableTabFactory extends AbstractCachingDockableTabFactory
     @Override
     public String getId() {
         return ID;
+    }
+
+    public DisplayUpdaterService getDisplayUpdaterService() {
+        return displayUpdaterService;
     }
 
 }

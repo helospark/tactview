@@ -26,9 +26,6 @@ public class UiProjectRepository implements SaveLoadContributor, ResettableBean 
     private SimpleIntegerProperty previewWidth = new SimpleIntegerProperty(PREVIEW_WIDTH);
     private SimpleIntegerProperty previewHeight = new SimpleIntegerProperty(PREVIEW_HEIGHT);
 
-    private SimpleIntegerProperty previewAvailableWidth = new SimpleIntegerProperty(320);
-    private SimpleIntegerProperty previewAvailableHeight = new SimpleIntegerProperty(200);
-
     private double aspectRatio;
 
     @JsonIgnore

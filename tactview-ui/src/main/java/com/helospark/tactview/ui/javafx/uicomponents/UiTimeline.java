@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.uicomponents.canvasdraw.TimelineCanvas;
 import com.helospark.tactview.ui.javafx.uicomponents.quicktoolbar.QuickToolbarMenuElement;
 
@@ -28,13 +28,13 @@ import javafx.scene.layout.VBox;
 @Component
 public class UiTimeline {
     private TimelineState timelineState;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private TimelineCanvas timelineCanvas;
     private List<QuickToolbarMenuElement> quickToolbarMenuElements;
 
     private BorderPane borderPane;
 
-    public UiTimeline(TimelineState timelineState, UiTimelineManager uiTimelineManager, TimelineCanvas timelineCanvas, List<QuickToolbarMenuElement> quickToolbarMenuElements) {
+    public UiTimeline(TimelineState timelineState, GlobalTimelinePositionHolder uiTimelineManager, TimelineCanvas timelineCanvas, List<QuickToolbarMenuElement> quickToolbarMenuElements) {
         this.timelineState = timelineState;
         this.uiTimelineManager = uiTimelineManager;
         this.timelineCanvas = timelineCanvas;

@@ -16,8 +16,8 @@ import com.helospark.tactview.core.timeline.TimelineManagerFramesRequest;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.logger.Slf4j;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
@@ -38,7 +38,7 @@ import javafx.stage.Stage;
 
 @Component
 public class SingleFullImageViewController {
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private TimelineManagerRenderService timelineManagerRenderService;
     private ProjectRepository projectRepository;
     private ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
@@ -46,7 +46,7 @@ public class SingleFullImageViewController {
     @Slf4j
     private Logger logger;
 
-    public SingleFullImageViewController(UiTimelineManager uiTimelineManager, TimelineManagerRenderService timelineManagerRenderService, ProjectRepository projectRepository,
+    public SingleFullImageViewController(GlobalTimelinePositionHolder uiTimelineManager, TimelineManagerRenderService timelineManagerRenderService, ProjectRepository projectRepository,
             ByteBufferToJavaFxImageConverter byteBufferToImageConverter, StylesheetAdderService stylesheetAdderService) {
         this.uiTimelineManager = uiTimelineManager;
         this.timelineManagerRenderService = timelineManagerRenderService;

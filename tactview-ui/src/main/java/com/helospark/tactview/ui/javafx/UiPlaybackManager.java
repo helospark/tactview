@@ -2,7 +2,6 @@ package com.helospark.tactview.ui.javafx;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.preference.PreferenceValue;
@@ -36,7 +34,6 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
 
-import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -46,19 +43,14 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import sonic.Sonic;
 
-@Component
-public class UiTimelineManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UiTimelineManager.class);
+public class UiPlaybackManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UiPlaybackManager.class);
     private ThreadPoolExecutor playbackExecutorService = createExecutorService();
     private final int CACHE_MODULO = 1;
     private int numberOfFramesToCache = 2;
-    private final List<Consumer<TimelinePosition>> uiPlaybackConsumers = new ArrayList<>();
-    private final List<Consumer<TimelinePosition>> playbackConsumers = new ArrayList<>();
     private final List<Consumer<PlaybackStatus>> statusChangeConsumers = new ArrayList<>();
 
-    private volatile TimelinePosition currentPosition = new TimelinePosition(BigDecimal.ZERO);
     private volatile boolean isPlaying;
-    private final Object timelineLock = new Object();
 
     private Sonic sonic = null;
 
@@ -70,16 +62,17 @@ public class UiTimelineManager {
     private DisplayUpdaterService displayUpdaterService;
     private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
     private JavaByteArrayConverter javaByteArrayConverter;
-    private List<AudioPlayedListener> audioPlayedListeners;
+    private List<AudioPlayedListener> audioPlayedListeners; // TODO
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
 
     private ScheduledExecutorService scheduledExecutorService;
 
     private long lastTimeScreenUpdated = 0;
 
-    public UiTimelineManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
+    public UiPlaybackManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
             AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository, JavaByteArrayConverter javaByteArrayConverter,
             List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
-            UiProjectRepository uiProjectRepository) {
+            UiProjectRepository uiProjectRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder, DisplayUpdaterService displayUpdaterService) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
         this.playbackFrameAccessor = playbackController;
@@ -89,8 +82,21 @@ public class UiTimelineManager {
         this.audioPlayedListeners = audioPlayedListeners;
         this.scheduledExecutorService = scheduledExecutorService;
         this.uiProjectRepository = uiProjectRepository;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
+        this.displayUpdaterService = displayUpdaterService;
 
         scheduledExecutorService.scheduleAtFixedRate(() -> handleStuckPlayback(), 5000, 5000, TimeUnit.MILLISECONDS);
+
+        globalTimelinePositionHolder.registerUiPlaybackConsumer(time -> {
+            if (!isPlaying) { // avoid double update during playback
+                TimelineDisplayAsyncUpdateRequest request = TimelineDisplayAsyncUpdateRequest.builder()
+                        .withCanDropFrames(false)
+                        .withCurrentPosition(time)
+                        .withExpectedNextPositions(List.of())
+                        .build();
+                displayUpdaterService.updateDisplayAsync(request);
+            }
+        });
     }
 
     private ThreadPoolExecutor createExecutorService() {
@@ -98,14 +104,6 @@ public class UiTimelineManager {
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 new ThreadFactoryBuilder().setNameFormat("playback-thread-%d").build());
-    }
-
-    public void setDisplayUpdaterService(DisplayUpdaterService displayUpdaterService) {
-        this.displayUpdaterService = displayUpdaterService;
-    }
-
-    public void registerUiPlaybackConsumer(Consumer<TimelinePosition> consumer) {
-        this.uiPlaybackConsumers.add(consumer);
     }
 
     public void registerStoppedConsumer(Consumer<PlaybackStatus> consumer) {
@@ -136,9 +134,8 @@ public class UiTimelineManager {
             audioStreamService.startPlayback();
             while (isPlaying) {
                 TimelinePosition nextFrame = this.expectedNextFrames(1).get(0);
-                synchronized (timelineLock) {
-                    currentPosition = nextFrame;
-                }
+                globalTimelinePositionHolder.jumpAbsolute(nextFrame);
+                TimelinePosition currentPosition = globalTimelinePositionHolder.getCurrentPosition();
 
                 boolean isMute = uiPlaybackPreferenceRepository.isMute();
                 TimelineLength length = new TimelineLength(projectRepository.getFrameTime());
@@ -169,7 +166,6 @@ public class UiTimelineManager {
                 }
                 lastTimeScreenUpdated = System.currentTimeMillis();
 
-                notifyConsumers();
                 ++frame;
             }
         } catch (Throwable e) {
@@ -227,6 +223,7 @@ public class UiTimelineManager {
     }
 
     private void notifyAudioListeners(AudioVideoFragment audioVideoFragment) {
+        TimelinePosition currentPosition = globalTimelinePositionHolder.getCurrentPosition();
         audioPlayedListeners.stream()
                 .forEach(listener -> listener.onAudioPlayed(new AudioPlayedRequest(currentPosition, audioVideoFragment.getAudioResult())));
     }
@@ -250,12 +247,12 @@ public class UiTimelineManager {
     }
 
     public void refreshDisplay(boolean invalidateCache) {
+        TimelinePosition currentPosition = globalTimelinePositionHolder.getCurrentPosition();
         if (invalidateCache) {
-            displayUpdaterService.updateDisplayWithCacheInvalidation(this.getCurrentPosition());
+            displayUpdaterService.updateDisplayWithCacheInvalidation(currentPosition);
         } else {
-            displayUpdaterService.updateDisplay(this.getCurrentPosition());
+            displayUpdaterService.updateDisplay(currentPosition);
         }
-        notifyConsumers();
 
         // TODO: this is also a consumer, but due to playback it would be doublecalled during playback
         TimelineLength length = new TimelineLength(projectRepository.getFrameTime());
@@ -294,45 +291,8 @@ public class UiTimelineManager {
         originalExecutorService.shutdownNow();
     }
 
-    public void jumpRelative(BigDecimal seconds) {
-        synchronized (timelineLock) {
-            currentPosition = currentPosition.add(seconds);
-            if (currentPosition.isLessThan(0)) {
-                currentPosition = TimelinePosition.ofZero();
-            }
-        }
-        refreshDisplay();
-    }
-
-    public void jumpAbsolute(BigDecimal seconds) {
-        if (seconds.compareTo(BigDecimal.ZERO) < 0) {
-            seconds = BigDecimal.ZERO;
-        }
-        BigDecimal frameTime = projectRepository.getFrameTime();
-
-        seconds = seconds.divideToIntegralValue(frameTime).multiply(frameTime);
-
-        synchronized (timelineLock) {
-            currentPosition = new TimelinePosition(seconds);
-        }
-        refreshDisplay();
-    }
-
     public void refresh() {
         refreshDisplay();
-    }
-
-    private void notifyConsumers() {
-        for (var consumer : playbackConsumers) {
-            consumer.accept(currentPosition);
-        }
-        for (var consumer : uiPlaybackConsumers) {
-            Platform.runLater(() -> consumer.accept(currentPosition));
-        }
-    }
-
-    public TimelinePosition getCurrentPosition() {
-        return currentPosition;
     }
 
     public List<TimelinePosition> expectedNextFrames() {
@@ -345,10 +305,10 @@ public class UiTimelineManager {
     }
 
     private List<TimelinePosition> expectedNextFramesWithDroppedFrameModulo(int number, int modulo, int startingFrame) {
-        BigDecimal increment = getIncrement();
+        BigDecimal increment = globalTimelinePositionHolder.getIncrement();
         if (isPlaying) {
             List<TimelinePosition> result = new ArrayList<>();
-            TimelinePosition position = currentPosition;
+            TimelinePosition position = globalTimelinePositionHolder.getCurrentPosition();
 
             if (timelineState.loopingEnabled() && position.isLessThan(timelineState.getLoopALineProperties().get())) {
                 position = timelineState.getLoopALineProperties().get();
@@ -370,19 +330,6 @@ public class UiTimelineManager {
         } else {
             return Collections.emptyList();
         }
-    }
-
-    public void moveBackOneFrame() {
-        jumpRelative(getIncrement().negate());
-    }
-
-    public void moveForwardOneFrame() {
-        jumpRelative(getIncrement());
-    }
-
-    public BigDecimal getIncrement() {
-        BigDecimal fps = projectRepository.getFps();
-        return new BigDecimal(1).divide(fps, 100, RoundingMode.HALF_DOWN);
     }
 
     public boolean isPlaybackInProgress() {

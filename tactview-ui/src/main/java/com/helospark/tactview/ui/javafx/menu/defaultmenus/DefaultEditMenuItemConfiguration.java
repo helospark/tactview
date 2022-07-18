@@ -22,8 +22,8 @@ import com.helospark.tactview.core.timeline.marker.markers.InpointMarker;
 import com.helospark.tactview.core.timeline.marker.markers.OutpointMarker;
 import com.helospark.tactview.core.timeline.subtimeline.ExposedDescriptorDescriptor;
 import com.helospark.tactview.core.timeline.subtimeline.SubtimelineFromTimelineFactory;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.ReplaceTimelineWithSubtimelineCommand;
 import com.helospark.tactview.ui.javafx.hotkey.HotKeyRemapWindow;
 import com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository;
@@ -173,7 +173,8 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1803)
-    public SelectableMenuContribution selectClipsUnderPlayheadMenuItem(SelectedNodeRepository selectedNodeRepository, TimelineManagerAccessor timelineManager, UiTimelineManager uiTimelineManager) {
+    public SelectableMenuContribution selectClipsUnderPlayheadMenuItem(SelectedNodeRepository selectedNodeRepository, TimelineManagerAccessor timelineManager,
+            GlobalTimelinePositionHolder uiTimelineManager) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, SELECT_ROOT, "Clips under playhead"), event -> {
             TimelinePosition position = uiTimelineManager.getCurrentPosition();
             List<String> newSelectedClips = timelineManager.getAllClipIds()
@@ -201,19 +202,19 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1900)
-    public SelectableMenuContribution jumpForwardOneFrameMenuItem(UiTimelineManager timelineManager) {
+    public SelectableMenuContribution jumpForwardOneFrameMenuItem(GlobalTimelinePositionHolder timelineManager) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump _forward one frame"), event -> timelineManager.moveForwardOneFrame());
     }
 
     @Bean
     @Order(1901)
-    public SelectableMenuContribution jumpBackwardOneFrameMenuItem(UiTimelineManager timelineManager) {
+    public SelectableMenuContribution jumpBackwardOneFrameMenuItem(GlobalTimelinePositionHolder timelineManager) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump _backward one frame"), event -> timelineManager.moveBackOneFrame());
     }
 
     @Bean
     @Order(1902)
-    public SelectableMenuContribution jumpToAMarkerMenuItem(UiTimelineManager timelineManager, TimelineState timelineState) {
+    public SelectableMenuContribution jumpToAMarkerMenuItem(GlobalTimelinePositionHolder timelineManager, TimelineState timelineState) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to '_A' marker"), event -> {
             Optional<TimelinePosition> loopAProperties = timelineState.getLoopALineProperties();
             if (loopAProperties.isPresent()) {
@@ -224,7 +225,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1903)
-    public SelectableMenuContribution jumpToBMarkerMenuItem(UiTimelineManager timelineManager, TimelineState timelineState) {
+    public SelectableMenuContribution jumpToBMarkerMenuItem(GlobalTimelinePositionHolder timelineManager, TimelineState timelineState) {
         return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to '_B' marker"), event -> {
             Optional<TimelinePosition> loopBProperties = timelineState.getLoopBLineProperties();
             if (loopBProperties.isPresent()) {
@@ -235,7 +236,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1904)
-    public SelectableMenuContribution jumpToBeginningMenuItem(UiTimelineManager timelineManager, TimelineState timelineState) {
+    public SelectableMenuContribution jumpToBeginningMenuItem(GlobalTimelinePositionHolder timelineManager, TimelineState timelineState) {
         KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("jumpToBeginning", new KeyCodeCombination(KeyCode.HOME, KeyCombination.CONTROL_DOWN), "Jump to timeline beginning")
                 .getCombination();
         return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to timeline beginning"), event -> {
@@ -245,7 +246,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1905)
-    public SelectableMenuContribution jumpToEndMenuItem(UiTimelineManager uiTimelineManager, TimelineState timelineState, TimelineManagerAccessor timelineManagerAccessor) {
+    public SelectableMenuContribution jumpToEndMenuItem(GlobalTimelinePositionHolder uiTimelineManager, TimelineState timelineState, TimelineManagerAccessor timelineManagerAccessor) {
         KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("jumpToEnd", new KeyCodeCombination(KeyCode.END, KeyCombination.CONTROL_DOWN), "Jump to timeline end").getCombination();
         return new DefaultMenuContribution(List.of(EDIT_ROOT, JUMP_ROOT, "Jump to timeline end"), event -> {
             TimelinePosition endPosition = timelineManagerAccessor.findEndPosition();
@@ -255,7 +256,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1906)
-    public SelectableMenuContribution jumpToBeginningOfCurrentClipMenuItem(UiTimelineManager uiTimelineManager, TimelineManagerAccessor timelineManager,
+    public SelectableMenuContribution jumpToBeginningOfCurrentClipMenuItem(GlobalTimelinePositionHolder uiTimelineManager, TimelineManagerAccessor timelineManager,
             SelectedNodeRepository selectedNodeRepository) {
         KeyCodeCombination combination = hotKeyRepository
                 .registerOrGetHotKey("jumpToClipBeginning", new KeyCodeCombination(KeyCode.COMMA, KeyCombination.CONTROL_DOWN), "Jump to beginning of selected clip")
@@ -271,7 +272,7 @@ public class DefaultEditMenuItemConfiguration implements ScenePostProcessor {
 
     @Bean
     @Order(1907)
-    public SelectableMenuContribution jumpToEndOfCurrentClipMenuItem(UiTimelineManager uiTimelineManager, TimelineManagerAccessor timelineManager,
+    public SelectableMenuContribution jumpToEndOfCurrentClipMenuItem(GlobalTimelinePositionHolder uiTimelineManager, TimelineManagerAccessor timelineManager,
             SelectedNodeRepository selectedNodeRepository) {
         KeyCodeCombination combination = hotKeyRepository.registerOrGetHotKey("jumpToClipEnd", new KeyCodeCombination(KeyCode.PERIOD, KeyCombination.CONTROL_DOWN), "Jump to end of selected clip")
                 .getCombination();

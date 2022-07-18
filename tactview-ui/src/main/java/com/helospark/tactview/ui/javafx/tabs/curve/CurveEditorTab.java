@@ -21,7 +21,7 @@ import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessa
 import com.helospark.tactview.core.timeline.message.ClipMovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectMovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.scenepostprocessor.ScenePostProcessor;
 import com.helospark.tactview.ui.javafx.tabs.TabActiveRequest;
 import com.helospark.tactview.ui.javafx.tabs.curve.curveeditor.ControlInitializationRequest;
@@ -48,7 +48,7 @@ public class CurveEditorTab extends DetachableTab implements ScenePostProcessor,
     public static final String CURVE_EDITOR_ID = "curve-editor";
     private static final double samplesPerPixel = 1.0;
     private final List<CurveEditor> curveEditors;
-    private final UiTimelineManager timelineManager;
+    private final GlobalTimelinePositionHolder timelineManager;
     private final EffectParametersRepository effectParametersRepository;
     private double positionOffset;
 
@@ -80,7 +80,7 @@ public class CurveEditorTab extends DetachableTab implements ScenePostProcessor,
     private double lastDraggedX = 0;
     ///
 
-    public CurveEditorTab(List<CurveEditor> curveEditors, MessagingService messagingService, UiTimelineManager timelineManager, EffectParametersRepository effectParametersRepository) {
+    public CurveEditorTab(List<CurveEditor> curveEditors, MessagingService messagingService, GlobalTimelinePositionHolder timelineManager, EffectParametersRepository effectParametersRepository) {
         super(CURVE_EDITOR_ID);
         this.curveEditors = curveEditors;
         this.timelineManager = timelineManager;

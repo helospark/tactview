@@ -15,8 +15,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.RectangleProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
@@ -33,17 +33,18 @@ public class RectangleProviderValueSetterChainItem extends TypeBasedPropertyValu
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
     private ContextMenuAppender contextMenuAppender;
 
     public RectangleProviderValueSetterChainItem(PointProviderValueSetterChainItem pointProviderValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager, ContextMenuAppender contextMenuAppender) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder,
+            ContextMenuAppender contextMenuAppender) {
         super(RectangleProvider.class);
         this.pointProviderValueSetterChainItem = pointProviderValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.inputModeRepository = inputModeRepository;
-        this.uiTimelineManager = uiTimelineManager;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.contextMenuAppender = contextMenuAppender;
     }
 
@@ -81,13 +82,13 @@ public class RectangleProviderValueSetterChainItem extends TypeBasedPropertyValu
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                Rectangle previousValue = rectangleProvider.getValueAt(uiTimelineManager.getCurrentPosition());
+                Rectangle previousValue = rectangleProvider.getValueAt(globalTimelinePositionHolder.getCurrentPosition());
                 inputModeRepository.requestRectangle(rectangle -> {
                     boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
 
                     KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                             .withDescriptorId(rectangleProvider.getId())
-                            .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                            .withGlobalTimelinePosition(globalTimelinePositionHolder.getCurrentPosition())
                             .withValue(rectangle)
                             .withPreviousValue(Optional.ofNullable(previousValue))
                             .withRevertable(revertable)

@@ -6,7 +6,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -15,9 +15,9 @@ import javafx.scene.control.MenuItem;
 @Order(93)
 public class CursorMoveToContextMenuChainItem implements ClipContextMenuChainItem {
     private TimelineManagerAccessor timelineManagerAccessor;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
 
-    public CursorMoveToContextMenuChainItem(TimelineManagerAccessor timelineManagerAccessor, UiTimelineManager uiTimelineManager) {
+    public CursorMoveToContextMenuChainItem(TimelineManagerAccessor timelineManagerAccessor, GlobalTimelinePositionHolder uiTimelineManager) {
         this.timelineManagerAccessor = timelineManagerAccessor;
         this.uiTimelineManager = uiTimelineManager;
     }

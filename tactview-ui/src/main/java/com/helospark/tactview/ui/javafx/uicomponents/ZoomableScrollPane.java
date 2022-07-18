@@ -1,6 +1,6 @@
 package com.helospark.tactview.ui.javafx.uicomponents;
 
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.geometry.Bounds;
@@ -21,7 +21,7 @@ public class ZoomableScrollPane extends ScrollPane {
     private Node target;
     private Node zoomNode;
 
-    public ZoomableScrollPane(Node target, TimelineState timelineState, UiTimelineManager uiTimelineManager) {
+    public ZoomableScrollPane(Node target, TimelineState timelineState, GlobalTimelinePositionHolder uiTimelineManager) {
         this.timelineState = timelineState;
         this.target = target;
         this.zoomNode = new Group(target);

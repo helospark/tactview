@@ -7,22 +7,14 @@ import com.helospark.tactview.core.util.messaging.MessagingService;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.ScrollBar;
 
 @Component
 public class CanvasStateHolder implements ResettableBean {
-    private MessagingService messagingService;
-
     private Canvas canvas;
     private DoubleProperty translateX = new SimpleDoubleProperty(0.0);
     private DoubleProperty translateY = new SimpleDoubleProperty(0.0);
 
-    private ScrollBar rightScrollBar;
-    private ScrollBar bottomScrollBar;
-
     public CanvasStateHolder(MessagingService messagingService) {
-        this.messagingService = messagingService;
-
         translateX.addListener((a, b, c) -> {
             messagingService.sendMessage(new DisplayUpdateRequestMessage(false));
         });

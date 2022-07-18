@@ -11,8 +11,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PolygonProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
 import com.helospark.tactview.ui.javafx.inputmode.strategy.ResultType;
@@ -25,15 +25,15 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
     private InputModeRepository inputModeRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
 
     public PolygonValueSetterChainItem(UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, UiTimelineManager uiTimelineManager) {
+            EffectParametersRepository effectParametersRepository, InputModeRepository inputModeRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder) {
         super(PolygonProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.inputModeRepository = inputModeRepository;
-        this.uiTimelineManager = uiTimelineManager;
+        this.globalTimelinePositionHolder = globalTimelinePositionHolder;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
 
         PrimitiveEffectLine result = PrimitiveEffectLine
                 .builder()
-                .withCurrentValueProvider(() -> effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition()))
+                .withCurrentValueProvider(() -> effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), globalTimelinePositionHolder.getCurrentPosition()))
                 .withVisibleNode(button)
                 .withDescriptorId(polygonProvider.getId())
                 .withEffectParametersRepository(effectParametersRepository)
@@ -58,14 +58,14 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                Polygon currentPolygon = (Polygon) effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), uiTimelineManager.getCurrentPosition());
+                Polygon currentPolygon = (Polygon) effectParametersRepository.getValueAtAsObject(polygonProvider.getId(), globalTimelinePositionHolder.getCurrentPosition());
                 if (currentPolygon.getPoints().isEmpty()) {
                     inputModeRepository.requestPolygon(polygon -> {
                         boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
 
                         KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                                 .withDescriptorId(polygonProvider.getId())
-                                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                                .withGlobalTimelinePosition(globalTimelinePositionHolder.getCurrentPosition())
                                 .withValue(polygon)
                                 .withRevertable(revertable)
                                 .withPreviousValue(Optional.of(currentPolygon))
@@ -78,7 +78,7 @@ public class PolygonValueSetterChainItem extends TypeBasedPropertyValueSetterCha
 
                         KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                                 .withDescriptorId(polygonProvider.getId())
-                                .withGlobalTimelinePosition(uiTimelineManager.getCurrentPosition())
+                                .withGlobalTimelinePosition(globalTimelinePositionHolder.getCurrentPosition())
                                 .withValue(polygon)
                                 .withRevertable(true)
                                 .build();

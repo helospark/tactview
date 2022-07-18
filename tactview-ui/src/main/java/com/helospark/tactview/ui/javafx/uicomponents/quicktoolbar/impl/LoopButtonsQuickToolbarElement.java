@@ -9,7 +9,7 @@ import org.controlsfx.glyphfont.Glyph;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Order;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.quicktoolbar.QuickToolbarMenuElement;
 
@@ -23,10 +23,10 @@ import javafx.scene.control.Tooltip;
 public class LoopButtonsQuickToolbarElement implements QuickToolbarMenuElement {
     private static final String LOOP_BUTTON_ENABLED_CLASS = "loop-button-enabled";
     private static final String LOOP_BUTTON_CLASS = "loop-button";
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private TimelineState timelineState;
 
-    public LoopButtonsQuickToolbarElement(UiTimelineManager uiTimelineManager, TimelineState timelineState) {
+    public LoopButtonsQuickToolbarElement(GlobalTimelinePositionHolder uiTimelineManager, TimelineState timelineState) {
         this.uiTimelineManager = uiTimelineManager;
         this.timelineState = timelineState;
     }

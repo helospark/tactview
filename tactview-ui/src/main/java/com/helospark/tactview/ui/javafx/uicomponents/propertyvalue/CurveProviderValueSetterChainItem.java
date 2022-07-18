@@ -6,8 +6,8 @@ import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDe
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.CurveProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.CurveProvider.KnotAwareUnivariateFunction;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.control.CurveWidget;
 import com.helospark.tactview.ui.javafx.inputmode.InputModeRepository;
@@ -18,12 +18,12 @@ public class CurveProviderValueSetterChainItem extends TypeBasedPropertyValueSet
     private DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem;
     private UiCommandInterpreterService commandInterpreter;
     private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private InputModeRepository inputModeRepository;
     private ContextMenuAppender contextMenuAppender;
 
     public CurveProviderValueSetterChainItem(DoublePropertyValueSetterChainItem doublePropertyValueSetterChainItem, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager, InputModeRepository inputModeRepository, ContextMenuAppender contextMenuAppender) {
+            EffectParametersRepository effectParametersRepository, GlobalTimelinePositionHolder uiTimelineManager, InputModeRepository inputModeRepository, ContextMenuAppender contextMenuAppender) {
         super(CurveProvider.class);
         this.doublePropertyValueSetterChainItem = doublePropertyValueSetterChainItem;
         this.commandInterpreter = commandInterpreter;

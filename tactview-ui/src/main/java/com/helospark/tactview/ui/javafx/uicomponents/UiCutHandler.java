@@ -11,8 +11,8 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.message.NotificationMessage;
 import com.helospark.tactview.core.timeline.message.NotificationMessage.Level;
 import com.helospark.tactview.core.util.messaging.MessagingService;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.ClipResizedCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CutClipCommand;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
@@ -20,7 +20,7 @@ import com.helospark.tactview.ui.javafx.repository.timelineeditmode.TimelineEdit
 
 @Component
 public class UiCutHandler {
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private TimelineManagerAccessor timelineManager;
     private LinkClipRepository linkClipRepository;
     private UiCommandInterpreterService commandInterpreter;
@@ -28,7 +28,7 @@ public class UiCutHandler {
     private TimelineEditModeRepository timelineEditModeRepository;
     private MessagingService messagingService;
 
-    public UiCutHandler(UiTimelineManager uiTimelineManager, TimelineManagerAccessor timelineManager, LinkClipRepository linkClipRepository, UiCommandInterpreterService commandInterpreter,
+    public UiCutHandler(GlobalTimelinePositionHolder uiTimelineManager, TimelineManagerAccessor timelineManager, LinkClipRepository linkClipRepository, UiCommandInterpreterService commandInterpreter,
             TimelineEditModeRepository timelineEditModeRepository, SelectedNodeRepository selectedNodeRepository, MessagingService messagingService) {
         this.uiTimelineManager = uiTimelineManager;
         this.timelineManager = timelineManager;

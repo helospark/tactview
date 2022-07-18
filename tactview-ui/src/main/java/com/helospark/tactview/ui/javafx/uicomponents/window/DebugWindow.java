@@ -43,6 +43,7 @@ import javafx.scene.layout.VBox;
 
 @Component
 public class DebugWindow extends DetachableTab implements TabOpenListener, TabCloseListener {
+    public static final int DEFAULT_WIDTH = 700;
     private static final Logger LOGGER = LoggerFactory.getLogger(DebugWindow.class);
     public static final String ID = "debug-window";
     private ScheduledExecutorService scheduledExecutorService;
@@ -85,6 +86,7 @@ public class DebugWindow extends DetachableTab implements TabOpenListener, TabCl
         ScrollPane scrollPane = new ScrollPane();
 
         VBox vbox = new VBox();
+        vbox.setFillWidth(true);
 
         vbox.getChildren().add(new HBox(createPieChart(mediaCacheSizeData, "Media Cache"), createLineChart(mediaCacheUsedSeries, "MB")));
         vbox.getChildren().add(new HBox(createPieChart(memoryManagerSizeData, "Memory Manager"), createLineChart(memoryManagerUsedSeries, "MB")));
@@ -103,15 +105,18 @@ public class DebugWindow extends DetachableTab implements TabOpenListener, TabCl
         TableView<CacheData> tbv = new TableView<>();
         TableColumn cl1 = new TableColumn("Cache key");
         cl1.setCellValueFactory(new PropertyValueFactory<>("key"));
+        cl1.setPrefWidth(630);
 
         TableColumn cl2 = new TableColumn("Size (MB)");
         cl2.setCellValueFactory(new PropertyValueFactory<>("dataSizeString"));
+        cl2.setPrefWidth(100);
 
         tbv.getColumns().setAll(cl2, cl1);
+        tbv.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         tbv.setItems(mediaCacheDistributionDataForTable);
 
-        tbv.setPrefWidth(400);
+        tbv.setPrefWidth(DEFAULT_WIDTH - 250);
 
         return tbv;
     }
@@ -134,7 +139,7 @@ public class DebugWindow extends DetachableTab implements TabOpenListener, TabCl
 
         lineChartToData.put(lineChart, series);
 
-        lineChart.setMaxWidth(400);
+        lineChart.setMaxWidth(DEFAULT_WIDTH - 200);
         lineChart.setMaxHeight(300);
         lineChart.setAnimated(false);
 
@@ -196,16 +201,46 @@ public class DebugWindow extends DetachableTab implements TabOpenListener, TabCl
     private void updateMediaCacheDistribution() {
         Platform.runLater(() -> {
             Set<CacheData> cacheDistribution = mediaCache.getCacheDistribution();
+
             mediaCacheDistributionDataForTable.setAll(cacheDistribution);
 
             List<PieChart.Data> newList = new ArrayList<>();
             for (var element : cacheDistribution) {
-                newList.add(new PieChart.Data(element.getKey(), element.getDataSize()));
+                newList.add(new PieChart.Data(element.getKey(), element.rawDataSize()));
             }
             if (!isEquals(mediaCacheDistributionData, newList)) {
-                mediaCacheDistributionData.setAll(newList);
+                if (listIdsEqual(mediaCacheDistributionData, newList)) {
+                    for (var element : newList) {
+                        int id = findNameInList(mediaCacheDistributionData, element.getName());
+                        mediaCacheDistributionData.get(id).setPieValue(element.getPieValue());
+                    }
+                } else {
+                    mediaCacheDistributionData.setAll(newList);
+                }
             }
         });
+    }
+
+    private boolean listIdsEqual(ObservableList<javafx.scene.chart.PieChart.Data> a, List<javafx.scene.chart.PieChart.Data> b) {
+        if (a.size() != b.size()) {
+            return false;
+        }
+        for (int i = 0; i < a.size(); ++i) {
+            String name = a.get(i).getName();
+            if (findNameInList(b, name) == -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int findNameInList(List<javafx.scene.chart.PieChart.Data> list, String name) {
+        for (int i = 0; i < list.size(); ++i) {
+            if (list.get(i).getName().equals(name)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private boolean isEquals(ObservableList<javafx.scene.chart.PieChart.Data> a, List<javafx.scene.chart.PieChart.Data> b) {

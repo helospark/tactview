@@ -16,8 +16,8 @@ import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.DisplayUpdateRequestMessage;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.commands.impl.AddEffectCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.CompositeCommand;
@@ -33,7 +33,7 @@ public class GeneralCanvasOperationStrategy {
     private static final int CLOSE_THRESHOLD = 5;
     private UiCommandInterpreterService commandInterpreterService;
     private EffectParametersRepository effectParametersRepository;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private UiProjectRepository projectRepository;
     private TimelineManagerAccessor timelineManagerAccessor;
     private CanvasStateHolder canvasStateHolder;
@@ -44,7 +44,7 @@ public class GeneralCanvasOperationStrategy {
     private Point dragStartPoint = null;
     private Point dragStartPointAbsoluteCanvasPos = null;
 
-    public GeneralCanvasOperationStrategy(UiCommandInterpreterService commandInterpreterService, EffectParametersRepository effectParametersRepository, UiTimelineManager uiTimelineManager,
+    public GeneralCanvasOperationStrategy(UiCommandInterpreterService commandInterpreterService, EffectParametersRepository effectParametersRepository, GlobalTimelinePositionHolder uiTimelineManager,
             UiProjectRepository projectRepository, TimelineManagerAccessor timelineManagerAccessor, CanvasStateHolder canvasStateHolder,
             MessagingService messagingService, DefaultCanvasTranslateSetter defaultCanvasTranslateSetter) {
         this.commandInterpreterService = commandInterpreterService;

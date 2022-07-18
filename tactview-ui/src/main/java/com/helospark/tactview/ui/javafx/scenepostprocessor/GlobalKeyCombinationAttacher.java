@@ -12,11 +12,11 @@ import java.util.function.Consumer;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.aware.ContextAware;
+import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.JavaFXUiMain;
 import com.helospark.tactview.ui.javafx.RemoveClipService;
 import com.helospark.tactview.ui.javafx.RemoveEffectService;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
-import com.helospark.tactview.ui.javafx.UiTimelineManager;
 import com.helospark.tactview.ui.javafx.aware.MainWindowStageAware;
 import com.helospark.tactview.ui.javafx.commands.impl.service.MoveByUnitService;
 import com.helospark.tactview.ui.javafx.hotkey.HotKeyRepository;
@@ -60,7 +60,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
     private RemoveClipService removeClipService;
     private RemoveEffectService removeEffectService;
     private ClipCutService clipCutService;
-    private UiTimelineManager uiTimelineManager;
+    private GlobalTimelinePositionHolder uiTimelineManager;
     private LightDiContext context;
     private TimelineEditModeRepository editModeRepository;
     private HotKeyRepository hotKeyRepository;
@@ -74,7 +74,7 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
             RemoveClipService removeClipService,
             RemoveEffectService removeEffectService,
             ClipCutService clipCutService,
-            UiTimelineManager uiTimelineManager,
+            GlobalTimelinePositionHolder uiTimelineManager,
             UiSaveHandler uiSaveHandler,
             TimelineEditModeRepository editModeRepository,
             HotKeyRepository hotKeyRepository,

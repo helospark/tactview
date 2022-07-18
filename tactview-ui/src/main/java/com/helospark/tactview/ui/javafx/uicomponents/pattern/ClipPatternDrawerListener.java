@@ -241,7 +241,7 @@ public class ClipPatternDrawerListener {
                 image = timelineImagePatternService.createTimelinePattern(videoClip, pixelWidth, visibleStartPosition, visibleEndPosition);
             } else if (clipToUpdate instanceof AudibleTimelineClip) {
                 AudibleTimelineClip audibleTimelineClip = (AudibleTimelineClip) clipToUpdate;
-                image = audioImagePatternService.createAudioImagePattern(audibleTimelineClip, pixelWidth, visibleStartPosition, visibleEndPosition);
+                image = audioImagePatternService.createAudioImagePattern(audibleTimelineClip, pixelWidth, AudioImagePatternService.DEFAULT_HEIGHT, visibleStartPosition, visibleEndPosition);
             }
 
             return image;
