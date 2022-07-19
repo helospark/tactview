@@ -18,6 +18,7 @@ import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.init.PostInitializationArgsCallback;
+import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AddExistingClipRequest;
@@ -29,6 +30,7 @@ import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineChannelsState;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClipType;
+import com.helospark.tactview.core.timeline.TimelineInterval;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
@@ -91,7 +93,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
 @Component
-public class TrimmingDockableTab extends AbstractCachingDockableTabFactory implements PostInitializationArgsCallback {
+public class TrimmingDockableTab extends AbstractCachingDockableTabFactory implements PostInitializationArgsCallback, ResettableBean {
     public static final String TRIMMING_MEDIA_ENTRY = "trimming-media-entry";
     public static final String ID = "trimmer";
     private UiPlaybackPreferenceRepository playbackPreferenceRepository;
@@ -118,10 +120,12 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
     private CacheableAudioImagePatternService audioImagePatternService;
     private ScheduledExecutorService scheduledExecutorService;
     private ProjectMediaWindow projectMediaWindow;
+    private TimelineState timelineState;
 
     private TimelinePosition trimStartPosition = null;
     private TimelinePosition trimEndPosition = null;
     private double pixelsPerSeconds = 1.0;
+    private String fileName = "";
     private DefaultCanvasTranslateSetter defaultCanvasTranslateSetter;
 
     ContextMenu contextMenu = new ContextMenu();
@@ -129,7 +133,6 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
     public TrimmingDockableTab(SingleFullImageViewController fullScreenRenderer,
             MessagingService messagingService,
 
-            TimelineState timelineState,
             AudioStreamService audioStreamService, JavaByteArrayConverter javaByteArrayConverter,
             List<AudioPlayedListener> audioPlayedListeners,
             @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
@@ -189,6 +192,7 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
         List<AudioPlayedListener> newListeners = new ArrayList<>();
         newListeners.addAll(audioPlayedListeners);
         newListeners.add(audioVisualazationComponent);
+        timelineState = new TimelineState();
         this.uiPlaybackManager = new UiPlaybackManager(projectRepository, timelineState, playbackController,
                 audioStreamService, playbackPreferenceRepository, javaByteArrayConverter,
                 newListeners, scheduledExecutorService, uiProjectRepository,
@@ -349,7 +353,7 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
 
             ClipboardContent content = new ClipboardContent();
             content.putString(TRIMMING_MEDIA_ENTRY);
-            ProjectMediaElement element = new ProjectMediaElement(UUID.randomUUID().toString(), clips, image, "label");
+            ProjectMediaElement element = new ProjectMediaElement(UUID.randomUUID().toString(), clips, image, fileName);
             content.put(DataFormat.RTF, element);
             db.setContent(content);
 
@@ -358,18 +362,25 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
     }
 
     private void addFilesToTrimmer(List<File> files) {
+        File fileToLoad = files.get(0);
         trimmerTimelineManagerAccessor.removeAllClips();
         AddClipRequest addClipRequest = AddClipRequest.builder()
                 .withChannelId(trimmerTimelineManagerAccessor.findChannelOnIndex(0).get().getId())
-                .withFilePath(files.get(0).getAbsolutePath())
+                .withFilePath(fileToLoad.getAbsolutePath())
                 .withPosition(TimelinePosition.ofZero())
                 .withProceduralClipId(null)
                 .build();
         List<TimelineClip> clips = trimmerTimelineManagerAccessor.addClip(addClipRequest);
 
         if (clips.size() > 0) {
-            pixelsPerSeconds = timelinePatternCanvas.getWidth() / clips.get(0).getInterval().getLength().getSeconds().doubleValue();
+            TimelineInterval clipInterval = clips.get(0).getInterval();
+            pixelsPerSeconds = timelinePatternCanvas.getWidth() / clipInterval.getLength().getSeconds().doubleValue();
+            timelineState.setLoopAProperties(TimelinePosition.ofZero());
+            timelineState.setLoopBProperties(clipInterval.getEndPosition());
+        } else {
+            timelineState.setLoopBProperties(TimelinePosition.ofSeconds(1));
         }
+        fileName = fileToLoad.getName();
 
         this.displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
 
@@ -470,7 +481,7 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
         addToProjectMedia.setOnAction(menuEvent -> {
             List<TimelineClip> clipsToAdd = getClipsToCopy();
             if (clipsToAdd.size() > 0) {
-                projectMediaWindow.addClips(clipsToAdd, clipsToAdd.get(0).getId());
+                projectMediaWindow.addClips(clipsToAdd, fileName);
             }
         });
         return addToProjectMedia;
@@ -608,15 +619,20 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
                 Platform.runLater(() -> {
                     GraphicsContext graphics = timelinePatternCanvas.getGraphicsContext2D();
                     graphics.drawImage(image, 0, 0, timelinePatternCanvas.getWidth(), timelinePatternCanvas.getHeight());
-
-                    drawLineAtPosition(graphics, trimStartPosition, Color.BLUE);
-                    drawLineAtPosition(graphics, trimEndPosition, Color.BLUE);
-                    drawLineAtPosition(graphics, trimmerTimelinePositionHolder.getCurrentPosition(), Color.YELLOW);
                 });
             } else {
                 clearTimelineCanvas(timelinePatternCanvas);
             }
+            Platform.runLater(() -> {
+                drawCommonLines(timelinePatternCanvas.getGraphicsContext2D());
+            });
         });
+    }
+
+    private void drawCommonLines(GraphicsContext graphics) {
+        drawLineAtPosition(graphics, trimStartPosition, Color.BLUE);
+        drawLineAtPosition(graphics, trimEndPosition, Color.BLUE);
+        drawLineAtPosition(graphics, trimmerTimelinePositionHolder.getCurrentPosition(), Color.YELLOW);
     }
 
     private void drawLineAtPosition(GraphicsContext graphics, TimelinePosition timelinePosition, Color color) {
@@ -733,6 +749,15 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
 
     public DisplayUpdaterService getDisplayUpdaterService() {
         return displayUpdaterService;
+    }
+
+    @Override
+    public void resetDefaults() {
+        trimmerTimelineManagerAccessor.removeAllClips();
+        fileName = "";
+        redrawTimelineCanvas();
+        displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+        timelineState.resetDefaults();
     }
 
 }
