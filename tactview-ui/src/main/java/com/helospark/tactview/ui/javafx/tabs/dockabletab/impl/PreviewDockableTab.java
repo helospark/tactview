@@ -123,8 +123,9 @@ public class PreviewDockableTab extends AbstractCachingDockableTabFactory implem
     }
 
     private BorderPane createPreviewRightVBox() {
+        BorderPane rightBorderPane = new BorderPane();
         BorderPane previewScrollPane = createCentered(canvas);
-        canvas.widthProperty().bind(previewScrollPane.widthProperty().subtract(20.0));
+        canvas.widthProperty().bind(rightBorderPane.widthProperty().subtract(20.0));
         canvas.heightProperty().bind(previewScrollPane.heightProperty().subtract(30.0));
 
         VBox rightVBox = new VBox(3);
@@ -226,7 +227,6 @@ public class PreviewDockableTab extends AbstractCachingDockableTabFactory implem
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 
-        BorderPane rightBorderPane = new BorderPane();
         rightBorderPane.setCenter(rightVBox);
 
         globalTimelinePositionHolder.registerUiPlaybackConsumer(position -> updateTime(position));

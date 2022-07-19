@@ -4,7 +4,10 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -12,31 +15,41 @@ import org.controlsfx.glyphfont.Glyph;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
+import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.decoder.VideoMetadata;
 import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.AddClipRequest;
+import com.helospark.tactview.core.timeline.AddExistingClipRequest;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
+import com.helospark.tactview.core.timeline.ClipChannelPair;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
+import com.helospark.tactview.core.timeline.LinkClipRepository;
+import com.helospark.tactview.core.timeline.TimelineChannel;
 import com.helospark.tactview.core.timeline.TimelineChannelsState;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClipType;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.VideoClip;
 import com.helospark.tactview.core.timeline.subtimeline.TimelineManagerAccessorFactory;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
 import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.UiPlaybackManager;
 import com.helospark.tactview.ui.javafx.UiPlaybackPreferenceRepository;
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
 import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
+import com.helospark.tactview.ui.javafx.commands.impl.AddExistingClipsCommand;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.trimmer.CacheableAudioImagePatternService;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.DefaultCanvasTranslateSetter;
 import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
@@ -44,8 +57,10 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
-import com.helospark.tactview.ui.javafx.uicomponents.pattern.AudioImagePatternService;
 import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
+import com.helospark.tactview.ui.javafx.uicomponents.window.ProjectMediaWindow;
+import com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia.ProjectMediaElement;
+import com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia.ThumbnailCreator;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
@@ -53,53 +68,74 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 @Component
 public class TrimmingDockableTab extends AbstractCachingDockableTabFactory implements PostInitializationArgsCallback {
+    public static final String TRIMMING_MEDIA_ENTRY = "trimming-media-entry";
     public static final String ID = "trimmer";
     private UiPlaybackPreferenceRepository playbackPreferenceRepository;
     private AudioVisualizationComponent audioVisualazationComponent;
     private UiPlaybackManager uiPlaybackManager;
     private ScaleComboBoxFactory scaleComboBoxFactory;
     private CanvasStateHolder canvasStateHolder;
-    private GlobalTimelinePositionHolder globalTimelinePositionHolder;
+    private GlobalTimelinePositionHolder trimmerTimelinePositionHolder;
     private DisplayUpdaterService displayUpdaterService;
     private UiProjectRepository uiProjectRepository;
+    private ProjectRepository projectRepository;
+    private TimelineManagerAccessor globalTimelineManagerAccessor;
+    private UiCommandInterpreterService commandInterpreterService;
+    private LinkClipRepository linkClipRepository;
+    private ThumbnailCreator thumbnailCreator;
 
     public Label videoTimestampLabel;
     private Canvas canvas;
     private Canvas timelinePatternCanvas;
 
-    private TimelineChannelsState timelineChannelsState;
-    private TimelineManagerAccessor timelineManagerAccessor;
-    private TimelineManagerRenderService timelineManagerRenderService;
-    private AudioImagePatternService audioImagePatternService;
+    private TimelineChannelsState trimmerTimelineChannelsState;
+    private TimelineManagerAccessor trimmerTimelineManagerAccessor;
+    private TimelineManagerRenderService trimmerTimelineManagerRenderService;
+    private CacheableAudioImagePatternService audioImagePatternService;
     private ScheduledExecutorService scheduledExecutorService;
+    private ProjectMediaWindow projectMediaWindow;
 
-    private TimelinePosition trimStartPosition = TimelinePosition.ofZero();
-    private TimelinePosition trimEndPosition = TimelinePosition.ofZero();
+    private TimelinePosition trimStartPosition = null;
+    private TimelinePosition trimEndPosition = null;
+    private double pixelsPerSeconds = 1.0;
+    private DefaultCanvasTranslateSetter defaultCanvasTranslateSetter;
+
+    ContextMenu contextMenu = new ContextMenu();
 
     public TrimmingDockableTab(SingleFullImageViewController fullScreenRenderer,
-
             MessagingService messagingService,
 
-            ProjectRepository projectRepository, TimelineState timelineState,
+            TimelineState timelineState,
             AudioStreamService audioStreamService, JavaByteArrayConverter javaByteArrayConverter,
-            List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
+            List<AudioPlayedListener> audioPlayedListeners,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
 
-            GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners,
+            GlobalDirtyClipManager globalDirtyClipManager,
+            List<DisplayUpdatedListener> displayUpdateListeners,
             SelectedNodeRepository selectedNodeRepository,
 
             AudioRmsCalculator audioRmsCalculator,
@@ -107,31 +143,46 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
             UiMessagingService uiMessagingService,
             ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter,
             TimelineManagerAccessorFactory timelineManagerAccessor,
-            AudioImagePatternService audioImagePatternService) {
+            CacheableAudioImagePatternService audioImagePatternService,
+            ProjectMediaWindow projectMediaWindow,
+            DefaultCanvasTranslateSetter defaultCanvasTranslateSetter,
+            TimelineManagerAccessor globalTimelineManagerAccessor,
+            UiCommandInterpreterService commandInterpreterService,
+            LinkClipRepository linkClipRepository,
+            ThumbnailCreator thumbnailCreator) {
         this.audioImagePatternService = audioImagePatternService;
         this.scheduledExecutorService = scheduledExecutorService;
+        this.projectMediaWindow = projectMediaWindow;
+        this.defaultCanvasTranslateSetter = defaultCanvasTranslateSetter;
+        this.globalTimelineManagerAccessor = globalTimelineManagerAccessor;
+        this.commandInterpreterService = commandInterpreterService;
+        this.linkClipRepository = linkClipRepository;
+        this.thumbnailCreator = thumbnailCreator;
 
         // instance specific data
-        this.globalTimelinePositionHolder = new GlobalTimelinePositionHolder(projectRepository);
+        projectRepository = new ProjectRepository(objectMapper, messagingService);
+        this.trimmerTimelinePositionHolder = new GlobalTimelinePositionHolder(projectRepository);
+        trimmerTimelinePositionHolder.registerUiPlaybackConsumer(time -> {
+            redrawTimelineCanvas();
+        });
         this.uiProjectRepository = new UiProjectRepository(objectMapper);
 
         this.canvas = new Canvas();
         this.canvasStateHolder = new CanvasStateHolder(messagingService);
         this.canvasStateHolder.setCanvas(canvas);
 
-        DefaultCanvasTranslateSetter defaultCanvasTranslateSetter = new DefaultCanvasTranslateSetter(canvasStateHolder);
         this.scaleComboBoxFactory = new ScaleComboBoxFactory(projectRepository, uiProjectRepository, uiMessagingService, defaultCanvasTranslateSetter, canvasStateHolder);
 
         createTimeline(timelineManagerAccessor);
 
-        PlaybackFrameAccessor playbackController = new PlaybackFrameAccessor(timelineManagerRenderService, uiProjectRepository, projectRepository, byteBufferToJavaFxImageConverter);
+        PlaybackFrameAccessor playbackController = new PlaybackFrameAccessor(trimmerTimelineManagerRenderService, uiProjectRepository, projectRepository, byteBufferToJavaFxImageConverter);
 
         this.audioVisualazationComponent = new AudioVisualizationComponent(playbackController, audioRmsCalculator, canvas);
 
         this.playbackPreferenceRepository = new UiPlaybackPreferenceRepository();
 
         this.displayUpdaterService = new DisplayUpdaterService(playbackController, uiProjectRepository, globalDirtyClipManager, displayUpdateListeners,
-                messagingService, scheduledExecutorService, selectedNodeRepository, canvasStateHolder, globalTimelinePositionHolder, playbackPreferenceRepository);
+                messagingService, scheduledExecutorService, selectedNodeRepository, canvasStateHolder, trimmerTimelinePositionHolder, playbackPreferenceRepository);
         this.displayUpdaterService.setCanvas(canvas);
         displayUpdaterService.init();
 
@@ -141,16 +192,16 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
         this.uiPlaybackManager = new UiPlaybackManager(projectRepository, timelineState, playbackController,
                 audioStreamService, playbackPreferenceRepository, javaByteArrayConverter,
                 newListeners, scheduledExecutorService, uiProjectRepository,
-                globalTimelinePositionHolder, displayUpdaterService);
+                trimmerTimelinePositionHolder, displayUpdaterService);
     }
 
     private void createTimeline(TimelineManagerAccessorFactory timelineManagerAccessorFactory) {
-        this.timelineChannelsState = new TimelineChannelsState();
-        this.timelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(timelineChannelsState);
+        this.trimmerTimelineChannelsState = new TimelineChannelsState();
+        this.trimmerTimelineManagerAccessor = timelineManagerAccessorFactory.createAccessor(trimmerTimelineChannelsState);
         for (int i = 0; i < 2; ++i) {
-            timelineManagerAccessor.createChannel(i);
+            trimmerTimelineManagerAccessor.createChannel(i);
         }
-        this.timelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(timelineChannelsState, timelineManagerAccessor);
+        this.trimmerTimelineManagerRenderService = timelineManagerAccessorFactory.createRenderService(trimmerTimelineChannelsState, trimmerTimelineManagerAccessor);
     }
 
     @Override
@@ -163,30 +214,14 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
     }
 
     private BorderPane createPreviewRightVBox() {
+        BorderPane rightBorderPane = new BorderPane();
+
         BorderPane previewScrollPane = createCentered(canvas);
-        canvas.widthProperty().bind(previewScrollPane.widthProperty().subtract(20.0));
+        canvas.widthProperty().bind(rightBorderPane.widthProperty().subtract(20.0));
         canvas.heightProperty().bind(previewScrollPane.heightProperty().subtract(30.0));
 
-        canvas.setOnDragOver(event -> {
-            Dragboard dragBoard = event.getDragboard();
-            List<File> files = dragBoard.getFiles();
-            if (files.size() > 0) {
-                timelineManagerAccessor.removeAllClips();
-                AddClipRequest addClipRequest = AddClipRequest.builder()
-                        .withChannelId(timelineManagerAccessor.findChannelOnIndex(0).get().getId())
-                        .withFilePath(files.get(0).getAbsolutePath())
-                        .withPosition(TimelinePosition.ofZero())
-                        .withProceduralClipId(null)
-                        .build();
-                List<TimelineClip> clips = timelineManagerAccessor.addClip(addClipRequest);
-                this.displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
-
-                trimStartPosition = TimelinePosition.ofZero();
-                trimEndPosition = clips.get(0).getInterval().getEndPosition();
-
-                redrawPattern();
-            }
-        });
+        createDragOver();
+        createContextMenu(previewScrollPane);
 
         VBox rightVBox = new VBox(3);
         rightVBox.setAlignment(Pos.TOP_CENTER);
@@ -227,22 +262,22 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
 
         Button jumpBackOnFrameButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.STEP_BACKWARD));
-        jumpBackOnFrameButton.setOnMouseClicked(e -> globalTimelinePositionHolder.moveBackOneFrame());
+        jumpBackOnFrameButton.setOnMouseClicked(e -> trimmerTimelinePositionHolder.moveBackOneFrame());
         jumpBackOnFrameButton.setTooltip(new Tooltip("Step one frame back"));
 
         Button jumpForwardOnFrameButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.STEP_FORWARD));
-        jumpForwardOnFrameButton.setOnMouseClicked(e -> globalTimelinePositionHolder.moveForwardOneFrame());
+        jumpForwardOnFrameButton.setOnMouseClicked(e -> trimmerTimelinePositionHolder.moveForwardOneFrame());
         jumpForwardOnFrameButton.setTooltip(new Tooltip("Step one frame forward"));
 
         Button jumpBackButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.BACKWARD));
-        jumpBackButton.setOnMouseClicked(e -> globalTimelinePositionHolder.jumpRelative(BigDecimal.valueOf(-10)));
+        jumpBackButton.setOnMouseClicked(e -> trimmerTimelinePositionHolder.jumpRelative(BigDecimal.valueOf(-10)));
         jumpBackButton.setTooltip(new Tooltip("Step 10s back"));
 
         Button jumpForwardButton = new Button("", new Glyph("FontAwesome",
                 FontAwesome.Glyph.FORWARD));
-        jumpForwardButton.setOnMouseClicked(e -> globalTimelinePositionHolder.jumpRelative(BigDecimal.valueOf(10)));
+        jumpForwardButton.setOnMouseClicked(e -> trimmerTimelinePositionHolder.jumpRelative(BigDecimal.valueOf(10)));
         jumpForwardButton.setTooltip(new Tooltip("Step 10s forward"));
 
         ComboBox<String> sizeDropDown = scaleComboBoxFactory.create();
@@ -276,11 +311,252 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
         underVideoBar.setId("video-button-bar");
         rightVBox.getChildren().add(underVideoBar);
 
-        BorderPane rightBorderPane = new BorderPane();
         rightBorderPane.setCenter(rightVBox);
 
-        globalTimelinePositionHolder.registerUiPlaybackConsumer(position -> updateTime(position));
+        trimmerTimelinePositionHolder.registerUiPlaybackConsumer(position -> updateTime(position));
         return rightBorderPane;
+    }
+
+    public void initializeProjectSize(int width, int height, BigDecimal fps) {
+        double horizontalScaleFactor = (canvasStateHolder.getAvailableWidth()) / width;
+        double verticalScaleFactor = (canvasStateHolder.getAvailableHeight()) / height;
+        double scale = Math.min(horizontalScaleFactor, verticalScaleFactor);
+        double aspectRatio = ((double) width) / ((double) height);
+        int previewWidth = (int) (scale * width);
+        int previewHeight = (int) (scale * height);
+        uiProjectRepository.setScaleFactor(scale);
+        uiProjectRepository.setAlignedPreviewSize(previewWidth, previewHeight, width, height);
+        defaultCanvasTranslateSetter.setDefaultCanvasTranslate(canvasStateHolder, uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
+        uiProjectRepository.setAspectRatio(aspectRatio);
+
+        projectRepository.initializeVideo(width, height, fps);
+        // TODO: projectRepository.initializeAudio();
+    }
+
+    private void createDragOver() {
+        canvas.setOnDragOver(event -> {
+            Dragboard dragBoard = event.getDragboard();
+            List<File> files = dragBoard.getFiles();
+            if (files != null && files.size() > 0) {
+                addFilesToTrimmer(files);
+            }
+        });
+        canvas.setOnDragDetected(event -> {
+            List<TimelineClip> clips = getClipsToCopy();
+            Image image = thumbnailCreator.getImageFor(clips, trimStartPosition, 120);
+            Dragboard db = canvas.startDragAndDrop(TransferMode.ANY);
+            db.setDragView(image);
+
+            ClipboardContent content = new ClipboardContent();
+            content.putString(TRIMMING_MEDIA_ENTRY);
+            ProjectMediaElement element = new ProjectMediaElement(UUID.randomUUID().toString(), clips, image, "label");
+            content.put(DataFormat.RTF, element);
+            db.setContent(content);
+
+            event.consume();
+        });
+    }
+
+    private void addFilesToTrimmer(List<File> files) {
+        trimmerTimelineManagerAccessor.removeAllClips();
+        AddClipRequest addClipRequest = AddClipRequest.builder()
+                .withChannelId(trimmerTimelineManagerAccessor.findChannelOnIndex(0).get().getId())
+                .withFilePath(files.get(0).getAbsolutePath())
+                .withPosition(TimelinePosition.ofZero())
+                .withProceduralClipId(null)
+                .build();
+        List<TimelineClip> clips = trimmerTimelineManagerAccessor.addClip(addClipRequest);
+
+        if (clips.size() > 0) {
+            pixelsPerSeconds = timelinePatternCanvas.getWidth() / clips.get(0).getInterval().getLength().getSeconds().doubleValue();
+        }
+
+        this.displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+
+        clearTrimIntervals(clips);
+
+        VideoClip videoClip = clips.stream()
+                .filter(clip -> clip instanceof VideoClip)
+                .map(a -> (VideoClip) a)
+                .findFirst()
+                .orElse(null);
+        if (videoClip != null) {
+            VideoMetadata metadata = (VideoMetadata) videoClip.getMediaMetadata();
+            initializeProjectSize(metadata.getWidth(), metadata.getHeight(), BigDecimal.valueOf(metadata.getFps()));
+            displayUpdaterService.updateCurrentPositionWithInvalidatedCache();
+        }
+        redrawTimelineCanvas();
+    }
+
+    private void clearTrimIntervals(List<TimelineClip> clips) {
+        trimStartPosition = TimelinePosition.ofZero();
+        trimEndPosition = clips.get(0).getInterval().getEndPosition();
+    }
+
+    private void createContextMenu(BorderPane previewScrollPane) {
+        canvas.setOnContextMenuRequested(e -> {
+            contextMenu.hide();
+            contextMenu.getItems().clear();
+
+            MenuItem addToProjectMedia = createAddToProjectMediaMenuItem();
+            contextMenu.getItems().add(addToProjectMedia);
+
+            MenuItem addToTimeline = createAddToTimelineMenuItem();
+            contextMenu.getItems().add(addToTimeline);
+
+            contextMenu.getItems().add(new SeparatorMenuItem());
+
+            MenuItem inPositionMenuItem = setInPositionContextMenu();
+            contextMenu.getItems().add(inPositionMenuItem);
+
+            MenuItem outPositionMenuItem = setOutPositionContextMenu();
+            contextMenu.getItems().add(outPositionMenuItem);
+
+            MenuItem clearTrimIntervalsMenuItem = createClearIntervalsMenuItem();
+            contextMenu.getItems().add(clearTrimIntervalsMenuItem);
+
+            contextMenu.show(previewScrollPane, e.getScreenX(), e.getScreenY());
+            e.consume();
+        });
+        canvas.setOnMouseClicked(e -> {
+            if (e.getButton().equals(MouseButton.PRIMARY)) {
+                contextMenu.hide();
+            }
+        });
+
+    }
+
+    private MenuItem createAddToTimelineMenuItem() {
+        MenuItem addToTimelineMenuItem = new MenuItem("Add to timeline");
+        addToTimelineMenuItem.setOnAction(menuEvent -> {
+            List<TimelineClip> clipsToAdd = getClipsToCopy();
+            List<String> links = clipsToAdd.stream()
+                    .map(a -> a.getId())
+                    .collect(Collectors.toList());
+            if (clipsToAdd.size() > 0) {
+
+                TimelineClip firstClip = clipsToAdd.remove(0);
+
+                List<ClipChannelPair> additionalClips = clipsToAdd.stream()
+                        .map(clip -> new ClipChannelPair(clip, null))
+                        .collect(Collectors.toList());
+
+                TimelineChannel channel = globalTimelineManagerAccessor.getChannels().get(0);
+                AddExistingClipRequest existingClipRequest = AddExistingClipRequest.builder()
+                        .withChannel(channel)
+                        .withPosition(Optional.empty())
+                        .withClipToAdd(firstClip)
+                        .withAdditionalClipsToAdd(additionalClips)
+                        .build();
+                commandInterpreterService.synchronousSend(new AddExistingClipsCommand(existingClipRequest, globalTimelineManagerAccessor));
+                linkClipRepository.linkClips(links);
+            }
+
+        });
+        return addToTimelineMenuItem;
+    }
+
+    private MenuItem createClearIntervalsMenuItem() {
+        MenuItem clearTrimIntervalsMenuItem = new MenuItem("Clear in/out positions");
+        clearTrimIntervalsMenuItem.setOnAction(menuEvent -> {
+            clearTrimIntervals(getRawClipsCurrentlyUsed());
+            redrawTimelineCanvas();
+        });
+        return clearTrimIntervalsMenuItem;
+    }
+
+    private MenuItem createAddToProjectMediaMenuItem() {
+        MenuItem addToProjectMedia = new MenuItem("Add to project media");
+        addToProjectMedia.setOnAction(menuEvent -> {
+            List<TimelineClip> clipsToAdd = getClipsToCopy();
+            if (clipsToAdd.size() > 0) {
+                projectMediaWindow.addClips(clipsToAdd, clipsToAdd.get(0).getId());
+            }
+        });
+        return addToProjectMedia;
+    }
+
+    private TimelinePosition convertToTimePosition(double x) {
+        return new TimelinePosition(x / pixelsPerSeconds);
+    }
+
+    private MenuItem setInPositionContextMenu() {
+        MenuItem setInPosition = new MenuItem("Set in-position");
+        setInPosition.setOnAction(menuEvent -> {
+            TimelinePosition positionToSet = trimmerTimelinePositionHolder.getCurrentPosition();
+            if (positionToSet.compareTo(trimEndPosition) == 0) {
+                return;
+            }
+
+            if (trimEndPosition != null) {
+                if (positionToSet.compareTo(trimEndPosition) < 0) {
+                    trimStartPosition = positionToSet;
+                } else {
+                    trimStartPosition = trimEndPosition;
+                    trimEndPosition = positionToSet;
+                }
+            } else {
+                trimStartPosition = positionToSet;
+            }
+            redrawTimelineCanvas();
+        });
+        return setInPosition;
+    }
+
+    private MenuItem setOutPositionContextMenu() {
+        MenuItem setOutPosition = new MenuItem("Set out-position");
+        setOutPosition.setOnAction(menuEvent -> {
+            TimelinePosition positionToSet = trimmerTimelinePositionHolder.getCurrentPosition();
+            if (positionToSet.compareTo(trimEndPosition) == 0) {
+                return;
+            }
+
+            if (trimStartPosition != null) {
+                if (positionToSet.compareTo(trimStartPosition) > 0) {
+                    trimEndPosition = positionToSet;
+                } else {
+                    trimEndPosition = trimStartPosition;
+                    trimStartPosition = positionToSet;
+                }
+            } else {
+                trimEndPosition = positionToSet;
+            }
+            redrawTimelineCanvas();
+        });
+        return setOutPosition;
+    }
+
+    private List<TimelineClip> getClipsToCopy() {
+        List<TimelineClip> clipsToAdd = trimmerTimelineManagerAccessor.getAllClipIds()
+                .stream()
+                .flatMap(a -> trimmerTimelineManagerAccessor.findClipById(a).stream())
+                .map(a -> a.cloneClip(CloneRequestMetadata.ofDefault()))
+                .collect(Collectors.toList());
+        List<TimelineClip> result = new ArrayList<>();
+        if (trimStartPosition != null && trimEndPosition != null) {
+            for (var clip : clipsToAdd) {
+                List<TimelineClip> firstCut = clip.createCutClipParts(trimStartPosition);
+                TimelineClip secondPart;
+                if (firstCut.size() > 1) {
+                    secondPart = firstCut.get(1);
+                } else {
+                    secondPart = clip;
+                }
+                List<TimelineClip> secondCut = secondPart.createCutClipParts(trimEndPosition);
+                TimelineClip cutPart = secondCut.get(0);
+                result.add(cutPart);
+            }
+        } else {
+            result.addAll(clipsToAdd);
+        }
+        return result;
+    }
+
+    private List<TimelineClip> getRawClipsCurrentlyUsed() {
+        return trimmerTimelineManagerAccessor.getAllClipIds()
+                .stream()
+                .flatMap(a -> trimmerTimelineManagerAccessor.findClipById(a).stream())
+                .collect(Collectors.toList());
     }
 
     private Canvas createTimelineCanvas() {
@@ -290,20 +566,37 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
             if (newV.doubleValue() <= 0.0) {
                 return;
             }
-            timelineCanvas.widthProperty().set(newV.doubleValue());
+            timelineCanvas.widthProperty().set(newV.doubleValue() - 20);
 
-            clearCanvas(timelineCanvas);
+            List<TimelineClip> clips = getRawClipsCurrentlyUsed();
+            if (clips.size() > 0) {
+                pixelsPerSeconds = timelineCanvas.getWidth() / clips.get(0).getInterval().getLength().getSeconds().doubleValue();
+            }
+
+            redrawTimelineCanvas();
         });
+
+        timelineCanvas.setOnMouseClicked(e -> {
+            TimelinePosition position = convertToTimePosition(e.getX());
+            trimmerTimelinePositionHolder.jumpAbsolute(position);
+            redrawTimelineCanvas();
+        });
+        timelineCanvas.setOnMouseDragged(e -> {
+            TimelinePosition position = convertToTimePosition(e.getX());
+            trimmerTimelinePositionHolder.jumpAbsolute(position);
+            redrawTimelineCanvas();
+        });
+
         return timelineCanvas;
     }
 
-    private void redrawPattern() {
+    private void redrawTimelineCanvas() {
         scheduledExecutorService.execute(() -> {
-            List<String> allClips = timelineManagerAccessor.getAllClipIds();
+            List<String> allClips = trimmerTimelineManagerAccessor.getAllClipIds();
 
             AudibleTimelineClip clip = null;
             for (var clipId : allClips) {
-                TimelineClip currentClip = timelineManagerAccessor.findClipById(clipId).get();
+                TimelineClip currentClip = trimmerTimelineManagerAccessor.findClipById(clipId).get();
                 if (currentClip.getType().equals(TimelineClipType.AUDIO)) {
                     clip = (AudibleTimelineClip) currentClip;
                 }
@@ -313,13 +606,28 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
                 double endPosition = clip.getInterval().getLength().getSeconds().doubleValue();
                 Image image = audioImagePatternService.createAudioImagePattern(clip, (int) timelinePatternCanvas.getWidth(), (int) timelinePatternCanvas.getHeight(), 0.0, endPosition);
                 Platform.runLater(() -> {
-                    timelinePatternCanvas.getGraphicsContext2D().drawImage(image, 0, 0);
+                    GraphicsContext graphics = timelinePatternCanvas.getGraphicsContext2D();
+                    graphics.drawImage(image, 0, 0, timelinePatternCanvas.getWidth(), timelinePatternCanvas.getHeight());
+
+                    drawLineAtPosition(graphics, trimStartPosition, Color.BLUE);
+                    drawLineAtPosition(graphics, trimEndPosition, Color.BLUE);
+                    drawLineAtPosition(graphics, trimmerTimelinePositionHolder.getCurrentPosition(), Color.YELLOW);
                 });
+            } else {
+                clearTimelineCanvas(timelinePatternCanvas);
             }
         });
     }
 
-    private void clearCanvas(Canvas timelineCanvas) {
+    private void drawLineAtPosition(GraphicsContext graphics, TimelinePosition timelinePosition, Color color) {
+        if (timelinePosition != null) {
+            double position = timelinePosition.getSeconds().doubleValue() * pixelsPerSeconds;
+            graphics.setStroke(color);
+            graphics.strokeLine(position, 0, position, timelinePatternCanvas.getHeight());
+        }
+    }
+
+    private void clearTimelineCanvas(Canvas timelineCanvas) {
         timelineCanvas.getGraphicsContext2D().fillRect(0, 0, timelineCanvas.getWidth(), timelineCanvas.getHeight());
     }
 
@@ -372,6 +680,12 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
         });
         uiProjectRepository.getPreviewHeightProperty().addListener((listener, oldValue, newValue) -> {
             showRightScrollBarIfNeeded(rightScroll, newValue);
+        });
+        canvas.widthProperty().addListener((listener, oldValue, newValue) -> {
+            showBottomScrollBarIfNeeded(bottomScroll, uiProjectRepository.getPreviewWidth());
+        });
+        canvas.heightProperty().addListener((listener, oldValue, newValue) -> {
+            showBottomScrollBarIfNeeded(rightScroll, uiProjectRepository.getPreviewHeight());
         });
 
         return borderPane;

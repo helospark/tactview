@@ -19,29 +19,27 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.lightdi.annotation.Qualifier;
-import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
 import com.helospark.tactview.core.markers.ResettableBean;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.SaveLoadContributor;
 import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
-import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.ClipFactoryChain;
-import com.helospark.tactview.core.timeline.GetFrameRequest;
 import com.helospark.tactview.core.timeline.TimelineClip;
 import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
-import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.ui.javafx.repository.CopyPasteRepository;
 import com.helospark.tactview.ui.javafx.repository.copypaste.ClipCopyPasteDomain;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.TrimmingDockableTab;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabCloseListener;
 import com.helospark.tactview.ui.javafx.tabs.listener.TabOpenListener;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.pattern.AudioImagePatternService;
 import com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia.ProjectMediaElement;
+import com.helospark.tactview.ui.javafx.uicomponents.window.projectmedia.ThumbnailCreator;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.application.Platform;
@@ -54,7 +52,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
@@ -76,12 +73,8 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
     private ScrollPane scrollPane;
     ContextMenu elementContextMenu = null;
 
-    private boolean isTabOpen = false;
-
+    private ThumbnailCreator thumbnailCreator;
     private ClipFactoryChain clipFactoryChain;
-    private MemoryManager memoryManager;
-    private ByteBufferToJavaFxImageConverter imageConverter;
-    private AudioImagePatternService audioImagePatternService;
     private ThreadPoolExecutor executorService;
     private AlertDialogFactory alertDialogFactory;
     private CopyPasteRepository copyPasteRepository;
@@ -90,12 +83,10 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
 
     public ProjectMediaWindow(ClipFactoryChain clipFactoryChain, MemoryManager memoryManager, ByteBufferToJavaFxImageConverter imageConverter,
             AudioImagePatternService audioImagePatternService, @Qualifier("longRunningTaskExecutorService") ThreadPoolExecutor executorService,
-            AlertDialogFactory alertDialogFactory, CopyPasteRepository copyPasteRepository) {
+            AlertDialogFactory alertDialogFactory, CopyPasteRepository copyPasteRepository, ThumbnailCreator thumbnailCreator) {
         super(ID);
         this.clipFactoryChain = clipFactoryChain;
-        this.memoryManager = memoryManager;
-        this.imageConverter = imageConverter;
-        this.audioImagePatternService = audioImagePatternService;
+        this.thumbnailCreator = thumbnailCreator;
         this.executorService = executorService;
         this.alertDialogFactory = alertDialogFactory;
         this.copyPasteRepository = copyPasteRepository;
@@ -114,6 +105,7 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
         scrollPane.setOnDragOver(event -> {
             Dragboard db = event.getDragboard();
             List<File> files = db.getFiles();
+            String dbString = db.getString();
             boolean hasFile = files != null && !files.isEmpty();
             if (hasFile) {
                 boolean success = false;
@@ -136,8 +128,12 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
                     event.consume();
                     db.clear();
                 }
-            } else if (db.hasString() && db.getString().startsWith("cutclip")) {
-
+            } else if (dbString.equals(TrimmingDockableTab.TRIMMING_MEDIA_ENTRY)) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                ProjectMediaElement content = (ProjectMediaElement) event.getDragboard().getContent(DataFormat.RTF);
+                addClips(content.getTemplateClips(), content.getLabel());
+                event.consume();
+                db.clear();
             }
         });
         scrollPane.setOnMouseClicked(event -> {
@@ -164,40 +160,13 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
         if (getFirstClipOfType(templateClips, VisualTimelineClip.class).isPresent()) {
             executorService.execute(withExceptionLogging(() -> fillImages(element)));
         }
-        pane.getChildren().add(createEntry(element));
+        if (pane != null) {
+            pane.getChildren().add(createEntry(element));
+        }
     }
 
     private Image getDefaultImageFor(List<TimelineClip> templateClips) {
-        return getImageFor(templateClips, templateClips.get(0).getInterval().getEndPosition().multiply(defaultImagePositionPercent));
-    }
-
-    private Image getImageFor(List<TimelineClip> templateClips, TimelinePosition timelinePosition) {
-        Optional<VisualTimelineClip> visualClip = getFirstClipOfType(templateClips, VisualTimelineClip.class);
-        Optional<AudibleTimelineClip> audioClip = getFirstClipOfType(templateClips, AudibleTimelineClip.class);
-
-        if (visualClip.isPresent()) {
-            VisualMediaMetadata metadata = visualClip.get().getMediaMetadata();
-            double aspectRatio = (double) metadata.getWidth() / metadata.getHeight();
-            GetFrameRequest getFrameRequest = GetFrameRequest.builder()
-                    .withApplyEffects(true)
-                    .withExpectedWidth(ELEMENT_WIDTH)
-                    .withExpectedHeight((int) (ELEMENT_WIDTH / aspectRatio))
-                    .withPosition(timelinePosition)
-                    .withRelativePosition(timelinePosition)
-                    .withScale((double) ELEMENT_WIDTH / metadata.getWidth())
-                    .withUseApproximatePosition(true)
-                    .build();
-            ReadOnlyClipImage frame = visualClip.get().getFrame(getFrameRequest);
-            Image result = imageConverter.convertToJavafxImage(frame.getBuffer(), frame.getWidth(), frame.getHeight());
-            memoryManager.returnBuffer(frame.getBuffer());
-            return result;
-        } else if (audioClip.isPresent()) {
-            AudibleTimelineClip actualClip = audioClip.get();
-            double endPosition = actualClip.getInterval().getLength().getSeconds().doubleValue();
-            return audioImagePatternService.createAudioImagePattern(actualClip, ELEMENT_WIDTH, AudioImagePatternService.DEFAULT_HEIGHT, 0.0, endPosition);
-        } else {
-            return new WritableImage(ELEMENT_WIDTH, ELEMENT_WIDTH);
-        }
+        return thumbnailCreator.getImageFor(templateClips, templateClips.get(0).getInterval().getEndPosition().multiply(defaultImagePositionPercent), ELEMENT_WIDTH);
     }
 
     private <T extends TimelineClip> Optional<T> getFirstClipOfType(List<TimelineClip> templateClips, Class<T> type) {
@@ -310,7 +279,7 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
         TimelineLength length = element.getTemplateClips().get(0).getInterval().getLength();
         for (int i = 0; i < NUMBER_OF_PREVIEW_FRAMES; ++i) {
             double scaler = (double) i / NUMBER_OF_PREVIEW_FRAMES;
-            Image image = getImageFor(element.getTemplateClips(), length.toPosition().multiply(new BigDecimal(scaler)));
+            Image image = thumbnailCreator.getImageFor(element.getTemplateClips(), length.toPosition().multiply(new BigDecimal(scaler)), ELEMENT_WIDTH);
             images.add(image);
         }
         TimelineLength newLength = element.getTemplateClips().get(0).getInterval().getLength();
@@ -322,12 +291,10 @@ public class ProjectMediaWindow extends DetachableTab implements TabOpenListener
     @Override
     public void tabOpened() {
         this.openTab();
-        isTabOpen = true;
     }
 
     @Override
     public void tabClosed() {
-        isTabOpen = false;
     }
 
     @Override

@@ -22,7 +22,7 @@ extern "C" {
 #include <stdio.h>
 #ifdef _WIN32
 #include <io.h>
-#elif
+#else
 #include <unistd.h>
 #endif
 
@@ -1017,6 +1017,7 @@ extern "C" {
     }
 
     void clearElementWithKey(const std::string& key) {
+        DEBUG("Clear element with key " << key);
         std::map<std::string,DecodeStructure*>::iterator elementIterator = idTodecodeStructureMap.find(key);
 
         if (elementIterator != idTodecodeStructureMap.end()) {            
@@ -1028,14 +1029,16 @@ extern "C" {
     }
 
     EXPORTED void clearState() {
+        DEBUG("Clear state");
         while (idTodecodeStructureMap.size() > 0) {
-            auto it = idTodecodeStructureMap.begin();
-            clearElementWithKey(it->first);
-            idTodecodeStructureMap.erase(it);
+            DecodeStructure* decodeStructure = idTodecodeStructureMap.begin()->second;
+            idTodecodeStructureMap.erase(idTodecodeStructureMap.begin());
+            toRemoveList.push_back(decodeStructure);
         }
     }
 
     EXPORTED void runGc() {
+        //DEBUG("Running GC");
         for (int i = 0; i < toRemoveList.size(); ++i) {
             auto it = toRemoveList[i];
             clearElementWithPtr(it);

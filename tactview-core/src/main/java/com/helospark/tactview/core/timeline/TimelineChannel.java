@@ -231,7 +231,11 @@ public class TimelineChannel {
     }
 
     public TimelinePosition findPositionWhereIntervalWithLengthCanBeInserted(TimelineLength length) {
-        return clips.get(clips.size() - 1).getInterval().getEndPosition(); // tmp implementation
+        if (clips.size() == 0) {
+            return TimelinePosition.ofZero();
+        } else {
+            return clips.get(clips.size() - 1).getInterval().getEndPosition(); // tmp implementation
+        }
     }
 
     public Object getFullChannelLock() {

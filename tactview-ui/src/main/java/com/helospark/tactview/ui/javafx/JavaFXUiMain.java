@@ -146,8 +146,9 @@ public class JavaFXUiMain extends Application {
         mainContentPane.setDividerPositions(0.6);
 
         canvas = lightDi.getBean(PreviewDockableTab.class).getCanvas();
-        lightDi.getBean(CanvasStateHolder.class).setCanvas(canvas);
-        lightDi.getBean(DefaultCanvasTranslateSetter.class).setDefaultCanvasTranslate(uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
+        CanvasStateHolder canvasStateHolder = lightDi.getBean(CanvasStateHolder.class);
+        canvasStateHolder.setCanvas(canvas);
+        lightDi.getBean(DefaultCanvasTranslateSetter.class).setDefaultCanvasTranslate(canvasStateHolder, uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
         InputModeRepository inputModeRepository = lightDi.getBean(InputModeRepository.class);
         inputModeRepository.setCanvas(canvas);
 

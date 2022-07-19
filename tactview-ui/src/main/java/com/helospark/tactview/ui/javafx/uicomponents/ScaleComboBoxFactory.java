@@ -79,7 +79,7 @@ public class ScaleComboBoxFactory implements ResettableBean {
         }
 
         uiProjectRepository.setAlignedPreviewSize(previewWidth, previewHeight, projectRepository.getWidth(), projectRepository.getHeight());
-        defaultCanvasTranslateSetter.setDefaultCanvasTranslate(uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
+        defaultCanvasTranslateSetter.setDefaultCanvasTranslate(canvasStateHolder, uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
 
         Platform.runLater(() -> {
             messagingService.sendMessage(new DisplayUpdateRequestMessage(true));

@@ -81,7 +81,7 @@ public class GeneralCanvasOperationStrategy {
         if (input.mouseEvent.getButton().equals(MouseButton.MIDDLE)
                 && input.mouseEvent.getClickCount() > 0
                 && input.mouseEvent.isStillSincePress()) {
-            defaultCanvasTranslateSetter.setDefaultCanvasTranslate(projectRepository.getPreviewWidth(), projectRepository.getPreviewHeight());
+            defaultCanvasTranslateSetter.setDefaultCanvasTranslate(canvasStateHolder, projectRepository.getPreviewWidth(), projectRepository.getPreviewHeight());
         }
         dragData = null;
     }

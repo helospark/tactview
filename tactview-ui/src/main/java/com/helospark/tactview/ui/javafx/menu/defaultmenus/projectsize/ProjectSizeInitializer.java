@@ -3,7 +3,6 @@ package com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize;
 import java.math.BigDecimal;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.message.DropCachesMessage;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
@@ -37,10 +36,9 @@ public class ProjectSizeInitializer {
         int previewHeight = (int) (scale * height);
         uiProjectRepository.setScaleFactor(scale);
         uiProjectRepository.setAlignedPreviewSize(previewWidth, previewHeight, projectRepository.getWidth(), projectRepository.getHeight());
-        defaultCanvasTranslateSetter.setDefaultCanvasTranslate(uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
+        defaultCanvasTranslateSetter.setDefaultCanvasTranslate(canvasStateHolder, uiProjectRepository.getPreviewWidth(), uiProjectRepository.getPreviewHeight());
         uiProjectRepository.setAspectRatio(aspectRatio);
         messagingService.sendAsyncMessage(new RegenerateAllImagePatternsMessage());
-        messagingService.sendAsyncMessage(new DropCachesMessage());
     }
 
 }

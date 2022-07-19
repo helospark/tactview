@@ -30,6 +30,7 @@ import com.helospark.tactview.ui.javafx.key.CurrentlyPressedKeyRepository;
 import com.helospark.tactview.ui.javafx.repository.DragRepository;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.drag.ClipDragInformation;
+import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.TrimmingDockableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectDragAdder;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineDragAndDropHandler;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
@@ -86,7 +87,8 @@ public class TimelineCanvasOnDragOverHandler {
                 onClipDraggedToCanvas(event, db, request);
             } else if (db.getString().startsWith("effect:")) {
                 onEffectDraggedToCanvas(event, db, request);
-            } else if (db.getString().startsWith(ProjectMediaWindow.PROJECT_MEDIA_ENTRY)) {
+            } else if (db.getString().startsWith(ProjectMediaWindow.PROJECT_MEDIA_ENTRY) ||
+                    db.getString().startsWith(TrimmingDockableTab.TRIMMING_MEDIA_ENTRY)) {
                 onProjectMediaDraggedToCanvas(event, db, request);
             }
         } else {
