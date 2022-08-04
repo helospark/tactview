@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class StringProvider extends KeyframeableEffect<String> {
@@ -19,6 +20,20 @@ public class StringProvider extends KeyframeableEffect<String> {
     @Override
     public String getValueAt(TimelinePosition position) {
         return stringInterpolator.valueAt(position);
+    }
+
+    @Override
+    public String getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null) {
+            String expressionResult = evaluationContext.evaluateExpression(expression, position, String.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
+        }
     }
 
     @Override

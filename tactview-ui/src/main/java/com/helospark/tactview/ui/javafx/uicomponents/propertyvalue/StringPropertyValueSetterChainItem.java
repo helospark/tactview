@@ -6,9 +6,10 @@ import com.helospark.tactview.core.timeline.effect.EffectParametersRepository;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.StringProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
-import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ExpressionChangedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 
 import javafx.scene.control.TextArea;
@@ -37,9 +38,13 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withCurrentValueProvider(() -> textArea.getText())
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
-                    String currentValue = stringProvider.getValueAt(position);
                     if (!textArea.isFocused()) { // otherwise user may want to type
-                        textArea.setText(currentValue);
+                        if (stringProvider.getExpression() == null) {
+                            String currentValue = stringProvider.getValueAt(position);
+                            textArea.setText(currentValue);
+                        } else {
+                            textArea.setText(stringProvider.getExpression());
+                        }
                     }
                 })
                 .withDescriptor(descriptor)
@@ -51,7 +56,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
         textArea.setOnKeyReleased(newValue -> {
             TimelinePosition position = timelineManager.getCurrentPosition();
             String currentValue = stringProvider.getValueAt(position);
-            if (!textArea.getText().equals(currentValue)) {
+            if (textArea.getText() != null && !textArea.getText().equals(currentValue)) {
                 KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                         .withDescriptorId(stringProvider.getId())
                         .withGlobalTimelinePosition(timelineManager.getCurrentPosition())
@@ -59,7 +64,11 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                         .withRevertable(true)
                         .build();
 
-                commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                if (stringProvider.getExpression() != null) {
+                    commandInterpreter.sendWithResult(new ExpressionChangedForPropertyCommand(effectParametersRepository, keyframeRequest));
+                } else {
+                    commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                }
             }
         });
 

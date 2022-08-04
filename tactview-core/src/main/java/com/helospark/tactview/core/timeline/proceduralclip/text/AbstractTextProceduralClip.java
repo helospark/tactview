@@ -110,7 +110,7 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         }
         font = font.deriveFont((float) currentSize).deriveFont(fontHitsAt(relativePosition));
 
-        double spacing = spacingProvider.getValueAt(relativePosition);
+        double spacing = spacingProvider.getValueAt(relativePosition, request.getEvaluationContext());
         Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
         attributes.put(TextAttribute.TRACKING, spacing);
         if (strikethroughProvider.getValueAt(relativePosition)) {

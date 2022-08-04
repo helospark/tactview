@@ -138,8 +138,33 @@ public class EffectParametersRepository {
             valueToChange.effectAware.effectChanged(new EffectChangedRequest(valueToChange.effect.getId()));
             sendKeyframeChangeMessage(message.getDescriptorId());
         } else {
-            System.out.println("We wanted to change " + message.getDescriptorId() + " but it was removed");
+            logger.info("We wanted to change " + message.getDescriptorId() + " but it was removed");
         }
+    }
+
+    public void expressionChanged(KeyframeAddedRequest message) {
+        EffectStore valueToChange = allEffectIdToEffectMap.get(message.getDescriptorId());
+        if (valueToChange != null) {
+            valueToChange.effect.setExpression((String) message.getValue());
+            sendKeyframeChangeMessage(message.getDescriptorId());
+        } else {
+            logger.info("We wanted to change " + message.getDescriptorId() + " but it was removed");
+        }
+    }
+
+    public void expressionRemoved(String descriptorId) {
+        EffectStore valueToChange = allEffectIdToEffectMap.get(descriptorId);
+        if (valueToChange != null) {
+            valueToChange.effect.setExpression(null);
+            sendKeyframeChangeMessage(descriptorId);
+        } else {
+            logger.info("We wanted to change " + descriptorId + " but it was removed");
+        }
+    }
+
+    public Optional<String> getExpressionValue(String descriptorId) {
+        return Optional.ofNullable(allEffectIdToEffectMap.get(descriptorId))
+                .map(a -> a.effect.getExpression());
     }
 
     public void sendKeyframeChangeMessage(String id) {

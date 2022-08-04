@@ -9,6 +9,7 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.SavedContentAddable;
 import com.helospark.tactview.core.util.StatefulCloneable;
 
@@ -16,10 +17,20 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
     String id = UUID.randomUUID().toString();
     boolean scaleDependent;
 
+    protected String expression = null;
+
     public abstract Object getValueAt(TimelinePosition position);
+
+    public Object getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        return getValueAt(position);
+    }
 
     public String getId() {
         return id;
+    }
+
+    public String getExpression() {
+        return expression;
     }
 
     public abstract void keyframeAdded(TimelinePosition globalTimelinePosition, T value);
@@ -120,6 +131,10 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
         } else if (!id.equals(other.id))
             return false;
         return true;
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
     }
 
 }

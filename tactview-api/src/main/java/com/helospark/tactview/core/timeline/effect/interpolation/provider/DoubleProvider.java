@@ -13,6 +13,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ef
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class DoubleProvider extends KeyframeableEffect<Double> {
@@ -51,6 +52,20 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
             }
         } else {
             return value;
+        }
+    }
+
+    @Override
+    public Double getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null) {
+            Double expressionResult = evaluationContext.evaluateExpression(expression, position, Double.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
         }
     }
 

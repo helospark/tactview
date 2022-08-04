@@ -9,6 +9,7 @@ import com.helospark.tactview.core.timeline.LinkClipRepository;
 import com.helospark.tactview.core.timeline.TimelineChannelsState;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.script.ExpressionScriptEvaluator;
 import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
 import com.helospark.tactview.core.timeline.longprocess.LongProcessRequestor;
 import com.helospark.tactview.core.timeline.render.FrameExtender;
@@ -25,9 +26,11 @@ public class TimelineManagerAccessorFactory {
     private final FrameBufferMerger frameBufferMerger;
     private final AudioBufferMerger audioBufferMerger;
     private final FrameExtender frameExtender;
+    private final ExpressionScriptEvaluator expressionScriptEvaluator;
 
     public TimelineManagerAccessorFactory(ClipFactoryChain clipFactoryChain, EffectFactoryChain effectFactoryChain, LinkClipRepository linkClipRepository,
-            LongProcessRequestor longProcessRequestor, ProjectRepository projectRepository, FrameBufferMerger frameBufferMerger, AudioBufferMerger audioBufferMerger, FrameExtender frameExtender) {
+            LongProcessRequestor longProcessRequestor, ProjectRepository projectRepository, FrameBufferMerger frameBufferMerger, AudioBufferMerger audioBufferMerger, FrameExtender frameExtender,
+            ExpressionScriptEvaluator expressionScriptEvaluator) {
         this.clipFactoryChain = clipFactoryChain;
         this.effectFactoryChain = effectFactoryChain;
         this.linkClipRepository = linkClipRepository;
@@ -36,6 +39,7 @@ public class TimelineManagerAccessorFactory {
         this.frameBufferMerger = frameBufferMerger;
         this.audioBufferMerger = audioBufferMerger;
         this.frameExtender = frameExtender;
+        this.expressionScriptEvaluator = expressionScriptEvaluator;
     }
 
     public TimelineManagerAccessor createAccessor(TimelineChannelsState timelineState) {
@@ -46,7 +50,7 @@ public class TimelineManagerAccessorFactory {
     }
 
     public TimelineManagerRenderService createRenderService(TimelineChannelsState timelineState, TimelineManagerAccessor accessor) {
-        return new TimelineManagerRenderService(frameBufferMerger, audioBufferMerger, projectRepository, frameExtender, timelineState, accessor);
+        return new TimelineManagerRenderService(frameBufferMerger, audioBufferMerger, projectRepository, frameExtender, timelineState, accessor, expressionScriptEvaluator);
     }
 
 }

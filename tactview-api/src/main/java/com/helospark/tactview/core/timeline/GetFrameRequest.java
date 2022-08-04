@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class GetFrameRequest {
@@ -21,6 +22,7 @@ public class GetFrameRequest {
     private Optional<Integer> applyEffectsLessThanEffectChannel;
     private Map<String, ReadOnlyClipImage> requestedClips;
     private Map<String, ReadOnlyClipImage> requestedChannelClips;
+    private EvaluationContext evaluationContext;
 
     @Generated("SparkTools")
     private GetFrameRequest(Builder builder) {
@@ -31,11 +33,12 @@ public class GetFrameRequest {
         this.expectedHeight = builder.expectedHeight;
         this.applyEffects = builder.applyEffects;
         this.useApproximatePosition = builder.useApproximatePosition;
+        this.lowResolutionPreview = builder.lowResolutionPreview;
+        this.livePlayback = builder.livePlayback;
         this.applyEffectsLessThanEffectChannel = builder.applyEffectsLessThanEffectChannel;
         this.requestedClips = builder.requestedClips;
         this.requestedChannelClips = builder.requestedChannelClips;
-        this.lowResolutionPreview = builder.lowResolutionPreview;
-        this.livePlayback = builder.livePlayback;
+        this.evaluationContext = builder.evaluationContext;
     }
 
     public TimelinePosition getGlobalPosition() {
@@ -94,6 +97,10 @@ public class GetFrameRequest {
         }
     }
 
+    public EvaluationContext getEvaluationContext() {
+        return evaluationContext;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -118,6 +125,7 @@ public class GetFrameRequest {
         private Optional<Integer> applyEffectsLessThanEffectChannel = Optional.empty();
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
+        private EvaluationContext evaluationContext;
 
         private Builder() {
         }
@@ -130,10 +138,12 @@ public class GetFrameRequest {
             this.expectedHeight = getFrameRequest.expectedHeight;
             this.applyEffects = getFrameRequest.applyEffects;
             this.useApproximatePosition = getFrameRequest.useApproximatePosition;
+            this.lowResolutionPreview = getFrameRequest.lowResolutionPreview;
+            this.livePlayback = getFrameRequest.livePlayback;
             this.applyEffectsLessThanEffectChannel = getFrameRequest.applyEffectsLessThanEffectChannel;
             this.requestedClips = getFrameRequest.requestedClips;
             this.requestedChannelClips = getFrameRequest.requestedChannelClips;
-            this.lowResolutionPreview = getFrameRequest.lowResolutionPreview;
+            this.evaluationContext = getFrameRequest.evaluationContext;
         }
 
         public Builder withPosition(TimelinePosition position) {
@@ -166,11 +176,6 @@ public class GetFrameRequest {
             return this;
         }
 
-        public Builder withLivePlayback(boolean livePlayback) {
-            this.livePlayback = livePlayback;
-            return this;
-        }
-
         public Builder withUseApproximatePosition(boolean useApproximatePosition) {
             this.useApproximatePosition = useApproximatePosition;
             return this;
@@ -178,6 +183,11 @@ public class GetFrameRequest {
 
         public Builder withLowResolutionPreview(boolean lowResolutionPreview) {
             this.lowResolutionPreview = lowResolutionPreview;
+            return this;
+        }
+
+        public Builder withLivePlayback(boolean livePlayback) {
+            this.livePlayback = livePlayback;
             return this;
         }
 
@@ -193,6 +203,11 @@ public class GetFrameRequest {
 
         public Builder withRequestedChannelClips(Map<String, ReadOnlyClipImage> requestedChannelClips) {
             this.requestedChannelClips = requestedChannelClips;
+            return this;
+        }
+
+        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+            this.evaluationContext = evaluationContext;
             return this;
         }
 

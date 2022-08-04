@@ -187,6 +187,17 @@
       <artifactId>lz4-java</artifactId>
       <version>1.6.0</version>
     </dependency>
+    <!-- Scripting -->
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
+      <version>22.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+      <version>22.2.0</version>
+    </dependency>
 
     <!-- Test -->
     <dependency>

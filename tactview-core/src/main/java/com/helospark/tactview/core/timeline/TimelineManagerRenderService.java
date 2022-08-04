@@ -26,6 +26,10 @@ import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccesso
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.timeline.blendmode.BlendModeStrategy;
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContextProviderData;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.script.ExpressionScriptEvaluator;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.framemerge.FrameBufferMerger;
 import com.helospark.tactview.core.timeline.framemerge.RenderFrameData;
@@ -45,18 +49,20 @@ public class TimelineManagerRenderService {
     private final FrameExtender frameExtender;
     private final TimelineChannelsState timelineManager;
     private final TimelineManagerAccessor timelineManagerAccessor;
+    private final ExpressionScriptEvaluator expressionScriptEvaluator;
 
     @Slf4j
     private Logger logger;
 
     public TimelineManagerRenderService(FrameBufferMerger frameBufferMerger, AudioBufferMerger audioBufferMerger, ProjectRepository projectRepository,
-            FrameExtender frameExtender, TimelineChannelsState timelineManager, TimelineManagerAccessor timelineManagerAccessor) {
+            FrameExtender frameExtender, TimelineChannelsState timelineManager, TimelineManagerAccessor timelineManagerAccessor, ExpressionScriptEvaluator expressionScriptEvaluator) {
         this.frameBufferMerger = frameBufferMerger;
         this.audioBufferMerger = audioBufferMerger;
         this.projectRepository = projectRepository;
         this.frameExtender = frameExtender;
         this.timelineManager = timelineManager;
         this.timelineManagerAccessor = timelineManagerAccessor;
+        this.expressionScriptEvaluator = expressionScriptEvaluator;
     }
 
     public TimelineRenderResult getFrame(TimelineManagerFramesRequest request) {
@@ -83,6 +89,8 @@ public class TimelineManagerRenderService {
         Map<String, RenderFrameData> clipsToFrames = new ConcurrentHashMap<>();
         Map<String, AudioFrameResult> audioToFrames = new ConcurrentHashMap<>();
         Map<String, RegularRectangle> clipToExpandedPosition = new ConcurrentHashMap<>();
+
+        EvaluationContext evaluationContext = createEvaluationContext(clipsToRender);
 
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -134,6 +142,7 @@ public class TimelineManagerRenderService {
                                     .withRequestedChannelClips(channelCopiedClips)
                                     .withLowResolutionPreview(request.isLowResolutionPreview())
                                     .withLivePlayback(request.isLivePlayback())
+                                    .withEvaluationContext(evaluationContext.butWithClipId(clip.getId()))
                                     .build();
 
                             frameResult = visualClip.getFrame(frameRequest);
@@ -211,6 +220,19 @@ public class TimelineManagerRenderService {
         // TODO: audio effects
 
         return new TimelineRenderResult(new AudioVideoFragment(finalResult, audioBuffer), new HashMap<>(clipToExpandedPosition));
+    }
+
+    private EvaluationContext createEvaluationContext(Map<String, TimelineClip> clipsToRender) {
+        Map<String, EvaluationContextProviderData> clipData = new HashMap<>();
+        for (var clip : clipsToRender.values()) {
+            Map<String, KeyframeableEffect<?>> data2 = new HashMap<>();
+            for (var descriptor : clip.getDescriptors()) {
+                data2.put(descriptor.getName(), descriptor.getKeyframeableEffect());
+            }
+            EvaluationContextProviderData ecpd = new EvaluationContextProviderData(data2);
+            clipData.put(clip.getId(), ecpd);
+        }
+        return new EvaluationContext(clipData, expressionScriptEvaluator);
     }
 
     private ReadOnlyClipImage renderBelowLayers(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> framesBelow) {

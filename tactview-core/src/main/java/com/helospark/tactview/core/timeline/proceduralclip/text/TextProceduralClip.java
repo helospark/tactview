@@ -38,7 +38,7 @@ public class TextProceduralClip extends AbstractTextProceduralClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        String currentText = textProvider.getValueAt(relativePosition);
+        String currentText = textProvider.getValueAt(relativePosition, request.getEvaluationContext());
         return super.drawText(request, relativePosition, currentText);
     }
 
