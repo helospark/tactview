@@ -24,7 +24,7 @@ public class StringProvider extends KeyframeableEffect<String> {
 
     @Override
     public String getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
-        if (expression != null) {
+        if (expression != null && evaluationContext != null) {
             String expressionResult = evaluationContext.evaluateExpression(expression, position, String.class);
             if (expressionResult == null) {
                 return getValueAt(position);

@@ -13,6 +13,9 @@ public abstract class AbstractKeyframeableEffectDesSerFactory<T extends Keyframe
     @Override
     public void serializeInto(T instance, Map<String, Object> data, SaveMetadata saveMetadata) {
         data.put("id", instance.getId());
+        if (instance.getExpression() != null) {
+            data.put("expression", instance.getExpression());
+        }
         addDataForDeserializeInternal(instance, data);
     }
 
@@ -21,6 +24,9 @@ public abstract class AbstractKeyframeableEffectDesSerFactory<T extends Keyframe
         T result = deserializeInternal(data, (T) currentFieldValue, loadMetadata);
         KeyframeableEffect current = (KeyframeableEffect) currentFieldValue;
         result.id = data.get("id").asText();
+        if (!data.get("expression").isNull()) {
+            result.expression = data.get("expression").asText();
+        }
         //        boolean useKeyframes = data.get("useKeyframes").asBoolean(false);
         //        result.setUseKeyframes(useKeyframes);
         return result;

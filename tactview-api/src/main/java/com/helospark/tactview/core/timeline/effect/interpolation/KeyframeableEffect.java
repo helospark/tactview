@@ -88,6 +88,7 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
         } else {
             result.id = cloneRequestMetadata.generateOrGetIdFromPrevious(id);
         }
+        result.expression = this.expression;
         return result;
     }
 

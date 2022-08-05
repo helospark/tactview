@@ -90,7 +90,7 @@ public class TimelineManagerRenderService {
         Map<String, AudioFrameResult> audioToFrames = new ConcurrentHashMap<>();
         Map<String, RegularRectangle> clipToExpandedPosition = new ConcurrentHashMap<>();
 
-        EvaluationContext evaluationContext = createEvaluationContext(clipsToRender);
+        EvaluationContext evaluationContext = createEvaluationContext(new ArrayList<>(clipsToRender.values()));
 
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -222,9 +222,9 @@ public class TimelineManagerRenderService {
         return new TimelineRenderResult(new AudioVideoFragment(finalResult, audioBuffer), new HashMap<>(clipToExpandedPosition));
     }
 
-    private EvaluationContext createEvaluationContext(Map<String, TimelineClip> clipsToRender) {
+    public EvaluationContext createEvaluationContext(List<TimelineClip> clipsToRender) {
         Map<String, EvaluationContextProviderData> clipData = new HashMap<>();
-        for (var clip : clipsToRender.values()) {
+        for (var clip : clipsToRender) {
             Map<String, KeyframeableEffect<?>> data2 = new HashMap<>();
             for (var descriptor : clip.getDescriptors()) {
                 data2.put(descriptor.getName(), descriptor.getKeyframeableEffect());

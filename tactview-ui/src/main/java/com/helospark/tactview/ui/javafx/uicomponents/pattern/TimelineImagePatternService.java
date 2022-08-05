@@ -10,6 +10,8 @@ import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
 import com.helospark.tactview.core.timeline.GetFrameRequest;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.image.ClipImage;
@@ -35,13 +37,18 @@ public class TimelineImagePatternService {
     private ByteBufferToImageConverter byteBufferToImageConverter;
     private ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private FrameExtender frameExtender;
+    private TimelineManagerRenderService timelineManagerRenderService;
+    private TimelineManagerAccessor timelineManagerAccessor;
 
     public TimelineImagePatternService(UiProjectRepository uiProjectRepository, ByteBufferToImageConverter byteBufferToImageConverter,
-            ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, FrameExtender frameExtender) {
+            ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, FrameExtender frameExtender,
+            TimelineManagerRenderService timelineManagerRenderService, TimelineManagerAccessor timelineManagerAccessor) {
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
         this.frameExtender = frameExtender;
+        this.timelineManagerRenderService = timelineManagerRenderService;
+        this.timelineManagerAccessor = timelineManagerAccessor;
     }
 
     public Image createTimelinePattern(VisualTimelineClip videoClip, int expectedWidth, double visibleStartPosition, double visibleEndPosition) {
@@ -72,6 +79,7 @@ public class TimelineImagePatternService {
                     .withExpectedHeight(height)
                     .withRelativePosition(position)
                     .withScale((double) width / metadata.getWidth())
+                    .withEvaluationContext(timelineManagerRenderService.createEvaluationContext(timelineManagerAccessor.findIntersectingClipsData(position)))
                     .build();
             ReadOnlyClipImage frame = videoClip.getFrame(frameRequest);
 

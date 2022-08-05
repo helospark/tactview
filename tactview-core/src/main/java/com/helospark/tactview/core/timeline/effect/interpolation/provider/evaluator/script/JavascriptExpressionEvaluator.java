@@ -2,6 +2,8 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider.evalu
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -21,9 +23,12 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.evalua
 @Component
 public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator {
     private static final Logger LOGGER = LoggerFactory.getLogger(JavascriptExpressionEvaluator.class);
+    private volatile boolean systemPropertiesInitialized = false;
+    private Queue<ScriptEngine> scriptEngineCache = new ConcurrentLinkedQueue<>();
 
     @Override
     public <T> T evaluate(String expression, TimelinePosition position, Class<T> toClass, Map<String, EvaluationContextProviderData> userSetData) {
+        T functionResult = null;
         try {
             ScriptEngine graalEngine = createScriptEngine();
 
@@ -36,21 +41,25 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
 
             if (result != null) {
                 if (toClass.equals(Integer.class) || toClass.equals(String.class) || toClass.equals(Double.class) || toClass.equals(Boolean.class)) {
-                    return (T) result;
+                    functionResult = (T) result;
                 } else if (toClass.equals(Color.class)) {
                     Map map = (Map) result;
-                    return (T) new Color((double) map.get("r"), (double) map.get("g"), (double) map.get("b"));
+                    functionResult = (T) new Color((double) map.get("r"), (double) map.get("g"), (double) map.get("b"));
                 } else if (toClass.equals(Point.class)) {
                     Map map = (Map) result;
-                    return (T) new Point((double) map.get("x"), (double) map.get("y"));
+                    functionResult = (T) new Point((double) map.get("x"), (double) map.get("y"));
                 } else {
                     LOGGER.error("Unsupported type " + toClass);
                 }
             }
+            if (scriptEngineCache.size() < 5) {
+                scriptEngineCache.offer(graalEngine);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+
+        return functionResult;
     }
 
     private void setVariables(ScriptEngine graalEngine, Map<String, EvaluationContextProviderData> userSetData, TimelinePosition position) {
@@ -80,8 +89,6 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
                     clipElements.put(name, ProxyObject.fromMap(Map.of(
                             "x", point.x,
                             "y", point.y)));
-                } else {
-                    LOGGER.error("Unsupported type " + currentClass);
                 }
             }
             result.put(entry.getKey(), ProxyObject.fromMap(clipElements));
@@ -91,15 +98,25 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
     }
 
     private ScriptEngine createScriptEngine() {
-        ScriptEngine graalEngine = new ScriptEngineManager().getEngineByName("graal.js");
-        Bindings bindings = graalEngine.getBindings(ScriptContext.ENGINE_SCOPE);
-        bindings.put("polyglot.js.allowHostAccess", false);
-        bindings.put("polyglot.js.allowAllAccess", false);
-        bindings.put("polyglot.js.allowIO", false);
-        bindings.put("polyglot.js.allowCreateThread", false);
-        bindings.put("polyglot.js.allowHostClassLookup", false);
-        bindings.put("polyglot.js.allowHostClassLoading", false);
-        return graalEngine;
+        ScriptEngine graalEngine = scriptEngineCache.poll();
+        if (graalEngine != null) {
+            return graalEngine;
+        } else {
+            if (!systemPropertiesInitialized) {
+                System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+                systemPropertiesInitialized = true;
+            }
+
+            graalEngine = new ScriptEngineManager().getEngineByName("graal.js");
+            Bindings bindings = graalEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+            bindings.put("polyglot.js.allowHostAccess", false);
+            bindings.put("polyglot.js.allowAllAccess", false);
+            bindings.put("polyglot.js.allowIO", false);
+            bindings.put("polyglot.js.allowCreateThread", false);
+            bindings.put("polyglot.js.allowHostClassLookup", false);
+            bindings.put("polyglot.js.allowHostClassLoading", false);
+            return graalEngine;
+        }
     }
 
 }

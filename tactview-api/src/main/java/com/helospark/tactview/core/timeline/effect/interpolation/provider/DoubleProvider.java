@@ -57,7 +57,7 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
 
     @Override
     public Double getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
-        if (expression != null) {
+        if (expression != null && evaluationContext != null) {
             Double expressionResult = evaluationContext.evaluateExpression(expression, position, Double.class);
             if (expressionResult == null) {
                 return getValueAt(position);
