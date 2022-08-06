@@ -1,5 +1,7 @@
 package com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -13,10 +15,14 @@ import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
 import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ExpressionChangedForPropertyCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ExpressionRemovedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ResetDefaultValuesCommand;
+import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PrimitiveEffectLine;
 
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
@@ -60,6 +66,26 @@ public class CommonPropertyValueContextMenuItemConfiguration {
                 }
             });
             return pasteKeyframeMenuItem;
+        });
+    }
+
+    @Bean
+    @Order(-6)
+    public PropertyValueContextMenuItem afterCopyPasteSeparator() {
+        return alwaysEnableContextMenu(request -> {
+            return new SeparatorMenuItem();
+        });
+    }
+
+    @Bean
+    @Order(-5)
+    public PropertyValueContextMenuItem resetDefaultsValues(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+        return alwaysEnableContextMenu(request -> {
+            MenuItem resetDefaultsMenuItem = new MenuItem("Reset defaults");
+            resetDefaultsMenuItem.setOnAction(e -> {
+                commandInterpreter.sendWithResult(new ResetDefaultValuesCommand(effectParametersRepository, request.valueProvider.getId()));
+            });
+            return resetDefaultsMenuItem;
         });
     }
 
@@ -110,14 +136,68 @@ public class CommonPropertyValueContextMenuItemConfiguration {
     }
 
     @Bean
-    @Order(30)
-    public PropertyValueContextMenuItem resetDefaultsValues(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+    @Order(34)
+    public PropertyValueContextMenuItem beforeExpressionSeparator(AlertDialogFactory alertDialogFactory, EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter) {
         return alwaysEnableContextMenu(request -> {
-            MenuItem resetDefaultsMenuItem = new MenuItem("Reset defaults");
-            resetDefaultsMenuItem.setOnAction(e -> {
-                commandInterpreter.sendWithResult(new ResetDefaultValuesCommand(effectParametersRepository, request.valueProvider.getId()));
+            return new SeparatorMenuItem();
+        });
+    }
+
+    @Bean
+    @Order(35)
+    public PropertyValueContextMenuItem addExpressionMenuItem(AlertDialogFactory alertDialogFactory, EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter) {
+        return alwaysEnableContextMenu(request -> {
+            MenuItem addExpressionMenuItem;
+            if (request.valueProvider.getExpression() != null) {
+                addExpressionMenuItem = new MenuItem("Change expression");
+            } else {
+                addExpressionMenuItem = new MenuItem("Add expression");
+            }
+            addExpressionMenuItem.setOnAction(e2 -> {
+                Optional<String> expressionResult = alertDialogFactory.showTextInputDialog("Add expression", "Add expression", request.valueProvider.getExpression());
+                if (expressionResult.isPresent() && !expressionResult.get().isBlank()) {
+
+                    KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
+                            .withDescriptorId(request.valueProvider.getId())
+                            .withRevertable(true)
+                            .withValue(expressionResult.get())
+                            .build();
+                    commandInterpreter.synchronousSend(new ExpressionChangedForPropertyCommand(effectParametersRepository, keyframeAddedRequest));
+                }
             });
-            return resetDefaultsMenuItem;
+            return addExpressionMenuItem;
+        });
+    }
+
+    @Bean
+    @Order(36)
+    public PropertyValueContextMenuItem deleteExpressionMenuItem(AlertDialogFactory alertDialogFactory, EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter) {
+        return alwaysEnableContextMenu(request -> {
+            MenuItem deleteExpressionMenuItem = new MenuItem("Delete expression");
+            deleteExpressionMenuItem.setOnAction(e2 -> {
+                commandInterpreter.synchronousSend(new ExpressionRemovedForPropertyCommand(effectParametersRepository, request.valueProvider.getId()));
+            });
+            return deleteExpressionMenuItem;
+        });
+    }
+
+    @Bean
+    @Order(37)
+    public PropertyValueContextMenuItem copyFieldReferenceMenuItem(AlertDialogFactory alertDialogFactory, EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter) {
+        return alwaysEnableContextMenu(request -> {
+            MenuItem copyFieldReferenceMenuItem = new MenuItem("Copy field reference");
+            copyFieldReferenceMenuItem.setOnAction(e2 -> {
+                effectParametersRepository.findContainingElementId(request.valueProvider.getId())
+                        .ifPresent(componentId -> {
+                            String dataToCopy = "data['" + componentId + "']." + request.containerDescriptor.getName() + "";
+                            Clipboard.getSystemClipboard().setContent(Map.of(DataFormat.PLAIN_TEXT, dataToCopy));
+                        });
+            });
+            return copyFieldReferenceMenuItem;
         });
     }
 

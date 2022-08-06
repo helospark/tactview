@@ -30,17 +30,15 @@ import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.ExpressionChangedForPropertyCommand;
-import com.helospark.tactview.ui.javafx.commands.impl.ExpressionRemovedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
 import com.helospark.tactview.ui.javafx.notification.NotificationService;
 import com.helospark.tactview.ui.javafx.repository.CleanableMode;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
-import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.EffectPropertyPage.Builder;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.DetailsGridChain;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.EffectLine;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PropertyValueSetterChain;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.message.OpenClipPropertyPageMessage;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.message.OpenEffectPropertyPageMessage;
 
@@ -48,19 +46,16 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.DataFormat;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
@@ -85,15 +80,14 @@ public class PropertyView implements CleanableMode {
     private final NotificationService notificationService;
     private final UiCommandInterpreterService commandInterpreter;
     private final EffectParametersRepository effectParametersRepository;
-
-    private final AlertDialogFactory alertDialogFactory;
+    private final ContextMenuAppender contextMenuAppender;
 
     @Slf4j
     private Logger logger;
 
     public PropertyView(UiMessagingService messagingService, GlobalTimelinePositionHolder uiTimelineManager, PropertyValueSetterChain propertyValueSetterChain,
             DetailsGridChain detailsGridChain, NameToIdRepository nameToIdRepository, NotificationService notificationService, UiCommandInterpreterService commandInterpreter,
-            EffectParametersRepository effectParametersRepository, AlertDialogFactory alertDialogFactory) {
+            EffectParametersRepository effectParametersRepository, ContextMenuAppender contextMenuAppender) {
         this.messagingService = messagingService;
         this.uiTimelineManager = uiTimelineManager;
         this.propertyValueSetterChain = propertyValueSetterChain;
@@ -102,8 +96,7 @@ public class PropertyView implements CleanableMode {
         this.notificationService = notificationService;
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
-
-        this.alertDialogFactory = alertDialogFactory;
+        this.contextMenuAppender = contextMenuAppender;
 
         keyframesOn = new Image(getClass().getResourceAsStream("/clock_on.png"));
         keyframesOff = new Image(getClass().getResourceAsStream("/clock_off.png"));
@@ -321,39 +314,8 @@ public class PropertyView implements CleanableMode {
             }
         }));
 
-        String descriptorId = descriptor.getKeyframeableEffect().getId();
+        contextMenuAppender.addContextMenu(keyframeChange, keyframeableEffect, descriptor, labelBox);
 
-        labelBox.setOnContextMenuRequested(e -> {
-            ContextMenu contextMenu = new ContextMenu();
-
-            MenuItem deleteExpressionMenuItem = new MenuItem("Delete expression");
-            deleteExpressionMenuItem.setOnAction(e2 -> {
-                commandInterpreter.synchronousSend(new ExpressionRemovedForPropertyCommand(effectParametersRepository, descriptorId));
-            });
-            MenuItem addExpressionMenuItem = new MenuItem("Add expression");
-            addExpressionMenuItem.setOnAction(e2 -> {
-                Optional<String> expressionResult = alertDialogFactory.showTextInputDialog("Add expression", "Add expression", keyframeableEffect.getExpression());
-                if (expressionResult.isPresent() && !expressionResult.get().isBlank()) {
-
-                    KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
-                            .withDescriptorId(descriptorId)
-                            .withRevertable(true)
-                            .withValue(expressionResult.get())
-                            .build();
-                    commandInterpreter.synchronousSend(new ExpressionChangedForPropertyCommand(effectParametersRepository, keyframeAddedRequest));
-                }
-            });
-            MenuItem copyFieldReferenceMenuItem = new MenuItem("Copy field reference");
-            copyFieldReferenceMenuItem.setOnAction(e2 -> {
-                String dataToCopy = "data['" + id + "']." + descriptor.getName() + "";
-                Clipboard.getSystemClipboard().setContent(Map.of(DataFormat.PLAIN_TEXT, dataToCopy));
-            });
-
-            contextMenu.getItems().add(addExpressionMenuItem);
-            contextMenu.getItems().add(deleteExpressionMenuItem);
-            contextMenu.getItems().add(copyFieldReferenceMenuItem);
-            contextMenu.show(labelBox, e.getScreenX(), e.getScreenY());
-        });
     }
 
     private Label createWarningLabel() {
@@ -381,9 +343,11 @@ public class PropertyView implements CleanableMode {
         builder.addKeyframeEnabledConsumer(keyframeableEffect.getId(), enabled -> changeImage(enabled, imageView));
 
         imageView.setOnMouseReleased(e -> {
-            UseKeyframeStatusToggleCommand command = new UseKeyframeStatusToggleCommand(effectParametersRepository, keyframeableEffect.getId());
+            if (e.getButton().equals(MouseButton.PRIMARY)) {
+                UseKeyframeStatusToggleCommand command = new UseKeyframeStatusToggleCommand(effectParametersRepository, keyframeableEffect.getId());
 
-            commandInterpreter.sendWithResult(command);
+                commandInterpreter.sendWithResult(command);
+            }
         });
 
         return imageView;
