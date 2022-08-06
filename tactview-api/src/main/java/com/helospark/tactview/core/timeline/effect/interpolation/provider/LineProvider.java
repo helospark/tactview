@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class LineProvider extends CompositeKeyframeableEffect<InterpolationLine> {
@@ -25,6 +26,20 @@ public class LineProvider extends CompositeKeyframeableEffect<InterpolationLine>
         Point x = startPointProvider.getValueAt(position);
         Point y = endPointProvider.getValueAt(position);
         return new InterpolationLine(x, y);
+    }
+
+    @Override
+    public InterpolationLine getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            InterpolationLine expressionResult = evaluationContext.evaluateExpression(expression, position, InterpolationLine.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
+        }
     }
 
     @Override
@@ -50,7 +65,7 @@ public class LineProvider extends CompositeKeyframeableEffect<InterpolationLine>
 
     @Override
     public KeyframeableEffect<InterpolationLine> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
-        return new LineProvider((PointProvider) startPointProvider.deepClone(cloneRequestMetadata), (PointProvider) endPointProvider.deepClone(cloneRequestMetadata));
+        return new LineProvider(startPointProvider.deepClone(cloneRequestMetadata), endPointProvider.deepClone(cloneRequestMetadata));
     }
 
     @Override

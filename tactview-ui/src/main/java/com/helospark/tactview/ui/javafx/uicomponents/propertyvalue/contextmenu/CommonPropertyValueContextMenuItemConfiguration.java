@@ -18,6 +18,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyComm
 import com.helospark.tactview.ui.javafx.commands.impl.ExpressionChangedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ExpressionRemovedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ResetDefaultValuesCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PrimitiveEffectLine;
 
@@ -86,6 +87,33 @@ public class CommonPropertyValueContextMenuItemConfiguration {
                 commandInterpreter.sendWithResult(new ResetDefaultValuesCommand(effectParametersRepository, request.valueProvider.getId()));
             });
             return resetDefaultsMenuItem;
+        });
+    }
+
+    @Bean
+    @Order(-4)
+    public PropertyValueContextMenuItem beforeKeyframesSeparator() {
+        return alwaysEnableContextMenu(request -> {
+            return new SeparatorMenuItem();
+        });
+    }
+
+    @Bean
+    @Order(-3)
+    public PropertyValueContextMenuItem toggleKeyframeEnabled(UiCommandInterpreterService commandInterpreter, EffectParametersRepository effectParametersRepository) {
+        return alwaysEnableContextMenu(request -> {
+            MenuItem toggleKeyframesEnabledMenuItem;
+            if (request.valueProvider.keyframesEnabled()) {
+                toggleKeyframesEnabledMenuItem = new MenuItem("Disabled keyframes");
+            } else {
+                toggleKeyframesEnabledMenuItem = new MenuItem("Enable keyframes");
+            }
+            toggleKeyframesEnabledMenuItem.setOnAction(e -> {
+                UseKeyframeStatusToggleCommand command = new UseKeyframeStatusToggleCommand(effectParametersRepository, request.valueProvider.getId());
+
+                commandInterpreter.sendWithResult(command);
+            });
+            return toggleKeyframesEnabledMenuItem;
         });
     }
 

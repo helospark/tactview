@@ -14,6 +14,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class PolygonProvider extends KeyframeableEffect<Polygon> {
@@ -67,6 +68,20 @@ public class PolygonProvider extends KeyframeableEffect<Polygon> {
         }
     }
 
+    @Override
+    public Polygon getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            Polygon expressionResult = evaluationContext.evaluateExpression(expression, position, Polygon.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
+        }
+    }
+
     private Polygon doInterpolate(Entry<TimelinePosition, List<Point>> previousEntry, Entry<TimelinePosition, List<Point>> nextEntry, TimelinePosition currentPosition) {
         List<Point> lastPoints = previousEntry.getValue();
         List<Point> nextPoints = nextEntry.getValue();
@@ -79,8 +94,8 @@ public class PolygonProvider extends KeyframeableEffect<Polygon> {
                 Point point1 = lastPoints.get(i);
                 Point point2 = nextPoints.get(i);
 
-                double xCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[]{point1.x, point2.x});
-                double yCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[]{point1.y, point2.y});
+                double xCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[] { point1.x, point2.x });
+                double yCoordinate = interpolateAxis(previousEntry, nextEntry, currentPosition, new double[] { point1.y, point2.y });
 
                 newPoints.add(new Point(xCoordinate, yCoordinate));
             }
@@ -89,7 +104,7 @@ public class PolygonProvider extends KeyframeableEffect<Polygon> {
     }
 
     private double interpolateAxis(Entry<TimelinePosition, List<Point>> lastEntry, Entry<TimelinePosition, List<Point>> nextEntry, TimelinePosition position, double[] yVals) {
-        double[] timeVals = new double[]{lastEntry.getKey().getSeconds().doubleValue(), nextEntry.getKey().getSeconds().doubleValue()};
+        double[] timeVals = new double[] { lastEntry.getKey().getSeconds().doubleValue(), nextEntry.getKey().getSeconds().doubleValue() };
         return interpolatorImplementation.interpolate(timeVals, yVals).value(position.getSeconds().doubleValue());
     }
 

@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.bezier.BezierDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class PointProvider extends CompositeKeyframeableEffect<Point> {
@@ -25,6 +26,20 @@ public class PointProvider extends CompositeKeyframeableEffect<Point> {
         double x = xProvider.getValueAt(position);
         double y = yProvider.getValueAt(position);
         return new Point(x, y);
+    }
+
+    @Override
+    public Point getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            Point expressionResult = evaluationContext.evaluateExpression(expression, position, Point.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
+        }
     }
 
     public DoubleProvider getxProvider() {

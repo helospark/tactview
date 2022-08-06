@@ -11,6 +11,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Ef
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class IntegerProvider extends KeyframeableEffect<Number> {
@@ -40,6 +41,20 @@ public class IntegerProvider extends KeyframeableEffect<Number> {
             return max;
         } else {
             return result; // todo: option for different interpolation
+        }
+    }
+
+    @Override
+    public Integer getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            Integer expressionResult = evaluationContext.evaluateExpression(expression, position, Integer.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
         }
     }
 

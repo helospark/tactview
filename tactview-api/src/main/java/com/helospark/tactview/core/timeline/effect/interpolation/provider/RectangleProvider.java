@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class RectangleProvider extends CompositeKeyframeableEffect<Rectangle> {
@@ -26,6 +27,20 @@ public class RectangleProvider extends CompositeKeyframeableEffect<Rectangle> {
                 .map(provider -> provider.getValueAt(position))
                 .collect(Collectors.toList());
         return new Rectangle(points);
+    }
+
+    @Override
+    public Rectangle getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            Rectangle expressionResult = evaluationContext.evaluateExpression(expression, position, Rectangle.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
+        }
     }
 
     @Override

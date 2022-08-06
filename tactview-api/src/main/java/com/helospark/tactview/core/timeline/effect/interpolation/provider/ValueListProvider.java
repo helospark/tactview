@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.StepStringInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class ValueListProvider<T extends ValueListElement> extends KeyframeableEffect<T> {
@@ -32,6 +33,20 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
     public T getValueAt(TimelinePosition position) {
         String id = stringInterpolator.valueAt(position);
         return elements.get(id);
+    }
+
+    @Override
+    public T getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            String expressionResult = evaluationContext.evaluateExpression(expression, position, String.class);
+            if (expressionResult == null || elements.get(expressionResult) == null) {
+                return getValueAt(position);
+            } else {
+                return elements.get(expressionResult);
+            }
+        } else {
+            return getValueAt(position);
+        }
     }
 
     @Override

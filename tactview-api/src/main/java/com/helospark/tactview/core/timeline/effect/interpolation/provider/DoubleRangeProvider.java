@@ -8,6 +8,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRange;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange> {
@@ -47,6 +48,20 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange
     }
 
     @Override
+    public DoubleRange getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            DoubleRange expressionResult = evaluationContext.evaluateExpression(expression, position, DoubleRange.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
+        }
+    }
+
+    @Override
     public void keyframeAdded(TimelinePosition globalTimelinePosition, DoubleRange value) {
         lowEndProvider.keyframeAdded(globalTimelinePosition, value.lowEnd);
         highEndProvider.keyframeAdded(globalTimelinePosition, value.highEnd);
@@ -59,7 +74,7 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange
 
     @Override
     public KeyframeableEffect<DoubleRange> deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
-        return new DoubleRangeProvider((DoubleProvider) lowEndProvider.deepClone(cloneRequestMetadata), (DoubleProvider) highEndProvider.deepClone(cloneRequestMetadata));
+        return new DoubleRangeProvider(lowEndProvider.deepClone(cloneRequestMetadata), highEndProvider.deepClone(cloneRequestMetadata));
     }
 
     @Override

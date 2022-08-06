@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Do
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class BooleanProvider extends KeyframeableEffect<Boolean> {
@@ -20,6 +21,20 @@ public class BooleanProvider extends KeyframeableEffect<Boolean> {
     public Boolean getValueAt(TimelinePosition position) {
         Double value = doubleInterpolator.valueAt(position);
         return value > 0.5;
+    }
+
+    @Override
+    public Boolean getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        if (expression != null && evaluationContext != null) {
+            Boolean expressionResult = evaluationContext.evaluateExpression(expression, position, Boolean.class);
+            if (expressionResult == null) {
+                return getValueAt(position);
+            } else {
+                return expressionResult;
+            }
+        } else {
+            return getValueAt(position);
+        }
     }
 
     @Override

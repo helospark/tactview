@@ -1,6 +1,9 @@
 package com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.script;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -17,7 +20,12 @@ import org.slf4j.LoggerFactory;
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRange;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContextProviderData;
 
 @Component
@@ -40,7 +48,9 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
             Object result = (result1 != null ? result1 : result2);
 
             if (result != null) {
-                if (toClass.equals(Integer.class) || toClass.equals(String.class) || toClass.equals(Double.class) || toClass.equals(Boolean.class)) {
+                if (toClass.equals(String.class)) {
+                    functionResult = (T) String.valueOf(result);
+                } else if (toClass.equals(Integer.class) || toClass.equals(Double.class) || toClass.equals(Boolean.class)) {
                     functionResult = (T) result;
                 } else if (toClass.equals(Color.class)) {
                     Map map = (Map) result;
@@ -48,6 +58,42 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
                 } else if (toClass.equals(Point.class)) {
                     Map map = (Map) result;
                     functionResult = (T) new Point((double) map.get("x"), (double) map.get("y"));
+                } else if (toClass.equals(InterpolationLine.class)) {
+                    Map map = (Map) result;
+                    Point start = new Point((double) map.get("x1"), (double) map.get("y1"));
+                    Point end = new Point((double) map.get("x2"), (double) map.get("y2"));
+                    functionResult = (T) new InterpolationLine(start, end);
+                } else if (toClass.equals(Rectangle.class)) {
+                    Map map = (Map) result;
+                    Point p0 = new Point((double) map.get("x1"), (double) map.get("y1"));
+                    Point p1 = new Point((double) map.get("x2"), (double) map.get("y2"));
+                    Point p2 = new Point((double) map.get("x3"), (double) map.get("y3"));
+                    Point p3 = new Point((double) map.get("x4"), (double) map.get("y4"));
+                    functionResult = (T) new Rectangle(List.of(p0, p1, p2, p3));
+                } else if (toClass.equals(DoubleRange.class)) {
+                    Map map = (Map) result;
+                    functionResult = (T) new DoubleRange((double) map.get("low"), (double) map.get("high"));
+                } else if (toClass.equals(Polygon.class)) {
+                    Map map = (Map) result;
+
+                    int numberOfPoints = (int) map.get("numberOfPoints");
+
+                    Object points = map.get("points");
+
+                    List<Point> polygonPoints = new ArrayList<>();
+                    if (points instanceof List) {
+                        for (int i = 0; i < numberOfPoints; ++i) {
+                            Map currentPointMap = (Map) ((List) points).get(i);
+                            polygonPoints.add(new Point((double) currentPointMap.get("x"), (double) currentPointMap.get("y")));
+                        }
+                    } else {
+                        for (int i = 0; i < numberOfPoints; ++i) {
+                            Map currentPointMap = (Map) ((Map) points).get(String.valueOf(i));
+                            polygonPoints.add(new Point((double) currentPointMap.get("x"), (double) currentPointMap.get("y")));
+                        }
+                    }
+
+                    functionResult = (T) new Polygon(polygonPoints);
                 } else {
                     LOGGER.error("Unsupported type " + toClass);
                 }
@@ -97,6 +143,40 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
                     clipElements.put(name, ProxyObject.fromMap(Map.of(
                             "x", point.x,
                             "y", point.y)));
+                } else if (currentClass.equals(InterpolationLine.class)) {
+                    InterpolationLine line = (InterpolationLine) currentValue;
+                    clipElements.put(name, ProxyObject.fromMap(Map.of(
+                            "x1", line.start.x, "y1", line.start.y,
+                            "x2", line.end.x, "y2", line.end.y)));
+                } else if (currentClass.equals(Rectangle.class)) {
+                    Rectangle line = (Rectangle) currentValue;
+                    clipElements.put(name, ProxyObject.fromMap(Map.of(
+                            "x1", line.points.get(0).x, "y1", line.points.get(0).y,
+                            "x2", line.points.get(1).x, "y2", line.points.get(1).y,
+                            "x3", line.points.get(2).x, "y3", line.points.get(2).y,
+                            "x4", line.points.get(3).x, "y4", line.points.get(3).y)));
+                } else if (currentClass.equals(DoubleRange.class)) {
+                    DoubleRange point = (DoubleRange) currentValue;
+                    clipElements.put(name, ProxyObject.fromMap(Map.of(
+                            "low", point.lowEnd,
+                            "high", point.highEnd)));
+                } else if (currentClass.equals(Polygon.class)) {
+                    Polygon polygon = (Polygon) currentValue;
+
+                    Map<String, Object> points = new HashMap<>();
+                    for (int i = 0; i < polygon.getPoints().size(); ++i) {
+                        Point currentPoint = polygon.getPoints().get(i);
+                        points.put(String.valueOf(i), ProxyObject.fromMap(Map.of("x", currentPoint.x, "y", currentPoint.y)));
+                    }
+
+                    ProxyObject.fromMap(Map.of("numberOfPoints", polygon.getPoints().size(),
+                            "points", ProxyObject.fromMap(points)));
+                } else if (currentValue instanceof ValueListElement) {
+                    clipElements.put(name, ((ValueListElement) currentValue).getId());
+                } else if (currentValue instanceof File) {
+                    clipElements.put(name, ((File) currentValue).getAbsolutePath());
+                } else {
+                    LOGGER.error("Unsupported type " + currentClass);
                 }
             }
             result.put(entry.getKey(), ProxyObject.fromMap(clipElements));
