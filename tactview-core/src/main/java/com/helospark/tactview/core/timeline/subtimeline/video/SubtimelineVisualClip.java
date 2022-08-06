@@ -63,6 +63,7 @@ public class SubtimelineVisualClip extends VisualTimelineClip {
         this.timelineManagerRenderService = clip.timelineManagerAccessorFactory.createRenderService(this.timelineState, timelineManagerAccessor);
 
         this.enabledDescriptors = subtimelineHelper.copyExposedDescriptors(cloneRequestMetadata, clip.enabledDescriptors);
+        subtimelineHelper.updateFieldReferences(timelineState, cloneRequestMetadata);
     }
 
     public SubtimelineVisualClip(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineHelper subtimelineHelper, JsonNode savedClip, LoadMetadata loadMetadata) {

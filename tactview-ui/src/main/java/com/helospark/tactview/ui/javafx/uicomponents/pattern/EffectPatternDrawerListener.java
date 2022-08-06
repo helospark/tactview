@@ -6,20 +6,21 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.message.AbstractKeyframeChangedMessage;
 import com.helospark.tactview.core.timeline.message.EffectAddedMessage;
 import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.timeline.message.EffectResizedMessage;
-import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
@@ -28,21 +29,19 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 public class EffectPatternDrawerListener {
     private Map<String, EffectPatternUpdateDomain> effectToUpdate = new ConcurrentHashMap<>();
     private Set<EffectPatternUpdateRequest> updateRequests = new ConcurrentSkipListSet<>();
-    private volatile boolean running = true;
 
     private MessagingService messagingService;
-    private TimelineEffectPatternService timelineEffectPatternService;
     private TimelineState timelineState;
-    private TimelineManagerAccessor timelineManagerAccessor;
+    private ScheduledExecutorService scheduledExecutorService;
     @Slf4j
     private Logger logger;
 
     public EffectPatternDrawerListener(MessagingService messagingService,
-            TimelineState timelineState, TimelineEffectPatternService timelineEffectPatternService, TimelineManagerAccessor timelineManagerAccessor) {
+            TimelineState timelineState, TimelineEffectPatternService timelineEffectPatternService, TimelineManagerAccessor timelineManagerAccessor,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
         this.messagingService = messagingService;
-        this.timelineEffectPatternService = timelineEffectPatternService;
         this.timelineState = timelineState;
-        this.timelineManagerAccessor = timelineManagerAccessor;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @PostConstruct
@@ -66,35 +65,27 @@ public class EffectPatternDrawerListener {
         });
     }
 
-    @PreDestroy
-    public void destroy() {
-        this.running = false;
-    }
-
     private void startConsumingThread() {
-        new Thread(() -> {
-            while (running) {
-                try {
-                    ThreadSleep.sleep(1000);
-                    Set<EffectPatternUpdateRequest> clonedRequests = new HashSet<>(updateRequests);
-                    updateRequests.clear();
-                    for (var request : clonedRequests) {
-                        if (effectToUpdate.containsKey(request.effectId)) {
-                            logger.info("Updating timeline image pattern for {}", request.effectId);
-                            updatePattern(request);
-                        }
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
+                Set<EffectPatternUpdateRequest> clonedRequests = new HashSet<>(updateRequests);
+                updateRequests.clear();
+                for (var request : clonedRequests) {
+                    if (effectToUpdate.containsKey(request.effectId)) {
+                        logger.info("Updating timeline image pattern for {}", request.effectId);
+                        updatePattern(request);
                     }
-                    double currentZoomLevel = timelineState.getZoom();
-                    for (var entry : effectToUpdate.entrySet()) {
-                        if (Math.abs(entry.getValue().createdImageAtZoomLevel - currentZoomLevel) > 0.2) {
-                            updateRequests.add(new EffectPatternUpdateRequest(entry.getKey()));
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.warn("Image pattern update failed", e);
                 }
+                double currentZoomLevel = timelineState.getZoom();
+                for (var entry : effectToUpdate.entrySet()) {
+                    if (Math.abs(entry.getValue().createdImageAtZoomLevel - currentZoomLevel) > 0.2) {
+                        updateRequests.add(new EffectPatternUpdateRequest(entry.getKey()));
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Image pattern update failed", e);
             }
-        }, "effect-pattern-updater-thread").start();
+        }, 10, 1000, TimeUnit.MILLISECONDS);
     }
 
     private void updatePattern(EffectPatternUpdateRequest request) {

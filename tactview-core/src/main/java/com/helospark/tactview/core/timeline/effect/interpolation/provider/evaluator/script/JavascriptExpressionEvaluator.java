@@ -62,6 +62,14 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
         return functionResult;
     }
 
+    public String replacePlaceholder(String expression, Map<String, String> internalIdMapping) {
+        // TODO: This should actually read the code to decide whether to replace a reference
+        for (var entry : internalIdMapping.entrySet()) {
+            expression = expression.replace(entry.getKey(), entry.getValue());
+        }
+        return expression;
+    }
+
     private void setVariables(ScriptEngine graalEngine, Map<String, EvaluationContextProviderData> userSetData, TimelinePosition position) {
         ProxyObject actualResult = getDataMap(userSetData, position);
         graalEngine.put("data", actualResult);

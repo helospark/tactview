@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.zeroturnaround.zip.ZipUtil;
@@ -19,12 +20,20 @@ import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.save.TemplateSaveAndLoadHandler;
 import com.helospark.tactview.core.timeline.AddClipRequest;
+import com.helospark.tactview.core.timeline.TimelineChannelsState;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.script.JavascriptExpressionEvaluator;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
 @Component
 public class SubtimelineHelper {
+    private JavascriptExpressionEvaluator javascriptExpressionEvaluator;
+
+    public SubtimelineHelper(JavascriptExpressionEvaluator javascriptExpressionEvaluator) {
+        this.javascriptExpressionEvaluator = javascriptExpressionEvaluator;
+    }
 
     public static <T> T readMetadata(JsonNode savedClip, LoadMetadata loadMetadata, Class<T> clazz) {
         try {
@@ -44,6 +53,7 @@ public class SubtimelineHelper {
         } else {
             cloned = new HashSet<>(toCopy);
         }
+
         return cloned;
     }
 
@@ -103,6 +113,31 @@ public class SubtimelineHelper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void updateFieldReferences(TimelineChannelsState timelineState, CloneRequestMetadata cloneMetadata) {
+        var allKeyframeableEffects = timelineState.getChannels()
+                .stream()
+                .flatMap(channel -> channel.getAllClips().stream())
+                .flatMap(clip -> {
+                    Stream<KeyframeableEffect> list1 = clip.getDescriptors()
+                            .stream()
+                            .map(a -> a.getKeyframeableEffect());
+                    Stream<KeyframeableEffect> list2 = clip.getEffects()
+                            .stream()
+                            .flatMap(a -> a.getValueProviders().stream())
+                            .map(a -> a.getKeyframeableEffect());
+
+                    return Stream.concat(list1, list2);
+                })
+                .collect(Collectors.toList());
+        allKeyframeableEffects.stream()
+                .forEach(keyframeable -> {
+                    if (keyframeable.getExpression() != null) {
+                        String newExpression = javascriptExpressionEvaluator.replacePlaceholder(keyframeable.getExpression(), cloneMetadata.getIdMapping());
+                        keyframeable.setExpression(newExpression);
+                    }
+                });
     }
 
 }

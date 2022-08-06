@@ -9,15 +9,17 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.preference.PreferenceValue;
 import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.TimelineClip;
@@ -26,7 +28,6 @@ import com.helospark.tactview.core.timeline.TimelineLength;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.message.KeyframeSuccesfullyAddedMessage;
-import com.helospark.tactview.core.util.ThreadSleep;
 import com.helospark.tactview.core.util.logger.Slf4j;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.menu.defaultmenus.projectsize.RegenerateAllImagePatternsMessage;
@@ -37,7 +38,6 @@ import javafx.scene.image.Image;
 @Component
 public class ClipPatternDrawerListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClipPatternDrawerListener.class);
-    private volatile boolean running = true;
     private Map<String, Boolean> blacklistedClips = new ConcurrentHashMap<>();
     private Queue<String> clipRedrawRequestQueue = new ConcurrentLinkedDeque<>();
 
@@ -47,6 +47,7 @@ public class ClipPatternDrawerListener {
     private TimelineState timelineState;
     private TimelinePatternRepository timelinePatternRepository;
     private TimelineManagerAccessor timelineAccessor;
+    private ScheduledExecutorService scheduledExecutorService;
     @Slf4j
     private Logger logger;
 
@@ -54,13 +55,15 @@ public class ClipPatternDrawerListener {
 
     public ClipPatternDrawerListener(MessagingService messagingService, TimelineImagePatternService timelineImagePatternService,
             TimelineState timelineState, AudioImagePatternService audioImagePatternService, TimelineManagerAccessor timelineManager,
-            TimelinePatternRepository timelinePatternRepository, TimelineManagerAccessor timelineAccessor) {
+            TimelinePatternRepository timelinePatternRepository, TimelineManagerAccessor timelineAccessor,
+            @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService) {
         this.messagingService = messagingService;
         this.timelineImagePatternService = timelineImagePatternService;
         this.timelineState = timelineState;
         this.audioImagePatternService = audioImagePatternService;
         this.timelinePatternRepository = timelinePatternRepository;
         this.timelineAccessor = timelineAccessor;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @PreferenceValue(name = "Render pattern on clips", defaultValue = "true", group = "Performance")
@@ -83,102 +86,93 @@ public class ClipPatternDrawerListener {
         });
     }
 
-    @PreDestroy
-    public void destroy() {
-        this.running = false;
-    }
-
     private void startConsumingThread() {
-        new Thread(() -> {
-            while (running) {
-                try {
-                    ThreadSleep.sleep(1000);
-
-                    Set<String> requestedClipIds = new HashSet<>(clipRedrawRequestQueue);
-                    while (clipRedrawRequestQueue.size() > 0) {
-                        String newElement = clipRedrawRequestQueue.poll();
-                        if (newElement != null) {
-                            requestedClipIds.add(newElement);
-                        }
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
+                Set<String> requestedClipIds = new HashSet<>(clipRedrawRequestQueue);
+                while (clipRedrawRequestQueue.size() > 0) {
+                    String newElement = clipRedrawRequestQueue.poll();
+                    if (newElement != null) {
+                        requestedClipIds.add(newElement);
                     }
-
-                    for (var channel : timelineAccessor.getChannels()) {
-                        for (var clip : channel.getAllClips()) {
-                            if (blacklistedClips.containsKey(clip.getId())) {
-                                continue;
-                            }
-                            TimelineLength clipLength = clip.getInterval().getLength();
-
-                            double zoom = timelineState.getZoom();
-                            int normalizedClipTime = getBatchSizeFor(zoom);
-
-                            TimelineInterval visibleInterval = TimelineInterval.fromDoubles(timelineState.getTranslateDouble(),
-                                    timelineState.getTranslateDouble() + timelineState.getTimelineLengthDouble());
-                            visibleInterval = visibleInterval.butAddOffset(clip.getInterval().getStartPosition().negate());
-                            List<Pair<Image, TimelineInterval>> generatedPatterns = new ArrayList<>();
-
-                            double clipStartPosition = clip.getGlobalInterval().getStartPosition().getSeconds().doubleValue();
-                            double clipEndPosition = clip.getGlobalInterval().getLength().getSeconds().doubleValue();
-                            double visibleStartPosition = timelineState.getTranslateDouble() - clipStartPosition;
-
-                            double originalStartValue = roundDownToNearest(visibleStartPosition, normalizedClipTime);
-
-                            if (originalStartValue < 0.0) {
-                                originalStartValue = 0.0;
-                            }
-
-                            double startValue = originalStartValue;
-                            while (startValue >= 0.0) {
-
-                                double intervalEnd = startValue + normalizedClipTime;
-                                if (intervalEnd > clipEndPosition) {
-                                    intervalEnd = clipEndPosition;
-                                }
-                                if (intervalEnd < visibleInterval.getStartPosition().getSeconds().doubleValue()) {
-                                    break;
-                                }
-
-                                double intervalStart = startValue;
-                                if (intervalStart < 0) {
-                                    intervalStart = 0.0;
-                                }
-
-                                TimelineInterval intervalInClipSpace = TimelineInterval.fromDoubles(intervalStart, intervalEnd);
-                                if (clipRequiresRedraw(requestedClipIds, clip, clipLength, zoom, visibleInterval, intervalInClipSpace)) {
-                                    Image pattern = updatePattern(clip, intervalInClipSpace, zoom);
-                                    if (pattern != null) {
-                                        generatedPatterns.add(Pair.of(pattern, intervalInClipSpace));
-                                    }
-                                }
-                                startValue -= normalizedClipTime;
-                            }
-                            startValue = originalStartValue + normalizedClipTime;
-                            while (startValue < clipEndPosition && startValue < visibleInterval.getEndPosition().getSeconds().doubleValue()) {
-                                double intervalEnd = startValue + normalizedClipTime;
-                                if (intervalEnd >= clipEndPosition) {
-                                    intervalEnd = clipEndPosition;
-                                }
-                                if (intervalEnd - startValue <= 0.0001) {
-                                    break;
-                                }
-                                TimelineInterval intervalInGlobalSpace = TimelineInterval.fromDoubles(startValue, intervalEnd);
-                                if (clipRequiresRedraw(requestedClipIds, clip, clipLength, zoom, visibleInterval, intervalInGlobalSpace)) {
-                                    Image pattern = updatePattern(clip, intervalInGlobalSpace, zoom);
-                                    if (pattern != null) {
-                                        generatedPatterns.add(Pair.of(pattern, intervalInGlobalSpace));
-                                    }
-                                }
-                                startValue += normalizedClipTime;
-                            }
-                            timelinePatternRepository.addAllAndRemoveOldEntriesNotVisible(clip.getId(), generatedPatterns, zoom, visibleInterval, clipLength);
-                        }
-                    }
-
-                } catch (Exception e) {
-                    logger.warn("Image pattern update failed", e);
                 }
+
+                for (var channel : timelineAccessor.getChannels()) {
+                    for (var clip : channel.getAllClips()) {
+                        if (blacklistedClips.containsKey(clip.getId())) {
+                            continue;
+                        }
+                        TimelineLength clipLength = clip.getInterval().getLength();
+
+                        double zoom = timelineState.getZoom();
+                        int normalizedClipTime = getBatchSizeFor(zoom);
+
+                        TimelineInterval visibleInterval = TimelineInterval.fromDoubles(timelineState.getTranslateDouble(),
+                                timelineState.getTranslateDouble() + timelineState.getTimelineLengthDouble());
+                        visibleInterval = visibleInterval.butAddOffset(clip.getInterval().getStartPosition().negate());
+                        List<Pair<Image, TimelineInterval>> generatedPatterns = new ArrayList<>();
+
+                        double clipStartPosition = clip.getGlobalInterval().getStartPosition().getSeconds().doubleValue();
+                        double clipEndPosition = clip.getGlobalInterval().getLength().getSeconds().doubleValue();
+                        double visibleStartPosition = timelineState.getTranslateDouble() - clipStartPosition;
+
+                        double originalStartValue = roundDownToNearest(visibleStartPosition, normalizedClipTime);
+
+                        if (originalStartValue < 0.0) {
+                            originalStartValue = 0.0;
+                        }
+
+                        double startValue = originalStartValue;
+                        while (startValue >= 0.0) {
+
+                            double intervalEnd = startValue + normalizedClipTime;
+                            if (intervalEnd > clipEndPosition) {
+                                intervalEnd = clipEndPosition;
+                            }
+                            if (intervalEnd < visibleInterval.getStartPosition().getSeconds().doubleValue()) {
+                                break;
+                            }
+
+                            double intervalStart = startValue;
+                            if (intervalStart < 0) {
+                                intervalStart = 0.0;
+                            }
+
+                            TimelineInterval intervalInClipSpace = TimelineInterval.fromDoubles(intervalStart, intervalEnd);
+                            if (clipRequiresRedraw(requestedClipIds, clip, clipLength, zoom, visibleInterval, intervalInClipSpace)) {
+                                Image pattern = updatePattern(clip, intervalInClipSpace, zoom);
+                                if (pattern != null) {
+                                    generatedPatterns.add(Pair.of(pattern, intervalInClipSpace));
+                                }
+                            }
+                            startValue -= normalizedClipTime;
+                        }
+                        startValue = originalStartValue + normalizedClipTime;
+                        while (startValue < clipEndPosition && startValue < visibleInterval.getEndPosition().getSeconds().doubleValue()) {
+                            double intervalEnd = startValue + normalizedClipTime;
+                            if (intervalEnd >= clipEndPosition) {
+                                intervalEnd = clipEndPosition;
+                            }
+                            if (intervalEnd - startValue <= 0.0001) {
+                                break;
+                            }
+                            TimelineInterval intervalInGlobalSpace = TimelineInterval.fromDoubles(startValue, intervalEnd);
+                            if (clipRequiresRedraw(requestedClipIds, clip, clipLength, zoom, visibleInterval, intervalInGlobalSpace)) {
+                                Image pattern = updatePattern(clip, intervalInGlobalSpace, zoom);
+                                if (pattern != null) {
+                                    generatedPatterns.add(Pair.of(pattern, intervalInGlobalSpace));
+                                }
+                            }
+                            startValue += normalizedClipTime;
+                        }
+                        timelinePatternRepository.addAllAndRemoveOldEntriesNotVisible(clip.getId(), generatedPatterns, zoom, visibleInterval, clipLength);
+                    }
+                }
+
+            } catch (Exception e) {
+                logger.warn("Image pattern update failed", e);
             }
-        }, "clip-pattern-updater-thread").start();
+        }, 10, 1000, TimeUnit.MILLISECONDS);
     }
 
     private boolean clipRequiresRedraw(Set<String> requestedClipIds, TimelineClip clip, TimelineLength clipLength, double zoom, TimelineInterval visibleInterval,

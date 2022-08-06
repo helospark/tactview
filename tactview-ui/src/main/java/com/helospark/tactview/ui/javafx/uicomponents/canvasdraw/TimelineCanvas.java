@@ -606,6 +606,9 @@ public class TimelineCanvas implements ScenePostProcessor {
     }
 
     public Optional<TimelineUiCacheElement> findElementAt(double x, double y) {
+        if (y < TIMELINE_TIMESCALE_HEIGHT) {
+            return Optional.empty();
+        }
         for (var element : cachedVisibleElements) {
             if (element.rectangle.containsPoint(x, y)) {
                 return Optional.of(element);

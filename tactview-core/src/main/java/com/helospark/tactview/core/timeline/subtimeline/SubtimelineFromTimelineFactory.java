@@ -1,10 +1,8 @@
 package com.helospark.tactview.core.timeline.subtimeline;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.AudioMediaMetadata;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.TimelineChannelsState;
@@ -43,13 +41,7 @@ public class SubtimelineFromTimelineFactory {
                 .withLength(length)
                 .build();
 
-        CloneRequestMetadata cloneMetadata = CloneRequestMetadata.ofDefault();
-        TimelineChannelsState clonedState = timelineChannelsState.deepClone(cloneMetadata);
-        Set<ExposedDescriptorDescriptor> fixedExposedDescriptors = exposedDescriptors.stream()
-                .map(a -> a.butWithId(cloneMetadata.getPreviousId(a.getId())))
-                .collect(Collectors.toSet());
-
-        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, clonedState, timelineManagerAccessorFactory, subtimelineHelper, fixedExposedDescriptors,
+        SubtimelineVisualClip result = new SubtimelineVisualClip(metadata, timelineChannelsState, timelineManagerAccessorFactory, subtimelineHelper, exposedDescriptors,
                 TimelinePosition.ofZero(),
                 length);
 
@@ -68,10 +60,11 @@ public class SubtimelineFromTimelineFactory {
                 .withSampleRate(projectRepository.getBytesPerSample())
                 .build();
 
-        SubtimelineAudioClip result = new SubtimelineAudioClip(metadata, timelineChannelsState.deepClone(CloneRequestMetadata.ofDefault()), timelineManagerAccessorFactory, subtimelineHelper,
+        SubtimelineAudioClip result = new SubtimelineAudioClip(metadata, timelineChannelsState, timelineManagerAccessorFactory, subtimelineHelper,
                 exposedDescriptors,
                 TimelinePosition.ofZero(),
                 length);
+
         result.setCreatorFactoryId(SubtimelineAudioClipFactory.ID);
         return result;
     }

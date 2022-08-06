@@ -24,8 +24,9 @@ public abstract class AbstractKeyframeableEffectDesSerFactory<T extends Keyframe
         T result = deserializeInternal(data, (T) currentFieldValue, loadMetadata);
         KeyframeableEffect current = (KeyframeableEffect) currentFieldValue;
         result.id = data.get("id").asText();
-        if (!data.get("expression").isNull()) {
-            result.expression = data.get("expression").asText();
+        JsonNode expressionNode = data.get("expression");
+        if (expressionNode != null && !expressionNode.isNull()) {
+            result.expression = expressionNode.asText();
         }
         //        boolean useKeyframes = data.get("useKeyframes").asBoolean(false);
         //        result.setUseKeyframes(useKeyframes);

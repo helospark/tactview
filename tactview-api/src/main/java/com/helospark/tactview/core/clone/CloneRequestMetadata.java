@@ -43,4 +43,8 @@ public class CloneRequestMetadata {
         return newId;
     }
 
+    public Map<String, String> getIdMapping() {
+        return internalIdMapping;
+    }
+
 }

@@ -60,6 +60,7 @@ public class SubtimelineAudioClip extends AudibleTimelineClip {
         this.timelineManagerRenderService = clip.timelineManagerAccessorFactory.createRenderService(timelineState, timelineManagerAccessor);
 
         this.enabledDescriptors = subtimelineHelper.copyExposedDescriptors(cloneRequestMetadata, clip.enabledDescriptors);
+        subtimelineHelper.updateFieldReferences(timelineState, cloneRequestMetadata);
     }
 
     public SubtimelineAudioClip(TimelineManagerAccessorFactory timelineManagerAccessorFactory, SubtimelineHelper subtimelineHelper, JsonNode savedClip, LoadMetadata loadMetadata) {
