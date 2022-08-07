@@ -112,6 +112,10 @@ public class NameToIdRepository implements SaveLoadContributor, ResettableBean {
         }
     }
 
+    public Map<String, String> getIdToNameMap() {
+        return idToName;
+    }
+
     @Override
     public void resetDefaults() {
         nameToId.clear();

@@ -77,4 +77,9 @@ public class LineProvider extends CompositeKeyframeableEffect<InterpolationLine>
         return new LineProvider(PointProvider.ofNormalizedImagePosition(x1, y1), PointProvider.ofNormalizedImagePosition(x2, y2));
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return InterpolationLine.class;
+    }
+
 }

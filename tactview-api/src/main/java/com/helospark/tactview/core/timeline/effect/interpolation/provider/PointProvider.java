@@ -96,4 +96,9 @@ public class PointProvider extends CompositeKeyframeableEffect<Point> {
         return (PointProvider) super.deepClone(cloneRequestMetadata);
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return Point.class;
+    }
+
 }

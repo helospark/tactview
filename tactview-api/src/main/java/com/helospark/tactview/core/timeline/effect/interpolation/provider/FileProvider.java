@@ -103,4 +103,9 @@ public class FileProvider extends KeyframeableEffect<String> {
         }
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return String.class;
+    }
+
 }

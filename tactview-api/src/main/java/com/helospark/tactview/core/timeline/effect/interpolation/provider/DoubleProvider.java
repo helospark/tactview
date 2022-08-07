@@ -177,4 +177,9 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
         return (DoubleProvider) super.deepClone(cloneRequestMetadata);
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return Double.class;
+    }
+
 }

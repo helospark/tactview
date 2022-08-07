@@ -90,4 +90,9 @@ public class StringProvider extends KeyframeableEffect<String> {
     public StringInterpolator getInterpolatorClone() {
         return this.stringInterpolator;
     }
+
+    @Override
+    public Class<?> getProvidedType() {
+        return String.class;
+    }
 }

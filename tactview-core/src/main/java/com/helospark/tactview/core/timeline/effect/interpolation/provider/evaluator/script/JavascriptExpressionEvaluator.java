@@ -26,6 +26,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListElement;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContextProviderData;
 
 @Component
@@ -35,12 +36,16 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
     private Queue<ScriptEngine> scriptEngineCache = new ConcurrentLinkedQueue<>();
 
     @Override
-    public <T> T evaluate(String expression, TimelinePosition position, Class<T> toClass, Map<String, EvaluationContextProviderData> userSetData) {
+    public <T> T evaluate(String expression, TimelinePosition position, Class<T> toClass, EvaluationContext evaluationContext) {
         T functionResult = null;
         try {
             ScriptEngine graalEngine = createScriptEngine();
 
-            setVariables(graalEngine, userSetData, position);
+            Map<String, Map<String, Object>> variables = getVariables(position, evaluationContext);
+
+            for (var entry : variables.entrySet()) {
+                graalEngine.put(entry.getKey(), wrapWithProxyObject(entry.getValue()));
+            }
 
             Object result1 = graalEngine.eval(expression);
             Object result2 = graalEngine.get("result");
@@ -108,6 +113,29 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
         return functionResult;
     }
 
+    private Object wrapWithProxyObject(Map<String, Object> map) {
+        Map<String, Object> result = new HashMap<>();
+        for (var entry : map.entrySet()) {
+            result.put(entry.getKey(), wrapWithProxyObjectRecursively(entry.getValue()));
+        }
+        return ProxyObject.fromMap(result);
+    }
+
+    private Object wrapWithProxyObjectRecursively(Object value) {
+        if (value instanceof Map) {
+            Map<String, Object> result = new HashMap<>();
+            Map<?, ?> map = (Map) value;
+
+            for (var entry : map.entrySet()) {
+                result.put((String) entry.getKey(), wrapWithProxyObjectRecursively(entry.getValue()));
+            }
+
+            return ProxyObject.fromMap(result);
+        } else {
+            return value;
+        }
+    }
+
     public String replacePlaceholder(String expression, Map<String, String> internalIdMapping) {
         // TODO: This should actually read the code to decide whether to replace a reference
         for (var entry : internalIdMapping.entrySet()) {
@@ -116,73 +144,101 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
         return expression;
     }
 
-    private void setVariables(ScriptEngine graalEngine, Map<String, EvaluationContextProviderData> userSetData, TimelinePosition position) {
-        ProxyObject actualResult = getDataMap(userSetData, position);
-        graalEngine.put("data", actualResult);
+    public Map<String, Map<String, Object>> getVariables(TimelinePosition position, EvaluationContext evaluationContext) {
+        Map<String, Object> providerMap = getProviderDataMap(evaluationContext.getProviderData(), position);
+        Map<String, Object> globalsMap = getGlobalsMap(evaluationContext.getGlobals());
+
+        return Map.of(
+                "providers", providerMap,
+                "globals", globalsMap);
     }
 
-    private ProxyObject getDataMap(Map<String, EvaluationContextProviderData> userSetData, TimelinePosition position) {
+    private Map<String, Object> getGlobalsMap(Map<String, Object> globals) {
+        Map<String, Object> result = new HashMap<>();
+        for (var element : globals.entrySet()) {
+            String name = element.getKey();
+
+            Object converted = convertToScriptType(element.getValue());
+
+            if (converted != null) {
+                result.put(name, converted);
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Object> getProviderDataMap(Map<String, EvaluationContextProviderData> userSetData, TimelinePosition position) {
         Map<String, Object> result = new HashMap<>();
         for (var entry : userSetData.entrySet()) {
             Map<String, Object> clipElements = new HashMap<>();
             for (var element : entry.getValue().data.entrySet()) {
-                Object currentValue = element.getValue().getValueAt(position);
                 String name = element.getKey();
-                Class<? extends Object> currentClass = currentValue.getClass();
+                Object currentValue = element.getValue().getValueAt(position);
 
-                if (currentClass.equals(Integer.class) || currentClass.equals(String.class) || currentClass.equals(Double.class) || currentClass.equals(Boolean.class)) {
-                    clipElements.put(name, currentValue);
-                } else if (currentClass.equals(Color.class)) {
-                    Color color = (Color) currentValue;
-                    clipElements.put(name, ProxyObject.fromMap(Map.of(
-                            "r", color.getRed(),
-                            "g", color.getGreen(),
-                            "b", color.getBlue())));
-                } else if (currentClass.equals(Point.class)) {
-                    Point point = (Point) currentValue;
-                    clipElements.put(name, ProxyObject.fromMap(Map.of(
-                            "x", point.x,
-                            "y", point.y)));
-                } else if (currentClass.equals(InterpolationLine.class)) {
-                    InterpolationLine line = (InterpolationLine) currentValue;
-                    clipElements.put(name, ProxyObject.fromMap(Map.of(
-                            "x1", line.start.x, "y1", line.start.y,
-                            "x2", line.end.x, "y2", line.end.y)));
-                } else if (currentClass.equals(Rectangle.class)) {
-                    Rectangle line = (Rectangle) currentValue;
-                    clipElements.put(name, ProxyObject.fromMap(Map.of(
-                            "x1", line.points.get(0).x, "y1", line.points.get(0).y,
-                            "x2", line.points.get(1).x, "y2", line.points.get(1).y,
-                            "x3", line.points.get(2).x, "y3", line.points.get(2).y,
-                            "x4", line.points.get(3).x, "y4", line.points.get(3).y)));
-                } else if (currentClass.equals(DoubleRange.class)) {
-                    DoubleRange point = (DoubleRange) currentValue;
-                    clipElements.put(name, ProxyObject.fromMap(Map.of(
-                            "low", point.lowEnd,
-                            "high", point.highEnd)));
-                } else if (currentClass.equals(Polygon.class)) {
-                    Polygon polygon = (Polygon) currentValue;
+                Object converted = convertToScriptType(currentValue);
 
-                    Map<String, Object> points = new HashMap<>();
-                    for (int i = 0; i < polygon.getPoints().size(); ++i) {
-                        Point currentPoint = polygon.getPoints().get(i);
-                        points.put(String.valueOf(i), ProxyObject.fromMap(Map.of("x", currentPoint.x, "y", currentPoint.y)));
-                    }
-
-                    ProxyObject.fromMap(Map.of("numberOfPoints", polygon.getPoints().size(),
-                            "points", ProxyObject.fromMap(points)));
-                } else if (currentValue instanceof ValueListElement) {
-                    clipElements.put(name, ((ValueListElement) currentValue).getId());
-                } else if (currentValue instanceof File) {
-                    clipElements.put(name, ((File) currentValue).getAbsolutePath());
-                } else {
-                    LOGGER.error("Unsupported type " + currentClass);
+                if (converted != null) {
+                    clipElements.put(name, converted);
                 }
             }
-            result.put(entry.getKey(), ProxyObject.fromMap(clipElements));
+            result.put(entry.getKey(), clipElements);
         }
-        ProxyObject actualResult = ProxyObject.fromMap(result);
-        return actualResult;
+        return result;
+    }
+
+    public Object convertToScriptType(Object currentValue) {
+
+        Class<? extends Object> currentClass = currentValue.getClass();
+
+        if (currentClass.equals(Integer.class) || currentClass.equals(String.class) || currentClass.equals(Double.class) || currentClass.equals(Boolean.class)) {
+            return currentValue;
+        } else if (currentClass.equals(Color.class)) {
+            Color color = (Color) currentValue;
+            return Map.of(
+                    "r", color.getRed(),
+                    "g", color.getGreen(),
+                    "b", color.getBlue());
+        } else if (currentClass.equals(Point.class)) {
+            Point point = (Point) currentValue;
+            return Map.of(
+                    "x", point.x,
+                    "y", point.y);
+        } else if (currentClass.equals(InterpolationLine.class)) {
+            InterpolationLine line = (InterpolationLine) currentValue;
+            return Map.of(
+                    "x1", line.start.x, "y1", line.start.y,
+                    "x2", line.end.x, "y2", line.end.y);
+        } else if (currentClass.equals(Rectangle.class)) {
+            Rectangle line = (Rectangle) currentValue;
+            return Map.of(
+                    "x1", line.points.get(0).x, "y1", line.points.get(0).y,
+                    "x2", line.points.get(1).x, "y2", line.points.get(1).y,
+                    "x3", line.points.get(2).x, "y3", line.points.get(2).y,
+                    "x4", line.points.get(3).x, "y4", line.points.get(3).y);
+        } else if (currentClass.equals(DoubleRange.class)) {
+            DoubleRange point = (DoubleRange) currentValue;
+            return Map.of(
+                    "low", point.lowEnd,
+                    "high", point.highEnd);
+        } else if (currentClass.equals(Polygon.class)) {
+            Polygon polygon = (Polygon) currentValue;
+
+            Map<String, Object> points = new HashMap<>();
+            for (int i = 0; i < polygon.getPoints().size(); ++i) {
+                Point currentPoint = polygon.getPoints().get(i);
+                points.put(String.valueOf(i), Map.of("x", currentPoint.x, "y", currentPoint.y));
+            }
+
+            return Map.of("numberOfPoints", polygon.getPoints().size(),
+                    "points", ProxyObject.fromMap(points));
+        } else if (currentValue instanceof ValueListElement) {
+            return ((ValueListElement) currentValue).getId();
+        } else if (currentValue instanceof File) {
+            return ((File) currentValue).getAbsolutePath();
+        } else {
+            LOGGER.error("Unsupported type " + currentClass);
+        }
+        return null;
     }
 
     private ScriptEngine createScriptEngine() {

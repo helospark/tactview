@@ -2,13 +2,17 @@ package com.helospark.tactview.core.timeline;
 
 import java.util.Map;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
+
 public class TimelineRenderResult {
     private AudioVideoFragment audioVideoFragment;
     private Map<String, RegularRectangle> clipRectangle;
+    private EvaluationContext evaluationContext;
 
-    public TimelineRenderResult(AudioVideoFragment audioVideoFragment, Map<String, RegularRectangle> clipRectangle) {
+    public TimelineRenderResult(AudioVideoFragment audioVideoFragment, Map<String, RegularRectangle> clipRectangle, EvaluationContext evaluationContext) {
         this.audioVideoFragment = audioVideoFragment;
         this.clipRectangle = clipRectangle;
+        this.evaluationContext = evaluationContext;
     }
 
     public AudioVideoFragment getAudioVideoFragment() {
@@ -17,6 +21,10 @@ public class TimelineRenderResult {
 
     public Map<String, RegularRectangle> getClipRectangle() {
         return clipRectangle;
+    }
+
+    public EvaluationContext getEvaluationContext() {
+        return evaluationContext;
     }
 
     @Override

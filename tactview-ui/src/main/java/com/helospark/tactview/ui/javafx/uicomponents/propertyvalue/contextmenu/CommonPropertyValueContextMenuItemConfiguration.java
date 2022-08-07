@@ -19,6 +19,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.ExpressionChangedForProper
 import com.helospark.tactview.ui.javafx.commands.impl.ExpressionRemovedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.ResetDefaultValuesCommand;
 import com.helospark.tactview.ui.javafx.commands.impl.UseKeyframeStatusToggleCommand;
+import com.helospark.tactview.ui.javafx.script.JavascriptEditorFactory;
 import com.helospark.tactview.ui.javafx.stylesheet.AlertDialogFactory;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.PrimitiveEffectLine;
 
@@ -174,8 +175,8 @@ public class CommonPropertyValueContextMenuItemConfiguration {
 
     @Bean
     @Order(35)
-    public PropertyValueContextMenuItem addExpressionMenuItem(AlertDialogFactory alertDialogFactory, EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter) {
+    public PropertyValueContextMenuItem addExpressionMenuItem(EffectParametersRepository effectParametersRepository,
+            UiCommandInterpreterService commandInterpreter, JavascriptEditorFactory javascriptEditorFactory) {
         return alwaysEnableContextMenu(request -> {
             MenuItem addExpressionMenuItem;
             if (request.valueProvider.getExpression() != null) {
@@ -184,7 +185,8 @@ public class CommonPropertyValueContextMenuItemConfiguration {
                 addExpressionMenuItem = new MenuItem("Add expression");
             }
             addExpressionMenuItem.setOnAction(e2 -> {
-                Optional<String> expressionResult = alertDialogFactory.showTextInputDialog("Add expression", "Add expression", request.valueProvider.getExpression());
+                String expression = Optional.ofNullable(request.valueProvider.getExpression()).orElse("");
+                Optional<String> expressionResult = javascriptEditorFactory.openEditor(expression, request.valueProvider.getProvidedType());
                 if (expressionResult.isPresent() && !expressionResult.get().isBlank()) {
 
                     KeyframeAddedRequest keyframeAddedRequest = KeyframeAddedRequest.builder()
@@ -221,7 +223,7 @@ public class CommonPropertyValueContextMenuItemConfiguration {
             copyFieldReferenceMenuItem.setOnAction(e2 -> {
                 effectParametersRepository.findContainingElementId(request.valueProvider.getId())
                         .ifPresent(componentId -> {
-                            String dataToCopy = "data['" + componentId + "']." + request.containerDescriptor.getName() + "";
+                            String dataToCopy = "providers['" + componentId + "']." + request.containerDescriptor.getNameAsId() + "";
                             Clipboard.getSystemClipboard().setContent(Map.of(DataFormat.PLAIN_TEXT, dataToCopy));
                         });
             });

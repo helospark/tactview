@@ -51,6 +51,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddExistingClipsCommand;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.script.ScriptVariablesStore;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.trimmer.CacheableAudioImagePatternService;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.DefaultCanvasTranslateSetter;
@@ -109,6 +110,7 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
     private UiCommandInterpreterService commandInterpreterService;
     private LinkClipRepository linkClipRepository;
     private ThumbnailCreator thumbnailCreator;
+    private ScriptVariablesStore scriptVariablesStore;
 
     public Label videoTimestampLabel;
     private Canvas canvas;
@@ -132,6 +134,7 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
 
     public TrimmingDockableTab(SingleFullImageViewController fullScreenRenderer,
             MessagingService messagingService,
+            ScriptVariablesStore scriptVariablesStore,
 
             AudioStreamService audioStreamService, JavaByteArrayConverter javaByteArrayConverter,
             List<AudioPlayedListener> audioPlayedListeners,
@@ -178,7 +181,8 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
 
         createTimeline(timelineManagerAccessor);
 
-        PlaybackFrameAccessor playbackController = new PlaybackFrameAccessor(trimmerTimelineManagerRenderService, uiProjectRepository, projectRepository, byteBufferToJavaFxImageConverter);
+        PlaybackFrameAccessor playbackController = new PlaybackFrameAccessor(trimmerTimelineManagerRenderService, uiProjectRepository, projectRepository, byteBufferToJavaFxImageConverter,
+                scriptVariablesStore);
 
         this.audioVisualazationComponent = new AudioVisualizationComponent(playbackController, audioRmsCalculator, canvas);
 

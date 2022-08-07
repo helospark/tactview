@@ -698,3 +698,7 @@
 .clips-window-pane .clip-entry {
     -fx-padding: 3px;
 }
+
+.javascript-editor-description {
+    -fx-padding: 10px;
+}

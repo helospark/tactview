@@ -93,4 +93,9 @@ public class RectangleProvider extends CompositeKeyframeableEffect<Rectangle> {
     public SizeFunction getSizeFunction() {
         return sizeFunction;
     }
+
+    @Override
+    public Class<?> getProvidedType() {
+        return Rectangle.class;
+    }
 }

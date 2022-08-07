@@ -119,7 +119,7 @@ public class CurveProvider extends CompositeKeyframeableEffect<KeyFrameInfo> imp
     public CurveProvider deepCloneInternal(CloneRequestMetadata cloneRequestMetadata) {
         List<PointProvider> clonePointProviders = new ArrayList<>();
         for (var element : curvePoints) {
-            clonePointProviders.add((PointProvider) element.deepClone(cloneRequestMetadata));
+            clonePointProviders.add(element.deepClone(cloneRequestMetadata));
         }
         CurveProvider result = new CurveProvider(minX, maxX, minY, maxY, clonePointProviders);
         result.isUsingKeyframes = this.isUsingKeyframes;
@@ -253,4 +253,8 @@ public class CurveProvider extends CompositeKeyframeableEffect<KeyFrameInfo> imp
         return true;
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return KnotAwareUnivariateFunction.class;
+    }
 }

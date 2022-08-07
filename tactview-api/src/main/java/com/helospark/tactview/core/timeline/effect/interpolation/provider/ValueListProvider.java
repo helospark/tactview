@@ -103,4 +103,8 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
         return stringInterpolator;
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return ValueListElement.class;
+    }
 }

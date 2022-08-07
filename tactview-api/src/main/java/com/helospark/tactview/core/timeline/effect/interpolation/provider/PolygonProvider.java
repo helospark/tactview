@@ -153,4 +153,8 @@ public class PolygonProvider extends KeyframeableEffect<Polygon> {
         this.useKeyframes = useKeyframes;
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return Polygon.class;
+    }
 }

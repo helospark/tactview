@@ -22,6 +22,7 @@ import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.script.ScriptVariablesStore;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.scene.image.Image;
@@ -38,13 +39,15 @@ public class PlaybackFrameAccessor {
     private final UiProjectRepository uiProjectRepository;
     private final ProjectRepository projectRepository;
     private final ByteBufferToJavaFxImageConverter byteBufferToImageConverter;
+    private final ScriptVariablesStore scriptVariablesStore;
 
     public PlaybackFrameAccessor(TimelineManagerRenderService timelineManager, UiProjectRepository uiProjectRepository, ProjectRepository projectRepository,
-            ByteBufferToJavaFxImageConverter byteBufferToImageConverter) {
+            ByteBufferToJavaFxImageConverter byteBufferToImageConverter, ScriptVariablesStore scriptVariablesStore) {
         this.timelineManager = timelineManager;
         this.uiProjectRepository = uiProjectRepository;
         this.byteBufferToImageConverter = byteBufferToImageConverter;
         this.projectRepository = projectRepository;
+        this.scriptVariablesStore = scriptVariablesStore;
     }
 
     public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position, Optional<FrameSize> frameSize, boolean livePlayback, boolean isHalfEffect) {
@@ -101,6 +104,7 @@ public class PlaybackFrameAccessor {
         AudioVideoFragment frame = renderResult.getAudioVideoFragment();
         Image javafxImage = byteBufferToImageConverter.convertToJavafxImage(frame.getVideoResult().getBuffer(), width, height);
         frame.free();
+        scriptVariablesStore.cacheLastContext(renderResult.getEvaluationContext());
         return new ImageWithExpandedFramePositions(javafxImage, renderResult.getClipRectangle());
     }
 

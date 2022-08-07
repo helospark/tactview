@@ -88,4 +88,9 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange
 
         return new DoubleRangeProvider(valueMapperMin, valueMapperMax);
     }
+
+    @Override
+    public Class<?> getProvidedType() {
+        return DoubleRange.class;
+    }
 }

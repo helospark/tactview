@@ -76,4 +76,9 @@ public class GraphProvider extends KeyframeableEffect<EffectGraph> {
         // TODO!
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return EffectGraph.class;
+    }
+
 }

@@ -102,4 +102,8 @@ public class BooleanProvider extends KeyframeableEffect<Boolean> {
         return (BooleanProvider) super.deepClone(cloneRequestMetadata);
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return Boolean.class;
+    }
 }

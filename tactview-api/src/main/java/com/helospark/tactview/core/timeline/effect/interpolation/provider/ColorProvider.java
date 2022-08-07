@@ -82,4 +82,8 @@ public class ColorProvider extends CompositeKeyframeableEffect<Color> {
         return (ColorProvider) super.deepClone(cloneRequestMetadata);
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return Color.class;
+    }
 }

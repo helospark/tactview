@@ -90,7 +90,7 @@ public class TimelineManagerRenderService {
         Map<String, AudioFrameResult> audioToFrames = new ConcurrentHashMap<>();
         Map<String, RegularRectangle> clipToExpandedPosition = new ConcurrentHashMap<>();
 
-        EvaluationContext evaluationContext = createEvaluationContext(new ArrayList<>(clipsToRender.values()));
+        EvaluationContext evaluationContext = createEvaluationContext(new ArrayList<>(clipsToRender.values()), createGlobalsVariableMap(request));
 
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -219,20 +219,30 @@ public class TimelineManagerRenderService {
         ReadOnlyClipImage finalResult = executeGlobalEffectsOn(finalImage);
         // TODO: audio effects
 
-        return new TimelineRenderResult(new AudioVideoFragment(finalResult, audioBuffer), new HashMap<>(clipToExpandedPosition));
+        return new TimelineRenderResult(new AudioVideoFragment(finalResult, audioBuffer), new HashMap<>(clipToExpandedPosition), evaluationContext);
     }
 
-    public EvaluationContext createEvaluationContext(List<TimelineClip> clipsToRender) {
+    public EvaluationContext createEvaluationContext(List<TimelineClip> clipsToRender, Map<String, Object> globals) {
         Map<String, EvaluationContextProviderData> clipData = new HashMap<>();
         for (var clip : clipsToRender) {
             Map<String, KeyframeableEffect<?>> data2 = new HashMap<>();
             for (var descriptor : clip.getDescriptors()) {
-                data2.put(descriptor.getName(), descriptor.getKeyframeableEffect());
+                data2.put(descriptor.getNameAsId(), descriptor.getKeyframeableEffect());
             }
             EvaluationContextProviderData ecpd = new EvaluationContextProviderData(data2);
             clipData.put(clip.getId(), ecpd);
         }
-        return new EvaluationContext(clipData, expressionScriptEvaluator);
+
+        return new EvaluationContext(clipData, expressionScriptEvaluator, globals);
+    }
+
+    private Map<String, Object> createGlobalsVariableMap(TimelineManagerFramesRequest request) {
+        Map<String, Object> globals = new HashMap<>();
+        globals.put("time", request.getPosition().getSeconds().doubleValue());
+        globals.put("width", request.getPreviewWidth());
+        globals.put("height", request.getPreviewHeight());
+        globals.put("scale", request.getScale());
+        return globals;
     }
 
     private ReadOnlyClipImage renderBelowLayers(TimelineManagerFramesRequest request, List<String> renderOrder, Map<String, RenderFrameData> framesBelow) {

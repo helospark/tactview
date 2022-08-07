@@ -5,6 +5,7 @@ import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.VisualMediaMetadata;
@@ -14,6 +15,7 @@ import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.timeline.proceduralclip.ProceduralVisualClip;
@@ -72,14 +74,16 @@ public class TimelineImagePatternService {
             TimelinePosition position = TimelinePosition.ofSeconds(seconds);
             int width = isDynamicallyGenerated ? uiProjectRepository.getPreviewWidth() : scaledFrameWidth;
             int height = isDynamicallyGenerated ? uiProjectRepository.getPreviewHeight() : scaledFrameHeight;
+            double scale = (double) width / metadata.getWidth();
+
             GetFrameRequest frameRequest = GetFrameRequest.builder()
                     .withApplyEffects(false)
                     .withUseApproximatePosition(true)
                     .withExpectedWidth(width)
                     .withExpectedHeight(height)
                     .withRelativePosition(position)
-                    .withScale((double) width / metadata.getWidth())
-                    .withEvaluationContext(timelineManagerRenderService.createEvaluationContext(timelineManagerAccessor.findIntersectingClipsData(position)))
+                    .withScale(scale)
+                    .withEvaluationContext(createEvaluationContext(position, width, height, scale))
                     .build();
             ReadOnlyClipImage frame = videoClip.getFrame(frameRequest);
 
@@ -110,6 +114,18 @@ public class TimelineImagePatternService {
         dragFilmEffect(expectedWidth, graphics);
 
         return byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
+    }
+
+    private EvaluationContext createEvaluationContext(TimelinePosition position, int width, int height, double scale) {
+        return timelineManagerRenderService.createEvaluationContext(timelineManagerAccessor.findIntersectingClipsData(position), createGlobalsMap(position, width, height, scale));
+    }
+
+    private Map<String, Object> createGlobalsMap(TimelinePosition position, int width, int height, double scale) {
+        return Map.of(
+                "time", position.getSeconds().doubleValue(),
+                "width", width,
+                "height", height,
+                "scale", scale);
     }
 
     private void dragFilmEffect(int timelineWidth, Graphics graphics) {

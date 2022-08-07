@@ -142,4 +142,8 @@ public class BezierPolygonProvider extends KeyframeableEffect<BezierPolygon> {
         this.useKeyframes = useKeyframes;
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return BezierPolygon.class;
+    }
 }

@@ -138,4 +138,6 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
         this.expression = expression;
     }
 
+    public abstract Class<?> getProvidedType();
+
 }

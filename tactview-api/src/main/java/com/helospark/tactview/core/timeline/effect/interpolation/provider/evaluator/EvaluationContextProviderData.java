@@ -7,6 +7,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 
 public class EvaluationContextProviderData {
     public Map<String, KeyframeableEffect<?>> data;
+    public Map<String, Object> globals;
 
     public EvaluationContextProviderData(Map<String, KeyframeableEffect<?>> data) {
         this.data = data;

@@ -82,4 +82,9 @@ public class DependentClipProvider extends KeyframeableEffect<String> {
         stringInterpolator.setUseKeyframes(useKeyframes);
     }
 
+    @Override
+    public Class<?> getProvidedType() {
+        return String.class;
+    }
+
 }

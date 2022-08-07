@@ -35,6 +35,14 @@ public class ValueProviderDescriptor {
         return name;
     }
 
+    public String getNameAsId() {
+        String result = name.toLowerCase().replaceAll("[^a-zA-Z0-9-]", "_");
+        if (result.charAt(0) >= '0' && result.charAt(0) <= '9') {
+            result = "_" + result;
+        }
+        return result;
+    }
+
     public KeyframeableEffect getKeyframeableEffect() {
         return keyframeableEffect;
     }
