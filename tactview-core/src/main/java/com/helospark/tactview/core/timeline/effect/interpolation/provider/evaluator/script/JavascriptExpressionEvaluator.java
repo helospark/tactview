@@ -107,7 +107,12 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
                 scriptEngineCache.offer(graalEngine);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            String message = e.getMessage();
+            if (message != null) {
+                message = message.replace("org.graalvm.polyglot.PolyglotException: ", "");
+            }
+            evaluationContext.addException(expression, message);
+            LOGGER.debug("Unable to evaluate script", e);
         }
 
         return functionResult;

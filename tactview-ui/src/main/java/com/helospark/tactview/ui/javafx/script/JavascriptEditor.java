@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Color;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.DoubleRange;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
@@ -13,7 +14,9 @@ import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Polygon;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Rectangle;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.script.JavascriptExpressionEvaluator;
+import com.helospark.tactview.ui.javafx.DisplayUpdateRequestMessage;
 import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
+import com.helospark.tactview.ui.javafx.UiMessagingService;
 import com.helospark.tactview.ui.javafx.repository.NameToIdRepository;
 import com.helospark.tactview.ui.javafx.stylesheet.StylesheetAdderService;
 
@@ -28,6 +31,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class JavascriptEditor {
@@ -36,20 +40,27 @@ public class JavascriptEditor {
     private JavascriptExpressionEvaluator javascriptExpressionEvaluator;
     private GlobalTimelinePositionHolder globalTimelinePositionHolder;
     private NameToIdRepository nameToIdRepository;
+    private UiMessagingService messagingService;
 
     private Stage stage;
     private TextArea textArea;
     boolean hasResult = true;
+    Button testButton;
     Label descriptionLabel;
+    Label exceptionLabel;
+    String originalExpression;
+    KeyframeableEffect<?> provider;
 
     public JavascriptEditor(StylesheetAdderService stylesheetAdderService, CachedFileContentReader cachedFileContentReader,
             ScriptVariablesStore scriptVariablesStore, JavascriptExpressionEvaluator javascriptExpressionEvaluator,
-            GlobalTimelinePositionHolder globalTimelinePositionHolder, NameToIdRepository nameToIdRepository) {
+            GlobalTimelinePositionHolder globalTimelinePositionHolder, NameToIdRepository nameToIdRepository,
+            UiMessagingService messagingService) {
         this.cachedFileContentReader = cachedFileContentReader;
         this.scriptVariablesStore = scriptVariablesStore;
         this.javascriptExpressionEvaluator = javascriptExpressionEvaluator;
         this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.nameToIdRepository = nameToIdRepository;
+        this.messagingService = messagingService;
 
         BorderPane root = new BorderPane();
         root.getStyleClass().add("dialog-root");
@@ -74,33 +85,56 @@ public class JavascriptEditor {
         ButtonBar buttonBar = new ButtonBar();
         Button saveAndClose = new Button("Save and close");
         saveAndClose.setOnAction(e -> {
+            provider.setExpression(originalExpression); // will be set elsewhere
             stage.close();
         });
         Button cancelButton = new Button("Cancel");
         cancelButton.setOnAction(e -> {
+            provider.setExpression(originalExpression);
             hasResult = false;
             stage.close();
         });
+        Button testButton = new Button("Test");
+        testButton.setOnAction(e -> {
+            provider.setExpression(textArea.getText()); // temporarily set
+            messagingService.sendAsyncMessage(new DisplayUpdateRequestMessage(true));
+        });
         stage.setOnCloseRequest(e -> {
+            provider.setExpression(originalExpression);
             hasResult = false;
         });
         buttonBar.getButtons().add(saveAndClose);
         buttonBar.getButtons().add(cancelButton);
+        buttonBar.getButtons().add(testButton);
 
         ButtonBar.setButtonData(saveAndClose, ButtonData.RIGHT);
         ButtonBar.setButtonData(cancelButton, ButtonData.LEFT);
+        ButtonBar.setButtonData(testButton, ButtonData.LEFT);
 
         root.setBottom(buttonBar);
 
+        VBox topBox = new VBox();
         descriptionLabel = new Label();
         descriptionLabel.getStyleClass().add("javascript-editor-description");
-        root.setTop(descriptionLabel);
+
+        exceptionLabel = new Label();
+        exceptionLabel.getStyleClass().add("javascript-exception");
+
+        topBox.getChildren().add(descriptionLabel);
+        topBox.getChildren().add(exceptionLabel);
+        root.setTop(topBox);
     }
 
-    public Optional<String> show(String initialData, Class<?> type) {
+    public Optional<String> show(Class<?> type, KeyframeableEffect<?> provider) {
+        this.provider = provider;
+        originalExpression = provider.getExpression();
         hasResult = true;
         textArea.setText("");
-        textArea.appendText(initialData);
+        if (originalExpression != null) {
+            textArea.appendText(originalExpression);
+        }
+
+        updateExceptionLabelForScript(originalExpression);
 
         String description = "Write Javascript that returns a " + type.getSimpleName() + "\n";
         description += "Either write a single expression or set a variable with name 'result'\n";
@@ -117,6 +151,17 @@ public class JavascriptEditor {
             return Optional.of(textArea.getText());
         }
 
+    }
+
+    private void updateExceptionLabelForScript(String initialData) {
+        EvaluationContext evaluationContext = scriptVariablesStore.getEvaluationContext();
+
+        if (evaluationContext != null) {
+            String exceptionForScript = evaluationContext.getExceptions().get(initialData);
+            exceptionLabel.setText(exceptionForScript);
+        } else {
+            exceptionLabel.setText("");
+        }
     }
 
     private void appendContextMenu(Class<?> type) {
@@ -283,6 +328,10 @@ public class JavascriptEditor {
         } else {
             return List.of("{...}", "{...}");
         }
+    }
+
+    public void onDisplayUpdated() {
+        updateExceptionLabelForScript(textArea.getText());
     }
 
 }

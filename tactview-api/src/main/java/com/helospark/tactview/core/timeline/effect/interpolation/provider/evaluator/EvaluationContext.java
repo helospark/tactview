@@ -11,6 +11,7 @@ public class EvaluationContext {
     private Map<String, EvaluationContextProviderData> providerData;
     private Map<String, Object> globals;
     private Map<String, Object> lastAvailableVariables = new HashMap<>();
+    private Map<String, String> exceptions = new HashMap<>();
     private ExpressionScriptEvaluator javascriptExpressionEvaluator;
 
     public EvaluationContext(Map<String, EvaluationContextProviderData> userSetData, ExpressionScriptEvaluator javascriptExpressionEvaluator,
@@ -28,9 +29,18 @@ public class EvaluationContext {
         return globals;
     }
 
+    public void addException(String script, String exception) {
+        exceptions.put(script, exception);
+    }
+
+    public Map<String, String> getExceptions() {
+        return exceptions;
+    }
+
     public EvaluationContext butWithClipId(String clipId) {
         EvaluationContext result = new EvaluationContext(providerData, javascriptExpressionEvaluator, globals);
         result.currentClipId = clipId;
+        result.exceptions = exceptions;
         return result;
     }
 

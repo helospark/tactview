@@ -702,3 +702,7 @@
 .javascript-editor-description {
     -fx-padding: 10px;
 }
+
+.javascript-exception {
+  -fx-text-fill: red;
+}

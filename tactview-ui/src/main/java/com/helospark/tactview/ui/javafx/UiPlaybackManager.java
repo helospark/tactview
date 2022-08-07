@@ -62,7 +62,8 @@ public class UiPlaybackManager {
     private DisplayUpdaterService displayUpdaterService;
     private UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository;
     private JavaByteArrayConverter javaByteArrayConverter;
-    private List<AudioPlayedListener> audioPlayedListeners; // TODO
+    private List<AudioPlayedListener> audioPlayedListeners;
+    private List<Runnable> displayRefreshedListeners = new ArrayList<>();
     private GlobalTimelinePositionHolder globalTimelinePositionHolder;
 
     private ScheduledExecutorService scheduledExecutorService;
@@ -258,7 +259,12 @@ public class UiPlaybackManager {
         TimelineLength length = new TimelineLength(projectRepository.getFrameTime());
         AudioVideoFragment audioVideoFragment = playbackFrameAccessor.getSingleAudioFrameAtPosition(currentPosition, false, Optional.of(length));
         notifyAudioListeners(audioVideoFragment);
+        notifyVideoListeners();
         audioVideoFragment.free();
+    }
+
+    private void notifyVideoListeners() {
+
     }
 
     public void stopPlayback() {
