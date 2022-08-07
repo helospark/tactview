@@ -50,19 +50,19 @@ public class PlaybackFrameAccessor {
         this.scriptVariablesStore = scriptVariablesStore;
     }
 
-    public JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition position, Optional<FrameSize> frameSize, boolean livePlayback, boolean isHalfEffect) {
-        ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(position, true, frameSize, livePlayback);
+    public JavaDisplayableAudioVideoFragment getVideoFrameAt(GetVideoFrameRequest parameterObject) {
+        ImageWithExpandedFramePositions imageWithEffects = getImageWithEffectEnabled(parameterObject.position, true, parameterObject.frameSize, parameterObject.livePlayback);
 
         ImageWithExpandedFramePositions result;
-        if (isHalfEffect) {
-            ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(position, false, frameSize, livePlayback);
+        if (parameterObject.isHalfEffect) {
+            ImageWithExpandedFramePositions javafxImageWithoutEffects = getImageWithEffectEnabled(parameterObject.position, false, parameterObject.frameSize, parameterObject.livePlayback);
             Image sharedImageResult = mergeImages(imageWithEffects.image, javafxImageWithoutEffects.image);
             result = new ImageWithExpandedFramePositions(sharedImageResult, imageWithEffects.clipRectangle);
         } else {
             result = imageWithEffects;
         }
 
-        LOGGER.debug("Frame at {} is loaded", position);
+        LOGGER.debug("Frame at {} is loaded", parameterObject.position);
 
         return new JavaDisplayableAudioVideoFragment(result.image, new byte[0], imageWithEffects.clipRectangle);
     }

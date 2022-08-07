@@ -220,7 +220,7 @@ public class DisplayUpdaterService {
 
     private JavaDisplayableAudioVideoFragment getVideoFrameAt(TimelinePosition currentPosition) {
         boolean halfEffect = uiPlaybackPreferenceRepository.isHalfEffect();
-        return playbackFrameAccessor.getVideoFrameAt(currentPosition, getFrameSize(), true, halfEffect);
+        return playbackFrameAccessor.getVideoFrameAt(new GetVideoFrameRequest(currentPosition, getFrameSize(), true, halfEffect));
     }
 
     private boolean canUseCacheAt(TimelinePosition currentPosition) {

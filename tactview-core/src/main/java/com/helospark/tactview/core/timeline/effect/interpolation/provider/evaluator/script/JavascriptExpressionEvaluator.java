@@ -55,7 +55,9 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
             if (result != null) {
                 if (toClass.equals(String.class)) {
                     functionResult = (T) String.valueOf(result);
-                } else if (toClass.equals(Integer.class) || toClass.equals(Double.class) || toClass.equals(Boolean.class)) {
+                } else if (toClass.equals(Integer.class)) {
+                    functionResult = (T) (Integer) (((Number) result).intValue());
+                } else if (toClass.equals(Double.class) || toClass.equals(Boolean.class)) {
                     functionResult = (T) result;
                 } else if (toClass.equals(Color.class)) {
                     Map map = (Map) result;

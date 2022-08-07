@@ -19,6 +19,7 @@ import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.B
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
+import com.helospark.tactview.ui.javafx.GetVideoFrameRequest;
 import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
 import com.helospark.tactview.ui.javafx.JavaDisplayableAudioVideoFragment;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
@@ -224,7 +225,7 @@ public class InputModeRepository implements CleanableMode {
                         .withUnscaledX(unmodifiedX)
                         .withUnscaledY(unmodifiedY)
                         .withCanvasImage(() -> {
-                            return playbackController.getVideoFrameAt(timelineManager.getCurrentPosition(), Optional.empty(), false, false).getImage();
+                            return playbackController.getVideoFrameAt(new GetVideoFrameRequest(timelineManager.getCurrentPosition(), Optional.empty(), false, false)).getImage();
                         })
                         .withCurrentlyPressedKeyRepository(currentlyPressedKeyRepository)
                         .build();

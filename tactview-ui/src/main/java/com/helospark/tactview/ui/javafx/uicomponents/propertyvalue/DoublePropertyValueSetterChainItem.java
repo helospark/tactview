@@ -12,17 +12,18 @@ import com.helospark.tactview.core.timeline.effect.interpolation.hint.SliderValu
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
-import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ExpressionChangedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.helpers.ErrorIgnoringNumberStringConverter;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.util.StringConverter;
-import javafx.util.converter.NumberStringConverter;
 
 @Component
 public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<DoubleProvider> {
@@ -30,14 +31,17 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
     private EffectParametersRepository effectParametersRepository;
     private GlobalTimelinePositionHolder timelineManager;
     private ContextMenuAppender contextMenuAppender;
+    private ErrorIgnoringNumberStringConverter errorIgnoringNumberStringConverter;
 
     public DoublePropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, GlobalTimelinePositionHolder timelineManager, ContextMenuAppender contextMenuAppender) {
+            UiCommandInterpreterService commandInterpreter, GlobalTimelinePositionHolder timelineManager, ContextMenuAppender contextMenuAppender,
+            ErrorIgnoringNumberStringConverter errorIgnoringNumberStringConverter) {
         super(DoubleProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
         this.contextMenuAppender = contextMenuAppender;
+        this.errorIgnoringNumberStringConverter = errorIgnoringNumberStringConverter;
     }
 
     @Override
@@ -57,22 +61,26 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
             slider.setMax(doubleProvider.getMax());
             slider.setShowTickLabels(true);
             slider.setShowTickMarks(true);
-            StringConverter<Number> converter = new NumberStringConverter();
+            StringConverter<Number> converter = errorIgnoringNumberStringConverter;
             Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
             slider.valueProperty().addListener((o, old, newValue) -> {
-                if (slider.isValueChanging()) {
-                    userChangedValueObservable.setValue(String.valueOf(newValue), true);
+                if (doubleProvider.getExpression() == null) {
+                    if (slider.isValueChanging()) {
+                        userChangedValueObservable.setValue(String.valueOf(newValue), true);
+                    }
                 }
             });
             slider.valueChangingProperty().addListener((abs, oldVal, newVal) -> {
-                if (newVal == false) {
-                    String startValue = (String) slider.getUserData();
-                    if (startValue != null) {
-                        userChangedValueObservable.setValueWithRevertablePreviousValue(String.valueOf(slider.getValue()), startValue);
+                if (doubleProvider.getExpression() == null) {
+                    if (newVal == false) {
+                        String startValue = (String) slider.getUserData();
+                        if (startValue != null) {
+                            userChangedValueObservable.setValueWithRevertablePreviousValue(String.valueOf(slider.getValue()), startValue);
+                        }
+                        slider.setUserData(null);
+                    } else {
+                        slider.setUserData(String.valueOf(slider.getValue()));
                     }
-                    slider.setUserData(null);
-                } else {
-                    slider.setUserData(String.valueOf(slider.getValue()));
                 }
             });
             hbox.getChildren().add(slider);
@@ -83,12 +91,16 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withDescriptorId(doubleProvider.getId())
                 .withUpdateFunction(position -> {
                     if (!textField.isFocused()) { // otherwise user may want to type
-                        String current = doubleProviderValueToString(doubleProvider.getId(), position);
-                        textField.setText(current);
-                        if (effectParametersRepository.isKeyframeAt(doubleProvider.getId(), position)) {
-                            textField.getStyleClass().add("on-keyframe");
+                        if (doubleProvider.getExpression() == null) {
+                            String current = doubleProviderValueToString(doubleProvider.getId(), position);
+                            textField.setText(current);
+                            if (effectParametersRepository.isKeyframeAt(doubleProvider.getId(), position)) {
+                                textField.getStyleClass().add("on-keyframe");
+                            } else {
+                                textField.getStyleClass().removeAll("on-keyframe");
+                            }
                         } else {
-                            textField.getStyleClass().removeAll("on-keyframe");
+                            textField.setText(doubleProvider.getExpression());
                         }
                     }
                 })
@@ -105,7 +117,11 @@ public class DoublePropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                             .withRevertable(true)
                             .build();
 
-                    commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                    if (doubleProvider.getExpression() != null) {
+                        commandInterpreter.sendWithResult(new ExpressionChangedForPropertyCommand(effectParametersRepository, keyframeRequest));
+                    } else {
+                        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                    }
                 })
                 .build();
 

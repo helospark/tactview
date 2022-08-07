@@ -11,17 +11,18 @@ import com.helospark.tactview.core.timeline.effect.interpolation.hint.RenderType
 import com.helospark.tactview.core.timeline.effect.interpolation.hint.SliderValueType;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.IntegerProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
-import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.GlobalTimelinePositionHolder;
+import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.commands.impl.AddKeyframeForPropertyCommand;
+import com.helospark.tactview.ui.javafx.commands.impl.ExpressionChangedForPropertyCommand;
 import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.contextmenu.ContextMenuAppender;
+import com.helospark.tactview.ui.javafx.uicomponents.propertyvalue.helpers.ErrorIgnoringNumberStringConverter;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.util.StringConverter;
-import javafx.util.converter.NumberStringConverter;
 
 @Component
 public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueSetterChainItem<IntegerProvider> {
@@ -29,14 +30,17 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     private final EffectParametersRepository effectParametersRepository;
     private final GlobalTimelinePositionHolder timelineManager;
     private final ContextMenuAppender contextMenuAppender;
+    private final ErrorIgnoringNumberStringConverter errorIgnoringNumberStringConverter;
 
     public IntegerPropertyValueSetterChainItem(EffectParametersRepository effectParametersRepository,
-            UiCommandInterpreterService commandInterpreter, GlobalTimelinePositionHolder timelineManager, ContextMenuAppender contextMenuAppender) {
+            UiCommandInterpreterService commandInterpreter, GlobalTimelinePositionHolder timelineManager, ContextMenuAppender contextMenuAppender,
+            ErrorIgnoringNumberStringConverter errorIgnoringNumberStringConverter) {
         super(IntegerProvider.class);
         this.commandInterpreter = commandInterpreter;
         this.effectParametersRepository = effectParametersRepository;
         this.timelineManager = timelineManager;
         this.contextMenuAppender = contextMenuAppender;
+        this.errorIgnoringNumberStringConverter = errorIgnoringNumberStringConverter;
     }
 
     @Override
@@ -86,7 +90,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 userChangedValueObservable.setValue(String.valueOf(slider.getValue()), true);
             });
 
-            StringConverter<Number> converter = new NumberStringConverter();
+            StringConverter<Number> converter = errorIgnoringNumberStringConverter;
             Bindings.bindBidirectional(textField.textProperty(), slider.valueProperty(), converter);
 
             hbox.getChildren().add(slider);
@@ -96,13 +100,17 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                 .withCurrentValueProvider(() -> Integer.valueOf(textField.getText()))
                 .withDescriptorId(integerProvider.getId())
                 .withUpdateFunction(position -> {
-                    if (!textField.isFocused()) {
-                        textField.setText(integerProviderValueToString(integerProvider, position));
-                    }
-                    if (effectParametersRepository.isKeyframeAt(integerProvider.getId(), position)) {
-                        textField.getStyleClass().add("on-keyframe");
+                    if (integerProvider.getExpression() == null) {
+                        if (!textField.isFocused()) {
+                            textField.setText(integerProviderValueToString(integerProvider, position));
+                        }
+                        if (effectParametersRepository.isKeyframeAt(integerProvider.getId(), position)) {
+                            textField.getStyleClass().add("on-keyframe");
+                        } else {
+                            textField.getStyleClass().removeAll("on-keyframe");
+                        }
                     } else {
-                        textField.getStyleClass().removeAll("on-keyframe");
+                        textField.setText(integerProvider.getExpression());
                     }
                 })
                 .withDescriptor(descriptor)
@@ -116,8 +124,11 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
                             .withValue(Integer.valueOf(textField.getText()))
                             .withRevertable(true)
                             .build();
-
-                    commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                    if (integerProvider.getExpression() == null) {
+                        commandInterpreter.sendWithResult(new AddKeyframeForPropertyCommand(effectParametersRepository, keyframeRequest));
+                    } else {
+                        commandInterpreter.sendWithResult(new ExpressionChangedForPropertyCommand(effectParametersRepository, keyframeRequest));
+                    }
                 })
                 .build();
 
