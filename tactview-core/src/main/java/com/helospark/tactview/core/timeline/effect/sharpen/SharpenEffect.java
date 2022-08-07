@@ -44,8 +44,8 @@ public class SharpenEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
 
-        int blurRadius = blurRadiusProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
-        double strength = strengthProvider.getValueAt(request.getEffectPosition());
+        int blurRadius = blurRadiusProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 2 + 1;
+        double strength = strengthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         OpenCVSharpenRequest sharpenRequest = new OpenCVSharpenRequest();
         sharpenRequest.width = request.getCurrentFrame().getWidth();

@@ -56,6 +56,7 @@ public class AudioLongProcessRunnableFactory {
                             .withNumberOfChannels(projectRepository.getNumberOfChannels())
                             .withPosition(currentPosition)
                             .withSampleRate(projectRepository.getSampleRate())
+                            .withEvaluationContext(null) // TODO: fix
                             .build();
 
                     AudioFrameResult frameResult = clip.requestAudioFrame(frameRequest);

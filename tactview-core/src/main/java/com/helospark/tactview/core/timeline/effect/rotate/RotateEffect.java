@@ -38,7 +38,7 @@ public class RotateEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        double degrees = angleProvider.getValueAt(request.getClipPosition());
+        double degrees = angleProvider.getValueAt(request.getClipPosition(), request.getEvaluationContext());
 
         RotateServiceRequest serviceRequest = RotateServiceRequest.builder()
                 .withAngle(degrees)

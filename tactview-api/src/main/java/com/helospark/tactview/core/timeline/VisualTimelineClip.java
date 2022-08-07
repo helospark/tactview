@@ -30,6 +30,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.provider.Double
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.PointProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.SizeFunction;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.effect.transition.AbstractVideoTransitionEffect;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.ReflectionUtil;
@@ -80,6 +81,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                 .withLowResolutionPreview(request.isLowResolutionPreview())
                 .withLivePlayback(request.isLivePlayback())
                 .withScale(scale)
+                .withEvaluationContext(request.getEvaluationContext())
                 .build();
 
         ReadOnlyClipImage frameResult = requestFrame(frameRequest);
@@ -88,7 +90,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
     }
 
     protected TimelinePosition calculatePositionToRender(GetFrameRequest request) {
-        boolean reverse = reverseTimeProvider.getValueAt(TimelinePosition.ofZero());
+        boolean reverse = reverseTimeProvider.getValueAt(TimelinePosition.ofZero(), request.getEvaluationContext());
 
         TimelinePosition relativePosition = request.calculateRelativePositionFrom(this);
 
@@ -117,6 +119,7 @@ public abstract class VisualTimelineClip extends TimelineClip {
                             .withRequestedChannelClips(frameRequest.getRequestedChannelClips())
                             .withCurrentTimelineClip(this)
                             .withEffectChannel(effectChannelIndex)
+                            .withEvaluationContext(frameRequest.getEvaluationContext())
                             .build();
 
                     ReadOnlyClipImage appliedEffectsResult = effect.createFrameExternal(request);
@@ -141,19 +144,19 @@ public abstract class VisualTimelineClip extends TimelineClip {
     public abstract VisualMediaMetadata getMediaMetadata();
 
     public int getXPosition(GetPositionParameters parameterObject) {
-        return (int) (translatePointProvider.getValueAt(parameterObject.getTimelinePosition()).x * parameterObject.getScale());
+        return (int) (translatePointProvider.getValueAt(parameterObject.getTimelinePosition(), parameterObject.getEvaluationContext()).x * parameterObject.getScale());
     }
 
     public int getYPosition(GetPositionParameters parameterObject) {
-        return (int) (translatePointProvider.getValueAt(parameterObject.getTimelinePosition()).y * parameterObject.getScale());
+        return (int) (translatePointProvider.getValueAt(parameterObject.getTimelinePosition(), parameterObject.getEvaluationContext()).y * parameterObject.getScale());
     }
 
-    public BiFunction<Integer, Integer, Integer> getVerticalAlignment(TimelinePosition timelinePosition) {
-        return verticallyCenteredProvider.getValueAt(timelinePosition).getFunction();
+    public BiFunction<Integer, Integer, Integer> getVerticalAlignment(TimelinePosition timelinePosition, EvaluationContext evaluationContext) {
+        return verticallyCenteredProvider.getValueAt(timelinePosition, evaluationContext).getFunction();
     }
 
-    public BiFunction<Integer, Integer, Integer> getHorizontalAlignment(TimelinePosition timelinePosition) {
-        return horizontallyCenteredProvider.getValueAt(timelinePosition).getFunction();
+    public BiFunction<Integer, Integer, Integer> getHorizontalAlignment(TimelinePosition timelinePosition, EvaluationContext evaluationContext) {
+        return horizontallyCenteredProvider.getValueAt(timelinePosition, evaluationContext).getFunction();
     }
 
     @Override
@@ -251,17 +254,17 @@ public abstract class VisualTimelineClip extends TimelineClip {
 
     @Override
     public boolean isEnabled(TimelinePosition position) {
-        return enabledProvider.getValueAt(position);
+        return enabledProvider.getValueWithoutScriptAt(position);
     }
 
-    public double getAlpha(TimelinePosition position) {
-        return globalClipAlphaProvider.getValueAt(position);
+    public double getAlpha(TimelinePosition position, EvaluationContext evaluationContext) {
+        return globalClipAlphaProvider.getValueAt(position, evaluationContext);
     }
 
-    public BlendModeStrategy getBlendModeAt(TimelinePosition position) {
+    public BlendModeStrategy getBlendModeAt(TimelinePosition position, EvaluationContext evaluationContext) {
         TimelinePosition relativePosition = position.from(this.interval.getStartPosition());
         relativePosition = relativePosition.add(renderOffset);
-        return blendModeProvider.getValueAt(relativePosition).getBlendMode();
+        return blendModeProvider.getValueAt(relativePosition, evaluationContext).getBlendMode();
     }
 
     @Override

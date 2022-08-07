@@ -22,7 +22,7 @@ public class ModifyKeyframeForPropertyCommand implements UiCommand {
     public void execute() {
         keyframeableEffect = effectParametersRepository.getKeyframeableEffect(request.getDescriptorId());
 
-        previousValue = keyframeableEffect.getValueAt(request.getOriginalTimelinePosition());
+        previousValue = keyframeableEffect.getValueWithoutScriptAt(request.getOriginalTimelinePosition());
         if (previousValue != null && keyframeableEffect != null) {
 
             KeyframeAddedRequest addKeyframeRequest = KeyframeAddedRequest

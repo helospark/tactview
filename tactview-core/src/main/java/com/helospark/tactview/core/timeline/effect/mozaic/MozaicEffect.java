@@ -46,8 +46,8 @@ public class MozaicEffect extends StatelessVideoEffect {
         int width = result.getWidth();
         int height = result.getHeight();
 
-        double xMultiplier = xProvider.getValueAt(request.getEffectPosition());
-        double yMultiplier = yProvider.getValueAt(request.getEffectPosition());
+        double xMultiplier = xProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double yMultiplier = yProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             double normalizedX = (((double) x / width) * xMultiplier);

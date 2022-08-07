@@ -46,7 +46,7 @@ public class MirrorLineEffect extends StatelessVideoEffect {
 
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
-        InterpolationLine line = lineProvider.getValueAt(request.getEffectPosition());
+        InterpolationLine line = lineProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         int width = currentFrame.getWidth();
         int height = currentFrame.getHeight();

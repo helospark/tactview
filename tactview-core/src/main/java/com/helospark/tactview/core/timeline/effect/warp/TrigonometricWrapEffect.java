@@ -47,12 +47,12 @@ public class TrigonometricWrapEffect extends StatelessVideoEffect {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
-        double amplitudeX = amplitudeProviderX.getValueAt(request.getEffectPosition());
-        double amplitudeY = amplitudeProviderY.getValueAt(request.getEffectPosition());
-        double frequencyX = frequencyProviderX.getValueAt(request.getEffectPosition());
-        double frequencyY = frequencyProviderY.getValueAt(request.getEffectPosition());
+        double amplitudeX = amplitudeProviderX.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double amplitudeY = amplitudeProviderY.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double frequencyX = frequencyProviderX.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double frequencyY = frequencyProviderY.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         double millisecIntoEffect = request.getEffectPosition().getSeconds().multiply(BigDecimal.valueOf(1000)).doubleValue();
-        double progress = millisecIntoEffect * waveSpeedProvider.getValueAt(request.getEffectPosition());
+        double progress = millisecIntoEffect * waveSpeedProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         independentPixelOperation.executePixelTransformation(currentFrame.getWidth(), currentFrame.getHeight(), (x, y) -> {
             double deltaX = amplitudeX * Math.sin(Math.toRadians(x * frequencyX + y * frequencyY + progress)) * request.getScale();

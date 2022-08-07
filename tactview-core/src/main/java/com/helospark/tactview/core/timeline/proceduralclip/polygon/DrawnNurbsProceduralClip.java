@@ -62,20 +62,20 @@ public class DrawnNurbsProceduralClip extends ProceduralVisualClip {
     @Override
     public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
-        double progress = drawPercentageProvider.getValueAt(relativePosition);
+        double progress = drawPercentageProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition) * request.getScale());
+        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale());
         if (brushSize < 1) {
             brushSize = 1;
         }
 
-        Polygon polygon = polygonProvider.getValueAt(relativePosition).multiplyPoints(new Point(request.getExpectedWidth(), request.getExpectedHeight()));
+        Polygon polygon = polygonProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyPoints(new Point(request.getExpectedWidth(), request.getExpectedHeight()));
 
-        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr");
+        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr", request.getEvaluationContext());
 
-        Color color = colorProvider.getValueAt(relativePosition);
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        boolean close = closeProvider.getValueAt(relativePosition);
+        boolean close = closeProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         DrawLineRequest drawLineRequest = DrawLineRequest.builder()
                 .withBrushFilePath(brushFilePath)

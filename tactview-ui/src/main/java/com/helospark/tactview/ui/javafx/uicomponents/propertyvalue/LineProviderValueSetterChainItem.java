@@ -77,7 +77,7 @@ public class LineProviderValueSetterChainItem extends TypeBasedPropertyValueSett
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                InterpolationLine previousValue = lineProvider.getValueAt(globalTimelinePositionHolder.getCurrentPosition());
+                InterpolationLine previousValue = lineProvider.getValueWithoutScriptAt(globalTimelinePositionHolder.getCurrentPosition());
                 inputModeRepository.requestLine(line -> {
                     boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
 

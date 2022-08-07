@@ -82,7 +82,7 @@ public class RectangleProviderValueSetterChainItem extends TypeBasedPropertyValu
 
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                Rectangle previousValue = rectangleProvider.getValueAt(globalTimelinePositionHolder.getCurrentPosition());
+                Rectangle previousValue = rectangleProvider.getValueWithoutScriptAt(globalTimelinePositionHolder.getCurrentPosition());
                 inputModeRepository.requestRectangle(rectangle -> {
                     boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
 

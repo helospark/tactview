@@ -76,16 +76,16 @@ public class CausticProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        Random random = new Random(seedProvider.getValueAt(relativePosition));
+        Random random = new Random(seedProvider.getValueAt(relativePosition, request.getEvaluationContext()));
 
-        double scale = scaleProvider.getValueAt(relativePosition) * request.getScale();
-        double amount = amountProvider.getValueAt(relativePosition);
-        double turbulence = turbulenceProvider.getValueAt(relativePosition);
-        double dispersion = dispersionProvider.getValueAt(relativePosition);
-        double time = timeProvider.getValueAt(relativePosition);
-        int brightness = brightnessProvider.getValueAt(relativePosition);
-        int samples = samplesProvider.getValueAt(relativePosition);
-        Color bgColor = backgroundColorProvider.getValueAt(relativePosition).multiplyComponents(255);
+        double scale = scaleProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale();
+        double amount = amountProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double turbulence = turbulenceProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double dispersion = dispersionProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double time = timeProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        int brightness = brightnessProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        int samples = samplesProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        Color bgColor = backgroundColorProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255);
 
         int v = brightness / samples;
         if (v == 0)

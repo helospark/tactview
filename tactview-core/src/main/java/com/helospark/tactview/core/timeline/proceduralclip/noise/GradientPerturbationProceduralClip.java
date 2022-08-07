@@ -53,15 +53,15 @@ public class GradientPerturbationProceduralClip extends ProceduralVisualClip {
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         PerturbationRequestParameter perturbationRequest = PerturbationRequestParameter.builder()
-                .withColorScale(colorScaleProvider.getValueAt(relativePosition))
-                .withFrequency((frequencyProvider.getValueAt(relativePosition).floatValue()))
-                .withGradientPerturb(gradientPerturbationAmplifier.getValueAt(relativePosition).floatValue())
+                .withColorScale(colorScaleProvider.getValueAt(relativePosition, request.getEvaluationContext()))
+                .withFrequency((frequencyProvider.getValueAt(relativePosition, request.getEvaluationContext()).floatValue()))
+                .withGradientPerturb(gradientPerturbationAmplifier.getValueAt(relativePosition, request.getEvaluationContext()).floatValue())
                 .withHeight(request.getExpectedHeight())
-                .withIsFractal(isFractalProvider.getValueAt(relativePosition))
-                .withSeed(seedProvider.getValueAt(relativePosition))
-                .withStartPoint(startPointProvider.getValueAt(relativePosition))
+                .withIsFractal(isFractalProvider.getValueAt(relativePosition, request.getEvaluationContext()))
+                .withSeed(seedProvider.getValueAt(relativePosition, request.getEvaluationContext()))
+                .withStartPoint(startPointProvider.getValueAt(relativePosition, request.getEvaluationContext()))
                 .withWidth(request.getExpectedWidth())
-                .withZPos(zPositionProvider.getValueAt(relativePosition).floatValue())
+                .withZPos(zPositionProvider.getValueAt(relativePosition, request.getEvaluationContext()).floatValue())
                 .build();
         return perturbationNoiseService.createPerturbation(perturbationRequest);
     }

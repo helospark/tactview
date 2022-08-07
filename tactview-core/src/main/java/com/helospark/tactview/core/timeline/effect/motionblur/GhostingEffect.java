@@ -53,9 +53,9 @@ public class GhostingEffect extends StatelessVideoEffect {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         ClipImage result = ClipImage.sameSizeAs(currentFrame);
 
-        double endAlpha = alphaProvider.getValueAt(request.getEffectPosition());
-        int numberOfGhosts = numberOfGhostProvider.getValueAt(request.getEffectPosition());
-        double timeStep = ghostTimeProvider.getValueAt(request.getEffectPosition());
+        double endAlpha = alphaProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        int numberOfGhosts = numberOfGhostProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double timeStep = ghostTimeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         BigDecimal timeBetweenGhosts = BigDecimal.valueOf(timeStep);
 

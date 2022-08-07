@@ -41,8 +41,8 @@ public class OffsetEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        double offsetXValue = xOffsetProvider.getValueAt(request.getEffectPosition()) % 1.0;
-        double offsetYValue = yOffsetProvider.getValueAt(request.getEffectPosition()) % 1.0;
+        double offsetXValue = xOffsetProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) % 1.0;
+        double offsetYValue = yOffsetProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) % 1.0;
         int offsetX = (int) (offsetXValue * request.getCanvasWidth());
         int offsetY = (int) (offsetYValue * request.getCanvasHeight());
 

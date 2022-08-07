@@ -81,7 +81,7 @@ public class AdjustmentLayerProceduralClip extends ProceduralVisualClip {
     }
 
     public boolean shouldHideBelowClips(TimelinePosition position) {
-        return hideBelowClipsProvider.getValueAt(position);
+        return hideBelowClipsProvider.getValueWithoutScriptAt(position);
     }
 
 }

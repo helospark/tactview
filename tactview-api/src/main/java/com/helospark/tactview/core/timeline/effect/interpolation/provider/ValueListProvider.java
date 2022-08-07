@@ -30,7 +30,7 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
     }
 
     @Override
-    public T getValueAt(TimelinePosition position) {
+    public T getValueWithoutScriptAt(TimelinePosition position) {
         String id = stringInterpolator.valueAt(position);
         return elements.get(id);
     }
@@ -40,12 +40,12 @@ public class ValueListProvider<T extends ValueListElement> extends KeyframeableE
         if (expression != null && evaluationContext != null) {
             String expressionResult = evaluationContext.evaluateExpression(expression, position, String.class);
             if (expressionResult == null || elements.get(expressionResult) == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return elements.get(expressionResult);
             }
         } else {
-            return getValueAt(position);
+            return getValueWithoutScriptAt(position);
         }
     }
 

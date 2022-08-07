@@ -62,11 +62,11 @@ public class AsciiArtEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        int characterSize = MathUtil.clampToInt(characterHeightProvider.getValueAt(request.getEffectPosition()) * request.getScale(), 2, 200);
+        int characterSize = MathUtil.clampToInt(characterHeightProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale(), 2, 200);
 
         AsciiImgCache smallFontCache = AsciiImgCache.create(new Font("Courier", Font.BOLD, characterSize));
         BufferedImage input = byteBufferToImageConverter.frameToBufferedImage(request.getCurrentFrame());
-        BestCharacterFitStrategy squareErrorStrategy = characterFitStrategies.get(characterFitStrategy.getValueAt(request.getEffectPosition()).getId());
+        BestCharacterFitStrategy squareErrorStrategy = characterFitStrategies.get(characterFitStrategy.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getId());
 
         AsciiToImageConverter imageConverter = new AsciiToImageConverter(smallFontCache, squareErrorStrategy);
         imageConverter.setCharacterCache(smallFontCache);

@@ -22,25 +22,23 @@ public class RectangleProvider extends CompositeKeyframeableEffect<Rectangle> {
     }
 
     @Override
-    public Rectangle getValueAt(TimelinePosition position) {
-        List<Point> points = pointProviders.stream()
-                .map(provider -> provider.getValueAt(position))
-                .collect(Collectors.toList());
-        return new Rectangle(points);
+    public Rectangle getValueWithoutScriptAt(TimelinePosition position) {
+        return getValueAt(position, null);
     }
 
     @Override
     public Rectangle getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        Rectangle result = null;
         if (expression != null && evaluationContext != null) {
-            Rectangle expressionResult = evaluationContext.evaluateExpression(expression, position, Rectangle.class);
-            if (expressionResult == null) {
-                return getValueAt(position);
-            } else {
-                return expressionResult;
-            }
-        } else {
-            return getValueAt(position);
+            result = evaluationContext.evaluateExpression(expression, position, Rectangle.class);
         }
+        if (result == null) {
+            List<Point> points = pointProviders.stream()
+                    .map(provider -> provider.getValueAt(position, evaluationContext))
+                    .collect(Collectors.toList());
+            result = new Rectangle(points);
+        }
+        return result;
     }
 
     @Override

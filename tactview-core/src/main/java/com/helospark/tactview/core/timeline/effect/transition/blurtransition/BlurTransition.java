@@ -45,7 +45,7 @@ public class BlurTransition extends AbstractVideoTransitionEffect {
         ClipImage result = ClipImage.sameSizeAs(transitionRequest.getFirstFrame());
 
         ReadOnlyClipImage currentFrame;
-        double maxValue = maxBlurProvider.getValueAt(transitionRequest.getEffectPosition()) / transitionRequest.getScale();
+        double maxValue = maxBlurProvider.getValueAt(transitionRequest.getEffectPosition(), transitionRequest.getEvaluationContext()) / transitionRequest.getScale();
         int blurValue;
         if (progress < 0.5) {
             currentFrame = transitionRequest.getFirstFrame();

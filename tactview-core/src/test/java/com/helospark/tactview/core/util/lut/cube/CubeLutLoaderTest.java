@@ -2,8 +2,7 @@ package com.helospark.tactview.core.util.lut.cube;
 
 import static com.helospark.tactview.core.util.TestUtil.assertTripletEquals;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,16 +35,16 @@ public class CubeLutLoaderTest {
         AbstractCubeLut result = underTest.readLut(file);
 
         // THEN
-        assertTrue(result instanceof CubeLut1d);
+        assertThat(result instanceof CubeLut1d, is(true));
         assertThat(result.size, is(3));
         assertThat(result.title, is("Demo"));
-        assertTripletEquals(result.lowerBound, new float[]{0.0f, 0.0f, 0.0f});
-        assertTripletEquals(result.upperBound, new float[]{1.0f, 2.0f, 3.0f});
+        assertTripletEquals(result.lowerBound, new float[] { 0.0f, 0.0f, 0.0f });
+        assertTripletEquals(result.upperBound, new float[] { 1.0f, 2.0f, 3.0f });
         assertThat(((CubeLut1d) result).values.length, is(3));
 
-        assertTripletEquals(((CubeLut1d) result).values[0], new float[]{0.0f, 0.0f, 0.0f});
-        assertTripletEquals(((CubeLut1d) result).values[1], new float[]{0.5f, 1.0f, 1.5f});
-        assertTripletEquals(((CubeLut1d) result).values[2], new float[]{1.0f, 1.0f, 1.0f});
+        assertTripletEquals(((CubeLut1d) result).values[0], new float[] { 0.0f, 0.0f, 0.0f });
+        assertTripletEquals(((CubeLut1d) result).values[1], new float[] { 0.5f, 1.0f, 1.5f });
+        assertTripletEquals(((CubeLut1d) result).values[2], new float[] { 1.0f, 1.0f, 1.0f });
     }
 
     @Test
@@ -57,14 +56,14 @@ public class CubeLutLoaderTest {
         AbstractCubeLut result = underTest.readLut(file);
 
         // THEN
-        assertTrue(result instanceof CubeLut1d);
+        assertThat(result instanceof CubeLut1d, is(true));
         assertThat(result.size, is(32));
-        assertTripletEquals(result.lowerBound, new float[]{0.0f, 0.0f, 0.0f});
-        assertTripletEquals(result.upperBound, new float[]{1.0f, 1.0f, 1.0f});
+        assertTripletEquals(result.lowerBound, new float[] { 0.0f, 0.0f, 0.0f });
+        assertTripletEquals(result.upperBound, new float[] { 1.0f, 1.0f, 1.0f });
         assertThat(((CubeLut1d) result).values.length, is(32));
 
-        assertTripletEquals(((CubeLut1d) result).values[0], new float[]{0.0004883f, 0.0004883f, 0.0004883f});
-        assertTripletEquals(((CubeLut1d) result).values[31], new float[]{704.3f, 704.3f, 704.3f});
+        assertTripletEquals(((CubeLut1d) result).values[0], new float[] { 0.0004883f, 0.0004883f, 0.0004883f });
+        assertTripletEquals(((CubeLut1d) result).values[31], new float[] { 704.3f, 704.3f, 704.3f });
     }
 
     @ParameterizedTest
@@ -85,10 +84,10 @@ public class CubeLutLoaderTest {
     @ParameterizedTest
     private static Stream<Arguments> inputDataFor1dLogLut() {
         return Stream.of(
-                Arguments.of(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0004883f, 0.0004883f, 0.0004883f}),
-                Arguments.of(new float[]{0.51612903f, 0.51612903f, 0.51612903f}, new float[]{0.7371f, 0.7371f, 0.7371f}),
-                Arguments.of(new float[]{1.0f, 1.0f, 1.0f}, new float[]{704.3f, 704.3f, 704.3f}),
-                Arguments.of(new float[]{0.016129032f, 0.016129032f, 0.016129032f}, new float[]{0.00062985f, 0.00062985f, 0.00062985f}));
+                Arguments.of(new float[] { 0.0f, 0.0f, 0.0f }, new float[] { 0.0004883f, 0.0004883f, 0.0004883f }),
+                Arguments.of(new float[] { 0.51612903f, 0.51612903f, 0.51612903f }, new float[] { 0.7371f, 0.7371f, 0.7371f }),
+                Arguments.of(new float[] { 1.0f, 1.0f, 1.0f }, new float[] { 704.3f, 704.3f, 704.3f }),
+                Arguments.of(new float[] { 0.016129032f, 0.016129032f, 0.016129032f }, new float[] { 0.00062985f, 0.00062985f, 0.00062985f }));
     }
 
     @Test
@@ -100,14 +99,14 @@ public class CubeLutLoaderTest {
         AbstractCubeLut result = underTest.readLut(file);
 
         // THEN
-        assertTrue(result instanceof CubeLut3d);
+        assertThat(result instanceof CubeLut3d, is(true));
         assertThat(result.size, is(2));
-        assertTripletEquals(result.lowerBound, new float[]{0.0f, 0.0f, 0.0f});
-        assertTripletEquals(result.upperBound, new float[]{1.0f, 1.0f, 1.0f});
+        assertTripletEquals(result.lowerBound, new float[] { 0.0f, 0.0f, 0.0f });
+        assertTripletEquals(result.upperBound, new float[] { 1.0f, 1.0f, 1.0f });
 
-        assertTripletEquals(((CubeLut3d) result).values[0][0][0], new float[]{0.0f, 0.0f, 0.0f});
-        assertTripletEquals(((CubeLut3d) result).values[0][0][1], new float[]{1.0f, 0.0f, 0.0f});
-        assertTripletEquals(((CubeLut3d) result).values[1][1][1], new float[]{1.0f, 1.0f, 1.0f});
+        assertTripletEquals(((CubeLut3d) result).values[0][0][0], new float[] { 0.0f, 0.0f, 0.0f });
+        assertTripletEquals(((CubeLut3d) result).values[0][0][1], new float[] { 1.0f, 0.0f, 0.0f });
+        assertTripletEquals(((CubeLut3d) result).values[1][1][1], new float[] { 1.0f, 1.0f, 1.0f });
     }
 
     @ParameterizedTest
@@ -128,9 +127,9 @@ public class CubeLutLoaderTest {
     @ParameterizedTest
     private static Stream<Arguments> inputDataFor3dLut() {
         return Stream.of(
-                Arguments.of(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f}),
-                Arguments.of(new float[]{1.0f, 1.0f, 1.0f}, new float[]{1.0f, 1.0f, 1.0f}),
-                Arguments.of(new float[]{0.0f, 0.0f, 0.5f}, new float[]{0.0f, 0.125f, 0.5f}));
+                Arguments.of(new float[] { 0.0f, 0.0f, 0.0f }, new float[] { 0.0f, 0.0f, 0.0f }),
+                Arguments.of(new float[] { 1.0f, 1.0f, 1.0f }, new float[] { 1.0f, 1.0f, 1.0f }),
+                Arguments.of(new float[] { 0.0f, 0.0f, 0.5f }, new float[] { 0.0f, 0.125f, 0.5f }));
     }
 
 }

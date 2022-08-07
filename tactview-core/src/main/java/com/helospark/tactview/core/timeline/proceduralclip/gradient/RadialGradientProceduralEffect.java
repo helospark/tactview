@@ -55,15 +55,15 @@ public class RadialGradientProceduralEffect extends ProceduralVisualClip {
 
     @Override
     public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        InterpolationLine line = lineProvider.getValueAt(relativePosition);
+        InterpolationLine line = lineProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         Point startPositionInPixels = line.start.multiply(request.getExpectedWidth(), request.getExpectedHeight());
         Point endPositionInPixels = line.end.multiply(request.getExpectedWidth(), request.getExpectedHeight());
         Point center = startPositionInPixels.center(endPositionInPixels);
         double radius = startPositionInPixels.distanceFrom(center);
-        Color startColor = startColorProvider.getValueAt(relativePosition);
-        Color endColor = endColorProvider.getValueAt(relativePosition);
-        double innerSaturation = innerSaturationDiameterProvider.getValueAt(relativePosition);
+        Color startColor = startColorProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        Color endColor = endColorProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double innerSaturation = innerSaturationDiameterProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         RadialGradientRequest gradientRequest = RadialGradientRequest.builder()
                 .withCenter(center)

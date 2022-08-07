@@ -75,7 +75,7 @@ public class ChannelCopyProceduralClip extends ProceduralVisualClip {
     @Override
     protected List<String> getChannelDependency(TimelinePosition position) {
         List<String> result = super.getChannelDependency(position);
-        result.add(channelIdProvider.getValueAt(position));
+        result.add(channelIdProvider.getValueWithoutScriptAt(position));
         return result;
     }
 

@@ -18,7 +18,7 @@ public class BooleanProvider extends KeyframeableEffect<Boolean> {
     }
 
     @Override
-    public Boolean getValueAt(TimelinePosition position) {
+    public Boolean getValueWithoutScriptAt(TimelinePosition position) {
         Double value = doubleInterpolator.valueAt(position);
         return value > 0.5;
     }
@@ -28,12 +28,12 @@ public class BooleanProvider extends KeyframeableEffect<Boolean> {
         if (expression != null && evaluationContext != null) {
             Boolean expressionResult = evaluationContext.evaluateExpression(expression, position, Boolean.class);
             if (expressionResult == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return expressionResult;
             }
         } else {
-            return getValueAt(position);
+            return getValueWithoutScriptAt(position);
         }
     }
 

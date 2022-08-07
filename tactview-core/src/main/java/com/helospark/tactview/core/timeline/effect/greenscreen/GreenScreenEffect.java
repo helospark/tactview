@@ -62,9 +62,9 @@ public class GreenScreenEffect extends StatelessVideoEffect {
         nativeRequest.width = currentFrame.getWidth();
         nativeRequest.height = currentFrame.getHeight();
 
-        DoubleRange hueRange = hueRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange saturationRange = saturationRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange valueRange = valueRangeProvider.getValueAt(request.getEffectPosition());
+        DoubleRange hueRange = hueRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange saturationRange = saturationRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange valueRange = valueRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         nativeRequest.hueMin = (int) hueRange.lowEnd;
         nativeRequest.hueMax = (int) hueRange.highEnd;
@@ -75,13 +75,13 @@ public class GreenScreenEffect extends StatelessVideoEffect {
         nativeRequest.valueMin = (int) valueRange.lowEnd;
         nativeRequest.valueMax = (int) valueRange.highEnd;
 
-        nativeRequest.spillRemovalEnabled = spillRemovalEnabled.getValueAt(request.getEffectPosition()) ? 1 : 0;
-        nativeRequest.spillDeltaHue = spillDeltaHueThresholdProvider.getValueAt(request.getEffectPosition()).intValue();
-        nativeRequest.spillSaturationThreshold = spillSaturationThresholdProvider.getValueAt(request.getEffectPosition()).intValue();
-        nativeRequest.spillValueThreshold = spillValueThresholdProvider.getValueAt(request.getEffectPosition()).intValue();
+        nativeRequest.spillRemovalEnabled = spillRemovalEnabled.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) ? 1 : 0;
+        nativeRequest.spillDeltaHue = spillDeltaHueThresholdProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).intValue();
+        nativeRequest.spillSaturationThreshold = spillSaturationThresholdProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).intValue();
+        nativeRequest.spillValueThreshold = spillValueThresholdProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).intValue();
 
-        nativeRequest.enableEdgeBlur = edgeToAlpha.getValueAt(request.getEffectPosition()) ? 1 : 0;
-        nativeRequest.edgeBlurRadius = (int) (edgeToAlphaRadius.getValueAt(request.getEffectPosition()) * request.getScale());
+        nativeRequest.enableEdgeBlur = edgeToAlpha.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) ? 1 : 0;
+        nativeRequest.edgeBlurRadius = (int) (edgeToAlphaRadius.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale());
 
         implementation.greenScreen(nativeRequest);
 
@@ -149,7 +149,7 @@ public class GreenScreenEffect extends StatelessVideoEffect {
                 .build();
         ValueProviderDescriptor edgeBlurRadiusDescriptor = ValueProviderDescriptor.builder()
                 .withName("Edge blur radius")
-                .withEnabledIf(position -> edgeToAlpha.getValueAt(position))
+                .withEnabledIf(position -> edgeToAlpha.getValueWithoutScriptAt(position))
                 .withKeyframeableEffect(edgeToAlphaRadius)
                 .withGroup("edge blur")
                 .build();

@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.transition;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class InternalStatelessVideoTransitionEffectRequest {
@@ -13,6 +14,7 @@ public class InternalStatelessVideoTransitionEffectRequest {
     private TimelinePosition effectPosition;
     private double scale;
     private double progress;
+    private EvaluationContext evaluationContext;
 
     @Generated("SparkTools")
     private InternalStatelessVideoTransitionEffectRequest(Builder builder) {
@@ -23,6 +25,7 @@ public class InternalStatelessVideoTransitionEffectRequest {
         this.effectPosition = builder.effectPosition;
         this.scale = builder.scale;
         this.progress = builder.progress;
+        this.evaluationContext = builder.evaluationContext;
     }
 
     public ReadOnlyClipImage getFirstFrame() {
@@ -53,6 +56,10 @@ public class InternalStatelessVideoTransitionEffectRequest {
         return progress;
     }
 
+    public EvaluationContext getEvaluationContext() {
+        return evaluationContext;
+    }
+
     @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
@@ -67,6 +74,7 @@ public class InternalStatelessVideoTransitionEffectRequest {
         private TimelinePosition effectPosition;
         private double scale;
         private double progress;
+        private EvaluationContext evaluationContext;
 
         private Builder() {
         }
@@ -103,6 +111,11 @@ public class InternalStatelessVideoTransitionEffectRequest {
 
         public Builder withProgress(double progress) {
             this.progress = progress;
+            return this;
+        }
+
+        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+            this.evaluationContext = evaluationContext;
             return this;
         }
 

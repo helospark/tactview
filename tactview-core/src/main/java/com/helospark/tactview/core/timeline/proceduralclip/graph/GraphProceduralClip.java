@@ -47,7 +47,7 @@ public class GraphProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        EffectGraph effectGraph = graphProvider.getValueAt(relativePosition);
+        EffectGraph effectGraph = graphProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         EffectGraphInputRequest egr = EffectGraphInputRequest.builder()
                 .withApplyEffects(true)

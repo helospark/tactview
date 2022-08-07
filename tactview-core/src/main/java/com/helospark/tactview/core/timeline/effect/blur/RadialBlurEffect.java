@@ -45,8 +45,8 @@ public class RadialBlurEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
-        double angle = angleProvider.getValueAt(request.getEffectPosition());
-        Point center = centerProvider.getValueAt(request.getEffectPosition()).multiply(currentFrame.getWidth(), currentFrame.getHeight());
+        double angle = angleProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        Point center = centerProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(currentFrame.getWidth(), currentFrame.getHeight());
 
         RadialBlurRequest radialBlurRequest = RadialBlurRequest.builder()
                 .withAngle(Math.toRadians(angle))

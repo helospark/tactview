@@ -32,7 +32,7 @@ public class IntegerProvider extends KeyframeableEffect<Number> {
     }
 
     @Override
-    public Integer getValueAt(TimelinePosition position) {
+    public Integer getValueWithoutScriptAt(TimelinePosition position) {
         Double value = interpolator.valueAt(position);
         int result = value.intValue();
         if (result < min) {
@@ -49,12 +49,12 @@ public class IntegerProvider extends KeyframeableEffect<Number> {
         if (expression != null && evaluationContext != null) {
             Integer expressionResult = evaluationContext.evaluateExpression(expression, position, Integer.class);
             if (expressionResult == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return expressionResult;
             }
         } else {
-            return getValueAt(position);
+            return getValueWithoutScriptAt(position);
         }
     }
 

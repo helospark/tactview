@@ -76,7 +76,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
         button.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 Object renderHint = descriptor.getRenderHints().get(RenderTypeHint.TYPE);
-                Point previousValue = pointProvider.getValueAt(globalTimelinePositionHolder.getCurrentPosition());
+                Point previousValue = pointProvider.getValueWithoutScriptAt(globalTimelinePositionHolder.getCurrentPosition());
                 if (renderHint != null && renderHint.equals(MovementType.RELATIVE)) {
                     inputModeRepository.requestRelativePoint(point -> {
                         sendKeyframe(pointProvider, point, previousValue);

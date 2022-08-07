@@ -55,14 +55,14 @@ public class LayerMaskEffect extends StatelessVideoEffect {
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         Optional<ReadOnlyClipImage> layerMask = layerMaskProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
-        LayerMaskAlphaCalculator layerMaskType = layerMaskTypeProvider.getValueAt(request.getEffectPosition()).getLayerMaskAlphaCalculator();
+        LayerMaskAlphaCalculator layerMaskType = layerMaskTypeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getLayerMaskAlphaCalculator();
         if (layerMask.isPresent()) {
             LayerMaskApplyRequest layerMaskRequest = LayerMaskApplyRequest.builder()
                     .withCurrentFrame(request.getCurrentFrame())
                     .withMask(layerMask.get())
-                    .withScaleLayerMask(scaleLayerMaskProvider.getValueAt(request.getEffectPosition()))
+                    .withScaleLayerMask(scaleLayerMaskProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()))
                     .withCalculator(layerMaskType)
-                    .withInvert(invertProvider.getValueAt(request.getEffectPosition()))
+                    .withInvert(invertProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()))
                     .build();
 
             return layerMaskApplier.createNewImageWithLayerMask(layerMaskRequest);
@@ -133,7 +133,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
     @Override
     public List<String> getClipDependency(TimelinePosition position) {
         List<String> result = new ArrayList<>();
-        String clip = layerMaskProvider.getValueAt(position);
+        String clip = layerMaskProvider.getValueWithoutScriptAt(position);
         if (clip != "") {
             result.add(clip);
         }

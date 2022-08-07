@@ -39,9 +39,9 @@ public class ColorizeEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        double hueChange = hueChangeProvider.getValueAt(request.getEffectPosition());
-        double saturationChange = saturationChangeProvider.getValueAt(request.getEffectPosition());
-        double valueChange = valueChangeProvider.getValueAt(request.getEffectPosition());
+        double hueChange = hueChangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double saturationChange = saturationChangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double valueChange = valueChangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         ColorizeRequest colorizeRequest = ColorizeRequest.builder()
                 .withHueChange(hueChange)

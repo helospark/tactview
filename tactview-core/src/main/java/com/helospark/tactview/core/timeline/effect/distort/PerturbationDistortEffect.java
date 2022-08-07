@@ -66,23 +66,23 @@ public class PerturbationDistortEffect extends StatelessVideoEffect {
         int height = request.getCurrentFrame().getHeight();
 
         PerturbationRequestParameter perturbationRequest = PerturbationRequestParameter.builder()
-                .withColorScale(colorScaleProvider.getValueAt(relativePosition))
-                .withFrequency((frequencyProvider.getValueAt(relativePosition).floatValue()))
-                .withGradientPerturb(gradientPerturbationAmplifier.getValueAt(relativePosition).floatValue())
+                .withColorScale(colorScaleProvider.getValueAt(relativePosition, request.getEvaluationContext()))
+                .withFrequency((frequencyProvider.getValueAt(relativePosition, request.getEvaluationContext()).floatValue()))
+                .withGradientPerturb(gradientPerturbationAmplifier.getValueAt(relativePosition, request.getEvaluationContext()).floatValue())
                 .withHeight(height)
-                .withIsFractal(isFractalProvider.getValueAt(relativePosition))
-                .withSeed(seedProvider.getValueAt(relativePosition))
-                .withStartPoint(startPointProvider.getValueAt(relativePosition))
+                .withIsFractal(isFractalProvider.getValueAt(relativePosition, request.getEvaluationContext()))
+                .withSeed(seedProvider.getValueAt(relativePosition, request.getEvaluationContext()))
+                .withStartPoint(startPointProvider.getValueAt(relativePosition, request.getEvaluationContext()))
                 .withWidth(width)
-                .withZPos(zPositionProvider.getValueAt(relativePosition).floatValue())
+                .withZPos(zPositionProvider.getValueAt(relativePosition, request.getEvaluationContext()).floatValue())
                 .build();
         ClipImage perturbation = perturbationNoiseService.createPerturbation(perturbationRequest);
 
         ApplyDisplacementMapRequest displacementMapRequest = ApplyDisplacementMapRequest.builder()
                 .withCurrentFrame(request.getCurrentFrame())
                 .withDisplacementMap(perturbation)
-                .withHorizontalMultiplier(horizontalMultiplierProvider.getValueAt(relativePosition) * request.getScale())
-                .withVerticalMultiplier(verticalMultiplierProvider.getValueAt(relativePosition) * request.getScale())
+                .withHorizontalMultiplier(horizontalMultiplierProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale())
+                .withVerticalMultiplier(verticalMultiplierProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale())
                 .build();
 
         ClipImage result = displacementService.applyDisplacementMap(displacementMapRequest);

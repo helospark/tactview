@@ -271,15 +271,15 @@ public class GeneralCanvasOperationStrategy {
         }
         if (draggedClip != null && dragPointType != null) {
             ValueProviderDescriptor translateElement = effectParametersRepository.findDescriptorForLabelAndClipId(draggedClip, "translate").get();
-            Point originalPosition = ((PointProvider) translateElement.getKeyframeableEffect()).getValueAt(uiTimelineManager.getCurrentPosition());
+            Point originalPosition = ((PointProvider) translateElement.getKeyframeableEffect()).getValueWithoutScriptAt(uiTimelineManager.getCurrentPosition());
 
             Point lastScale = new Point(1.0, 1.0);
             ScaleEffect scaleEffect = findOptionalScale(draggedClip);
             if (scaleEffect != null) {
                 double xScale = (double) effectParametersRepository.findDescriptorForLabelAndClipId(scaleEffect.getId(), "width scale").get().getKeyframeableEffect()
-                        .getValueAt(uiTimelineManager.getCurrentPosition());
+                        .getValueWithoutScriptAt(uiTimelineManager.getCurrentPosition());
                 double yScale = (double) effectParametersRepository.findDescriptorForLabelAndClipId(scaleEffect.getId(), "height scale").get().getKeyframeableEffect()
-                        .getValueAt(uiTimelineManager.getCurrentPosition());
+                        .getValueWithoutScriptAt(uiTimelineManager.getCurrentPosition());
                 lastScale = new Point(xScale, yScale);
             }
 

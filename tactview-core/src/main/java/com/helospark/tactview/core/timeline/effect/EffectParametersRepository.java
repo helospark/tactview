@@ -208,7 +208,7 @@ public class EffectParametersRepository {
     public Optional<Object> getKeyframeableEffectValue(String id, TimelinePosition position) {
         return Optional.ofNullable(allEffectIdToEffectMap.get(id))
                 .map(a -> a.effect)
-                .map(a -> a.getValueAt(position));
+                .map(a -> a.getValueWithoutScriptAt(position));
     }
 
     static class EffectStore {
@@ -253,12 +253,12 @@ public class EffectParametersRepository {
 
     public String getValueAt(String id, TimelinePosition position) {
         EffectStore valueToChange = allEffectIdToEffectMap.get(id);
-        return String.valueOf(valueToChange.effect.getValueAt(positionToLocal(position, valueToChange)));
+        return String.valueOf(valueToChange.effect.getValueWithoutScriptAt(positionToLocal(position, valueToChange)));
     }
 
     public Object getValueAtAsObject(String id, TimelinePosition position) {
         EffectStore valueToChange = allEffectIdToEffectMap.get(id);
-        return valueToChange.effect.getValueAt(positionToLocal(position, valueToChange));
+        return valueToChange.effect.getValueWithoutScriptAt(positionToLocal(position, valueToChange));
     }
 
     private TimelinePosition positionToLocal(TimelinePosition position, EffectStore valueToChange) {

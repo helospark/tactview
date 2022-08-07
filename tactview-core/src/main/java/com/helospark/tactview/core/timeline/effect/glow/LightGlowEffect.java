@@ -52,8 +52,8 @@ public class LightGlowEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        int threshold = thresholdProvider.getValueAt(request.getEffectPosition());
-        double lightStrenghtMultiplier = lightStrengthMultiplierProvider.getValueAt(request.getEffectPosition());
+        int threshold = thresholdProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double lightStrenghtMultiplier = lightStrengthMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         ClipImage lightParts = independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelReques -> {
             int grayValue = (pixelReques.input[0] + pixelReques.input[1] + pixelReques.input[2]) / 3;
             if (grayValue > threshold) {
@@ -73,13 +73,13 @@ public class LightGlowEffect extends StatelessVideoEffect {
         nativeRequest.output = bluredLightParts.getBuffer();
         nativeRequest.width = bluredLightParts.getWidth();
         nativeRequest.height = bluredLightParts.getHeight();
-        nativeRequest.kernelHeight = getScaleDependentOddIntegetValueMinimumOne(kernelWidthProvider, request.getScale(), request.getEffectPosition());
-        nativeRequest.kernelWidth = getScaleDependentOddIntegetValueMinimumOne(kernelHeightProvider, request.getScale(), request.getEffectPosition());
+        nativeRequest.kernelHeight = getScaleDependentOddIntegetValueMinimumOne(kernelWidthProvider, request.getScale(), request.getEffectPosition(), request);
+        nativeRequest.kernelWidth = getScaleDependentOddIntegetValueMinimumOne(kernelHeightProvider, request.getScale(), request.getEffectPosition(), request);
         nativeRequest.blurRegion = createFullRegion(lightParts);
 
         blurImplementation.applyGaussianBlur(nativeRequest);
 
-        Double blurMultiplier = blurMultiplierProvider.getValueAt(request.getEffectPosition());
+        Double blurMultiplier = blurMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         independentPixelOperation.executePixelTransformation(lightParts.getWidth(), lightParts.getHeight(), (x, y) -> {
             for (int i = 0; i < 4; ++i) {
@@ -92,8 +92,8 @@ public class LightGlowEffect extends StatelessVideoEffect {
         return lightParts;
     }
 
-    private int getScaleDependentOddIntegetValueMinimumOne(IntegerProvider provider, double scale, TimelinePosition effectPosition) {
-        int result = (int) (provider.getValueAt(effectPosition) * scale) * 2 + 1;
+    private int getScaleDependentOddIntegetValueMinimumOne(IntegerProvider provider, double scale, TimelinePosition effectPosition, StatelessEffectRequest request) {
+        int result = (int) (provider.getValueAt(effectPosition, request.getEvaluationContext()) * scale) * 2 + 1;
         if (result < 1) {
             return 1;
         } else {

@@ -58,10 +58,10 @@ public class BezierMaskEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        int fuzzyEdge = (int) (fuzzyProvider.getValueAt(request.getEffectPosition()) * request.getCurrentFrame().getWidth());
-        BezierPolygon polygon = polygonProvider.getValueAt(request.getEffectPosition()).multiplyPoints(new Point(request.getCurrentFrame().getWidth(), request.getCurrentFrame().getHeight()));
-        boolean invert = invertProvider.getValueAt(request.getEffectPosition());
-        boolean layerMaskEnabled = layerMaskEnabledProvider.getValueAt(request.getEffectPosition());
+        int fuzzyEdge = (int) (fuzzyProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getCurrentFrame().getWidth());
+        BezierPolygon polygon = polygonProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiplyPoints(new Point(request.getCurrentFrame().getWidth(), request.getCurrentFrame().getHeight()));
+        boolean invert = invertProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        boolean layerMaskEnabled = layerMaskEnabledProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (polygon.getPoints().size() > 2 && layerMaskEnabled) {
 

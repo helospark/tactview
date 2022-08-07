@@ -41,8 +41,8 @@ public class VignetteEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        double strength = vignetteStrengthProvider.getValueAt(request.getEffectPosition());
-        int power = vignettePowerFactorProvider.getValueAt(request.getEffectPosition());
+        double strength = vignetteStrengthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        int power = vignettePowerFactorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         Point center = new Point((request.getCurrentFrame().getWidth() / 2), (request.getCurrentFrame().getHeight() / 2));
         double maxImageDistance = Math.max(center.x, center.y);
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {

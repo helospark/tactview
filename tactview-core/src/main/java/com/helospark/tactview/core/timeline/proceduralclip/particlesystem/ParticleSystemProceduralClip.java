@@ -76,14 +76,14 @@ public class ParticleSystemProceduralClip extends ProceduralVisualClip {
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
-        List<Particle> particles = getParticlesAtPosition(relativePosition);
+        List<Particle> particles = getParticlesAtPosition(relativePosition, request);
 
         double currentSeconds = relativePosition.getSeconds().doubleValue();
 
-        Color startColor = startColorProvider.getValueAt(relativePosition).multiply(Color.of(255, 255, 255));
-        Color endColor = endColorProvider.getValueAt(relativePosition).multiply(Color.of(255, 255, 255));
-        int size = (int) (sizeProvider.getValueAt(relativePosition) * request.getScale());
-        double fuzzy = 1.0 - fuzzyProvider.getValueAt(relativePosition);
+        Color startColor = startColorProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiply(Color.of(255, 255, 255));
+        Color endColor = endColorProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiply(Color.of(255, 255, 255));
+        int size = (int) (sizeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale());
+        double fuzzy = 1.0 - fuzzyProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         for (Particle particle : particles) {
             double normalizedAge = (currentSeconds - particle.bornTime) / particle.maxAge;
@@ -121,18 +121,18 @@ public class ParticleSystemProceduralClip extends ProceduralVisualClip {
         return result;
     }
 
-    private List<Particle> getParticlesAtPosition(TimelinePosition requestedPosition) {
+    private List<Particle> getParticlesAtPosition(TimelinePosition requestedPosition, GetFrameRequest request) {
         Entry<BigDecimal, List<Particle>> cachedEntry = particlesCache.floorEntry(requestedPosition.getSeconds());
         if (cachedEntry != null) {
             List<Particle> particles = cloneParticles(cachedEntry.getValue());
             BigDecimal startSecond = cachedEntry.getKey();
-            return simulateParticles(requestedPosition, particles, startSecond);
+            return simulateParticles(requestedPosition, particles, startSecond, request);
         } else {
-            return simulateParticles(requestedPosition, new ArrayList<>(), BigDecimal.ZERO);
+            return simulateParticles(requestedPosition, new ArrayList<>(), BigDecimal.ZERO, request);
         }
     }
 
-    private List<Particle> simulateParticles(TimelinePosition requestedPosition, List<Particle> particles, BigDecimal startSecond) {
+    private List<Particle> simulateParticles(TimelinePosition requestedPosition, List<Particle> particles, BigDecimal startSecond, GetFrameRequest request) {
         BigDecimal timeSinceLastCache = BigDecimal.ZERO;
 
         BigDecimal roundedEndPosition = requestedPosition.getSeconds().setScale(2, RoundingMode.CEILING);
@@ -142,7 +142,7 @@ public class ParticleSystemProceduralClip extends ProceduralVisualClip {
             TimelinePosition currentSimlutatedTimelinePosition = new TimelinePosition(roundedStartPosition);
             Random random = repeatableRandom.createRandomForPosition(roundedStartPosition);
 
-            double gravity = gravityProvider.getValueAt(currentSimlutatedTimelinePosition);
+            double gravity = gravityProvider.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext());
 
             for (Particle particle : particles) {
                 particle.x += particle.xVel;
@@ -151,15 +151,15 @@ public class ParticleSystemProceduralClip extends ProceduralVisualClip {
                 particle.yVel += gravity;
             }
 
-            int numberOfParticlesToCreate = (int) numberOfParticlesCreatedInStep.getValueAt(currentSimlutatedTimelinePosition).doubleValue();
-            Point center = emitterCenterProvider.getValueAt(currentSimlutatedTimelinePosition);
-            Point startDirection = startDirectionProvider.getValueAt(currentSimlutatedTimelinePosition);
-            double randomXSpeed = startDirectionXRandomSpeedProvider.getValueAt(currentSimlutatedTimelinePosition);
-            double randomYSpeed = startDirectionYRandomSpeedProvider.getValueAt(currentSimlutatedTimelinePosition);
+            int numberOfParticlesToCreate = (int) numberOfParticlesCreatedInStep.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext()).doubleValue();
+            Point center = emitterCenterProvider.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext());
+            Point startDirection = startDirectionProvider.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext());
+            double randomXSpeed = startDirectionXRandomSpeedProvider.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext());
+            double randomYSpeed = startDirectionYRandomSpeedProvider.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext());
 
-            double emitterRandomization = emitterRandomizationProvider.getValueAt(currentSimlutatedTimelinePosition);
+            double emitterRandomization = emitterRandomizationProvider.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext());
 
-            DoubleRange lifeRange = ageRangeProvider.getValueAt(currentSimlutatedTimelinePosition);
+            DoubleRange lifeRange = ageRangeProvider.getValueAt(currentSimlutatedTimelinePosition, request.getEvaluationContext());
 
             for (int i = 0; i < numberOfParticlesToCreate; ++i) {
                 Particle particle = new Particle();

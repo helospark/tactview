@@ -50,7 +50,7 @@ public class MedianEffect extends StatelessVideoEffect {
     }
 
     private ClipImage calculateColorMedianValues(StatelessEffectRequest request) {
-        int size = kernelSizeProvider.getValueAt(request.getEffectPosition());
+        int size = kernelSizeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         ThreadLocalProvider<int[]> integerThreadLocal = () -> {
             return new int[(size * 2 + 1) * (size * 2 + 1)];

@@ -48,10 +48,10 @@ public class ErodeDilateEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         ClipImage result = ClipImage.sameSizeAs(currentFrame);
-        int kernelWidth = (int) (kernelWidthProvider.getValueAt(request.getEffectPosition()) * currentFrame.getWidth());
-        int kernelHeight = (int) (kernelHeightProvider.getValueAt(request.getEffectPosition()) * currentFrame.getHeight());
-        boolean erode = erodeOrDelodeProvider.getValueAt(request.getEffectPosition()).getId().equals("erode");
-        int shape = shapeProvider.getValueAt(request.getEffectPosition()).intId;
+        int kernelWidth = (int) (kernelWidthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * currentFrame.getWidth());
+        int kernelHeight = (int) (kernelHeightProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * currentFrame.getHeight());
+        boolean erode = erodeOrDelodeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getId().equals("erode");
+        int shape = shapeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).intId;
 
         OpenCVErodeDilateRequest nativeRequest = new OpenCVErodeDilateRequest();
         nativeRequest.width = currentFrame.getWidth();

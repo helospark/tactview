@@ -43,8 +43,8 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange
     }
 
     @Override
-    public DoubleRange getValueAt(TimelinePosition position) {
-        return new DoubleRange(lowEndProvider.getValueAt(position), highEndProvider.getValueAt(position));
+    public DoubleRange getValueWithoutScriptAt(TimelinePosition position) {
+        return getValueAt(position, null);
     }
 
     @Override
@@ -52,12 +52,12 @@ public class DoubleRangeProvider extends CompositeKeyframeableEffect<DoubleRange
         if (expression != null && evaluationContext != null) {
             DoubleRange expressionResult = evaluationContext.evaluateExpression(expression, position, DoubleRange.class);
             if (expressionResult == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return expressionResult;
             }
         } else {
-            return getValueAt(position);
+            return new DoubleRange(lowEndProvider.getValueAt(position, evaluationContext), highEndProvider.getValueAt(position, evaluationContext));
         }
     }
 

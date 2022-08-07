@@ -35,7 +35,7 @@ public class CurveProviderValueSetterChainItem extends TypeBasedPropertyValueSet
 
     @Override
     protected EffectLine handle(CurveProvider colorProvider, ValueProviderDescriptor descriptor) {
-        CurveWidget control = new CurveWidget(colorProvider.getValueAt(uiTimelineManager.getCurrentPosition()),
+        CurveWidget control = new CurveWidget(colorProvider.getValueWithoutScriptAt(uiTimelineManager.getCurrentPosition()),
                 colorProvider.getMinX(),
                 colorProvider.getMaxX(),
                 colorProvider.getMinY(),

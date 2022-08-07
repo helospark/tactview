@@ -48,7 +48,7 @@ public class RectangleWarpEffect extends StatelessVideoEffect {
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ClipImage result = ClipImage.fromSize(request.getCanvasWidth(), request.getCanvasHeight());
-        Rectangle rectangle = rectangleProvider.getValueAt(request.getEffectPosition());
+        Rectangle rectangle = rectangleProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         List<Point> points = rectangle.points
                 .stream()

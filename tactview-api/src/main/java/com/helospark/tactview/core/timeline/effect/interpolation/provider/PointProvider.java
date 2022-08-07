@@ -22,24 +22,22 @@ public class PointProvider extends CompositeKeyframeableEffect<Point> {
     }
 
     @Override
-    public Point getValueAt(TimelinePosition position) {
-        double x = xProvider.getValueAt(position);
-        double y = yProvider.getValueAt(position);
-        return new Point(x, y);
+    public Point getValueWithoutScriptAt(TimelinePosition position) {
+        return getValueAt(position, null);
     }
 
     @Override
     public Point getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        Point result = null;
         if (expression != null && evaluationContext != null) {
-            Point expressionResult = evaluationContext.evaluateExpression(expression, position, Point.class);
-            if (expressionResult == null) {
-                return getValueAt(position);
-            } else {
-                return expressionResult;
-            }
-        } else {
-            return getValueAt(position);
+            result = evaluationContext.evaluateExpression(expression, position, Point.class);
         }
+        if (result == null) {
+            double x = xProvider.getValueAt(position, evaluationContext);
+            double y = yProvider.getValueAt(position, evaluationContext);
+            result = new Point(x, y);
+        }
+        return result;
     }
 
     public DoubleProvider getxProvider() {

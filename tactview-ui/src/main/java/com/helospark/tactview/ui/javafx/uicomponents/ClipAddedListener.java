@@ -64,7 +64,7 @@ public class ClipAddedListener {
 
             if (metadata instanceof VideoMetadata && visualClip instanceof VideoClip) {
                 double rotation = ((VideoMetadata) metadata).getRotation();
-                if (MathUtil.fuzzyEquals(Math.abs(rotation), 90.0) && ((VideoClip) visualClip).isRotationEnabledAt(TimelinePosition.ofZero())) {
+                if (MathUtil.fuzzyEquals(Math.abs(rotation), 90.0) && ((VideoClip) visualClip).isRotationEnabledAt(TimelinePosition.ofZero(), null)) {
                     int tmp = width;
                     width = height;
                     height = tmp;

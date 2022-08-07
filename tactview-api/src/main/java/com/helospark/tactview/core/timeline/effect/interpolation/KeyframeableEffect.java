@@ -19,10 +19,10 @@ public abstract class KeyframeableEffect<T> implements StatefulCloneable<Keyfram
 
     protected String expression = null;
 
-    public abstract Object getValueAt(TimelinePosition position);
+    public abstract Object getValueWithoutScriptAt(TimelinePosition position);
 
     public Object getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
-        return getValueAt(position);
+        return getValueWithoutScriptAt(position);
     }
 
     public String getId() {

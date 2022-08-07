@@ -49,8 +49,8 @@ public class GaussianNoiseProceduralClip extends ProceduralVisualClip {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
         BigDecimal currentSecond = relativePosition.getSeconds();
 
-        double noiseChance = noiseChanceProvider.getValueAt(relativePosition);
-        double alphaMultiplier = alphaMultiplierProvider.getValueAt(relativePosition);
+        double noiseChance = noiseChanceProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double alphaMultiplier = alphaMultiplierProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         double[] gaussians = new double[result.getWidth() * result.getHeight() * 2];
         repeatableRandom.getNextGaussians(currentSecond, gaussians);

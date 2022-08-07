@@ -60,9 +60,9 @@ public class LinearGradientTransition extends AbstractVideoTransitionEffect {
         int w = transitionRequest.getFirstFrame().getWidth();
         int h = transitionRequest.getFirstFrame().getHeight();
 
-        double fuzziness = fuzzinessProvider.getValueAt(transitionRequest.getEffectPosition());
+        double fuzziness = fuzzinessProvider.getValueAt(transitionRequest.getEffectPosition(), transitionRequest.getEvaluationContext());
 
-        InterpolationLine line = directionProvider.getValueAt(transitionRequest.getEffectPosition());
+        InterpolationLine line = directionProvider.getValueAt(transitionRequest.getEffectPosition(), transitionRequest.getEvaluationContext());
         if (line.length() <= 0.00001) {
             return ClipImage.fromSize(w, h);
         }

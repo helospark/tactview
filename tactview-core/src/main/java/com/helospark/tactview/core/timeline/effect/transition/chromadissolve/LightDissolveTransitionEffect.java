@@ -44,7 +44,7 @@ public class LightDissolveTransitionEffect extends AbstractVideoTransitionEffect
     @Override
     protected ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
         double progress = transitionRequest.getProgress();
-        ValueListElement direction = directionProvider.getValueAt(transitionRequest.getEffectPosition());
+        ValueListElement direction = directionProvider.getValueAt(transitionRequest.getEffectPosition(), transitionRequest.getEvaluationContext());
 
         ClipImage result = ClipImage.sameSizeAs(transitionRequest.getFirstFrame());
 

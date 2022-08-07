@@ -64,7 +64,7 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
         double progress;
 
-        double endSeconds = endPositionProvider.getValueAt(relativePosition);
+        double endSeconds = endPositionProvider.getValueAt(relativePosition, request.getEvaluationContext());
         double actualSeconds = relativePosition.getSeconds().doubleValue();
         if (endSeconds > actualSeconds) {
             progress = actualSeconds / endSeconds;
@@ -72,22 +72,22 @@ public class DrawnRectangleHighlightProceduralEffect extends ProceduralVisualCli
             progress = 1.0;
         }
 
-        Rectangle rectangle = rectangleProvider.getValueAt(relativePosition);
+        Rectangle rectangle = rectangleProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        double overshoot = overshootProvider.getValueAt(relativePosition);
+        double overshoot = overshootProvider.getValueAt(relativePosition, request.getEvaluationContext());
         double totalLength = rectangle.getLength() * (1.0 + overshoot * 2 * 4);
 
         double lengthToDraw = progress * totalLength;
 
-        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition) * request.getScale());
+        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale());
         if (brushSize < 1) {
             brushSize = 1;
         }
 
-        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr");
+        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr", request.getEvaluationContext());
         Point brushHalfSize = new Point((double) brushSize / request.getExpectedWidth() / 2.0, (double) brushSize / request.getExpectedHeight() / 2.0);
 
-        Color color = colorProvider.getValueAt(relativePosition);
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         for (int i = 0; i < 4 && lengthToDraw > 0.0; ++i) { // 0->1, 1->2, 2->3, 3->0
             Point start = rectangle.points.get(i).subtract(brushHalfSize);

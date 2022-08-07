@@ -49,10 +49,10 @@ public class DirectionalShadowEffect extends StatelessVideoEffect {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         ClipImage shadow = ClipImage.sameSizeAs(currentFrame);
 
-        InterpolationLine direction = directionProvider.getValueAt(request.getEffectPosition());
+        InterpolationLine direction = directionProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         Point normalizedVector = direction.getNormalize4dVector();
-        Color shadowColor = shadowColorProvider.getValueAt(request.getEffectPosition()).multiplyComponents(255.0);
-        int shadowAlpha = (int) (shadowAlphaProvider.getValueAt(request.getEffectPosition()) * 255.0);
+        Color shadowColor = shadowColorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiplyComponents(255.0);
+        int shadowAlpha = (int) (shadowAlphaProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 255.0);
 
         independentPixelOperation.executePixelTransformation(currentFrame.getWidth(), currentFrame.getHeight(), (x, y) -> {
             int currentAlpha = currentFrame.getAlpha(x, y);

@@ -180,7 +180,7 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
             Map<String, Object> clipElements = new HashMap<>();
             for (var element : entry.getValue().data.entrySet()) {
                 String name = element.getKey();
-                Object currentValue = element.getValue().getValueAt(position);
+                Object currentValue = element.getValue().getValueWithoutScriptAt(position);
 
                 Object converted = convertToScriptType(currentValue);
 

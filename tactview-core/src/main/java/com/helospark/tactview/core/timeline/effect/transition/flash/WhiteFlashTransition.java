@@ -40,7 +40,7 @@ public class WhiteFlashTransition extends AbstractVideoTransitionEffect {
     protected ClipImage applyTransitionInternal(InternalStatelessVideoTransitionEffectRequest transitionRequest) {
         double progress = transitionRequest.getProgress();
 
-        double keepAtWhite = keepAtWhitePercentage.getValueAt(transitionRequest.getEffectPosition());
+        double keepAtWhite = keepAtWhitePercentage.getValueAt(transitionRequest.getEffectPosition(), transitionRequest.getEvaluationContext());
 
         double fadeTime = (1.0 - keepAtWhite) / 2.0;
 

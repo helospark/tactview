@@ -76,7 +76,7 @@ public class DependentChannelIdProviderChainItem extends TypeBasedPropertyValueS
                 .withCurrentValueProvider(() -> textArea.getText())
                 .withDescriptorId(stringProvider.getId())
                 .withUpdateFunction(position -> {
-                    String currentValue = nameToIdRepository.getNameForId(stringProvider.getValueAt(position));
+                    String currentValue = nameToIdRepository.getNameForId(stringProvider.getValueWithoutScriptAt(position));
                     textArea.setText(currentValue);
                 })
                 .withVisibleNode(hbox)

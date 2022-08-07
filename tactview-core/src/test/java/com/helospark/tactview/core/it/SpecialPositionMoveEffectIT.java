@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.it;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,8 +65,8 @@ public class SpecialPositionMoveEffectIT {
     }
 
     private void assertThatClipIsAt(TimelineClip clip, double position) {
-        assertTrue("Clip is expected to be at " + position + " but was at " + clip.getInterval().getStartPosition().getSeconds(),
-                clip.getInterval().getStartPosition().distanceFrom(TimelinePosition.ofSeconds(position)).doubleValue() < 0.001);
+        assertThat("Clip is expected to be at " + position + " but was at " + clip.getInterval().getStartPosition().getSeconds(),
+                clip.getInterval().getStartPosition().distanceFrom(TimelinePosition.ofSeconds(position)).doubleValue() < 0.001, is(true));
     }
 
 }

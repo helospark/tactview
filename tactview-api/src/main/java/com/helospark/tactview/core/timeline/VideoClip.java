@@ -95,7 +95,7 @@ public class VideoClip extends VisualTimelineClip {
                 .getFrame();
 
         ClipImage result = new ClipImage(frame, frameRequest.getWidth(), frameRequest.getHeight());
-        if (isRotationEnabledAt(frameRequest.getPosition()) && !MathUtil.fuzzyEquals(getRotationFromMetadata(), 0.0)) {
+        if (isRotationEnabledAt(frameRequest.getPosition(), frameRequest) && !MathUtil.fuzzyEquals(getRotationFromMetadata(), 0.0)) {
             RotateServiceRequest serviceRequest = RotateServiceRequest.builder()
                     .withAngle(getRotationFromMetadata())
                     .withImage(result)
@@ -111,8 +111,8 @@ public class VideoClip extends VisualTimelineClip {
         return result;
     }
 
-    public Boolean isRotationEnabledAt(TimelinePosition position) {
-        return useRotationMetadataProvider.getValueAt(position);
+    public Boolean isRotationEnabledAt(TimelinePosition position, RequestFrameParameter frameRequest) {
+        return useRotationMetadataProvider.getValueAt(position, frameRequest.getEvaluationContext());
     }
 
     private double getRotationFromMetadata() {
@@ -176,7 +176,7 @@ public class VideoClip extends VisualTimelineClip {
     @Override
     public TimelineInterval getIntervalAfterRescaleTo(boolean left, TimelinePosition position) {
         if (mediaMetadata instanceof VideoMetadata) {
-            return intervalAfterResizeAsCut(left, position, mediaMetadata.getLength(), reverseTimeProvider.getValueAt(TimelinePosition.ofZero()));
+            return intervalAfterResizeAsCut(left, position, mediaMetadata.getLength(), reverseTimeProvider.getValueWithoutScriptAt(TimelinePosition.ofZero()));
         } else {
             return super.getIntervalAfterRescaleTo(left, position);
         }

@@ -68,11 +68,11 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        InterpolationLine line = lineProvider.getValueAt(relativePosition);
+        InterpolationLine line = lineProvider.getValueAt(relativePosition, request.getEvaluationContext());
         Point startPositionNormalized = line.start;
         Point endPositionNormalized = line.end;
 
-        boolean isExtendedFrame = extendedFrameProvider.getValueAt(relativePosition);
+        boolean isExtendedFrame = extendedFrameProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         if (isExtendedFrame) {
             return extendedFrameDraw(request, relativePosition, startPositionNormalized, endPositionNormalized);
@@ -85,13 +85,13 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
         ClipImage result = ClipImage.fromSize((int) (Math.abs(endPositionNormalized.x - startPositionNormalized.x) * request.getExpectedWidth()),
                 (int) (Math.abs(endPositionNormalized.y - startPositionNormalized.y) * request.getExpectedHeight()));
 
-        String fillType = fillTypeProvider.getValueAt(relativePosition).getId();
-        Color globalPixelColor = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        Color startGradientColor = startColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        Color endGradientColor = endColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        boolean horizontal = horizontalGradientProvider.getValueAt(relativePosition);
+        String fillType = fillTypeProvider.getValueAt(relativePosition, request.getEvaluationContext()).getId();
+        Color globalPixelColor = colorProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        Color startGradientColor = startColorGradientProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        Color endGradientColor = endColorGradientProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        boolean horizontal = horizontalGradientProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition);
+        double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         double fuzzyDistancePixel = fuzzyDistance * Math.min(result.getWidth(), result.getHeight());
 
@@ -129,13 +129,13 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
     private ClipImage extendedFrameDraw(GetFrameRequest request, TimelinePosition relativePosition, Point startPositionNormalized, Point endPositionNormalized) {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
 
-        String fillType = fillTypeProvider.getValueAt(relativePosition).getId();
-        Color globalPixelColor = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        Color startGradientColor = startColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        Color endGradientColor = endColorGradientProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        boolean horizontal = horizontalGradientProvider.getValueAt(relativePosition);
+        String fillType = fillTypeProvider.getValueAt(relativePosition, request.getEvaluationContext()).getId();
+        Color globalPixelColor = colorProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        Color startGradientColor = startColorGradientProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        Color endGradientColor = endColorGradientProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        boolean horizontal = horizontalGradientProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition);
+        double fuzzyDistance = fuzzyDistanceProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         double fuzzyDistancePixel = fuzzyDistance * Math.min(result.getWidth(), result.getHeight());
 
@@ -219,26 +219,26 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
                 .withKeyframeableEffect(colorProvider)
                 .withName("Color")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(COLOR_ID))
+                .withShowPredicate(position -> fillTypeProvider.getValueWithoutScriptAt(position).getId().equals(COLOR_ID))
                 .build();
 
         ValueProviderDescriptor startColorGradientDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(startColorGradientProvider)
                 .withName("Start color")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(GRADIENT_ID))
+                .withShowPredicate(position -> fillTypeProvider.getValueWithoutScriptAt(position).getId().equals(GRADIENT_ID))
                 .build();
         ValueProviderDescriptor endColorGradientDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(endColorGradientProvider)
                 .withName("End color")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(GRADIENT_ID))
+                .withShowPredicate(position -> fillTypeProvider.getValueWithoutScriptAt(position).getId().equals(GRADIENT_ID))
                 .build();
         ValueProviderDescriptor horizontalGradientProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(horizontalGradientProvider)
                 .withName("Horizontal")
                 .withGroup("fill")
-                .withShowPredicate(position -> fillTypeProvider.getValueAt(position).getId().equals(GRADIENT_ID))
+                .withShowPredicate(position -> fillTypeProvider.getValueWithoutScriptAt(position).getId().equals(GRADIENT_ID))
                 .build();
 
         ValueProviderDescriptor lineProviderDescriptor = ValueProviderDescriptor.builder()
@@ -270,10 +270,10 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
     @Override
     public int getXPosition(GetPositionParameters parameterObject) {
-        if (extendedFrameProvider.getValueAt(parameterObject.getTimelinePosition())) {
+        if (extendedFrameProvider.getValueAt(parameterObject.getTimelinePosition(), parameterObject.getEvaluationContext())) {
             return super.getXPosition(parameterObject);
         } else {
-            InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
+            InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition(), parameterObject.getEvaluationContext());
             double xPos = Math.min(line.start.x, line.end.x);
             return (int) (xPos * parameterObject.getWidth()) + super.getXPosition(parameterObject);
         }
@@ -281,10 +281,10 @@ public class RectangleProceduralClip extends ProceduralVisualClip {
 
     @Override
     public int getYPosition(GetPositionParameters parameterObject) {
-        if (extendedFrameProvider.getValueAt(parameterObject.getTimelinePosition())) {
+        if (extendedFrameProvider.getValueAt(parameterObject.getTimelinePosition(), parameterObject.getEvaluationContext())) {
             return super.getYPosition(parameterObject);
         } else {
-            InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition());
+            InterpolationLine line = lineProvider.getValueAt(parameterObject.getTimelinePosition(), parameterObject.getEvaluationContext());
             double yPos = Math.min(line.start.y, line.end.y);
             return (int) (yPos * parameterObject.getHeight()) + super.getYPosition(parameterObject);
         }

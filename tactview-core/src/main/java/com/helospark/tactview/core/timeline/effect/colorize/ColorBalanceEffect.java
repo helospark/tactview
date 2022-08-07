@@ -90,7 +90,7 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     }
 
     private void applySaturationChange(StatelessEffectRequest request, ClipImage clipImage) {
-        double saturationChange = saturationChangeProvider.getValueAt(request.getEffectPosition());
+        double saturationChange = saturationChangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (!DoubleMath.fuzzyEquals(saturationChange, 0.0, EPSILON)) {
             ColorizeRequest colorizeRequest = ColorizeRequest.builder()
@@ -104,8 +104,8 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     }
 
     private void applyColorTemperature(StatelessEffectRequest request, ClipImage clipImage) {
-        double colorTemperature = colorTemperatureProvider.getValueAt(request.getEffectPosition());
-        double tint = tintProvider.getValueAt(request.getEffectPosition());
+        double colorTemperature = colorTemperatureProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double tint = tintProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (!DoubleMath.fuzzyEquals(colorTemperature, 0.0, EPSILON) || !DoubleMath.fuzzyEquals(tint, 0.0, EPSILON)) {
             ColorTemperatureChangeRequest temperatureChangeRequest = ColorTemperatureChangeRequest.builder()
@@ -117,8 +117,8 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     }
 
     private void applyBrightnessContrast(StatelessEffectRequest request, ClipImage clipImage) {
-        double brightness = brightnessShiftProvider.getValueAt(request.getEffectPosition());
-        double contrast = contrastShiftProvider.getValueAt(request.getEffectPosition());
+        double brightness = brightnessShiftProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double contrast = contrastShiftProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (!DoubleMath.fuzzyEquals(brightness, 0.0, EPSILON) || !DoubleMath.fuzzyEquals(contrast, 1.0, EPSILON)) {
             BrignessContrastServiceRequest brightnessContrastRequest = BrignessContrastServiceRequest.builder()
@@ -131,9 +131,9 @@ public class ColorBalanceEffect extends StatelessVideoEffect {
     }
 
     private void applyThreeWayColorCorrect(StatelessEffectRequest request, ReadOnlyClipImage currentFrame, ClipImage clipImage) {
-        Color shadowsShift = shadowsShiftProvider.getValueAt(request.getEffectPosition());
-        Color midtonesShift = midtonesShiftProvider.getValueAt(request.getEffectPosition());
-        Color highlightsShift = highlightsShiftProvider.getValueAt(request.getEffectPosition());
+        Color shadowsShift = shadowsShiftProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        Color midtonesShift = midtonesShiftProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        Color highlightsShift = highlightsShiftProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         independentPixelOperation.executePixelTransformation(clipImage.getWidth(), clipImage.getHeight(), (x, y) -> {
             int red = currentFrame.getRed(x, y);

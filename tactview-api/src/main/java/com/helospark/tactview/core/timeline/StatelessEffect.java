@@ -141,7 +141,7 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
     }
 
     public boolean isEnabledAt(TimelinePosition position) {
-        return enabledProvider.getValueAt(position);
+        return enabledProvider.getValueWithoutScriptAt(position); // TODO: evaluation context
     }
 
 }

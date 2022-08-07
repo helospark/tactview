@@ -27,7 +27,7 @@ public class FileProvider extends KeyframeableEffect<String> {
     }
 
     @Override
-    public File getValueAt(TimelinePosition position) {
+    public File getValueWithoutScriptAt(TimelinePosition position) {
         return new File(stringInterpolator.valueAt(position));
     }
 
@@ -36,12 +36,12 @@ public class FileProvider extends KeyframeableEffect<String> {
         if (expression != null && evaluationContext != null) {
             String expressionResult = evaluationContext.evaluateExpression(expression, position, String.class);
             if (expressionResult == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return new File(expressionResult);
             }
         } else {
-            return getValueAt(position);
+            return getValueWithoutScriptAt(position);
         }
     }
 
@@ -94,8 +94,8 @@ public class FileProvider extends KeyframeableEffect<String> {
         return ((KeyframeSupportingInterpolator) stringInterpolator).isUsingKeyframes();
     }
 
-    public String getValueOrDefault(TimelinePosition relativePosition, String defaultValue) {
-        File result = getValueAt(relativePosition);
+    public String getValueOrDefault(TimelinePosition relativePosition, String defaultValue, EvaluationContext evaluationContext) {
+        File result = getValueAt(relativePosition, evaluationContext);
         if (result.exists()) {
             return result.getAbsolutePath();
         } else {

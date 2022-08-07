@@ -3,12 +3,14 @@ package com.helospark.tactview.core.timeline.effect.transition;
 import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class ExternalStatelessVideoTransitionEffectRequest {
     private ReadOnlyClipImage firstFrame;
     private ReadOnlyClipImage secondFrame;
     private TimelinePosition globalPosition;
+    private EvaluationContext evaluationContext;
     private double scale;
 
     @Generated("SparkTools")
@@ -16,6 +18,7 @@ public class ExternalStatelessVideoTransitionEffectRequest {
         this.firstFrame = builder.firstFrame;
         this.secondFrame = builder.secondFrame;
         this.globalPosition = builder.globalPosition;
+        this.evaluationContext = builder.evaluationContext;
         this.scale = builder.scale;
     }
 
@@ -29,6 +32,10 @@ public class ExternalStatelessVideoTransitionEffectRequest {
 
     public TimelinePosition getGlobalPosition() {
         return globalPosition;
+    }
+
+    public EvaluationContext getEvaluationContext() {
+        return evaluationContext;
     }
 
     public double getScale() {
@@ -45,6 +52,7 @@ public class ExternalStatelessVideoTransitionEffectRequest {
         private ReadOnlyClipImage firstFrame;
         private ReadOnlyClipImage secondFrame;
         private TimelinePosition globalPosition;
+        private EvaluationContext evaluationContext;
         private double scale;
 
         private Builder() {
@@ -62,6 +70,11 @@ public class ExternalStatelessVideoTransitionEffectRequest {
 
         public Builder withGlobalPosition(TimelinePosition globalPosition) {
             this.globalPosition = globalPosition;
+            return this;
+        }
+
+        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+            this.evaluationContext = evaluationContext;
             return this;
         }
 

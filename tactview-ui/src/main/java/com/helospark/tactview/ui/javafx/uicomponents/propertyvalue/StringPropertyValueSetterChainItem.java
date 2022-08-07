@@ -40,7 +40,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
                 .withUpdateFunction(position -> {
                     if (!textArea.isFocused()) { // otherwise user may want to type
                         if (stringProvider.getExpression() == null) {
-                            String currentValue = stringProvider.getValueAt(position);
+                            String currentValue = stringProvider.getValueWithoutScriptAt(position);
                             textArea.setText(currentValue);
                         } else {
                             textArea.setText(stringProvider.getExpression());
@@ -55,7 +55,7 @@ public class StringPropertyValueSetterChainItem extends TypeBasedPropertyValueSe
 
         textArea.setOnKeyReleased(newValue -> {
             TimelinePosition position = timelineManager.getCurrentPosition();
-            String currentValue = stringProvider.getValueAt(position);
+            String currentValue = stringProvider.getValueWithoutScriptAt(position);
             if (textArea.getText() != null && !textArea.getText().equals(currentValue)) {
                 KeyframeAddedRequest keyframeRequest = KeyframeAddedRequest.builder()
                         .withDescriptorId(stringProvider.getId())

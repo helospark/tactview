@@ -61,14 +61,14 @@ public class LutEffect extends StatelessVideoEffect {
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         File lutFile;
-        if (customFileProvider.getValueAt(request.getEffectPosition())) {
-            lutFile = lutFileProvider.getValueAt(request.getEffectPosition());
+        if (customFileProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext())) {
+            lutFile = lutFileProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         } else {
-            ValueListElement element = buildInFilesProvider.getValueAt(request.getEffectPosition());
+            ValueListElement element = buildInFilesProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
             String fileName = Optional.ofNullable(element).map(a -> a.getId()).orElse("");
             lutFile = new File(fileName);
         }
-        double intensity = intensityProvider.getValueAt(request.getEffectPosition());
+        double intensity = intensityProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (lutFile.exists()) {
             AbstractLut lut = lutProviderService.provideLutFromFile(lutFile.getAbsolutePath());
@@ -143,13 +143,13 @@ public class LutEffect extends StatelessVideoEffect {
         ValueProviderDescriptor lutFileProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(lutFileProvider)
                 .withName("file")
-                .withShowPredicate(a -> customFileProvider.getValueAt(a))
+                .withShowPredicate(a -> customFileProvider.getValueWithoutScriptAt(a))
                 .build();
 
         ValueProviderDescriptor droppedInLutProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(buildInFilesProvider)
                 .withName("LUT")
-                .withShowPredicate(a -> !customFileProvider.getValueAt(a))
+                .withShowPredicate(a -> !customFileProvider.getValueWithoutScriptAt(a))
                 .build();
 
         ValueProviderDescriptor intensityProviderDescriptor = ValueProviderDescriptor.builder()

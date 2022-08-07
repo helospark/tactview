@@ -65,7 +65,7 @@ public class CircleTransition extends AbstractVideoTransitionEffect {
                 .withCenter(center)
                 .withEndColor(endColor)
                 .withHeight(height)
-                .withInnerSaturation(1.0 - fuzzinessProvider.getValueAt(transitionRequest.getEffectPosition()))
+                .withInnerSaturation(1.0 - fuzzinessProvider.getValueAt(transitionRequest.getEffectPosition(), transitionRequest.getEvaluationContext()))
                 .withRadius(radius)
                 .withStartColor(startColor)
                 .withWidth(width)

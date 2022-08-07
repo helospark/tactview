@@ -24,8 +24,10 @@ public class ColorProvider extends CompositeKeyframeableEffect<Color> {
     }
 
     @Override
-    public Color getValueAt(TimelinePosition position) {
-        return new Color(redProvider.getValueAt(position), greenProvider.getValueAt(position), blueProvider.getValueAt(position));
+    public Color getValueWithoutScriptAt(TimelinePosition position) {
+        return new Color(redProvider.getValueWithoutScriptAt(position),
+                greenProvider.getValueWithoutScriptAt(position),
+                blueProvider.getValueWithoutScriptAt(position));
     }
 
     @Override
@@ -33,12 +35,14 @@ public class ColorProvider extends CompositeKeyframeableEffect<Color> {
         if (expression != null && evaluationContext != null) {
             Color expressionResult = evaluationContext.evaluateExpression(expression, position, Color.class);
             if (expressionResult == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return expressionResult;
             }
         } else {
-            return getValueAt(position);
+            return new Color(redProvider.getValueAt(position, evaluationContext),
+                    greenProvider.getValueAt(position, evaluationContext),
+                    blueProvider.getValueAt(position, evaluationContext));
         }
     }
 

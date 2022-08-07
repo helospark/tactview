@@ -64,15 +64,15 @@ public class DropShadowEffect extends StatelessVideoEffect {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
         ClipImage shadow = ClipImage.sameSizeAs(currentFrame);
 
-        int shiftX = (int) (shiftXProvider.getValueAt(request.getEffectPosition()) * request.getScale());
-        int shiftY = (int) (shiftYProvider.getValueAt(request.getEffectPosition()) * request.getScale());
-        Color shadowColor = shadowColorProvider.getValueAt(request.getEffectPosition());
-        int maximumAlpha = (int) (maximumAlphaProvider.getValueAt(request.getEffectPosition()) * 255.0);
+        int shiftX = (int) (shiftXProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale());
+        int shiftY = (int) (shiftYProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale());
+        Color shadowColor = shadowColorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        int maximumAlpha = (int) (maximumAlphaProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 255.0);
 
-        int blurX = (int) (shadowBlurXProvider.getValueAt(request.getEffectPosition()) * request.getScale());
-        int blurY = (int) (shadowBlurYProvider.getValueAt(request.getEffectPosition()) * request.getScale());
+        int blurX = (int) (shadowBlurXProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale());
+        int blurY = (int) (shadowBlurYProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale());
 
-        double shadowMultiplier = shadowMultiplierProvider.getValueAt(request.getEffectPosition());
+        double shadowMultiplier = shadowMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         independentPixelOperation.executePixelTransformation(currentFrame.getWidth(), currentFrame.getHeight(), (x, y) -> {
             int originalX = x - shiftX;
@@ -101,7 +101,7 @@ public class DropShadowEffect extends StatelessVideoEffect {
             shadow.setAlpha(newa, x, y);
         });
 
-        double scale = scaleProvider.getValueAt(request.getEffectPosition());
+        double scale = scaleProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         int shadowTranslateX;
         int shadowTranslateY;

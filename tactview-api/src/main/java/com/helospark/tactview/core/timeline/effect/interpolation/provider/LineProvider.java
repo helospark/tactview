@@ -22,24 +22,22 @@ public class LineProvider extends CompositeKeyframeableEffect<InterpolationLine>
     }
 
     @Override
-    public InterpolationLine getValueAt(TimelinePosition position) {
-        Point x = startPointProvider.getValueAt(position);
-        Point y = endPointProvider.getValueAt(position);
-        return new InterpolationLine(x, y);
+    public InterpolationLine getValueWithoutScriptAt(TimelinePosition position) {
+        return getValueAt(position, null);
     }
 
     @Override
     public InterpolationLine getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        InterpolationLine result = null;
         if (expression != null && evaluationContext != null) {
-            InterpolationLine expressionResult = evaluationContext.evaluateExpression(expression, position, InterpolationLine.class);
-            if (expressionResult == null) {
-                return getValueAt(position);
-            } else {
-                return expressionResult;
-            }
-        } else {
-            return getValueAt(position);
+            result = evaluationContext.evaluateExpression(expression, position, InterpolationLine.class);
         }
+        if (result == null) {
+            Point x = startPointProvider.getValueAt(position, evaluationContext);
+            Point y = endPointProvider.getValueAt(position, evaluationContext);
+            result = new InterpolationLine(x, y);
+        }
+        return result;
     }
 
     @Override

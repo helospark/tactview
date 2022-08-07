@@ -51,9 +51,9 @@ public class EdgeDetectEffect extends StatelessVideoEffect {
         nativeRequest.output = result.getBuffer();
         nativeRequest.width = currentFrame.getWidth();
         nativeRequest.height = currentFrame.getHeight();
-        nativeRequest.apertureSize = apertureSizeProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
-        nativeRequest.lowThreshold = lowThresholdProvider.getValueAt(request.getEffectPosition());
-        nativeRequest.highThresholdMultiplier = highThresholdMultiplier.getValueAt(request.getEffectPosition());
+        nativeRequest.apertureSize = apertureSizeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 2 + 1;
+        nativeRequest.lowThreshold = lowThresholdProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        nativeRequest.highThresholdMultiplier = highThresholdMultiplier.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         implementation.edgeDetect(nativeRequest);
 

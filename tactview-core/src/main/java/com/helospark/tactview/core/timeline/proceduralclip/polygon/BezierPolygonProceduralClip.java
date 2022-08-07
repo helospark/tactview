@@ -51,9 +51,9 @@ public class BezierPolygonProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        int fuzzyEdge = (int) (fuzzyEdgeProvider.getValueAt(relativePosition) * request.getExpectedWidth());
-        BezierPolygon polygon = polygonProvider.getValueAt(relativePosition).multiplyPoints(new Point(request.getExpectedWidth(), request.getExpectedHeight()));
-        Color color = colorProvider.getValueAt(relativePosition);
+        int fuzzyEdge = (int) (fuzzyEdgeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth());
+        BezierPolygon polygon = polygonProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyPoints(new Point(request.getExpectedWidth(), request.getExpectedHeight()));
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         if (polygon.getPoints().size() <= 2) {
             return ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());

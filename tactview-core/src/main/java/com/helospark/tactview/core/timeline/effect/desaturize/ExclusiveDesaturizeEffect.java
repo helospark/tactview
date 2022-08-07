@@ -46,9 +46,9 @@ public class ExclusiveDesaturizeEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        double excludedHue = excludedColorProvider.getValueAt(request.getEffectPosition()).rgbToHsbColor().red;
-        double excludedHueRange = excludedHueRangeProvider.getValueAt(request.getEffectPosition());
-        double falloffFactor = falloffFactorProvider.getValueAt(request.getEffectPosition());
+        double excludedHue = excludedColorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).rgbToHsbColor().red;
+        double excludedHueRange = excludedHueRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double falloffFactor = falloffFactorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), List.of(), pixelRequest -> {
             Color color = new Color(pixelRequest.input[0] / 255.0, pixelRequest.input[1] / 255.0, pixelRequest.input[2] / 255.0);

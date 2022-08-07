@@ -54,13 +54,13 @@ public class NovaProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        int seed = seedProvider.getValueAt(relativePosition);
-        int randomHue = randomHueProvider.getValueAt(relativePosition);
-        int nspoke = numberOfSpokesProvider.getValueAt(relativePosition);
-        double radius = radiusProvider.getValueAt(relativePosition) * request.getExpectedWidth();
-        Color color = colorProvider.getValueAt(relativePosition).rgbToHsl();
-        double centerX = centerXProvider.getValueAt(relativePosition);
-        double centerY = centerYProvider.getValueAt(relativePosition);
+        int seed = seedProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        int randomHue = randomHueProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        int nspoke = numberOfSpokesProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double radius = radiusProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth();
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext()).rgbToHsl();
+        double centerX = centerXProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double centerY = centerYProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         Random random = new Random(seed);
         double[] spoke = new double[nspoke];

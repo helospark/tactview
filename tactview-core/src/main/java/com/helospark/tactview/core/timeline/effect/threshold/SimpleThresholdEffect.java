@@ -38,7 +38,7 @@ public class SimpleThresholdEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        Integer threshold = thresholdLimitProvider.getValueAt(request.getEffectPosition());
+        Integer threshold = thresholdLimitProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
             int[] input = pixelRequest.input;
             double value = (input[0] + input[1] + input[2]) / 3.0;

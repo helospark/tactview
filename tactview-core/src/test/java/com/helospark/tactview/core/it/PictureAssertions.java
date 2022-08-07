@@ -1,8 +1,7 @@
 package com.helospark.tactview.core.it;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
 
@@ -49,7 +48,7 @@ public class PictureAssertions {
     }
 
     private static void assertWithDelta(String color, int value, int expected, Delta delta) {
-        assertTrue(color + " should be " + expected + " but was " + value, Math.abs(value - expected) < delta.delta);
+        assertThat(color + " should be " + expected + " but was " + value, Math.abs(value - expected) < delta.delta, is(true));
     }
 
 }

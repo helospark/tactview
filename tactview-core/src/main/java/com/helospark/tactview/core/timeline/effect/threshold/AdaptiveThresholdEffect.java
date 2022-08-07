@@ -44,8 +44,8 @@ public class AdaptiveThresholdEffect extends StatelessVideoEffect {
         ClipImage result = ClipImage.sameSizeAs(request.getCurrentFrame());
 
         OpenCVThresholdRequest nativeRequest = new OpenCVThresholdRequest();
-        nativeRequest.addedConstant = addedConstantProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
-        nativeRequest.blockSize = blockSizeProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
+        nativeRequest.addedConstant = addedConstantProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 2 + 1;
+        nativeRequest.blockSize = blockSizeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 2 + 1;
         nativeRequest.height = request.getCurrentFrame().getHeight();
         nativeRequest.width = request.getCurrentFrame().getWidth();
         nativeRequest.input = request.getCurrentFrame().getBuffer();

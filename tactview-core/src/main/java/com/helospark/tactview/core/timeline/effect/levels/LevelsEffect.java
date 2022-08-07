@@ -47,15 +47,15 @@ public class LevelsEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        DoubleRange fromValueRange = fromValueRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange fromRedRange = fromRedRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange fromGreenRange = fromGreenRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange fromBlueRange = fromBlueRangeProvider.getValueAt(request.getEffectPosition());
+        DoubleRange fromValueRange = fromValueRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange fromRedRange = fromRedRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange fromGreenRange = fromGreenRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange fromBlueRange = fromBlueRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
-        DoubleRange toValueRange = toValueRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange toRedRange = toRedRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange toGreenRange = toGreenRangeProvider.getValueAt(request.getEffectPosition());
-        DoubleRange toBlueRange = toBlueRangeProvider.getValueAt(request.getEffectPosition());
+        DoubleRange toValueRange = toValueRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange toRedRange = toRedRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange toGreenRange = toGreenRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        DoubleRange toBlueRange = toBlueRangeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
             pixelRequest.output[0] = mapInputByRanges(pixelRequest.input[0], fromRedRange, toRedRange, fromValueRange, toValueRange);

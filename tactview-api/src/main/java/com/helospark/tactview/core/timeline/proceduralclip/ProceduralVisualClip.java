@@ -53,8 +53,8 @@ public abstract class ProceduralVisualClip extends VisualTimelineClip {
     public ReadOnlyClipImage getFrameInternal(GetFrameRequest request) {
         TimelinePosition relativePosition = calculatePositionToRender(request);
 
-        double widthMultiplier = widthMultiplierProvider.getValueAt(relativePosition);
-        double heightMultiplier = heightMultiplierProvider.getValueAt(relativePosition);
+        double widthMultiplier = widthMultiplierProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double heightMultiplier = heightMultiplierProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         GetFrameRequest newFrameRequest = GetFrameRequest.builderFrom(request)
                 .withExpectedWidth((int) (widthMultiplier * request.getExpectedWidth()))

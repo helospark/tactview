@@ -7,6 +7,7 @@ import javax.annotation.Generated;
 
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class StatelessEffectRequest {
@@ -20,6 +21,7 @@ public class StatelessEffectRequest {
     private Map<String, ReadOnlyClipImage> requestedClips;
     private Map<String, ReadOnlyClipImage> requestedChannelClips;
     private VisualTimelineClip currentTimelineClip;
+    private EvaluationContext evaluationContext;
 
     @Generated("SparkTools")
     private StatelessEffectRequest(Builder builder) {
@@ -32,6 +34,7 @@ public class StatelessEffectRequest {
         this.effectChannel = builder.effectChannel;
         this.requestedClips = builder.requestedClips;
         this.currentTimelineClip = builder.currentTimelineClip;
+        this.evaluationContext = builder.evaluationContext;
     }
 
     public ReadOnlyClipImage getCurrentFrame() {
@@ -66,6 +69,10 @@ public class StatelessEffectRequest {
         return requestedClips;
     }
 
+    public EvaluationContext getEvaluationContext() {
+        return evaluationContext;
+    }
+
     /**
      * @deprecated Returning the entire clip is not a good idea, we should return a simplified view or bridge class here and/or move to the request base image request
      * that are satisfied by the render engine, however for know this will work, and when the requirements clearer and the renderengine is cleaned up a bit it will move there.
@@ -92,6 +99,7 @@ public class StatelessEffectRequest {
         private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
         private VisualTimelineClip currentTimelineClip;
+        private EvaluationContext evaluationContext;
 
         private Builder() {
         }
@@ -138,6 +146,11 @@ public class StatelessEffectRequest {
 
         public Builder withRequestedChannelClips(Map<String, ReadOnlyClipImage> requestedChannelClips) {
             this.requestedChannelClips = requestedChannelClips;
+            return this;
+        }
+
+        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+            this.evaluationContext = evaluationContext;
             return this;
         }
 

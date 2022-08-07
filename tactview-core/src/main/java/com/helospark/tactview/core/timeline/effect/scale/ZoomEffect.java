@@ -58,9 +58,9 @@ public class ZoomEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
-        InterpolationLine toArea = toAreaProvider.getValueAt(request.getEffectPosition()).multiply(request.getCanvasWidth(), request.getCanvasHeight());
-        InterpolationLine fromArea = fromAreaProvider.getValueAt(request.getEffectPosition()).multiply(request.getCanvasWidth(), request.getCanvasHeight());
-        boolean keepRatio = keepRatioProvider.getValueAt(request.getEffectPosition());
+        InterpolationLine toArea = toAreaProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(request.getCanvasWidth(), request.getCanvasHeight());
+        InterpolationLine fromArea = fromAreaProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(request.getCanvasWidth(), request.getCanvasHeight());
+        boolean keepRatio = keepRatioProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         int fromWidth = (int) Math.abs(fromArea.end.x - fromArea.start.x);
         int fromHeight = (int) Math.abs(fromArea.end.y - fromArea.start.y);

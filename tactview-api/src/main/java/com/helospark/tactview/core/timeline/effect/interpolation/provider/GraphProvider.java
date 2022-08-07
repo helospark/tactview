@@ -5,6 +5,7 @@ import com.helospark.tactview.core.timeline.EffectAware;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.graph.EffectGraph;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class GraphProvider extends KeyframeableEffect<EffectGraph> {
@@ -36,7 +37,12 @@ public class GraphProvider extends KeyframeableEffect<EffectGraph> {
     }
 
     @Override
-    public EffectGraph getValueAt(TimelinePosition position) {
+    public EffectGraph getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        return effectGraph;
+    }
+
+    @Override
+    public EffectGraph getValueWithoutScriptAt(TimelinePosition position) {
         return effectGraph;
     }
 

@@ -53,8 +53,8 @@ public class PolygonMaskEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        int fuzzyEdge = (int) (fuzzyProvider.getValueAt(request.getEffectPosition()) * request.getCurrentFrame().getWidth());
-        Polygon polygon = polygonProvider.getValueAt(request.getEffectPosition());
+        int fuzzyEdge = (int) (fuzzyProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getCurrentFrame().getWidth());
+        Polygon polygon = polygonProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (polygon.getPoints().size() > 2) {
 

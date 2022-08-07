@@ -42,7 +42,7 @@ public class StopWatchTextProceduralClip extends AbstractTextProceduralClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        int offsetMillis = offsetMillisecondsProvider.getValueAt(relativePosition);
+        int offsetMillis = offsetMillisecondsProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         BigDecimal secondsToMilliseconds = new BigDecimal(1000);
 
@@ -56,7 +56,7 @@ public class StopWatchTextProceduralClip extends AbstractTextProceduralClip {
         int millis = duration.toMillisPart();
 
         String template = "%d:%02d:%02d";
-        if (includeMillisecondsProvider.getValueAt(relativePosition)) {
+        if (includeMillisecondsProvider.getValueAt(relativePosition, request.getEvaluationContext())) {
             template += ".%03d";
         }
 

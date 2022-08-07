@@ -45,40 +45,39 @@ public class PolygonProvider extends KeyframeableEffect<Polygon> {
     }
 
     @Override
-    public Polygon getValueAt(TimelinePosition position) {
-        Entry<TimelinePosition, List<Point>> lastEntry = values.lastEntry();
-        Entry<TimelinePosition, List<Point>> firstEntry = values.firstEntry();
-        if (values.isEmpty() || !useKeyframes) {
-            return new Polygon(defaultValues);
-        } else if (values.size() == 1) {
-            return new Polygon(values.firstEntry().getValue());
-        } else if (position.isGreaterThan(lastEntry.getKey())) {
-            return new Polygon(lastEntry.getValue());
-        } else if (position.isLessThan(firstEntry.getKey())) {
-            return new Polygon(firstEntry.getValue());
-        } else {
-            Entry<TimelinePosition, List<Point>> previousEntry = values.floorEntry(position);
-            Entry<TimelinePosition, List<Point>> nextEntry = values.ceilingEntry(position);
-
-            if (previousEntry.getKey().getSeconds().doubleValue() >= nextEntry.getKey().getSeconds().doubleValue()) {
-                return new Polygon(previousEntry.getValue());
-            }
-
-            return doInterpolate(previousEntry, nextEntry, position);
-        }
+    public Polygon getValueWithoutScriptAt(TimelinePosition position) {
+        return getValueAt(position, null);
     }
 
     @Override
     public Polygon getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        Polygon result = null;
         if (expression != null && evaluationContext != null) {
-            Polygon expressionResult = evaluationContext.evaluateExpression(expression, position, Polygon.class);
-            if (expressionResult == null) {
-                return getValueAt(position);
+            result = evaluationContext.evaluateExpression(expression, position, Polygon.class);
+        }
+        if (result == null) {
+            Entry<TimelinePosition, List<Point>> lastEntry = values.lastEntry();
+            Entry<TimelinePosition, List<Point>> firstEntry = values.firstEntry();
+            if (values.isEmpty() || !useKeyframes) {
+                return new Polygon(defaultValues);
+            } else if (values.size() == 1) {
+                return new Polygon(values.firstEntry().getValue());
+            } else if (position.isGreaterThan(lastEntry.getKey())) {
+                return new Polygon(lastEntry.getValue());
+            } else if (position.isLessThan(firstEntry.getKey())) {
+                return new Polygon(firstEntry.getValue());
             } else {
-                return expressionResult;
+                Entry<TimelinePosition, List<Point>> previousEntry = values.floorEntry(position);
+                Entry<TimelinePosition, List<Point>> nextEntry = values.ceilingEntry(position);
+
+                if (previousEntry.getKey().getSeconds().doubleValue() >= nextEntry.getKey().getSeconds().doubleValue()) {
+                    return new Polygon(previousEntry.getValue());
+                }
+
+                return doInterpolate(previousEntry, nextEntry, position);
             }
         } else {
-            return getValueAt(position);
+            return result;
         }
     }
 

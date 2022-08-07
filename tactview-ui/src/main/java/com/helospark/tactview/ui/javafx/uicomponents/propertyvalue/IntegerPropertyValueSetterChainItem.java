@@ -172,7 +172,7 @@ public class IntegerPropertyValueSetterChainItem extends TypeBasedPropertyValueS
     }
 
     private String integerProviderValueToString(IntegerProvider integerProvider, TimelinePosition position) {
-        return Integer.toString((integerProvider.getValueAt(position)));
+        return Integer.toString((integerProvider.getValueWithoutScriptAt(position)));
     }
 
 }

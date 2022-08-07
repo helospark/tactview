@@ -57,15 +57,15 @@ public class FloodFillEffect extends StatelessVideoEffect {
                 new IntPoint(0, -1)
         };
 
-        Color newColor = newColorProvider.getValueAt(request.getEffectPosition()).multiplyComponents(255);
+        Color newColor = newColorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiplyComponents(255);
 
-        IntPoint center = IntPoint.fromPoint(startPointProvider.getValueAt(request.getEffectPosition()).multiply(currentFrame.getWidth(), currentFrame.getHeight()));
+        IntPoint center = IntPoint.fromPoint(startPointProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(currentFrame.getWidth(), currentFrame.getHeight()));
         Color color = new Color(0, 0, 0);
         color.red = currentFrame.getRed(center.x, center.y);
         color.green = currentFrame.getGreen(center.x, center.y);
         color.blue = currentFrame.getBlue(center.x, center.y);
 
-        double maxColorDifference = maximumColorDifferenceProvider.getValueAt(request.getEffectPosition());
+        double maxColorDifference = maximumColorDifferenceProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         pointQueue.add(center);
 

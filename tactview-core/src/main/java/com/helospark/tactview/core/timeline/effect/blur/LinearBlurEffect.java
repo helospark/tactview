@@ -42,7 +42,7 @@ public class LinearBlurEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
-        InterpolationLine direction = directionProvider.getValueAt(request.getEffectPosition()).multiply(currentFrame.getWidth(), currentFrame.getHeight());
+        InterpolationLine direction = directionProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(currentFrame.getWidth(), currentFrame.getHeight());
 
         LinearBlurRequest blurRequest = LinearBlurRequest.builder()
                 .withDirection(direction)

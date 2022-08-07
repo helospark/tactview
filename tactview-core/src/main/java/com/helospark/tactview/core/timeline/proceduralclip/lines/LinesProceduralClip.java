@@ -50,9 +50,9 @@ public class LinesProceduralClip extends ProceduralVisualClip {
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
 
-        Color color = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        int width = (int) (lineWidthProvider.getValueAt(relativePosition) * request.getExpectedWidth());
-        int distance = (int) (distanceProvider.getValueAt(relativePosition) * request.getExpectedWidth());
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        int width = (int) (lineWidthProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth());
+        int distance = (int) (distanceProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth());
 
         if (width <= 0) {
             width = 1;
@@ -61,11 +61,11 @@ public class LinesProceduralClip extends ProceduralVisualClip {
             distance = 1;
         }
 
-        int offset = (int) (offsetProvider.getValueAt(relativePosition) * request.getExpectedWidth()) % distance;
+        int offset = (int) (offsetProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth()) % distance;
 
         int x = offset;
 
-        String orientation = orientationProvider.getValueAt(relativePosition).getId();
+        String orientation = orientationProvider.getValueAt(relativePosition, request.getEvaluationContext()).getId();
 
         if (orientation.equals("horizontal")) {
             while (x <= result.getWidth()) {

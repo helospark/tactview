@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 
 import com.helospark.lightdi.annotation.Service;
 import com.helospark.tactview.core.decoder.framecache.GlobalMemoryManagerAccessor;
@@ -17,6 +18,10 @@ import com.helospark.tactview.core.timeline.AudibleTimelineClip;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.AudioRequest;
 import com.helospark.tactview.core.timeline.TimelineLength;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
+import com.helospark.tactview.core.timeline.TimelineManagerRenderService;
+import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.ui.javafx.util.ByteBufferToJavaFxImageConverter;
 
 import javafx.scene.image.Image;
@@ -28,11 +33,16 @@ public class AudioImagePatternService {
 
     private final ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter;
     private final ProjectRepository projectRepository;
+    private final TimelineManagerRenderService timelineManagerRenderService;
+    private final TimelineManagerAccessor timelineManagerAccessor;
     private boolean renderAvgLine = true;
 
-    public AudioImagePatternService(ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, ProjectRepository projectRepository) {
+    public AudioImagePatternService(ByteBufferToJavaFxImageConverter byteBufferToJavaFxImageConverter, ProjectRepository projectRepository, TimelineManagerRenderService timelineManagerRenderService,
+            TimelineManagerAccessor timelineManagerAccessor) {
         this.byteBufferToJavaFxImageConverter = byteBufferToJavaFxImageConverter;
         this.projectRepository = projectRepository;
+        this.timelineManagerRenderService = timelineManagerRenderService;
+        this.timelineManagerAccessor = timelineManagerAccessor;
     }
 
     @PreferenceValue(name = "Render avg line for audio clip", defaultValue = "true", group = "Performance")
@@ -68,13 +78,15 @@ public class AudioImagePatternService {
         }
 
         for (int i = 0; i < numberOfSamplesToCollect; ++i) {
+            TimelinePosition position = audibleTimelineClip.getInterval().getStartPosition().add(BigDecimal.valueOf(visibleStartPosition)).add(timeJump.multiply(BigDecimal.valueOf(i)));
             AudioRequest frameRequest = AudioRequest.builder()
                     .withApplyEffects(false)
-                    .withPosition(audibleTimelineClip.getInterval().getStartPosition().add(BigDecimal.valueOf(visibleStartPosition)).add(timeJump.multiply(BigDecimal.valueOf(i))))
+                    .withPosition(position)
                     .withLength(new TimelineLength(timeJump))
                     .withSampleRate(projectRepository.getSampleRate())
                     .withBytesPerSample(projectRepository.getBytesPerSample())
                     .withNumberOfChannels(projectRepository.getNumberOfChannels())
+                    .withEvaluationContext(createEvaluationContext(position))
                     .build();
             AudioFrameResult frame = audibleTimelineClip.requestAudioFrame(frameRequest);
 
@@ -105,6 +117,15 @@ public class AudioImagePatternService {
         }
 
         return byteBufferToJavaFxImageConverter.convertToJavafxImage(result);
+    }
+
+    private EvaluationContext createEvaluationContext(TimelinePosition position) {
+        return timelineManagerRenderService.createEvaluationContext(timelineManagerAccessor.findIntersectingClipsData(position), createGlobalsMap(position));
+    }
+
+    private Map<String, Object> createGlobalsMap(TimelinePosition position) {
+        return Map.of(
+                "time", position.getSeconds().doubleValue());
     }
 
     private MutableSampleResult getSampleResult(AudioFrameResult frame, int channelNumber) {

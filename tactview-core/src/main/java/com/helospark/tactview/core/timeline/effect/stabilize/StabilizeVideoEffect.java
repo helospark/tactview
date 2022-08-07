@@ -137,7 +137,7 @@ public class StabilizeVideoEffect extends StatelessVideoEffect implements LongPr
         nativeRequest.height = projectRepository.getHeight();
         nativeRequest.motionFile = motionFile.getAbsolutePath();
         nativeRequest.motion2File = wobbleFile.getAbsolutePath();
-        nativeRequest.radius = smoothingRadiusProvider.getValueAt(TimelinePosition.ofZero());
+        nativeRequest.radius = smoothingRadiusProvider.getValueWithoutScriptAt(TimelinePosition.ofZero());
 
         stabilizerContextIndex = openCVStabilizeVideoService.initializeStabilizer(nativeRequest);
     }

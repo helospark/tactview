@@ -65,7 +65,7 @@ public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip 
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
         double progress;
 
-        double endSeconds = endPositionProvider.getValueAt(relativePosition);
+        double endSeconds = endPositionProvider.getValueAt(relativePosition, request.getEvaluationContext());
         double actualSeconds = relativePosition.getSeconds().doubleValue();
         if (endSeconds > actualSeconds) {
             progress = actualSeconds / endSeconds;
@@ -73,15 +73,15 @@ public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip 
             progress = 1.0;
         }
 
-        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition) * request.getScale());
+        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale());
         if (brushSize < 1) {
             brushSize = 1;
         }
 
-        Point topLeft = topLeftProvider.getValueAt(relativePosition);
+        Point topLeft = topLeftProvider.getValueAt(relativePosition, request.getEvaluationContext());
         topLeft = new Point(topLeft.x * request.getExpectedWidth(), topLeft.y * request.getExpectedHeight());
 
-        Point bottomRight = bottomRightProvider.getValueAt(relativePosition);
+        Point bottomRight = bottomRightProvider.getValueAt(relativePosition, request.getEvaluationContext());
         bottomRight = new Point(bottomRight.x * request.getExpectedWidth(), bottomRight.y * request.getExpectedHeight());
 
         int width = (int) Math.abs(bottomRight.x - topLeft.x);
@@ -90,9 +90,9 @@ public class DrawnEllipseHighlightProceduralEffect extends ProceduralVisualClip 
         int centerX = (int) (topLeft.x + width / 2);
         int centerY = (int) (bottomRight.y - height / 2);
 
-        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr");
+        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr", request.getEvaluationContext());
 
-        Color color = colorProvider.getValueAt(relativePosition);
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         if (width > 0 && height > 0) {
             DrawLineRequest drawLineRequest = DrawLineRequest.builder()

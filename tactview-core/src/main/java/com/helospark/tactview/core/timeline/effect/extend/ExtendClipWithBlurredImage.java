@@ -60,15 +60,15 @@ public class ExtendClipWithBlurredImage extends StatelessVideoEffect {
 
         double maxScale = Math.max(xScale, yScale);
 
-        boolean uniformScale = uniformScaleProvider.getValueAt(request.getEffectPosition());
+        boolean uniformScale = uniformScaleProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (uniformScale) {
             xScale = maxScale;
             yScale = maxScale;
         }
 
-        int kernelWidth = ((int) (kernelWidthProvider.getValueAt(request.getEffectPosition()) * request.getScale())) * 2 + 1;
-        int kernelHeight = ((int) (kernelHeightProvider.getValueAt(request.getEffectPosition()) * request.getScale())) * 2 + 1;
+        int kernelWidth = ((int) (kernelWidthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale())) * 2 + 1;
+        int kernelHeight = ((int) (kernelHeightProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale())) * 2 + 1;
 
         ScaleRequest scaleRequest = ScaleRequest.builder()
                 .withImage(currentFrame)

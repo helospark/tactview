@@ -162,7 +162,7 @@ public class ColorProviderValueSetterChainItem extends TypeBasedPropertyValueSet
             });
             colorPickerInputButton.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY) {
-                    Color previousValue = colorProvider.getValueAt(uiTimelineManager.getCurrentPosition());
+                    Color previousValue = colorProvider.getValueWithoutScriptAt(uiTimelineManager.getCurrentPosition());
                     inputModeRepository.requestColor(color -> {
                         boolean revertable = this.inputModeRepository.getResultType().equals(ResultType.DONE);
 

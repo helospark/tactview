@@ -146,10 +146,10 @@ public class TimelineManagerRenderService {
                                     .build();
 
                             frameResult = visualClip.getFrame(frameRequest);
-                            expandedFrame = expandFrame(request, visualClip, frameResult, clipToExpandedPosition);
+                            expandedFrame = expandFrame(request, visualClip, frameResult, clipToExpandedPosition, evaluationContext);
 
-                            BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition());
-                            double alpha = visualClip.getAlpha(request.getPosition());
+                            BlendModeStrategy blendMode = visualClip.getBlendModeAt(request.getPosition(), evaluationContext);
+                            double alpha = visualClip.getAlpha(request.getPosition(), evaluationContext);
 
                             String channelId = timelineManagerAccessor.findChannelForClipId(visualClip.getId()).get().getId();
                             return new RenderFrameData(visualClip.getId(), alpha, blendMode, expandedFrame,
@@ -182,6 +182,7 @@ public class TimelineManagerRenderService {
                                 .withApplyEffects(request.isEffectsEnabled())
                                 .withPosition(request.getPosition())
                                 .withLength(length)
+                                .withEvaluationContext(evaluationContext)
                                 .withSampleRate(sampleRateToUse)
                                 .withBytesPerSample(bytesPerSampleToUse)
                                 .withNumberOfChannels(numberOfChannels)
@@ -277,7 +278,7 @@ public class TimelineManagerRenderService {
     }
 
     private ClipImage expandFrame(TimelineManagerFramesRequest request, VisualTimelineClip visualClip, ReadOnlyClipImage frameResult,
-            Map<String, RegularRectangle> outBoundPositions) {
+            Map<String, RegularRectangle> outBoundPositions, EvaluationContext evaluationContext) {
         FrameExtender.FrameExtendRequest frameExtendRequest = FrameExtender.FrameExtendRequest.builder()
                 .withClip(visualClip)
                 .withFrameResult(frameResult)
@@ -286,6 +287,7 @@ public class TimelineManagerRenderService {
                 .withScale(request.getScale())
                 .withTimelinePosition(request.getPosition())
                 .withOutBoundPositions(outBoundPositions)
+                .withEvaluationContext(evaluationContext)
                 .build();
         return frameExtender.expandFrame(frameExtendRequest);
     }

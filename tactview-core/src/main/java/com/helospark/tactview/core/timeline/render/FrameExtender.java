@@ -12,6 +12,7 @@ import com.helospark.tactview.core.timeline.GetPositionParameters;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 import com.helospark.tactview.core.util.memoryoperations.MemoryOperations;
@@ -28,15 +29,16 @@ public class FrameExtender {
         ReadOnlyClipImage frameResult = request.getFrameResult();
         TimelinePosition timelinePosition = request.getTimelinePosition();
         VisualTimelineClip clip = request.getClip();
+        EvaluationContext evaluationContext = request.getEvaluationContext();
 
         int previewHeight = request.getPreviewHeight();
         int previewWidth = request.getPreviewWidth();
-        int anchorOffsetX = clip.getHorizontalAlignment(timelinePosition).apply(frameResult.getWidth(), previewWidth);
-        int anchorOffsetY = clip.getVerticalAlignment(timelinePosition).apply(frameResult.getHeight(), previewHeight);
+        int anchorOffsetX = clip.getHorizontalAlignment(timelinePosition, evaluationContext).apply(frameResult.getWidth(), previewWidth);
+        int anchorOffsetY = clip.getVerticalAlignment(timelinePosition, evaluationContext).apply(frameResult.getHeight(), previewHeight);
 
         double scale = request.getScale();
 
-        GetPositionParameters getPositionParameters = new GetPositionParameters(timelinePosition, scale, previewWidth, previewHeight);
+        GetPositionParameters getPositionParameters = new GetPositionParameters(timelinePosition, scale, previewWidth, previewHeight, evaluationContext);
         int requestedXPosition = anchorOffsetX + clip.getXPosition(getPositionParameters);
         int requestedYPosition = anchorOffsetY + clip.getYPosition(getPositionParameters);
 
@@ -88,6 +90,7 @@ public class FrameExtender {
         double scale;
         TimelinePosition timelinePosition;
         Map<String, RegularRectangle> outBoundPositions;
+        EvaluationContext evaluationContext;
 
         @Generated("SparkTools")
         private FrameExtendRequest(Builder builder) {
@@ -98,6 +101,7 @@ public class FrameExtender {
             this.scale = builder.scale;
             this.timelinePosition = builder.timelinePosition;
             this.outBoundPositions = builder.outBoundPositions;
+            this.evaluationContext = builder.evaluationContext;
         }
 
         public ReadOnlyClipImage getFrameResult() {
@@ -124,6 +128,10 @@ public class FrameExtender {
             return timelinePosition;
         }
 
+        public EvaluationContext getEvaluationContext() {
+            return evaluationContext;
+        }
+
         @Generated("SparkTools")
         public static Builder builder() {
             return new Builder();
@@ -138,6 +146,7 @@ public class FrameExtender {
             private double scale;
             private TimelinePosition timelinePosition;
             Map<String, RegularRectangle> outBoundPositions = new HashMap<>();
+            EvaluationContext evaluationContext;
 
             private Builder() {
             }
@@ -174,6 +183,11 @@ public class FrameExtender {
 
             public Builder withOutBoundPositions(Map<String, RegularRectangle> outBoundPositions) {
                 this.outBoundPositions = outBoundPositions;
+                return this;
+            }
+
+            public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+                this.evaluationContext = evaluationContext;
                 return this;
             }
 

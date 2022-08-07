@@ -1,5 +1,7 @@
 package com.helospark.tactview.core.timeline;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
+
 public class RequestFrameParameter {
     private TimelinePosition position;
     private int width;
@@ -8,6 +10,7 @@ public class RequestFrameParameter {
     private boolean lowResolutionPreview;
     private boolean isLivePlayback;
     private double scale;
+    private EvaluationContext evaluationContext;
 
     private RequestFrameParameter(Builder builder) {
         this.position = builder.position;
@@ -17,6 +20,7 @@ public class RequestFrameParameter {
         this.lowResolutionPreview = builder.lowResolutionPreview;
         this.scale = builder.scale;
         this.isLivePlayback = builder.isLivePlayback;
+        this.evaluationContext = builder.evaluationContext;
     }
 
     public TimelinePosition getPosition() {
@@ -47,6 +51,10 @@ public class RequestFrameParameter {
         return scale;
     }
 
+    public EvaluationContext getEvaluationContext() {
+        return evaluationContext;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -59,6 +67,7 @@ public class RequestFrameParameter {
         private boolean lowResolutionPreview;
         private boolean isLivePlayback;
         private double scale;
+        private EvaluationContext evaluationContext;
 
         private Builder() {
         }
@@ -95,6 +104,11 @@ public class RequestFrameParameter {
 
         public Builder withScale(double scale) {
             this.scale = scale;
+            return this;
+        }
+
+        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+            this.evaluationContext = evaluationContext;
             return this;
         }
 

@@ -12,6 +12,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygon;
 import com.helospark.tactview.core.timeline.proceduralclip.polygon.impl.bezier.BezierPolygonPoint;
 import com.helospark.tactview.core.util.DesSerFactory;
@@ -46,7 +47,12 @@ public class BezierPolygonProvider extends KeyframeableEffect<BezierPolygon> {
     }
 
     @Override
-    public BezierPolygon getValueAt(TimelinePosition position) {
+    public BezierPolygon getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        return getValueWithoutScriptAt(position); // TODO: evaluation context
+    }
+
+    @Override
+    public BezierPolygon getValueWithoutScriptAt(TimelinePosition position) {
         Entry<TimelinePosition, List<BezierPolygonPoint>> lastEntry = values.lastEntry();
         Entry<TimelinePosition, List<BezierPolygonPoint>> firstEntry = values.firstEntry();
         if (values.isEmpty() || !useKeyframes) {

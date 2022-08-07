@@ -35,7 +35,7 @@ public class VolumeAudioEffect extends StatelessAudioEffect {
     protected AudioFrameResult applyEffectInternal(AudioEffectRequest request) {
         AudioFrameResult input = request.getInput();
         AudioFrameResult result = AudioFrameResult.sameSizeAndFormatAs(input);
-        double volumeMultiplier = volumeProvider.getValueAt(request.getEffectPosition());
+        double volumeMultiplier = volumeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         for (int channel = 0; channel < input.getChannels().size(); ++channel) {
             for (int sampleIndex = 0; sampleIndex < input.getNumberSamples(); ++sampleIndex) {

@@ -50,9 +50,9 @@ public class ShearEffect extends StatelessVideoEffect {
         int width = frame.getWidth();
         int height = frame.getHeight();
 
-        double shearX = shearXProvider.getValueAt(request.getEffectPosition()) * width;
-        double shearY = shearYProvider.getValueAt(request.getEffectPosition()) * height;
-        Point offset = offsetProvider.getValueAt(request.getEffectPosition()).multiply(width, height);
+        double shearX = shearXProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * width;
+        double shearY = shearYProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * height;
+        Point offset = offsetProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(width, height);
 
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             double mappedX = x + shearX * y - offset.x;

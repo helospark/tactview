@@ -54,11 +54,11 @@ public class HistogramEquizationEffect extends StatelessVideoEffect {
         nativeRequest.output = result.getBuffer();
         nativeRequest.width = currentFrame.getWidth();
         nativeRequest.height = currentFrame.getHeight();
-        nativeRequest.grayscale = greyscaleProvider.getValueAt(request.getEffectPosition()) ? 1 : 0;
-        nativeRequest.adaptive = adaptiveProvider.getValueAt(request.getEffectPosition()) ? 1 : 0;
-        nativeRequest.adaptiveKernelWidth = adaptiveKernelWidthProvider.getValueAt(request.getEffectPosition());
-        nativeRequest.adaptiveKernelHeight = adaptiveKernelHeightProvider.getValueAt(request.getEffectPosition());
-        nativeRequest.adaptiveClipLimit = adaptiveClipLimitProvider.getValueAt(request.getEffectPosition());
+        nativeRequest.grayscale = greyscaleProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) ? 1 : 0;
+        nativeRequest.adaptive = adaptiveProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) ? 1 : 0;
+        nativeRequest.adaptiveKernelWidth = adaptiveKernelWidthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        nativeRequest.adaptiveKernelHeight = adaptiveKernelHeightProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        nativeRequest.adaptiveClipLimit = adaptiveClipLimitProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         implementation.equizeHistogram(nativeRequest);
 

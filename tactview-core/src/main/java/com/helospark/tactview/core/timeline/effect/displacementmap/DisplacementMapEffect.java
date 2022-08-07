@@ -49,8 +49,8 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         Optional<ReadOnlyClipImage> optionalDisplacementMap = displacementMapProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
 
-        double verticalMultiplier = verticalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
-        double horizontalMultiplier = horizontalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition()) * request.getScale();
+        double verticalMultiplier = verticalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale();
+        double horizontalMultiplier = horizontalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale();
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
         if (optionalDisplacementMap.isPresent()) {
@@ -72,7 +72,7 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
     @Override
     public List<String> getClipDependency(TimelinePosition position) {
         List<String> result = super.getClipDependency(position);
-        String displacementMap = displacementMapProvider.getValueAt(position);
+        String displacementMap = displacementMapProvider.getValueWithoutScriptAt(position);
 
         if (!displacementMap.isEmpty()) {
             result.add(displacementMap);

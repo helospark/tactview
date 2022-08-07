@@ -60,7 +60,7 @@ public class DiamondTransition extends AbstractVideoTransitionEffect {
         int w = transitionRequest.getFirstFrame().getWidth();
         int h = transitionRequest.getFirstFrame().getHeight();
 
-        double fuzziness = fuzzinessProvider.getValueAt(transitionRequest.getEffectPosition());
+        double fuzziness = fuzzinessProvider.getValueAt(transitionRequest.getEffectPosition(), transitionRequest.getEvaluationContext());
         double t = progress + fuzziness;
 
         List<Point> points = new ArrayList<>();

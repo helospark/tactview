@@ -42,8 +42,8 @@ public class ScaleEffect extends StatelessVideoEffect {
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
-        int newWidth = (int) (currentFrame.getWidth() * widthScale.getValueAt(request.getEffectPosition()));
-        int newHeight = (int) (currentFrame.getHeight() * heightScale.getValueAt(request.getEffectPosition()));
+        int newWidth = (int) (currentFrame.getWidth() * widthScale.getValueAt(request.getEffectPosition(), request.getEvaluationContext()));
+        int newHeight = (int) (currentFrame.getHeight() * heightScale.getValueAt(request.getEffectPosition(), request.getEvaluationContext()));
 
         ScaleRequest scaleRequest = ScaleRequest.builder()
                 .withImage(currentFrame)

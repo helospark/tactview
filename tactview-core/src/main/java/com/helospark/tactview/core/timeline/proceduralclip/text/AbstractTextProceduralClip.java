@@ -90,15 +90,15 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
 
     protected ReadOnlyClipImage drawText(GetFrameRequest request, TimelinePosition relativePosition, String currentText) {
         List<String> lines = Arrays.asList(currentText.split("\n"));
-        double currentSize = (sizeProvider.getValueAt(relativePosition) * request.getScale());
-        var color = colorProvider.getValueAt(relativePosition);
-        ValueListElement fontElement = fontProvider.getValueAt(relativePosition);
-        ValueListElement alignmentElement = alignmentProvider.getValueAt(relativePosition);
+        double currentSize = (sizeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale());
+        var color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        ValueListElement fontElement = fontProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        ValueListElement alignmentElement = alignmentProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         Font font = null;
 
-        if (isCustomFontProvider.getValueAt(relativePosition)) {
-            File customFontFile = customFontProvider.getValueAt(relativePosition);
+        if (isCustomFontProvider.getValueAt(relativePosition, request.getEvaluationContext())) {
+            File customFontFile = customFontProvider.getValueAt(relativePosition, request.getEvaluationContext());
             if (customFontFile != null && customFontFile.exists()) {
                 font = fontLoader.loadFont(customFontFile);
             }
@@ -108,12 +108,12 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         } else {
             font = new Font(fontElement.getId(), Font.PLAIN, 12);
         }
-        font = font.deriveFont((float) currentSize).deriveFont(fontHitsAt(relativePosition));
+        font = font.deriveFont((float) currentSize).deriveFont(fontHitsAt(relativePosition, request));
 
         double spacing = spacingProvider.getValueAt(relativePosition, request.getEvaluationContext());
         Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
         attributes.put(TextAttribute.TRACKING, spacing);
-        if (strikethroughProvider.getValueAt(relativePosition)) {
+        if (strikethroughProvider.getValueAt(relativePosition, request.getEvaluationContext())) {
             attributes.put(TextAttribute.STRIKETHROUGH, true);
         }
 
@@ -127,7 +127,7 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
 
         double maxWidth = 0;
         double totalHeight = 0;
-        float lineHeightMultiplier = lineHeightMultiplierProvider.getValueAt(relativePosition).floatValue();
+        float lineHeightMultiplier = lineHeightMultiplierProvider.getValueAt(relativePosition, request.getEvaluationContext()).floatValue();
         for (var line : lines) {
             double lineWidth = dummyGraphics.getFontMetrics().stringWidth(line);
             if (spacing < 0.0) {
@@ -156,8 +156,8 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
 
         fontMetrics.stringWidth(currentText);
 
-        double outlineWidth = outlineWidthProvider.getValueAt(relativePosition) * request.getScale();
-        var outlineColor = outlineColorProvider.getValueAt(relativePosition);
+        double outlineWidth = outlineWidthProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale();
+        var outlineColor = outlineColorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         float yPosition = fontMetrics.getHeight() * lineHeightMultiplier - fontMetrics.getDescent();
         for (int i = 0; i < lines.size(); ++i) {
@@ -203,9 +203,9 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
         return fontMetrics;
     }
 
-    private int fontHitsAt(TimelinePosition relativePosition) {
-        Boolean italic = italicProvider.getValueAt(relativePosition);
-        Boolean bold = boldProvider.getValueAt(relativePosition);
+    private int fontHitsAt(TimelinePosition relativePosition, GetFrameRequest request) {
+        Boolean italic = italicProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        Boolean bold = boldProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         int result = Font.PLAIN;
 
@@ -291,13 +291,13 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
                 .build();
         ValueProviderDescriptor fontDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(fontProvider)
-                .withShowPredicate(position -> !isCustomFontProvider.getValueAt(position))
+                .withShowPredicate(position -> !isCustomFontProvider.getValueWithoutScriptAt(position))
                 .withName("font")
                 .withGroup("font")
                 .build();
         ValueProviderDescriptor customFontProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(customFontProvider)
-                .withShowPredicate(position -> isCustomFontProvider.getValueAt(position))
+                .withShowPredicate(position -> isCustomFontProvider.getValueWithoutScriptAt(position))
                 .withName("font file")
                 .withGroup("font")
                 .withValidator(position -> validateCustomFont(position))
@@ -363,8 +363,8 @@ public abstract class AbstractTextProceduralClip extends ProceduralVisualClip {
 
     private List<ValueProviderError> validateCustomFont(TimelinePosition position) {
         List<ValueProviderError> errors = new ArrayList<>();
-        if (isCustomFontProvider.getValueAt(position)) {
-            File customFont = customFontProvider.getValueAt(position);
+        if (isCustomFontProvider.getValueWithoutScriptAt(position)) {
+            File customFont = customFontProvider.getValueWithoutScriptAt(position);
             if (!customFont.exists()) {
                 errors.add(new ValueProviderError("File does not exist"));
             } else if (fontLoader.loadFont(customFont) == null) {

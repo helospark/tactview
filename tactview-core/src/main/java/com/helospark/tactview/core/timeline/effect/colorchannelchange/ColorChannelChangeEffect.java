@@ -45,10 +45,10 @@ public class ColorChannelChangeEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        ColorElementOperation redChannelElement = redProvider.getValueAt(request.getEffectPosition()).getOperation();
-        ColorElementOperation greenChannelElement = greenProvider.getValueAt(request.getEffectPosition()).getOperation();
-        ColorElementOperation blueChannelElement = blueProvider.getValueAt(request.getEffectPosition()).getOperation();
-        ColorElementOperation alphaChannelElement = alphaProvider.getValueAt(request.getEffectPosition()).getOperation();
+        ColorElementOperation redChannelElement = redProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getOperation();
+        ColorElementOperation greenChannelElement = greenProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getOperation();
+        ColorElementOperation blueChannelElement = blueProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getOperation();
+        ColorElementOperation alphaChannelElement = alphaProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getOperation();
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
             pixelRequest.output[0] = redChannelElement.function.apply(pixelRequest.input);
             pixelRequest.output[1] = greenChannelElement.function.apply(pixelRequest.input);

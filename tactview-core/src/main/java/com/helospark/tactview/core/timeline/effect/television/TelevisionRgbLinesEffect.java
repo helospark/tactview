@@ -66,7 +66,7 @@ public class TelevisionRgbLinesEffect extends StatelessVideoEffect {
     }
 
     private int getRgbColumnWidth(StatelessEffectRequest request) {
-        int rgbColumnWidth = (int) (pixelColumnWidthProvider.getValueAt(request.getEffectPosition()) * request.getScale());
+        int rgbColumnWidth = (int) (pixelColumnWidthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale());
         if (rgbColumnWidth < 1) {
             rgbColumnWidth = 1;
         }

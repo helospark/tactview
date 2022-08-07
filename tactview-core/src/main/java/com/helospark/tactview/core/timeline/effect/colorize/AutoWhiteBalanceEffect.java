@@ -41,10 +41,10 @@ public class AutoWhiteBalanceEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        Color color = colorProvider.getValueAt(request.getEffectPosition());
+        Color color = colorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
-        double tintMultiplier = tintMultiplierProvider.getValueAt(request.getEffectPosition());
-        double temperatureMultiplier = temperatureMultiplierProvider.getValueAt(request.getEffectPosition());
+        double tintMultiplier = tintMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double temperatureMultiplier = temperatureMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         double temperatureChange = ((color.blue - color.red) / 2.0) * temperatureMultiplier;
         double tintChange = ((color.red + temperatureChange) - color.green) * tintMultiplier;

@@ -40,7 +40,7 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
     }
 
     @Override
-    public Double getValueAt(TimelinePosition position) {
+    public Double getValueWithoutScriptAt(TimelinePosition position) {
         Double value = interpolator.valueAt(position);
         if (sizeFunction.equals(SizeFunction.CLAMP_TO_MIN_MAX)) {
             if (value < min) {
@@ -60,12 +60,12 @@ public class DoubleProvider extends KeyframeableEffect<Double> {
         if (expression != null && evaluationContext != null) {
             Double expressionResult = evaluationContext.evaluateExpression(expression, position, Double.class);
             if (expressionResult == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return expressionResult;
             }
         } else {
-            return getValueAt(position);
+            return getValueWithoutScriptAt(position);
         }
     }
 

@@ -62,7 +62,7 @@ public class HighlightPenProceduralEffect extends ProceduralVisualClip {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
         double progress;
 
-        double endSeconds = endPositionProvider.getValueAt(relativePosition);
+        double endSeconds = endPositionProvider.getValueAt(relativePosition, request.getEvaluationContext());
         double actualSeconds = relativePosition.getSeconds().doubleValue();
         if (endSeconds > actualSeconds) {
             progress = actualSeconds / endSeconds;
@@ -70,16 +70,16 @@ public class HighlightPenProceduralEffect extends ProceduralVisualClip {
             progress = 1.0;
         }
 
-        InterpolationLine line = lineProvider.getValueAt(relativePosition).multiply(request.getExpectedWidth(), request.getExpectedHeight());
+        InterpolationLine line = lineProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiply(request.getExpectedWidth(), request.getExpectedHeight());
 
-        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition) * request.getScale());
+        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale());
         if (brushSize < 1) {
             brushSize = 1;
         }
 
-        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr");
+        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr", request.getEvaluationContext());
 
-        Color color = colorProvider.getValueAt(relativePosition);
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         DrawLineRequest drawLineRequest = DrawLineRequest.builder()
                 .withBrushFilePath(brushFilePath)

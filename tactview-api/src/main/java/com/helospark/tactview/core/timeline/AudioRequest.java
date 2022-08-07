@@ -1,6 +1,9 @@
 package com.helospark.tactview.core.timeline;
 
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
+
 public class AudioRequest {
+    private EvaluationContext evaluationContext;
     private TimelinePosition position;
     private TimelineLength length;
     private int sampleRate;
@@ -9,6 +12,7 @@ public class AudioRequest {
     private boolean applyEffects;
 
     private AudioRequest(Builder builder) {
+        this.evaluationContext = builder.evaluationContext;
         this.position = builder.position;
         this.length = builder.length;
         this.sampleRate = builder.sampleRate;
@@ -41,6 +45,10 @@ public class AudioRequest {
         return numberOfChannels;
     }
 
+    public EvaluationContext getEvaluationContext() {
+        return evaluationContext;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -50,12 +58,14 @@ public class AudioRequest {
     }
 
     public static final class Builder {
+        private EvaluationContext evaluationContext;
         private TimelinePosition position;
         private TimelineLength length;
         private int sampleRate;
         private int bytesPerSample;
         private int numberOfChannels;
         private boolean applyEffects;
+
         private Builder() {
         }
 
@@ -90,6 +100,11 @@ public class AudioRequest {
 
         public Builder withNumberOfChannels(int numberOfChannels) {
             this.numberOfChannels = numberOfChannels;
+            return this;
+        }
+
+        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+            this.evaluationContext = evaluationContext;
             return this;
         }
 

@@ -41,11 +41,11 @@ public class ProceduralSquareWaveAudioClip extends ProceduralAudioClip {
 
     @Override
     protected AudioFrameResult requestAudioFrameInternal(AudioRequest audioRequest) {
-        double amplitude = amplitudeProvider.getValueAt(audioRequest.getPosition());
+        double amplitude = amplitudeProvider.getValueAt(audioRequest.getPosition(), audioRequest.getEvaluationContext());
 
         BigDecimal positionSecond = audioRequest.getPosition().getSeconds();
-        BigDecimal onTime = BigDecimal.valueOf(Math.pow(10, BigDecimal.valueOf(onTimeProvider.getValueAt(audioRequest.getPosition())).doubleValue()));
-        BigDecimal offTime = BigDecimal.valueOf(Math.pow(10, BigDecimal.valueOf(offTimeProvider.getValueAt(audioRequest.getPosition())).doubleValue()));
+        BigDecimal onTime = BigDecimal.valueOf(Math.pow(10, BigDecimal.valueOf(onTimeProvider.getValueAt(audioRequest.getPosition(), audioRequest.getEvaluationContext())).doubleValue()));
+        BigDecimal offTime = BigDecimal.valueOf(Math.pow(10, BigDecimal.valueOf(offTimeProvider.getValueAt(audioRequest.getPosition(), audioRequest.getEvaluationContext())).doubleValue()));
 
         BigDecimal period = onTime.add(offTime);
 

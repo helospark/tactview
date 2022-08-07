@@ -75,41 +75,41 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        int seed = seedProvider.getValueAt(relativePosition);
+        int seed = seedProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         FastNoise fastNoise = new FastNoise(seed);
 
-        double frequency = frequencyProvider.getValueAt(relativePosition);
+        double frequency = frequencyProvider.getValueAt(relativePosition, request.getEvaluationContext());
         fastNoise.SetFrequency((float) frequency);
 
-        CellularReturnType cellularReturnType = cellularReturnTypeProvider.getValueAt(relativePosition).getCellularReturnType();
+        CellularReturnType cellularReturnType = cellularReturnTypeProvider.getValueAt(relativePosition, request.getEvaluationContext()).getCellularReturnType();
         fastNoise.SetCellularReturnType(cellularReturnType);
 
-        FractalType octaveCombinerType = fractalOctaveCombinderProvider.getValueAt(relativePosition).getFractalType();
+        FractalType octaveCombinerType = fractalOctaveCombinderProvider.getValueAt(relativePosition, request.getEvaluationContext()).getFractalType();
         fastNoise.SetFractalType(octaveCombinerType);
 
-        int octaves = octaveProvider.getValueAt(relativePosition);
+        int octaves = octaveProvider.getValueAt(relativePosition, request.getEvaluationContext());
         fastNoise.SetFractalOctaves(octaves);
 
-        double lacunarity = lacunarityProvider.getValueAt(relativePosition);
+        double lacunarity = lacunarityProvider.getValueAt(relativePosition, request.getEvaluationContext());
         fastNoise.SetFractalLacunarity((float) lacunarity);
 
-        double gain = gainProvider.getValueAt(relativePosition);
+        double gain = gainProvider.getValueAt(relativePosition, request.getEvaluationContext());
         fastNoise.SetFractalGain((float) gain);
 
-        CellularDistanceFunction cellularDistance = cellularDistanceFunctionProvider.getValueAt(relativePosition).getCellularDistanceFunction();
+        CellularDistanceFunction cellularDistance = cellularDistanceFunctionProvider.getValueAt(relativePosition, request.getEvaluationContext()).getCellularDistanceFunction();
         fastNoise.SetCellularDistanceFunction(cellularDistance);
 
         int width = request.getExpectedWidth();
         int height = request.getExpectedHeight();
         ClipImage result = ClipImage.fromSize(width, height);
 
-        float xOffset = (float) (double) xOffsetProvider.getValueAt(relativePosition);
-        float yOffset = (float) (double) yOffsetProvider.getValueAt(relativePosition);
+        float xOffset = (float) (double) xOffsetProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        float yOffset = (float) (double) yOffsetProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        Color color = colorProvider.getValueAt(relativePosition);
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        FractalFunction fractalFunction = fractalKindProvider.getValueAt(relativePosition).getFractalFunction();
+        FractalFunction fractalFunction = fractalKindProvider.getValueAt(relativePosition, request.getEvaluationContext()).getFractalFunction();
 
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             float normalizedX = (float) x / width * 1000f + xOffset;
@@ -201,7 +201,7 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
                 .withName("color")
                 .build();
 
-        Function<TimelinePosition, Boolean> enabledIfCellular = globalPosition -> fractalKindProvider.getValueAt(globalPosition).getId().equals("cellular");
+        Function<TimelinePosition, Boolean> enabledIfCellular = globalPosition -> fractalKindProvider.getValueWithoutScriptAt(globalPosition).getId().equals("cellular");
         ValueProviderDescriptor cellularReturnTypeDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(cellularReturnTypeProvider)
                 .withName("cell ReturnType")
@@ -213,7 +213,7 @@ public class NoiseProceduralClip extends ProceduralVisualClip {
                 .withEnabledIf(enabledIfCellular)
                 .build();
 
-        Function<TimelinePosition, Boolean> enabledIfFractal = globalPosition -> fractalKindProvider.getValueAt(globalPosition).getId().contains("Fractal");
+        Function<TimelinePosition, Boolean> enabledIfFractal = globalPosition -> fractalKindProvider.getValueWithoutScriptAt(globalPosition).getId().contains("Fractal");
         ValueProviderDescriptor octaveDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(octaveProvider)
                 .withName("fractal octave")

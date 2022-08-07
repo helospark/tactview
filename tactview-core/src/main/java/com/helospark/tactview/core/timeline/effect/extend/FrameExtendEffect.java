@@ -43,6 +43,7 @@ public class FrameExtendEffect extends StatelessVideoEffect {
                 .withPreviewHeight(request.getCanvasHeight())
                 .withScale(request.getScale())
                 .withTimelinePosition(request.getClipPosition())
+                .withEvaluationContext(request.getEvaluationContext())
                 .build();
         return frameExtender.expandFrame(frameExtendRequest);
     }

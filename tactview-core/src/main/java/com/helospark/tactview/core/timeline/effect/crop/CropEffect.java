@@ -47,8 +47,8 @@ public class CropEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        Point topLeft = topLeftPointProvider.getValueAt(request.getEffectPosition());
-        Point bottomRight = bottomRightPointProvider.getValueAt(request.getEffectPosition());
+        Point topLeft = topLeftPointProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        Point bottomRight = bottomRightPointProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
             double x = (double) pixelRequest.x / request.getCurrentFrame().getWidth();
             double y = (double) pixelRequest.y / request.getCurrentFrame().getHeight();

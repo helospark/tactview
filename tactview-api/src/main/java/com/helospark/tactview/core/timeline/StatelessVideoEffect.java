@@ -50,14 +50,14 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
     public ReadOnlyClipImage createFrameExternal(StatelessEffectRequest request) {
         ReadOnlyClipImage result = createFrame(request);
 
-        Optional<ReadOnlyClipImage> mask = Optional.ofNullable(request.getRequestedClips().get(maskProvider.getValueAt(request.getEffectPosition())));
+        Optional<ReadOnlyClipImage> mask = Optional.ofNullable(request.getRequestedClips().get(maskProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext())));
 
         if (mask.isPresent()) {
             FrameMergerWithMaskRequest mergeRequest = FrameMergerWithMaskRequest.builder()
                     .withTop(result)
                     .withBottom(request.getCurrentFrame())
                     .withMask(mask.get())
-                    .withInvert(invertProvider.getValueAt(request.getEffectPosition()))
+                    .withInvert(invertProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()))
                     .withScale(false)
                     .build();
 
@@ -114,7 +114,7 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
     public List<String> getClipDependency(TimelinePosition position) {
         List<String> clipDependency = super.getClipDependency(position);
 
-        String maskClipId = maskProvider.getValueAt(position);
+        String maskClipId = maskProvider.getValueWithoutScriptAt(position);
 
         if (maskClipId != null) {
             clipDependency.add(maskClipId);

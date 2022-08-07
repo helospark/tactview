@@ -63,22 +63,22 @@ public class LineProceduralClip extends ProceduralVisualClip {
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
-        double progress = progressProvider.getValueAt(relativePosition);
+        double progress = progressProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition) * request.getScale());
+        int brushSize = (int) (brushSizeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getScale());
         if (brushSize < 1) {
             brushSize = 1;
         }
 
-        Point startPoint = startPointProvider.getValueAt(relativePosition);
+        Point startPoint = startPointProvider.getValueAt(relativePosition, request.getEvaluationContext());
         startPoint = new Point(startPoint.x * request.getExpectedWidth(), startPoint.y * request.getExpectedHeight());
 
-        Point endPoint = endPointProvider.getValueAt(relativePosition);
+        Point endPoint = endPointProvider.getValueAt(relativePosition, request.getEvaluationContext());
         endPoint = new Point(endPoint.x * request.getExpectedWidth(), endPoint.y * request.getExpectedHeight());
 
-        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr");
+        String brushFilePath = brushFileProvider.getValueOrDefault(relativePosition, "classpath:/brushes/Sponge-02.gbr", request.getEvaluationContext());
 
-        Color color = colorProvider.getValueAt(relativePosition);
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         DrawLineRequest drawLineRequest = DrawLineRequest.builder()
                 .withBrushFilePath(brushFilePath)

@@ -56,14 +56,14 @@ public class CheckerBoardProceduralClip extends ProceduralVisualClip {
         int width = result.getWidth();
         int height = result.getHeight();
 
-        double xOffset = xOffsetProvider.getValueAt(relativePosition);
-        double yOffset = yOffsetProvider.getValueAt(relativePosition);
+        double xOffset = xOffsetProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double yOffset = yOffsetProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        double xScale = xScaleProvider.getValueAt(relativePosition);
-        double yScale = yScaleProvider.getValueAt(relativePosition);
+        double xScale = xScaleProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        double yScale = yScaleProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
-        Color color1 = color1Provider.getValueAt(relativePosition);
-        Color color2 = color2Provider.getValueAt(relativePosition);
+        Color color1 = color1Provider.getValueAt(relativePosition, request.getEvaluationContext());
+        Color color2 = color2Provider.getValueAt(relativePosition, request.getEvaluationContext());
 
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             double normalizedX = (double) x / width + xOffset;

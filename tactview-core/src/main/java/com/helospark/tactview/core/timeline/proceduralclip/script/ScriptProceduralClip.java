@@ -50,7 +50,7 @@ public class ScriptProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        String methodBody = methodBodyProvider.getValueAt(relativePosition);
+        String methodBody = methodBodyProvider.getValueAt(relativePosition, request.getEvaluationContext());
         int bodyHash = methodBody.hashCode();
         String hashToName = bodyHash < 0 ? "1" + Math.abs(bodyHash) : "" + bodyHash;
         String className = "DynamicEffect_" + hashToName;

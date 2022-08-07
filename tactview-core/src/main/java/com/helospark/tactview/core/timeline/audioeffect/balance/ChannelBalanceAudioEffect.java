@@ -42,7 +42,7 @@ public class ChannelBalanceAudioEffect extends StatelessAudioEffect {
         AudioFrameResult result = AudioFrameResult.sameSizeAndFormatAs(input);
 
         for (int channel = 0; channel < input.getChannels().size(); ++channel) {
-            double volumeMultiplier = channelVolumeProviders.get(channel).getValueAt(request.getEffectPosition());
+            double volumeMultiplier = channelVolumeProviders.get(channel).getValueAt(request.getEffectPosition(), request.getEvaluationContext());
             for (int sampleIndex = 0; sampleIndex < input.getNumberSamples(); ++sampleIndex) {
                 int sample = input.getSampleAt(channel, sampleIndex);
                 sample *= volumeMultiplier;

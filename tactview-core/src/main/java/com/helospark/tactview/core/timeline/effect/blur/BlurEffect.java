@@ -59,8 +59,8 @@ public class BlurEffect extends StatelessVideoEffect {
 
         BlurRequest blurRequest = BlurRequest.builder()
                 .withImage(request.getCurrentFrame())
-                .withKernelWidth((int) (kernelWidthProvider.getValueAt(request.getEffectPosition()) * request.getScale()))
-                .withKernelHeight((int) (kernelHeightProvider.getValueAt(request.getEffectPosition()) * request.getScale()))
+                .withKernelWidth((int) (kernelWidthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale()))
+                .withKernelHeight((int) (kernelHeightProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale()))
                 .withRegion(region)
                 .build();
 
@@ -68,8 +68,8 @@ public class BlurEffect extends StatelessVideoEffect {
     }
 
     private Region createBlurRegion(StatelessEffectRequest request) {
-        Point topLeft = topLeftPointProvider.getValueAt(request.getEffectPosition());
-        Point bottomRight = bottomRightPointProvider.getValueAt(request.getEffectPosition());
+        Point topLeft = topLeftPointProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        Point bottomRight = bottomRightPointProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
         int x = (int) (topLeft.x * request.getCurrentFrame().getWidth());
         int y = (int) (topLeft.y * request.getCurrentFrame().getHeight());
 

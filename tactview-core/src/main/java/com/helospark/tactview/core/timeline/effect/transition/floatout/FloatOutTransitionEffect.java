@@ -49,7 +49,7 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
         int xPosition = 0;
         int yPosition = 0;
 
-        ValueListElement direction = directionProvider.getValueAt(request.getEffectPosition());
+        ValueListElement direction = directionProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         if (direction.getId().equals("right")) {
             xPosition = (int) (progress * firstFrame.getWidth() * -1);
@@ -61,7 +61,7 @@ public class FloatOutTransitionEffect extends AbstractVideoTransitionEffect {
             yPosition = (int) (progress * firstFrame.getHeight() * -1);
         }
 
-        String type = floatOrWipeProvider.getValueAt(request.getEffectPosition()).getId();
+        String type = floatOrWipeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getId();
 
         int xOffset = xPosition;
         int yOffset = yPosition;

@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.helospark.tactview</groupId>
@@ -26,7 +24,8 @@
       <groupId>com.helospark</groupId>
       <artifactId>lightdi</artifactId>
     </dependency>
-    <dependency> <!-- Needed, because Eclipse's annotationprocessor is not good -->
+    <dependency>
+      <!-- Needed, because Eclipse's annotationprocessor is not good -->
       <groupId>io.github.lukehutch</groupId>
       <artifactId>fast-classpath-scanner</artifactId>
       <version>2.4.5</version>
@@ -229,6 +228,12 @@
       <artifactId>junit-platform-runner</artifactId>
       <version>1.5.0-M1</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

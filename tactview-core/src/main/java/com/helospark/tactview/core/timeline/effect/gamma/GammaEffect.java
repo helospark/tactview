@@ -38,7 +38,7 @@ public class GammaEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        double gamma = gammaProvider.getValueAt(request.getEffectPosition());
+        double gamma = gammaProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
             // if needed lookup table could be used for performance reasons

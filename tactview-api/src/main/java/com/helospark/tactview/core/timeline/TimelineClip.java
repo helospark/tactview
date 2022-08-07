@@ -125,7 +125,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     @Override
     public TimelineInterval getInterval() {
-        Boolean changeClipLength = changeClipLengthProvider.getValueAt(TimelinePosition.ofZero());
+        Boolean changeClipLength = changeClipLengthProvider.getValueWithoutScriptAt(TimelinePosition.ofZero());
         if (changeClipLength) {
             TimelineInterval originalInterval = this.interval;
             TimelinePosition originalStartPosition = originalInterval.getStartPosition();

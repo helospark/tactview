@@ -37,11 +37,11 @@ public class BrightnessContrassEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public ReadOnlyClipImage createFrame(StatelessEffectRequest effectRequest) {
-        double contrast = contrastProvider.getValueAt(effectRequest.getEffectPosition());
-        double brightness = brightnessProvider.getValueAt(effectRequest.getEffectPosition());
+    public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
+        double contrast = contrastProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double brightness = brightnessProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
-        ReadOnlyClipImage currentFrame = effectRequest.getCurrentFrame();
+        ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
         BrignessContrastServiceRequest brightnessContrastRequest = BrignessContrastServiceRequest.builder()
                 .withBrightness(brightness)

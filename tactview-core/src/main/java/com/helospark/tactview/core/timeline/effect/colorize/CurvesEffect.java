@@ -48,7 +48,7 @@ public class CurvesEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         int[] valueLut = new int[256];
 
-        KnotAwareUnivariateFunction curve = curveProvider.getValueAt(request.getEffectPosition());
+        KnotAwareUnivariateFunction curve = curveProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         double value = 0.0;
         for (int i = 0; i < 256; ++i) {
@@ -56,7 +56,7 @@ public class CurvesEffect extends StatelessVideoEffect {
             value += (1.0 / 255);
         }
 
-        CurvesTargetFunction mappingFunction = targetProvider.getValueAt(request.getEffectPosition()).function;
+        CurvesTargetFunction mappingFunction = targetProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).function;
 
         return independentPixelOperation.createNewImageWithAppliedTransformation(request.getCurrentFrame(), pixelRequest -> {
             mappingFunction.createResult(pixelRequest.input, pixelRequest.output, valueLut);

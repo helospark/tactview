@@ -51,15 +51,15 @@ public class LensDistortEffect extends StatelessVideoEffect {
         ClipImage result = ClipImage.sameSizeAs(currentFrame);
         OpenCVLensDistortRequest nativeRequest = new OpenCVLensDistortRequest();
 
-        double k1 = k1Provider.getValueAt(request.getEffectPosition());
-        double k2 = k2Provider.getValueAt(request.getEffectPosition());
-        double k3 = k3Provider.getValueAt(request.getEffectPosition());
-        double p1 = p1Provider.getValueAt(request.getEffectPosition());
-        double p2 = p2Provider.getValueAt(request.getEffectPosition());
-        double focalLength = focalLengthProvider.getValueAt(request.getEffectPosition());
+        double k1 = k1Provider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double k2 = k2Provider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double k3 = k3Provider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double p1 = p1Provider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double p2 = p2Provider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double focalLength = focalLengthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
-        int centerX = (int) (currentFrame.getWidth() * centerXProvider.getValueAt(request.getEffectPosition()));
-        int centerY = (int) (currentFrame.getWidth() * centerYProvider.getValueAt(request.getEffectPosition()));
+        int centerX = (int) (currentFrame.getWidth() * centerXProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()));
+        int centerY = (int) (currentFrame.getWidth() * centerYProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()));
 
         nativeRequest.input = currentFrame.getBuffer();
         nativeRequest.output = result.getBuffer();

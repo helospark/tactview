@@ -58,11 +58,12 @@ public abstract class AudibleTimelineClip extends TimelineClip implements Single
         boolean hasTempoChange = hasSonicPostProcessingChange();
 
         TimelinePosition startPosition = super.calculatePositionInClipSpaceTo(relativePosition, false);
-        TimelineLength newLength = audioRequest.getLength().multiply(BigDecimal.valueOf(timeScaleProvider.getValueAt(audioRequest.getPosition())));
+        TimelineLength newLength = audioRequest.getLength().multiply(BigDecimal.valueOf(timeScaleProvider.getValueAt(audioRequest.getPosition(), audioRequest.getEvaluationContext())));
 
         AudioRequest newAudioRequest = AudioRequest.builderFrom(audioRequest)
                 .withPosition(startPosition)
                 .withLength(newLength)
+                .withEvaluationContext(audioRequest.getEvaluationContext())
                 .build();
 
         AudioFrameResult result = requestAudioFrameInternal(newAudioRequest);
@@ -73,17 +74,17 @@ public abstract class AudibleTimelineClip extends TimelineClip implements Single
             result = newResult;
         }
 
-        return applyEffects(startPosition.subtract(renderOffset), result, newAudioRequest.isApplyEffects());
+        return applyEffects(startPosition.subtract(renderOffset), result, newAudioRequest.isApplyEffects(), audioRequest);
     }
 
-    private boolean hasSonicPostProcessingChange() {
-        return timeScaleProvider.keyframesEnabled() || !MathUtil.fuzzyEquals(timeScaleProvider.getValueAt(TimelinePosition.ofZero()), 1.0) ||
-                pitchShiftProvider.keyframesEnabled() || !MathUtil.fuzzyEquals(pitchShiftProvider.getValueAt(TimelinePosition.ofZero()), 1.0);
+    private boolean hasSonicPostProcessingChange() { // TODO: evaluation context
+        return timeScaleProvider.keyframesEnabled() || !MathUtil.fuzzyEquals(timeScaleProvider.getValueWithoutScriptAt(TimelinePosition.ofZero()), 1.0) ||
+                pitchShiftProvider.keyframesEnabled() || !MathUtil.fuzzyEquals(pitchShiftProvider.getValueWithoutScriptAt(TimelinePosition.ofZero()), 1.0);
     }
 
     private AudioFrameResult applyTempoChange(AudioFrameResult result, AudioRequest audioRequest) {
-        double tempo = timeScaleProvider.getValueAt(audioRequest.getPosition());
-        double pitchShift = pitchShiftProvider.getValueAt(audioRequest.getPosition());
+        double tempo = timeScaleProvider.getValueAt(audioRequest.getPosition(), audioRequest.getEvaluationContext());
+        double pitchShift = pitchShiftProvider.getValueAt(audioRequest.getPosition(), audioRequest.getEvaluationContext());
         int numberChannels = result.getChannels().size();
 
         int samplesInInput = result.getNumberSamples() * numberChannels;
@@ -129,7 +130,7 @@ public abstract class AudibleTimelineClip extends TimelineClip implements Single
 
     protected abstract AudioFrameResult requestAudioFrameInternal(AudioRequest audioRequest);
 
-    protected AudioFrameResult applyEffects(TimelinePosition relativePosition, AudioFrameResult frameResult, boolean applyEffects) {
+    protected AudioFrameResult applyEffects(TimelinePosition relativePosition, AudioFrameResult frameResult, boolean applyEffects, AudioRequest audioRequest) {
         if (applyEffects) {
             List<StatelessAudioEffect> actualEffects = getEffectsAt(relativePosition, StatelessAudioEffect.class);
 

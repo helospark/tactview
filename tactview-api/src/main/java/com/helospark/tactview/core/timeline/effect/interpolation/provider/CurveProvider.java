@@ -15,6 +15,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.KeyframeSupportingInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.CurveProvider.KeyFrameInfo;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.util.DesSerFactory;
 
 public class CurveProvider extends CompositeKeyframeableEffect<KeyFrameInfo> implements KeyframeSupportingInterpolator {
@@ -37,11 +38,16 @@ public class CurveProvider extends CompositeKeyframeableEffect<KeyFrameInfo> imp
     }
 
     @Override
-    public KnotAwareUnivariateFunction getValueAt(TimelinePosition position) {
+    public KnotAwareUnivariateFunction getValueAt(TimelinePosition position, EvaluationContext evaluationContext) {
+        return getValueWithoutScriptAt(position);
+    }
+
+    @Override
+    public KnotAwareUnivariateFunction getValueWithoutScriptAt(TimelinePosition position) {
         List<Point> result = new ArrayList<>();
 
         for (int i = 0; i < curvePoints.size(); ++i) {
-            Point newPoint = curvePoints.get(i).getValueAt(position);
+            Point newPoint = curvePoints.get(i).getValueWithoutScriptAt(position);
             result.add(newPoint);
         }
 

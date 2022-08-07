@@ -48,9 +48,9 @@ public class PolygonProceduralClip extends ProceduralVisualClip {
 
     @Override
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
-        int fuzzyEdge = (int) (fuzzyEdgeProvider.getValueAt(relativePosition) * request.getExpectedWidth());
-        Polygon polygon = polygonProvider.getValueAt(relativePosition);
-        Color color = colorProvider.getValueAt(relativePosition);
+        int fuzzyEdge = (int) (fuzzyEdgeProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth());
+        Polygon polygon = polygonProvider.getValueAt(relativePosition, request.getEvaluationContext());
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
 
         PolygonRenderServiceRequest serviceRequest = PolygonRenderServiceRequest.builder()
                 .withColor(color)

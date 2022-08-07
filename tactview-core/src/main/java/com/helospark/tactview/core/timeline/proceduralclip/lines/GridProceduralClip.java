@@ -48,10 +48,10 @@ public class GridProceduralClip extends ProceduralVisualClip {
     public ReadOnlyClipImage createProceduralFrame(GetFrameRequest request, TimelinePosition relativePosition) {
         ClipImage result = ClipImage.fromSize(request.getExpectedWidth(), request.getExpectedHeight());
 
-        Color color = colorProvider.getValueAt(relativePosition).multiplyComponents(255.0);
-        int width = (int) (lineWidthProvider.getValueAt(relativePosition) * request.getExpectedWidth());
-        int xDistance = (int) (xDistanceProvider.getValueAt(relativePosition) * request.getExpectedWidth());
-        int yDistance = (int) (yDistanceProvider.getValueAt(relativePosition) * request.getExpectedHeight());
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext()).multiplyComponents(255.0);
+        int width = (int) (lineWidthProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth());
+        int xDistance = (int) (xDistanceProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth());
+        int yDistance = (int) (yDistanceProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedHeight());
 
         if (width <= 0) {
             width = 1;
@@ -63,8 +63,8 @@ public class GridProceduralClip extends ProceduralVisualClip {
             yDistance = 1;
         }
 
-        int xOffset = (int) (xOffsetProvider.getValueAt(relativePosition) * request.getExpectedWidth()) % xDistance;
-        int yOffset = (int) (yOffsetProvider.getValueAt(relativePosition) * request.getExpectedHeight()) % yDistance;
+        int xOffset = (int) (xOffsetProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedWidth()) % xDistance;
+        int yOffset = (int) (yOffsetProvider.getValueAt(relativePosition, request.getEvaluationContext()) * request.getExpectedHeight()) % yDistance;
 
         int x = xOffset;
         while (x <= result.getWidth()) {

@@ -70,29 +70,31 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
-        InterpolationLine line = translateScaleProvider.getValueAt(request.getEffectPosition());
-        double angle = rotateProvider.getValueAt(request.getEffectPosition());
+        InterpolationLine line = translateScaleProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double angle = rotateProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
-        Point rotationCenterPoint = rotationCenterProvider.getValueAt(request.getEffectPosition());
-        Point scaleCenterPoint = scaleCenterProvider.getValueAt(request.getEffectPosition());
+        Point rotationCenterPoint = rotationCenterProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        Point scaleCenterPoint = scaleCenterProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         int newWidth;
         int newHeight;
 
         int baseTranslateX, baseTranslateY;
 
-        if (fitToRectangleScaleAndTranslate.getValueAt(request.getEffectPosition())) {
+        if (fitToRectangleScaleAndTranslate.getValueAt(request.getEffectPosition(), request.getEvaluationContext())) {
             newWidth = (int) (Math.abs(line.end.x - line.start.x) * request.getCanvasWidth());
             newHeight = (int) (Math.abs(line.end.y - line.start.y) * request.getCanvasHeight());
 
             baseTranslateX = (int) (line.start.x * request.getCanvasWidth());
             baseTranslateY = (int) (line.start.y * request.getCanvasHeight());
         } else {
-            newWidth = (int) (scaleXProvider.getValueAt(request.getEffectPosition()) * currentFrame.getWidth());
-            newHeight = (int) (scaleYProvider.getValueAt(request.getEffectPosition()) * currentFrame.getHeight());
+            newWidth = (int) (scaleXProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * currentFrame.getWidth());
+            newHeight = (int) (scaleYProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * currentFrame.getHeight());
 
-            baseTranslateX = (int) ((translatePointProvider.getValueAt(request.getEffectPosition()).x * request.getCanvasWidth()) - (newWidth - currentFrame.getWidth()) * scaleCenterPoint.x);
-            baseTranslateY = (int) ((translatePointProvider.getValueAt(request.getEffectPosition()).y * request.getCanvasHeight() - (newHeight - currentFrame.getHeight()) * scaleCenterPoint.y));
+            baseTranslateX = (int) ((translatePointProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).x * request.getCanvasWidth())
+                    - (newWidth - currentFrame.getWidth()) * scaleCenterPoint.x);
+            baseTranslateY = (int) ((translatePointProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).y * request.getCanvasHeight()
+                    - (newHeight - currentFrame.getHeight()) * scaleCenterPoint.y));
         }
 
         ScaleRequest scaleRequest = ScaleRequest.builder()
@@ -156,32 +158,32 @@ public class OrthogonalTransformationEffect extends StatelessVideoEffect {
         ValueProviderDescriptor translateScaleProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translateScaleProvider)
                 .withName("position, scale")
-                .withEnabledIf(p -> fitToRectangleScaleAndTranslate.getValueAt(p))
+                .withEnabledIf(p -> fitToRectangleScaleAndTranslate.getValueWithoutScriptAt(p))
                 .build();
 
         ValueProviderDescriptor translateProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(translatePointProvider)
                 .withName("Translate")
-                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueAt(p))
+                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueWithoutScriptAt(p))
                 .withGroup("translate")
                 .withRenderHints(Map.of(RenderTypeHint.TYPE, MovementType.RELATIVE))
                 .build();
         ValueProviderDescriptor scaleXProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(scaleXProvider)
                 .withName("Scale X")
-                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueAt(p))
+                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueWithoutScriptAt(p))
                 .withGroup("scale")
                 .build();
         ValueProviderDescriptor scaleYProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(scaleYProvider)
                 .withName("Scale Y")
-                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueAt(p))
+                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueWithoutScriptAt(p))
                 .withGroup("scale")
                 .build();
         ValueProviderDescriptor scaleCenterDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(scaleCenterProvider)
                 .withName("relative scale center")
-                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueAt(p))
+                .withEnabledIf(p -> !fitToRectangleScaleAndTranslate.getValueWithoutScriptAt(p))
                 .withGroup("scale")
                 .build();
 

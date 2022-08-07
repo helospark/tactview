@@ -52,10 +52,10 @@ public class PencilSketchEffect extends StatelessVideoEffect {
         nativeRequest.output = result.getBuffer();
         nativeRequest.width = currentFrame.getWidth();
         nativeRequest.height = currentFrame.getHeight();
-        nativeRequest.sigmaS = sigmaSProvider.getValueAt(request.getEffectPosition());
-        nativeRequest.sigmaR = sigmaRProvider.getValueAt(request.getEffectPosition());
-        nativeRequest.shadeFactor = shadeFactorProvider.getValueAt(request.getEffectPosition());
-        nativeRequest.color = colorProvider.getValueAt(request.getEffectPosition());
+        nativeRequest.sigmaS = sigmaSProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        nativeRequest.sigmaR = sigmaRProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        nativeRequest.shadeFactor = shadeFactorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        nativeRequest.color = colorProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         implementation.pencilSketch(nativeRequest);
 

@@ -68,7 +68,7 @@ public class WhipPanTransition extends AbstractVideoTransitionEffect {
 
         BlurRequest blurRequest = BlurRequest.builder()
                 .withImage(result)
-                .withKernelWidth((int) (blurProvider.getValueAt(request.getEffectPosition()) * request.getScale()))
+                .withKernelWidth((int) (blurProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale()))
                 .withKernelHeight(0)
                 .build();
 

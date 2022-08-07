@@ -45,11 +45,11 @@ public class PolarCoordinateEffect extends StatelessVideoEffect {
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
 
-        double circleDepth = circleDepthProvider.getValueAt(request.getEffectPosition());
-        double offsetAngleDepth = offsetAngleProvider.getValueAt(request.getEffectPosition());
-        boolean mapBackward = mapBackwardProvider.getValueAt(request.getEffectPosition());
-        boolean toPolar = toPolarProvider.getValueAt(request.getEffectPosition());
-        boolean mapFromTop = mapFromTopProvider.getValueAt(request.getEffectPosition());
+        double circleDepth = circleDepthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        double offsetAngleDepth = offsetAngleProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        boolean mapBackward = mapBackwardProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        boolean toPolar = toPolarProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        boolean mapFromTop = mapFromTopProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
         PolarOperationRequest polarRequest = PolarOperationRequest.builder()
                 .withCircleDepth(circleDepth)

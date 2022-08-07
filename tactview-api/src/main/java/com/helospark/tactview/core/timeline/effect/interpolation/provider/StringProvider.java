@@ -18,7 +18,7 @@ public class StringProvider extends KeyframeableEffect<String> {
     }
 
     @Override
-    public String getValueAt(TimelinePosition position) {
+    public String getValueWithoutScriptAt(TimelinePosition position) {
         return stringInterpolator.valueAt(position);
     }
 
@@ -27,12 +27,12 @@ public class StringProvider extends KeyframeableEffect<String> {
         if (expression != null && evaluationContext != null) {
             String expressionResult = evaluationContext.evaluateExpression(expression, position, String.class);
             if (expressionResult == null) {
-                return getValueAt(position);
+                return getValueWithoutScriptAt(position);
             } else {
                 return expressionResult;
             }
         } else {
-            return getValueAt(position);
+            return getValueWithoutScriptAt(position);
         }
     }
 

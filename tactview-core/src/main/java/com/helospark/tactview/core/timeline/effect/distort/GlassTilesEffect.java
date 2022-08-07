@@ -57,13 +57,13 @@ public class GlassTilesEffect extends StatelessVideoEffect {
         int width = frame.getWidth();
         int height = frame.getHeight();
 
-        double sizeX = sizeXProvider.getValueAt(request.getEffectPosition()) / request.getScale();
-        double sizeY = sizeYProvider.getValueAt(request.getEffectPosition()) / request.getScale();
+        double sizeX = sizeXProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) / request.getScale();
+        double sizeY = sizeYProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) / request.getScale();
 
-        Point shift = shiftProvider.getValueAt(request.getEffectPosition()).multiply(request.getCurrentFrame().getWidth(), request.getCurrentFrame().getHeight());
+        Point shift = shiftProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(request.getCurrentFrame().getWidth(), request.getCurrentFrame().getHeight());
 
-        double curvatureX = curvatureXProvider.getValueAt(request.getEffectPosition()) * request.getScale();
-        double curvatureY = curvatureYProvider.getValueAt(request.getEffectPosition()) * request.getScale();
+        double curvatureX = curvatureXProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale();
+        double curvatureY = curvatureYProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale();
 
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             double mappedX = MathUtil.clamp(x + (curvatureX * FastMath.tan(x * sizeX - shift.x)), 0, frame.getWidth() - 1);

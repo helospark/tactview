@@ -40,9 +40,9 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
 
     public ClipImage applyTransition(ExternalStatelessVideoTransitionEffectRequest request) {
         TimelinePosition effectPosition = request.getGlobalPosition().from(parentIntervalAware.getInterval().getStartPosition()).from(interval.getStartPosition());
-        double progress = progressProvider.getValueAt(effectPosition).doubleValue();
+        double progress = progressProvider.getValueWithoutScriptAt(effectPosition).doubleValue();
 
-        String direction = transitionDirection.getValueAt(effectPosition).getId();
+        String direction = transitionDirection.getValueWithoutScriptAt(effectPosition).getId();
 
         ReadOnlyClipImage firstFrame;
         ReadOnlyClipImage secondFrame;
@@ -63,6 +63,7 @@ public abstract class AbstractVideoTransitionEffect extends StatelessEffect {
                 .withSecondFrame(secondFrame)
                 .withGlobalPosition(request.getGlobalPosition())
                 .withScale(request.getScale())
+                .withEvaluationContext(request.getEvaluationContext())
                 .build();
 
         if (firstFrame.getWidth() != secondFrame.getWidth() ||

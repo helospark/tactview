@@ -42,8 +42,8 @@ public class PixelizeEffect extends StatelessVideoEffect {
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
         ReadOnlyClipImage currentFrame = request.getCurrentFrame();
-        int pixelWidth = (int) (pixelWidthProvider.getValueAt(request.getEffectPosition()) * currentFrame.getWidth());
-        int pixelHeight = (int) (pixelHeightProvider.getValueAt(request.getEffectPosition()) * currentFrame.getHeight());
+        int pixelWidth = (int) (pixelWidthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * currentFrame.getWidth());
+        int pixelHeight = (int) (pixelHeightProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * currentFrame.getHeight());
 
         if (pixelHeight < 0 || pixelWidth < 0) {
             return independentPixelOperation.createNewImageWithAppliedTransformation(currentFrame, pixelRequest -> {

@@ -54,11 +54,11 @@ public class MagnifierEffect extends StatelessVideoEffect {
         ReadOnlyClipImage frame = request.getCurrentFrame();
         ClipImage result = ClipImage.sameSizeAs(frame);
 
-        Point center = centerProvider.getValueAt(request.getEffectPosition()).multiply(request.getCurrentFrame().getWidth(), request.getCurrentFrame().getHeight());
-        double refractionIndex = refractionProvider.getValueAt(request.getEffectPosition());
+        Point center = centerProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).multiply(request.getCurrentFrame().getWidth(), request.getCurrentFrame().getHeight());
+        double refractionIndex = refractionProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
 
-        double width = widthProvider.getValueAt(request.getEffectPosition()) * request.getCurrentFrame().getWidth();
-        double height = heightProvider.getValueAt(request.getEffectPosition()) * request.getCurrentFrame().getHeight();
+        double width = widthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getCurrentFrame().getWidth();
+        double height = heightProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getCurrentFrame().getHeight();
 
         double a2 = width * width;
         double b2 = height * height;

@@ -63,8 +63,8 @@ public class BlendEffect extends StatelessVideoEffect {
         if (otherClip.isPresent()) {
             ReadOnlyClipImage clip = otherClip.get();
 
-            boolean scaleOnDifferentSize = scaleOnDifferentSizePrivder.getValueAt(request.getEffectPosition());
-            BlendModeStrategy blendMode = blendModeProvider.getValueAt(request.getEffectPosition()).getBlendMode();
+            boolean scaleOnDifferentSize = scaleOnDifferentSizePrivder.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+            BlendModeStrategy blendMode = blendModeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getBlendMode();
             boolean isScaled = false;
             ReadOnlyClipImage imageToUse = clip;
             if (!clip.isSameSizeAs(request.getCurrentFrame()) && scaleOnDifferentSize) {
@@ -152,7 +152,7 @@ public class BlendEffect extends StatelessVideoEffect {
 
     @Override
     public List<String> getClipDependency(TimelinePosition position) {
-        return List.of(dependentClipProvider.getValueAt(position));
+        return List.of(dependentClipProvider.getValueWithoutScriptAt(position));
     }
 
 }

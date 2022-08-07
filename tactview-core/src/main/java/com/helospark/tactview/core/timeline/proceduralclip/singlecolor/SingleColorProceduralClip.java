@@ -54,12 +54,12 @@ public class SingleColorProceduralClip extends ProceduralVisualClip {
         ByteBuffer buffer = GlobalMemoryManagerAccessor.memoryManager.requestBuffer(width * height * 4);
         ClipImage frameResult = new ClipImage(buffer, width, height);
 
-        Color color = colorProvider.getValueAt(relativePosition);
+        Color color = colorProvider.getValueAt(relativePosition, request.getEvaluationContext());
         int[] colorComponents = new int[]{
                 (int) (color.red * 255),
                 (int) (color.green * 255),
                 (int) (color.blue * 255),
-                alphaProvider.getValueAt(relativePosition)};
+                alphaProvider.getValueAt(relativePosition, request.getEvaluationContext())};
 
         independentPixelOperation.executePixelTransformation(width, height, (x, y) -> {
             frameResult.setPixel(colorComponents, x, y);

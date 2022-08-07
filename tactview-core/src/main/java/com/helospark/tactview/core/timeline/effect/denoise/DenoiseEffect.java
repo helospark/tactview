@@ -50,9 +50,9 @@ public class DenoiseEffect extends StatelessVideoEffect {
         denoiseRequest.height = request.getCurrentFrame().getHeight();
         denoiseRequest.input = request.getCurrentFrame().getBuffer();
         denoiseRequest.output = result.getBuffer();
-        denoiseRequest.searchWindowSize = searchWindowSizeProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
-        denoiseRequest.strength = strengthProvider.getValueAt(request.getEffectPosition());
-        denoiseRequest.templateWindowSize = templateWindowSizeProvider.getValueAt(request.getEffectPosition()) * 2 + 1;
+        denoiseRequest.searchWindowSize = searchWindowSizeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 2 + 1;
+        denoiseRequest.strength = strengthProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext());
+        denoiseRequest.templateWindowSize = templateWindowSizeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * 2 + 1;
 
         openCVBasedDenoiseEffect.denoise(denoiseRequest);
 
