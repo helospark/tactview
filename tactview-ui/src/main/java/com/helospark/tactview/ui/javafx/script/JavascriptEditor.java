@@ -273,6 +273,7 @@ public class JavascriptEditor {
                 result.add(menu);
             } else {
                 MenuItem menuItem = new MenuItem(menuName + " (" + entry.getValue().getClass().getSimpleName() + ")");
+                menuItem.setMnemonicParsing(false);
                 menuItem.setOnAction(e -> {
                     textArea.insertText(textArea.getCaretPosition(), finalPath);
                 });

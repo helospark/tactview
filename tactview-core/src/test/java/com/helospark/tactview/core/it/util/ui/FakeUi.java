@@ -1,6 +1,7 @@
 package com.helospark.tactview.core.it.util.ui;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
@@ -10,6 +11,7 @@ import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.render.RenderServiceChain;
 import com.helospark.tactview.core.repository.ProjectRepository;
+import com.helospark.tactview.core.save.LoadRequest;
 import com.helospark.tactview.core.save.SaveAndLoadHandler;
 import com.helospark.tactview.core.timeline.AddClipRequest;
 import com.helospark.tactview.core.timeline.AudioVideoFragment;
@@ -24,6 +26,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEff
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ColorProvider;
 import com.helospark.tactview.core.timeline.message.KeyframeAddedRequest;
+import com.helospark.tactview.core.util.FilePathToInputStream;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 
 @Component
@@ -44,6 +47,8 @@ public class FakeUi {
     private TimelineManagerAccessor timelineManager;
     @Autowired
     private SaveAndLoadHandler saveAndLoadHandler;
+    @Autowired
+    private FilePathToInputStream filePathToInputStream;
 
     private TimelinePosition cursorPosition = TimelinePosition.ofZero();
 
@@ -174,6 +179,26 @@ public class FakeUi {
         timelineManagerAccessor.addClip(channel, clonedClip);
 
         return clonedClip;
+    }
+
+    public void loadFile(String filePath) {
+        File tmpFile = createTmpFileFromPath(filePath);
+
+        saveAndLoadHandler.load(new LoadRequest(tmpFile.getAbsolutePath()));
+    }
+
+    private File createTmpFileFromPath(String filePath) {
+        try {
+            byte[] allBytes = filePathToInputStream.fileNameToStream(filePath).readAllBytes();
+
+            File tmpFile = File.createTempFile("testfile", System.currentTimeMillis() + "");
+            try (var fos = new FileOutputStream(tmpFile)) {
+                fos.write(allBytes);
+            }
+            return tmpFile;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -4,11 +4,13 @@ import static com.helospark.tactview.core.util.StaticObjectMapper.toValue;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +24,7 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.Mu
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.factory.functional.doubleinterpolator.impl.ConstantInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.util.ExpressionReflectionUtil;
 import com.helospark.tactview.core.util.ReflectionUtil;
 
 public abstract class TimelineClip implements EffectAware, IntervalAware, IntervalSettable {
@@ -404,16 +407,17 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
 
     protected abstract void generateSavedContentInternal(Map<String, Object> savedContent, SaveMetadata saveMetadata);
 
-    protected List<String> getClipDependency(TimelinePosition position) {
-        ArrayList<String> result = new ArrayList<>();
+    protected Set<String> getClipDependency(TimelinePosition position) {
+        Set<String> result = new HashSet<>();
 
-        List<String> clipsRequiredForEffect = getEffectsAtGlobalPosition(position, StatelessEffect.class)
+        Set<String> clipsRequiredForEffect = getEffectsAtGlobalPosition(position, StatelessEffect.class)
                 .stream()
                 .flatMap(a -> a.getClipDependency(position).stream())
                 .filter(a -> !a.isEmpty())
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
         result.addAll(clipsRequiredForEffect);
+        result.addAll(ExpressionReflectionUtil.getScriptDependencies(this, getId()));
 
         return result;
     }

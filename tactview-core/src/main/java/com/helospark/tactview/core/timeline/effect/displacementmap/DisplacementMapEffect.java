@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.displacementmap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
@@ -70,8 +71,8 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<String> getClipDependency(TimelinePosition position) {
-        List<String> result = super.getClipDependency(position);
+    public Set<String> getClipDependency(TimelinePosition position) {
+        Set<String> result = super.getClipDependency(position);
         String displacementMap = displacementMapProvider.getValueWithoutScriptAt(position);
 
         if (!displacementMap.isEmpty()) {

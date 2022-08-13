@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.layermask;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -131,8 +132,8 @@ public class LayerMaskEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<String> getClipDependency(TimelinePosition position) {
-        List<String> result = new ArrayList<>();
+    public Set<String> getClipDependency(TimelinePosition position) {
+        Set<String> result = super.getClipDependency(position);
         String clip = layerMaskProvider.getValueWithoutScriptAt(position);
         if (clip != "") {
             result.add(clip);

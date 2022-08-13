@@ -17,7 +17,11 @@ public class FilePathToInputStreamImpl implements FilePathToInputStream {
         InputStream result = null;
         try {
             if (filename.startsWith("classpath:")) {
-                Path path = Paths.get(this.getClass().getResource(filename.replaceFirst("classpath:", "")).toURI());
+                String fixedFileName = filename.replaceFirst("classpath:", "");
+                if (!fixedFileName.startsWith("/")) {
+                    fixedFileName = "/" + fixedFileName;
+                }
+                Path path = Paths.get(this.getClass().getResource(fixedFileName).toURI());
                 result = Files.newInputStream(path);
             } else if (filename.startsWith("file:")) {
                 result = new FileInputStream(new File(filename.replaceFirst("filename:", "")));
@@ -25,7 +29,7 @@ public class FilePathToInputStreamImpl implements FilePathToInputStream {
                 result = new FileInputStream(new File(filename));
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to open file " + filename);
+            throw new IllegalArgumentException("Unable to open file " + filename, e);
         }
         if (result == null) {
             throw new IllegalArgumentException("Unable to open file " + filename);

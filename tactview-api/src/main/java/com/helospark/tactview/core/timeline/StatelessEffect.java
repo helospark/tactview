@@ -1,9 +1,11 @@
 package com.helospark.tactview.core.timeline;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -126,8 +128,8 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
     public void preDestroy() {
     }
 
-    public List<String> getClipDependency(TimelinePosition position) {
-        return new ArrayList<>();
+    public Set<String> getClipDependency(TimelinePosition position) {
+        return new HashSet<>();
     }
 
     public abstract StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata);

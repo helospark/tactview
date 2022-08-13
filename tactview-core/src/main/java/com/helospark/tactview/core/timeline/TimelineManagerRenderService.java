@@ -142,7 +142,7 @@ public class TimelineManagerRenderService {
                                     .withRequestedChannelClips(channelCopiedClips)
                                     .withLowResolutionPreview(request.isLowResolutionPreview())
                                     .withLivePlayback(request.isLivePlayback())
-                                    .withEvaluationContext(evaluationContext.butWithClipId(clip.getId()))
+                                    .withEvaluationContext(evaluationContext)
                                     .build();
 
                             frameResult = visualClip.getFrame(frameRequest);

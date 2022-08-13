@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.effect.interpolation.provider.evalu
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -153,15 +154,31 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
 
     public Map<String, Map<String, Object>> getVariables(TimelinePosition position, EvaluationContext evaluationContext) {
         Map<String, Object> providerMap = getProviderDataMap(evaluationContext.getProviderData(), position);
-        Map<String, Object> globalsMap = getGlobalsMap(evaluationContext.getGlobals());
+        Map<String, Object> globalsMap = convertMap(evaluationContext.getGlobals());
+        Map<String, Object> dynamicsMap = getDynamicsMap(evaluationContext.getDynamics());
 
         return Map.of(
                 "providers", providerMap,
-                "globals", globalsMap);
+                "globals", globalsMap,
+                "dynamics", dynamicsMap);
     }
 
-    private Map<String, Object> getGlobalsMap(Map<String, Object> globals) {
-        Map<String, Object> result = new HashMap<>();
+    private Map<String, Object> getDynamicsMap(Map<String, Map<String, Object>> map) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (var element : map.entrySet()) {
+            String name = element.getKey();
+
+            Map<String, Object> converted = convertMap(element.getValue());
+
+            if (converted != null) {
+                result.put(name, converted);
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Object> convertMap(Map<String, Object> globals) {
+        Map<String, Object> result = new LinkedHashMap<>();
         for (var element : globals.entrySet()) {
             String name = element.getKey();
 
@@ -175,9 +192,9 @@ public class JavascriptExpressionEvaluator implements ExpressionScriptEvaluator 
     }
 
     private Map<String, Object> getProviderDataMap(Map<String, EvaluationContextProviderData> userSetData, TimelinePosition position) {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new LinkedHashMap<>();
         for (var entry : userSetData.entrySet()) {
-            Map<String, Object> clipElements = new HashMap<>();
+            Map<String, Object> clipElements = new LinkedHashMap<>();
             for (var element : entry.getValue().data.entrySet()) {
                 String name = element.getKey();
                 Object currentValue = element.getValue().getValueWithoutScriptAt(position);

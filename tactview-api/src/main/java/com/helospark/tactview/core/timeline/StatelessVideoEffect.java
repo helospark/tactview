@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.lightdi.annotation.Autowired;
@@ -111,8 +112,8 @@ public abstract class StatelessVideoEffect extends StatelessEffect {
     }
 
     @Override
-    public List<String> getClipDependency(TimelinePosition position) {
-        List<String> clipDependency = super.getClipDependency(position);
+    public Set<String> getClipDependency(TimelinePosition position) {
+        Set<String> clipDependency = super.getClipDependency(position);
 
         String maskClipId = maskProvider.getValueWithoutScriptAt(position);
 

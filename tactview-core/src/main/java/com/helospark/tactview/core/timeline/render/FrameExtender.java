@@ -44,6 +44,18 @@ public class FrameExtender {
 
         request.outBoundPositions.put(clip.getId(), new RegularRectangle(requestedXPosition, requestedYPosition, frameResult.getWidth(), frameResult.getHeight()));
 
+        if (evaluationContext != null) {
+            evaluationContext.addDynamicVariable(clip.getId(), "x", requestedXPosition / (double) previewWidth);
+            evaluationContext.addDynamicVariable(clip.getId(), "y", requestedYPosition / (double) previewHeight);
+            evaluationContext.addDynamicVariable(clip.getId(), "width", frameResult.getWidth() / (double) previewWidth);
+            evaluationContext.addDynamicVariable(clip.getId(), "height", frameResult.getHeight() / (double) previewHeight);
+
+            evaluationContext.addDynamicVariable(clip.getId(), "x_pixel", requestedXPosition);
+            evaluationContext.addDynamicVariable(clip.getId(), "y_pixel", requestedYPosition);
+            evaluationContext.addDynamicVariable(clip.getId(), "width_pixel", frameResult.getWidth());
+            evaluationContext.addDynamicVariable(clip.getId(), "height_pixel", frameResult.getHeight());
+        }
+
         return expandAndTranslate(frameResult, previewWidth, previewHeight, requestedXPosition, requestedYPosition);
     }
 

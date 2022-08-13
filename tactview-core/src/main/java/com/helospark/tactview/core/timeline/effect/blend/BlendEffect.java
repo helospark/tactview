@@ -2,6 +2,7 @@ package com.helospark.tactview.core.timeline.effect.blend;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -151,8 +152,10 @@ public class BlendEffect extends StatelessVideoEffect {
     }
 
     @Override
-    public List<String> getClipDependency(TimelinePosition position) {
-        return List.of(dependentClipProvider.getValueWithoutScriptAt(position));
+    public Set<String> getClipDependency(TimelinePosition position) {
+        Set<String> result = super.getClipDependency(position);
+        result.add(dependentClipProvider.getValueWithoutScriptAt(position));
+        return result;
     }
 
 }
