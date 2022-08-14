@@ -20,7 +20,8 @@ public class GetFrameRequest {
     private boolean lowResolutionPreview;
     private boolean livePlayback;
     private Optional<Integer> applyEffectsLessThanEffectChannel;
-    private Map<String, ReadOnlyClipImage> requestedClips;
+    private Map<String, ReadOnlyClipImage> requestedVideoClips;
+    private Map<String, AudioFrameResult> requestedAudioClips;
     private Map<String, ReadOnlyClipImage> requestedChannelClips;
     private EvaluationContext evaluationContext;
 
@@ -36,9 +37,10 @@ public class GetFrameRequest {
         this.lowResolutionPreview = builder.lowResolutionPreview;
         this.livePlayback = builder.livePlayback;
         this.applyEffectsLessThanEffectChannel = builder.applyEffectsLessThanEffectChannel;
-        this.requestedClips = builder.requestedClips;
+        this.requestedVideoClips = builder.requestedVideoClips;
         this.requestedChannelClips = builder.requestedChannelClips;
         this.evaluationContext = builder.evaluationContext;
+        this.requestedAudioClips = builder.requestedAudioClips;
     }
 
     public TimelinePosition getGlobalPosition() {
@@ -73,8 +75,12 @@ public class GetFrameRequest {
         return livePlayback;
     }
 
-    public Map<String, ReadOnlyClipImage> getRequestedClips() {
-        return requestedClips;
+    public Map<String, ReadOnlyClipImage> getRequestedVideoClips() {
+        return requestedVideoClips;
+    }
+
+    public Map<String, AudioFrameResult> getRequestedAudioClips() {
+        return requestedAudioClips;
     }
 
     public Map<String, ReadOnlyClipImage> getRequestedChannelClips() {
@@ -94,6 +100,12 @@ public class GetFrameRequest {
             return relativePosition;
         } else {
             return position.from(intervalAware.getInterval().getStartPosition());
+        }
+    }
+
+    public void addDynamic(String id, String keyId, Object data) {
+        if (evaluationContext != null) {
+            evaluationContext.addDynamicVariable(id, keyId, data);
         }
     }
 
@@ -123,7 +135,8 @@ public class GetFrameRequest {
         private boolean lowResolutionPreview;
         private boolean livePlayback;
         private Optional<Integer> applyEffectsLessThanEffectChannel = Optional.empty();
-        private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
+        private Map<String, ReadOnlyClipImage> requestedVideoClips = Collections.emptyMap();
+        private Map<String, AudioFrameResult> requestedAudioClips = Collections.emptyMap();
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
         private EvaluationContext evaluationContext;
 
@@ -141,7 +154,8 @@ public class GetFrameRequest {
             this.lowResolutionPreview = getFrameRequest.lowResolutionPreview;
             this.livePlayback = getFrameRequest.livePlayback;
             this.applyEffectsLessThanEffectChannel = getFrameRequest.applyEffectsLessThanEffectChannel;
-            this.requestedClips = getFrameRequest.requestedClips;
+            this.requestedVideoClips = getFrameRequest.requestedVideoClips;
+            this.requestedAudioClips = getFrameRequest.requestedAudioClips;
             this.requestedChannelClips = getFrameRequest.requestedChannelClips;
             this.evaluationContext = getFrameRequest.evaluationContext;
         }
@@ -196,8 +210,13 @@ public class GetFrameRequest {
             return this;
         }
 
-        public Builder withRequestedClips(Map<String, ReadOnlyClipImage> requestedClips) {
-            this.requestedClips = requestedClips;
+        public Builder withRequestedVideoClips(Map<String, ReadOnlyClipImage> requestedVideoClips) {
+            this.requestedVideoClips = requestedVideoClips;
+            return this;
+        }
+
+        public Builder withRequestedAudioClips(Map<String, AudioFrameResult> requestedAudioClips) {
+            this.requestedAudioClips = requestedAudioClips;
             return this;
         }
 

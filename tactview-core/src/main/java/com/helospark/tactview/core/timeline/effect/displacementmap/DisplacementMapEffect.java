@@ -48,7 +48,7 @@ public class DisplacementMapEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        Optional<ReadOnlyClipImage> optionalDisplacementMap = displacementMapProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
+        Optional<ReadOnlyClipImage> optionalDisplacementMap = displacementMapProvider.getValueAt(request.getEffectPosition(), request.getRequestedVideoClips());
 
         double verticalMultiplier = verticalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale();
         double horizontalMultiplier = horizontalDisplacementMultiplierProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()) * request.getScale();

@@ -22,7 +22,8 @@ public class ProceduralAudioClipTabFactory extends AbstractProceduralClipTabFact
                 localizedDetailRepository,
                 commandInterpreter,
                 timelineManager,
-                ProceduralAudioClipFactoryChainItem.class);
+                ProceduralAudioClipFactoryChainItem.class,
+                value -> true);
     }
 
     @Override

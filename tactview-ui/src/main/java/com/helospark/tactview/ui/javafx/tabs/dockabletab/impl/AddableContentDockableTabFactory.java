@@ -33,10 +33,13 @@ public class AddableContentDockableTabFactory extends AbstractCachingDockableTab
         TabPane tabPane = new TabPane();
         tabPane.setId("addable-content-tab-pane");
         tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        lightDi.getListOfBeans(TabFactory.class).stream().forEach(tabFactory -> {
-            Tab tab = tabFactory.createTabContent();
-            tabPane.getTabs().add(tab);
-        });
+        lightDi.getListOfBeans(TabFactory.class)
+                .stream()
+                .filter(a -> !a.isValueProvider())
+                .forEach(tabFactory -> {
+                    Tab tab = tabFactory.createTabContent();
+                    tabPane.getTabs().add(tab);
+                });
         lightDi.getBean(UiMessagingService.class).register(TabActiveRequest.class, message -> {
             tabPane.getTabs()
                     .stream()

@@ -1,4 +1,4 @@
-package com.helospark.tactview.ui.javafx.uicomponents.util;
+package com.helospark.tactview.core.util;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.AudioFrameResult;

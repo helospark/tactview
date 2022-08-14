@@ -55,7 +55,7 @@ public class LayerMaskEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        Optional<ReadOnlyClipImage> layerMask = layerMaskProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
+        Optional<ReadOnlyClipImage> layerMask = layerMaskProvider.getValueAt(request.getEffectPosition(), request.getRequestedVideoClips());
         LayerMaskAlphaCalculator layerMaskType = layerMaskTypeProvider.getValueAt(request.getEffectPosition(), request.getEvaluationContext()).getLayerMaskAlphaCalculator();
         if (layerMask.isPresent()) {
             LayerMaskApplyRequest layerMaskRequest = LayerMaskApplyRequest.builder()

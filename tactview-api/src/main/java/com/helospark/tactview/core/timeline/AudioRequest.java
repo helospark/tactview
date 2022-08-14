@@ -1,6 +1,12 @@
 package com.helospark.tactview.core.timeline;
 
+import java.util.Collections;
+import java.util.Map;
+
+import javax.annotation.Generated;
+
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
+import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
 
 public class AudioRequest {
     private EvaluationContext evaluationContext;
@@ -10,7 +16,10 @@ public class AudioRequest {
     private int bytesPerSample;
     private int numberOfChannels;
     private boolean applyEffects;
+    private Map<String, ReadOnlyClipImage> requestedVideoClips;
+    private Map<String, AudioFrameResult> requestedAudioClips;
 
+    @Generated("SparkTools")
     private AudioRequest(Builder builder) {
         this.evaluationContext = builder.evaluationContext;
         this.position = builder.position;
@@ -19,6 +28,8 @@ public class AudioRequest {
         this.bytesPerSample = builder.bytesPerSample;
         this.numberOfChannels = builder.numberOfChannels;
         this.applyEffects = builder.applyEffects;
+        this.requestedVideoClips = builder.requestedVideoClips;
+        this.requestedAudioClips = builder.requestedAudioClips;
     }
 
     public TimelineLength getLength() {
@@ -49,14 +60,25 @@ public class AudioRequest {
         return evaluationContext;
     }
 
+    public Map<String, ReadOnlyClipImage> getRequestedVideoClips() {
+        return requestedVideoClips;
+    }
+
+    public Map<String, AudioFrameResult> getRequestedAudioClips() {
+        return requestedAudioClips;
+    }
+
+    @Generated("SparkTools")
     public static Builder builder() {
         return new Builder();
     }
 
+    @Generated("SparkTools")
     public static Builder builderFrom(AudioRequest audioRequest) {
         return new Builder(audioRequest);
     }
 
+    @Generated("SparkTools")
     public static final class Builder {
         private EvaluationContext evaluationContext;
         private TimelinePosition position;
@@ -65,17 +87,27 @@ public class AudioRequest {
         private int bytesPerSample;
         private int numberOfChannels;
         private boolean applyEffects;
+        private Map<String, ReadOnlyClipImage> requestedVideoClips = Collections.emptyMap();
+        private Map<String, AudioFrameResult> requestedAudioClips = Collections.emptyMap();
 
         private Builder() {
         }
 
         private Builder(AudioRequest audioRequest) {
+            this.evaluationContext = audioRequest.evaluationContext;
             this.position = audioRequest.position;
             this.length = audioRequest.length;
             this.sampleRate = audioRequest.sampleRate;
             this.bytesPerSample = audioRequest.bytesPerSample;
             this.numberOfChannels = audioRequest.numberOfChannels;
             this.applyEffects = audioRequest.applyEffects;
+            this.requestedVideoClips = audioRequest.requestedVideoClips;
+            this.requestedAudioClips = audioRequest.requestedAudioClips;
+        }
+
+        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
+            this.evaluationContext = evaluationContext;
+            return this;
         }
 
         public Builder withPosition(TimelinePosition position) {
@@ -103,13 +135,18 @@ public class AudioRequest {
             return this;
         }
 
-        public Builder withEvaluationContext(EvaluationContext evaluationContext) {
-            this.evaluationContext = evaluationContext;
+        public Builder withApplyEffects(boolean applyEffects) {
+            this.applyEffects = applyEffects;
             return this;
         }
 
-        public Builder withApplyEffects(boolean applyEffects) {
-            this.applyEffects = applyEffects;
+        public Builder withRequestedVideoClips(Map<String, ReadOnlyClipImage> requestedVideoClips) {
+            this.requestedVideoClips = requestedVideoClips;
+            return this;
+        }
+
+        public Builder withRequestedAudioClips(Map<String, AudioFrameResult> requestedAudioClips) {
+            this.requestedAudioClips = requestedAudioClips;
             return this;
         }
 

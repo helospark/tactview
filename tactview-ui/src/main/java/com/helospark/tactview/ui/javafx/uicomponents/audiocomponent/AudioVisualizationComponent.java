@@ -2,11 +2,11 @@ package com.helospark.tactview.ui.javafx.uicomponents.audiocomponent;
 
 import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
+import com.helospark.tactview.core.util.AudioRmsCalculator;
 import com.helospark.tactview.core.util.MathUtil;
 import com.helospark.tactview.ui.javafx.PlaybackFrameAccessor;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
-import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
 
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;

@@ -6,4 +6,8 @@ public interface TabFactory {
 
     public Tab createTabContent();
 
+    default boolean isValueProvider() {
+        return false;
+    }
+
 }

@@ -14,6 +14,7 @@ import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
 import com.helospark.tactview.core.timeline.TimelinePosition;
+import com.helospark.tactview.core.util.AudioRmsCalculator;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.CanvasStateHolder;
 import com.helospark.tactview.ui.javafx.DisplayUpdaterService;
@@ -34,7 +35,6 @@ import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.audiocomponent.AudioVisualizationComponent;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.DisplayUpdatedListener;
-import com.helospark.tactview.ui.javafx.uicomponents.util.AudioRmsCalculator;
 
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;

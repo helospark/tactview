@@ -94,7 +94,26 @@ public class TimelineManagerRenderService {
 
         for (int i = 0; i < layers.size(); ++i) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
+
             for (var clip : layers.get(i)) {
+                Set<String> clipDependencies = clip.getClipDependency(request.getPosition());
+                Map<String, ReadOnlyClipImage> requiredVideoClips = clipDependencies
+                        .stream()
+                        .filter(a -> clipsToFrames.containsKey(a))
+                        .map(a -> clipsToFrames.get(a))
+                        .collect(Collectors.toMap(a -> a.id, a -> a.clipFrameResult));
+                Map<String, AudioFrameResult> requiredAudioClips = clipDependencies
+                        .stream()
+                        .filter(a -> audioToFrames.containsKey(a))
+                        .collect(Collectors.toMap(a -> a, a -> audioToFrames.get(a)));
+                Map<String, ReadOnlyClipImage> channelCopiedClips = clip.getChannelDependency(request.getPosition())
+                        .stream()
+                        .flatMap(channelId -> timelineManagerAccessor.findChannelWithId(channelId).stream())
+                        .flatMap(channel -> channel.getDataAt(request.getPosition()).stream())
+                        .filter(a -> clipsToFrames.containsKey(a.getId()))
+                        .map(a -> clipsToFrames.get(a.getId()))
+                        .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult, (a, b) -> a, HashMap::new));
+
                 if (clip instanceof VisualTimelineClip && request.isNeedVideo()) { // TODO: rest later
                     VisualTimelineClip visualClip = (VisualTimelineClip) clip;
 
@@ -103,18 +122,6 @@ public class TimelineManagerRenderService {
                         ReadOnlyClipImage frameResult = null;
                         ReadOnlyClipImage expandedFrame = null;
                         try {
-                            Map<String, ReadOnlyClipImage> requiredClips = visualClip.getClipDependency(request.getPosition())
-                                    .stream()
-                                    .filter(a -> clipsToFrames.containsKey(a))
-                                    .map(a -> clipsToFrames.get(a))
-                                    .collect(Collectors.toMap(a -> a.id, a -> a.clipFrameResult));
-                            Map<String, ReadOnlyClipImage> channelCopiedClips = visualClip.getChannelDependency(request.getPosition())
-                                    .stream()
-                                    .flatMap(channelId -> timelineManagerAccessor.findChannelWithId(channelId).stream())
-                                    .flatMap(channel -> channel.getDataAt(request.getPosition()).stream())
-                                    .filter(a -> clipsToFrames.containsKey(a.getId()))
-                                    .map(a -> clipsToFrames.get(a.getId()))
-                                    .collect(Collectors.toMap(a -> a.channelId, a -> a.clipFrameResult, (a, b) -> a, HashMap::new));
 
                             if (clip instanceof AdjustmentLayerProceduralClip) {
                                 Map<String, RenderFrameData> framesBelow = new TreeMap<>();
@@ -138,7 +145,8 @@ public class TimelineManagerRenderService {
                                     .withExpectedWidth(request.getPreviewWidth())
                                     .withExpectedHeight(request.getPreviewHeight())
                                     .withApplyEffects(request.isEffectsEnabled())
-                                    .withRequestedClips(requiredClips)
+                                    .withRequestedVideoClips(requiredVideoClips)
+                                    .withRequestedAudioClips(requiredAudioClips)
                                     .withRequestedChannelClips(channelCopiedClips)
                                     .withLowResolutionPreview(request.isLowResolutionPreview())
                                     .withLivePlayback(request.isLivePlayback())
@@ -169,7 +177,7 @@ public class TimelineManagerRenderService {
                         logger.error("Unable to render", e);
                         return null;
                     }));
-                } else if (clip instanceof AudibleTimelineClip && request.isNeedSound()) {
+                } else if (clip instanceof AudibleTimelineClip) {
                     AudibleTimelineClip audibleClip = (AudibleTimelineClip) clip;
 
                     futures.add(CompletableFuture.supplyAsync(withExceptionLogging(() -> {
@@ -186,6 +194,8 @@ public class TimelineManagerRenderService {
                                 .withSampleRate(sampleRateToUse)
                                 .withBytesPerSample(bytesPerSampleToUse)
                                 .withNumberOfChannels(numberOfChannels)
+                                .withRequestedVideoClips(requiredVideoClips)
+                                .withRequestedAudioClips(requiredAudioClips)
                                 .build();
 
                         return audibleClip.requestAudioFrame(audioRequest);

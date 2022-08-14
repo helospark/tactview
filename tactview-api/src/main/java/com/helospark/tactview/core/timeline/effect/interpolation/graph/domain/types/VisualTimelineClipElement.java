@@ -86,7 +86,7 @@ public class VisualTimelineClipElement extends GraphElement {
                 .withRelativePosition(request.relativePosition)
                 .withScale(request.scale)
                 .withUseApproximatePosition(false)
-                .withRequestedClips(additionalClips)
+                .withRequestedVideoClips(additionalClips)
                 .build();
 
         ReadOnlyClipImage output = clip.getFrame(getFrameRequest);

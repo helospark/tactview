@@ -60,7 +60,7 @@ public class BlendEffect extends StatelessVideoEffect {
 
     @Override
     public ReadOnlyClipImage createFrame(StatelessEffectRequest request) {
-        Optional<ReadOnlyClipImage> otherClip = dependentClipProvider.getValueAt(request.getEffectPosition(), request.getRequestedClips());
+        Optional<ReadOnlyClipImage> otherClip = dependentClipProvider.getValueAt(request.getEffectPosition(), request.getRequestedVideoClips());
         if (otherClip.isPresent()) {
             ReadOnlyClipImage clip = otherClip.get();
 

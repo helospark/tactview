@@ -1,6 +1,7 @@
 package com.helospark.tactview.ui.javafx.inputmode.strategy.generalops;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.helospark.lightdi.annotation.Component;
 import com.helospark.tactview.core.timeline.StatelessEffect;
@@ -270,7 +271,11 @@ public class GeneralCanvasOperationStrategy {
             }
         }
         if (draggedClip != null && dragPointType != null) {
-            ValueProviderDescriptor translateElement = effectParametersRepository.findDescriptorForLabelAndClipId(draggedClip, "translate").get();
+            Optional<ValueProviderDescriptor> optionalTranslateElement = effectParametersRepository.findDescriptorForLabelAndClipId(draggedClip, "translate");
+            if (optionalTranslateElement.isEmpty()) {
+                return null;
+            }
+            ValueProviderDescriptor translateElement = optionalTranslateElement.get();
             Point originalPosition = ((PointProvider) translateElement.getKeyframeableEffect()).getValueWithoutScriptAt(uiTimelineManager.getCurrentPosition());
 
             Point lastScale = new Point(1.0, 1.0);

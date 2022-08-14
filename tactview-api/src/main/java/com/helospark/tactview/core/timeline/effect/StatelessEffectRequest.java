@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.annotation.Generated;
 
+import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
@@ -18,7 +19,8 @@ public class StatelessEffectRequest {
     private int effectChannel;
     private int canvasWidth;
     private int canvasHeight;
-    private Map<String, ReadOnlyClipImage> requestedClips;
+    private Map<String, ReadOnlyClipImage> requestedVideoClips;
+    private Map<String, AudioFrameResult> requestedAudioClips;
     private Map<String, ReadOnlyClipImage> requestedChannelClips;
     private VisualTimelineClip currentTimelineClip;
     private EvaluationContext evaluationContext;
@@ -32,7 +34,8 @@ public class StatelessEffectRequest {
         this.canvasWidth = builder.canvasWidth;
         this.canvasHeight = builder.canvasHeight;
         this.effectChannel = builder.effectChannel;
-        this.requestedClips = builder.requestedClips;
+        this.requestedVideoClips = builder.requestedVideoClips;
+        this.requestedAudioClips = builder.requestedAudioClips;
         this.currentTimelineClip = builder.currentTimelineClip;
         this.evaluationContext = builder.evaluationContext;
     }
@@ -65,8 +68,12 @@ public class StatelessEffectRequest {
         return effectChannel;
     }
 
-    public Map<String, ReadOnlyClipImage> getRequestedClips() {
-        return requestedClips;
+    public Map<String, ReadOnlyClipImage> getRequestedVideoClips() {
+        return requestedVideoClips;
+    }
+
+    public Map<String, AudioFrameResult> getRequestedAudioClips() {
+        return requestedAudioClips;
     }
 
     public EvaluationContext getEvaluationContext() {
@@ -96,7 +103,8 @@ public class StatelessEffectRequest {
         private int canvasWidth;
         private int canvasHeight;
         private int effectChannel;
-        private Map<String, ReadOnlyClipImage> requestedClips = Collections.emptyMap();
+        private Map<String, ReadOnlyClipImage> requestedVideoClips = Collections.emptyMap();
+        private Map<String, AudioFrameResult> requestedAudioClips = Collections.emptyMap();
         private Map<String, ReadOnlyClipImage> requestedChannelClips = Collections.emptyMap();
         private VisualTimelineClip currentTimelineClip;
         private EvaluationContext evaluationContext;
@@ -139,8 +147,13 @@ public class StatelessEffectRequest {
             return this;
         }
 
-        public Builder withRequestedClips(Map<String, ReadOnlyClipImage> requestedClips) {
-            this.requestedClips = requestedClips;
+        public Builder withRequestedVideoClips(Map<String, ReadOnlyClipImage> requestedVideoClips) {
+            this.requestedVideoClips = requestedVideoClips;
+            return this;
+        }
+
+        public Builder withRequestedAudioClips(Map<String, AudioFrameResult> requestedAudioClips) {
+            this.requestedAudioClips = requestedAudioClips;
             return this;
         }
 

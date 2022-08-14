@@ -105,7 +105,7 @@ public class StatelessEffectElement extends GraphElement {
                     .withEffectChannel(0)
                     .withEffectPosition(request.position)
                     .withScale(request.scale)
-                    .withRequestedClips(additionalClips)
+                    .withRequestedVideoClips(additionalClips)
                     .build();
 
             result = effect.createFrameExternal(effectRequest);

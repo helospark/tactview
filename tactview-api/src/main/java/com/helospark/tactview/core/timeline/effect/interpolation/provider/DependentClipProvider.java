@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
+import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.EffectInterpolator;
@@ -20,6 +21,10 @@ public class DependentClipProvider extends KeyframeableEffect<String> {
     }
 
     public Optional<ReadOnlyClipImage> getValueAt(TimelinePosition position, Map<String, ReadOnlyClipImage> clips) {
+        return Optional.ofNullable(clips.get(stringInterpolator.valueAt(position)));
+    }
+
+    public Optional<AudioFrameResult> getAudioValueAt(TimelinePosition position, Map<String, AudioFrameResult> clips) {
         return Optional.ofNullable(clips.get(stringInterpolator.valueAt(position)));
     }
 

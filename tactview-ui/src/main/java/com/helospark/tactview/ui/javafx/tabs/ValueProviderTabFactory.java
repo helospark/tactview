@@ -10,23 +10,28 @@ import com.helospark.tactview.ui.javafx.UiCommandInterpreterService;
 import com.helospark.tactview.ui.javafx.uicomponents.detailsdata.localizeddetail.LocalizedDetailRepositoryChain;
 
 @Component
-@Order(1)
-public class ProceduralClipTabFactory extends AbstractProceduralClipTabFactory<ProceduralClipFactoryChainItem> {
+@Order(10)
+public class ValueProviderTabFactory extends AbstractProceduralClipTabFactory<ProceduralClipFactoryChainItem> {
 
-    public ProceduralClipTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepositoryChain localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
+    public ValueProviderTabFactory(LightDiContext lightDi, DraggableIconFactory iconFactory, LocalizedDetailRepositoryChain localizedDetailRepository, UiCommandInterpreterService commandInterpreter,
             TimelineManagerAccessor timelineManager) {
-        super("video clips", "clip-view",
+        super("Value providers", "value-provider-clip-view",
                 lightDi,
                 iconFactory,
                 localizedDetailRepository,
                 commandInterpreter,
                 timelineManager,
                 ProceduralClipFactoryChainItem.class,
-                value -> value.getType().equals(TimelineProceduralClipType.STANDARD));
+                value -> value.getType().equals(TimelineProceduralClipType.VALUE_PROVIDER));
     }
 
     @Override
     protected ProceduralFactoryInfo getInfoFor(ProceduralClipFactoryChainItem factory) {
         return new ProceduralFactoryInfo(factory.getProceduralClipId(), factory.getProceduralClipName());
+    }
+
+    @Override
+    public boolean isValueProvider() {
+        return true;
     }
 }

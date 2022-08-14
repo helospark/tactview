@@ -3,6 +3,7 @@ package com.helospark.tactview.core.timeline.proceduralclip;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.AddClipRequest;
+import com.helospark.tactview.core.timeline.effect.TimelineProceduralClipType;
 
 public interface ProceduralClipFactoryChainItem {
 
@@ -18,4 +19,5 @@ public interface ProceduralClipFactoryChainItem {
 
     public String getId();
 
+    public TimelineProceduralClipType getType();
 }

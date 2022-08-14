@@ -3,6 +3,7 @@ package com.helospark.tactview.ui.javafx.tabs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
@@ -23,6 +24,7 @@ public abstract class AbstractProceduralClipTabFactory<T> extends AbstractSearch
     private final LocalizedDetailRepositoryChain localizedDetailRepository;
     private final UiCommandInterpreterService commandInterpreter;
     private final TimelineManagerAccessor timelineManager;
+    private final Function<T, Boolean> filter;
 
     private final Class<T> factoryClass;
 
@@ -34,13 +36,15 @@ public abstract class AbstractProceduralClipTabFactory<T> extends AbstractSearch
             LocalizedDetailRepositoryChain localizedDetailRepository,
             UiCommandInterpreterService commandInterpreter,
             TimelineManagerAccessor timelineManager,
-            Class<T> factoryClass) {
+            Class<T> factoryClass,
+            Function<T, Boolean> filter) {
         super(name, id);
         this.lightDi = lightDi;
         this.iconFactory = iconFactory;
         this.localizedDetailRepository = localizedDetailRepository;
         this.commandInterpreter = commandInterpreter;
         this.timelineManager = timelineManager;
+        this.filter = filter;
 
         this.factoryClass = factoryClass;
     }
@@ -51,6 +55,7 @@ public abstract class AbstractProceduralClipTabFactory<T> extends AbstractSearch
         List<ScoredNodeHolder> icons = new ArrayList<>();
 
         proceduralClips.stream()
+                .filter(a -> filter.apply(a))
                 .sorted((a, b) -> getInfoFor(a).getProceduralClipName().compareToIgnoreCase(getInfoFor(b).getProceduralClipName()))
                 .forEach(chainItem -> {
                     ProceduralFactoryInfo factoryInfo = getInfoFor(chainItem);
