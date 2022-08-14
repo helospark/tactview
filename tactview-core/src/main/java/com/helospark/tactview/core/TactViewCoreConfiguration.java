@@ -9,8 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.ComponentScan;
@@ -26,13 +28,18 @@ public class TactViewCoreConfiguration {
 
     @Bean
     public ObjectMapper simpleObjectMapper() {
-        return new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
+        objectMapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
+        return objectMapper;
     }
 
     @Bean
     public ObjectMapper prettyPrintingObjectMapper() {
         ObjectMapper result = new ObjectMapper();
         result.enable(SerializationFeature.INDENT_OUTPUT);
+        result.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
+        result.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
         return result;
     }
 
@@ -41,6 +48,8 @@ public class TactViewCoreConfiguration {
         ObjectMapper regularObjectMapper = new ObjectMapper();
         regularObjectMapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
         regularObjectMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+        regularObjectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
+        regularObjectMapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
         return regularObjectMapper;
     }
 

@@ -1,7 +1,6 @@
 package com.helospark.tactview.ui.javafx;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -34,6 +33,7 @@ public class GlobalTimelinePositionHolder {
         }
         BigDecimal frameTime = projectRepository.getFrameTime();
 
+        //seconds = seconds.divide(frameTime, 0, java.math.RoundingMode.HALF_UP).multiply(frameTime);
         seconds = seconds.divideToIntegralValue(frameTime).multiply(frameTime);
 
         synchronized (timelineLock) {
@@ -65,8 +65,7 @@ public class GlobalTimelinePositionHolder {
     }
 
     public BigDecimal getIncrement() {
-        BigDecimal fps = projectRepository.getFps();
-        return new BigDecimal(1).divide(fps, 100, RoundingMode.HALF_DOWN);
+        return projectRepository.getFrameTime();
     }
 
     public void registerUiPlaybackConsumer(Consumer<TimelinePosition> consumer) {

@@ -1,4 +1,5 @@
 package com.helospark.tactview.ui.javafx.control;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,10 @@ public class CurveWidgetSkin extends SkinBase<CurveWidget> {
         });
         canvas.setOnMouseDragged(e -> {
             handleMouseDraggedEvent(e);
+        });
+        canvas.setOnMousePressed(e -> {
+            Point mouse = new Point(e.getX(), e.getY());
+            lastDraggedIndex = findIndexCloseTo(mouse);
         });
 
         updateCanvas(canvas);
@@ -185,8 +190,8 @@ public class CurveWidgetSkin extends SkinBase<CurveWidget> {
 
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
-        if (currentWidth != contentWidth && currentHeight != contentHeight) {
-            createCurveWidget(currentWidth, currentHeight);
+        if (currentWidth != (int) contentWidth && currentHeight != (int) contentHeight) {
+            createCurveWidget((int) contentWidth, (int) contentHeight);
         }
     }
 

@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import com.helospark.tactview.core.timeline.effect.interpolation.KeyframeableEffect;
 
 public class ExpressionReflectionUtil {
+    private static String UUID_REGEX = "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})";
+    private static Pattern UUID_PATTERN = Pattern.compile(UUID_REGEX);
 
     public static Set<String> getScriptDependencies(Object instance, String excludedId) {
         Map<String, Object> fields = new HashMap<>();
@@ -44,10 +46,7 @@ public class ExpressionReflectionUtil {
     }
 
     private static List<String> collectClipDependencies(String expression) {
-        String uuidRegexPattern = "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})";
-        Pattern pattern = Pattern.compile(uuidRegexPattern);
-
-        Matcher matcher = pattern.matcher(expression);
+        Matcher matcher = UUID_PATTERN.matcher(expression);
         return matcher.results()
                 .map(MatchResult::group)
                 .collect(Collectors.toList());

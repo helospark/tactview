@@ -15,6 +15,7 @@ import com.helospark.tactview.core.save.SaveMetadata;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
+import com.helospark.tactview.core.util.ExpressionReflectionUtil;
 import com.helospark.tactview.core.util.ReflectionUtil;
 import com.helospark.tactview.core.util.StaticObjectMapper;
 
@@ -129,7 +130,9 @@ public abstract class StatelessEffect implements EffectAware, IntervalAware, Int
     }
 
     public Set<String> getClipDependency(TimelinePosition position) {
-        return new HashSet<>();
+        HashSet<String> ids = new HashSet<>();
+        ids.addAll(ExpressionReflectionUtil.getScriptDependencies(this, getId()));
+        return ids;
     }
 
     public abstract StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata);
