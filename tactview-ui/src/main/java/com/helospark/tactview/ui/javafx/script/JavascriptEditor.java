@@ -191,7 +191,7 @@ public class JavascriptEditor {
         snippetMenu.getItems().add(ifMenu);
         snippetMenu.getItems().add(expressionMenu);
 
-        List<Class<?>> supportedTypes = List.of(String.class, Double.class, Boolean.class, Color.class, InterpolationLine.class, Rectangle.class, DoubleRange.class, Polygon.class);
+        List<Class<?>> supportedTypes = List.of(String.class, Double.class, Boolean.class, Color.class, InterpolationLine.class, Rectangle.class, DoubleRange.class, Polygon.class, Point.class);
 
         for (var clazz : supportedTypes) {
             MenuItem typeMenu = new MenuItem("type " + clazz.getSimpleName());

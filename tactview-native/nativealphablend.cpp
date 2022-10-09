@@ -45,7 +45,7 @@ extern "C"
                         double output = (request->foreground[startIndex + c] * alpha + request->backgroundAndResult[startIndex + c] * (1.0 - alpha));
                         request->backgroundAndResult[startIndex + c] = saturateIfNeeded(output);
                     }
-                    double newAlpha = ((foregroundAlpha + backgroundAlpha * (1.0 - foregroundAlpha)) * 255.0);
+                    double newAlpha = ((alpha + backgroundAlpha * (1.0 - alpha)) * 255.0);
 
                     request->backgroundAndResult[startIndex + 3] = saturateIfNeeded(newAlpha);
                 }

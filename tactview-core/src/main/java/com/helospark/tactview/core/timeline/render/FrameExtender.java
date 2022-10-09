@@ -12,6 +12,8 @@ import com.helospark.tactview.core.timeline.GetPositionParameters;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.timeline.VisualTimelineClip;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.InterpolationLine;
+import com.helospark.tactview.core.timeline.effect.interpolation.pojo.Point;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.image.ClipImage;
 import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
@@ -45,15 +47,22 @@ public class FrameExtender {
         request.outBoundPositions.put(clip.getId(), new RegularRectangle(requestedXPosition, requestedYPosition, frameResult.getWidth(), frameResult.getHeight()));
 
         if (evaluationContext != null) {
-            evaluationContext.addDynamicVariable(clip.getId(), "x", requestedXPosition / (double) previewWidth);
-            evaluationContext.addDynamicVariable(clip.getId(), "y", requestedYPosition / (double) previewHeight);
-            evaluationContext.addDynamicVariable(clip.getId(), "width", frameResult.getWidth() / (double) previewWidth);
-            evaluationContext.addDynamicVariable(clip.getId(), "height", frameResult.getHeight() / (double) previewHeight);
+            double x = requestedXPosition / (double) previewWidth;
+            double y = requestedYPosition / (double) previewHeight;
+            double width = frameResult.getWidth() / (double) previewWidth;
+            double height = frameResult.getHeight() / (double) previewHeight;
+
+            evaluationContext.addDynamicVariable(clip.getId(), "x", x);
+            evaluationContext.addDynamicVariable(clip.getId(), "y", y);
+            evaluationContext.addDynamicVariable(clip.getId(), "width", width);
+            evaluationContext.addDynamicVariable(clip.getId(), "height", height);
 
             evaluationContext.addDynamicVariable(clip.getId(), "x_pixel", requestedXPosition);
             evaluationContext.addDynamicVariable(clip.getId(), "y_pixel", requestedYPosition);
             evaluationContext.addDynamicVariable(clip.getId(), "width_pixel", frameResult.getWidth());
             evaluationContext.addDynamicVariable(clip.getId(), "height_pixel", frameResult.getHeight());
+
+            evaluationContext.addDynamicVariable(clip.getId(), "rect", new InterpolationLine(new Point(x, y), new Point(x + width, y + height)));
         }
 
         return expandAndTranslate(frameResult, previewWidth, previewHeight, requestedXPosition, requestedYPosition);

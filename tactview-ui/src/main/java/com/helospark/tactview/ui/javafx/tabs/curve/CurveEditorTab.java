@@ -327,13 +327,19 @@ public class CurveEditorTab extends DetachableTab implements ScenePostProcessor,
 
         canvas.setOnScroll(scrollEvent -> {
             double scrollAmount = scrollEvent.getDeltaY();
-            secondsPerPixel -= (scrollAmount * 0.0001);
+            double factor = scrollAmount * 0.0001 * (secondsPerPixel * 10);
+            secondsPerPixel -= factor;
             if (secondsPerPixel < 1 / 1000.) {
                 secondsPerPixel = 1 / 1000.0;
             }
             if (secondsPerPixel > 100) {
                 secondsPerPixel = 100;
             }
+            double rx = scrollEvent.getX() / canvas.getWidth();
+            double xInSecs = scrollValue + scrollEvent.getX() * secondsPerPixel;
+            double locationInSecs = scrollValue;
+            double x2 = (xInSecs - locationInSecs);
+            scrollValue += (rx * x2 * factor / secondsPerPixel);
             updateCanvas();
         });
 
@@ -387,7 +393,7 @@ public class CurveEditorTab extends DetachableTab implements ScenePostProcessor,
     }
 
     private Point remapMousePosition(Point currentMousePosition) {
-        double remappedX = (currentMousePosition.x - scrollValue) * secondsPerPixel;
+        double remappedX = (currentMousePosition.x * secondsPerPixel + scrollValue);
         double mouseY = currentMousePosition.y;
         if (mouseY < -20) {
             mouseY = -20;

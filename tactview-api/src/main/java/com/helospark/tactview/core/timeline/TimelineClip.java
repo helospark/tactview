@@ -414,6 +414,7 @@ public abstract class TimelineClip implements EffectAware, IntervalAware, Interv
                 .stream()
                 .flatMap(a -> a.getClipDependency(position).stream())
                 .filter(a -> !a.isEmpty())
+                .filter(a -> !a.equals(this.getId()))
                 .collect(Collectors.toSet());
 
         result.addAll(clipsRequiredForEffect);
