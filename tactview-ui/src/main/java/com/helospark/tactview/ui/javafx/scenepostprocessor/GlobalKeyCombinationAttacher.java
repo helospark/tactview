@@ -5,9 +5,11 @@ import static javafx.scene.input.KeyCode.K;
 import static javafx.scene.input.KeyCode.LEFT;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Component;
@@ -45,15 +47,15 @@ import javafx.stage.Stage;
 
 @Component
 public class GlobalKeyCombinationAttacher implements ScenePostProcessor, ContextAware, MainWindowStageAware {
-    private static final String MOVE_FORWARD_ONE_FRAME = "moveForwardOneFrame";
-    private static final String RIPPLE_DELETE = "Ripple delete";
-    private static final String DELETE = "delete";
-    private static final String FORWARD10S = "forward10s";
-    private static final String BACK10S = "back10s";
-    private static final String FORWARD_ONE_FRAME = "forwardOneFrame";
-    private static final String BACK_ONE_FRAME = "backOneFrame";
-    private static final String EXIT_EVERYTHING = "exitEverything";
-    private static final String CUT_CLIP_AT_CURRENT_POSITION = "cutClipAtCurrentPosition";
+    public static final String MOVE_FORWARD_ONE_FRAME = "moveForwardOneFrame";
+    public static final String RIPPLE_DELETE = "Ripple delete";
+    public static final String DELETE = "delete";
+    public static final String FORWARD10S = "forward10s";
+    public static final String BACK10S = "back10s";
+    public static final String FORWARD_ONE_FRAME = "forwardOneFrame";
+    public static final String BACK_ONE_FRAME = "backOneFrame";
+    public static final String EXIT_EVERYTHING = "exitEverything";
+    public static final String CUT_CLIP_AT_CURRENT_POSITION = "cutClipAtCurrentPosition";
 
     private KeyCombinationRepository keyCombinationRepository;
     private SelectedNodeRepository selectedNodeRepository;
@@ -121,9 +123,17 @@ public class GlobalKeyCombinationAttacher implements ScenePostProcessor, Context
                     if (scene.getFocusOwner() instanceof Control) {
                         JavaFXUiMain.canvas.requestFocus(); // remove focus from any control element
                     }
-                    context.getListOfBeans(CleanableMode.class)
+                    List<CleanableMode> elementsToClear = context.getListOfBeans(CleanableMode.class)
                             .stream()
-                            .forEach(cleanable -> cleanable.clean());
+                            .filter(cleanable -> !cleanable.isClean())
+                            .sorted((a, b) -> Integer.compare(b.cleanPriority(), a.cleanPriority()))
+                            .collect(Collectors.toList());
+                    for (int i = 0; i < elementsToClear.size(); ++i) {
+                        elementsToClear.get(i).clean();
+                        if (elementsToClear.get(i).shouldConsumeCleanEvent()) {
+                            break;
+                        }
+                    }
                 }));
 
         Set<Class<? extends Node>> disabledFocusedNodeClass = Set.of(TextInputControl.class);

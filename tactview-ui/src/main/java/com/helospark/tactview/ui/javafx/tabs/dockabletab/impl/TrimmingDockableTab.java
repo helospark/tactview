@@ -52,6 +52,7 @@ import com.helospark.tactview.ui.javafx.commands.impl.AddExistingClipsCommand;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.scenepostprocessor.GlobalKeyCombinationAttacher;
 import com.helospark.tactview.ui.javafx.script.ScriptVariablesStore;
 import com.helospark.tactview.ui.javafx.tabs.dockabletab.impl.trimmer.CacheableAudioImagePatternService;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
@@ -135,6 +136,7 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
     public TrimmingDockableTab(SingleFullImageViewController fullScreenRenderer,
             MessagingService messagingService,
             ScriptVariablesStore scriptVariablesStore,
+            GlobalKeyCombinationAttacher globalKeyCombinationAttacher,
 
             AudioStreamService audioStreamService, JavaByteArrayConverter javaByteArrayConverter,
             List<AudioPlayedListener> audioPlayedListeners,
@@ -200,7 +202,7 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
         this.uiPlaybackManager = new UiPlaybackManager(projectRepository, timelineState, playbackController,
                 audioStreamService, playbackPreferenceRepository, javaByteArrayConverter,
                 newListeners, scheduledExecutorService, uiProjectRepository,
-                trimmerTimelinePositionHolder, displayUpdaterService);
+                trimmerTimelinePositionHolder, displayUpdaterService, globalKeyCombinationAttacher);
     }
 
     private void createTimeline(TimelineManagerAccessorFactory timelineManagerAccessorFactory) {

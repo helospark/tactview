@@ -61,7 +61,7 @@ public class AudioImagePatternService {
 
         int numberOfSamplesToCollect = lengthInSeconds
                 .divide(secondsPerPixel, 10, RoundingMode.HALF_UP)
-                .divide(BigDecimal.valueOf(NUMBER_OF_PIXELS_FOR_SAMPLE), 10, RoundingMode.HALF_UP)
+                .divide(BigDecimal.valueOf(NUMBER_OF_PIXELS_FOR_SAMPLE), 10, RoundingMode.CEILING)
                 .intValue();
         BigDecimal timeJump = lengthInSeconds.divide(BigDecimal.valueOf(numberOfSamplesToCollect), 10, RoundingMode.HALF_UP);
 
@@ -77,7 +77,7 @@ public class AudioImagePatternService {
             graphics.drawLine(0, y, width, y);
         }
 
-        for (int i = 0; i < numberOfSamplesToCollect; ++i) {
+        for (int i = 0; i <= numberOfSamplesToCollect; ++i) {
             TimelinePosition position = audibleTimelineClip.getInterval().getStartPosition().add(BigDecimal.valueOf(visibleStartPosition)).add(timeJump.multiply(BigDecimal.valueOf(i)));
             AudioRequest frameRequest = AudioRequest.builder()
                     .withApplyEffects(false)
@@ -100,7 +100,8 @@ public class AudioImagePatternService {
 
                 graphics.setColor(new Color(0, 255, 0, 200));
                 graphics.setStroke(new BasicStroke(NUMBER_OF_PIXELS_FOR_SAMPLE));
-                graphics.drawLine((i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, startPointY, (i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, endPointY);
+                int xPos = i * NUMBER_OF_PIXELS_FOR_SAMPLE;
+                graphics.drawLine(xPos, startPointY, xPos, endPointY);
 
                 if (renderAvgLine) {
                     graphics.setColor(new Color(0, 100, 0, 200));
@@ -108,7 +109,7 @@ public class AudioImagePatternService {
                     int avgStartPointY = (int) (centerPoint + Math.abs(sampleData.negativeAvg) * maxHeight);
                     int avgEndPointY = (int) (centerPoint - Math.abs(sampleData.positiveAvg) * maxHeight);
 
-                    graphics.drawLine((i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, avgStartPointY, (i + 1) * NUMBER_OF_PIXELS_FOR_SAMPLE, avgEndPointY);
+                    graphics.drawLine(xPos, avgStartPointY, xPos, avgEndPointY);
                 }
             }
             frame.getChannels()

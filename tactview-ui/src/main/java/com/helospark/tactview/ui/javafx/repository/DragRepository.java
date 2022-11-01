@@ -117,4 +117,9 @@ public class DragRepository implements CleanableMode {
         onBoxSelectEnded();
     }
 
+    @Override
+    public boolean isClean() {
+        return clipDragInformation == null && effectDragInformation == null && selectionBoxInformation == null;
+    }
+
 }

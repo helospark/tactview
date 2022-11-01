@@ -271,7 +271,7 @@ public class DisplayUpdaterService {
     }
 
     private void drawSelectionRectangle(JavaDisplayableAudioVideoFragment actualAudioVideoFragment, GraphicsContext gc) {
-        if (actualAudioVideoFragment != null) {
+        if (actualAudioVideoFragment != null && fullscreenData == null) {
             boolean foundSelection = false;
             for (var rectangle : actualAudioVideoFragment.getClipRectangle().entrySet()) {
                 if (selectedNodeRepository.getSelectedClipIds().contains(rectangle.getKey())) {

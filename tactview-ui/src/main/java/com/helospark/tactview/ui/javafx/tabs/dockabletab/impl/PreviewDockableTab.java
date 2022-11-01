@@ -28,6 +28,7 @@ import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
 import com.helospark.tactview.ui.javafx.render.SingleFullImageViewController;
 import com.helospark.tactview.ui.javafx.repository.SelectedNodeRepository;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.scenepostprocessor.GlobalKeyCombinationAttacher;
 import com.helospark.tactview.ui.javafx.tiwulfx.com.panemu.tiwulfx.control.DetachableTab;
 import com.helospark.tactview.ui.javafx.uicomponents.DefaultCanvasTranslateSetter;
 import com.helospark.tactview.ui.javafx.uicomponents.ScaleComboBoxFactory;
@@ -70,6 +71,7 @@ public class PreviewDockableTab extends AbstractCachingDockableTabFactory implem
     public PreviewDockableTab(UiProjectRepository uiProjectRepository,
             SingleFullImageViewController fullScreenRenderer,
             GlobalTimelinePositionHolder globalTimelinePositionHolder,
+            GlobalKeyCombinationAttacher globalKeyCombinationAttacher,
 
             MessagingService messagingService,
 
@@ -110,7 +112,7 @@ public class PreviewDockableTab extends AbstractCachingDockableTabFactory implem
         this.uiPlaybackManager = new UiPlaybackManager(projectRepository, timelineState, playbackController,
                 audioStreamService, playbackPreferenceRepository, javaByteArrayConverter,
                 newListeners, scheduledExecutorService, uiProjectRepository,
-                globalTimelinePositionHolder, displayUpdaterService);
+                globalTimelinePositionHolder, displayUpdaterService, globalKeyCombinationAttacher);
     }
 
     @Override

@@ -84,7 +84,7 @@ public class PointProviderValueSetterChainItem extends TypeBasedPropertyValueSet
                 } else {
                     inputModeRepository.requestPoint(point -> {
                         sendKeyframe(pointProvider, point, previousValue);
-                    }, pointProvider.getSizeFunction());
+                    }, pointProvider.getSizeFunction(), previousValue);
                 }
             }
         });

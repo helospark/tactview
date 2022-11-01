@@ -30,6 +30,7 @@ import com.helospark.tactview.ui.javafx.DisplayUpdaterService.TimelineDisplayAsy
 import com.helospark.tactview.ui.javafx.audio.AudioStreamService;
 import com.helospark.tactview.ui.javafx.audio.JavaByteArrayConverter;
 import com.helospark.tactview.ui.javafx.repository.UiProjectRepository;
+import com.helospark.tactview.ui.javafx.scenepostprocessor.GlobalKeyCombinationAttacher;
 import com.helospark.tactview.ui.javafx.uicomponents.TimelineState;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedListener;
 import com.helospark.tactview.ui.javafx.uicomponents.display.AudioPlayedRequest;
@@ -65,6 +66,7 @@ public class UiPlaybackManager {
     private List<AudioPlayedListener> audioPlayedListeners;
     private List<Runnable> displayRefreshedListeners = new ArrayList<>();
     private GlobalTimelinePositionHolder globalTimelinePositionHolder;
+    private GlobalKeyCombinationAttacher globalKeyCombinationAttacher;
 
     private ScheduledExecutorService scheduledExecutorService;
 
@@ -73,7 +75,8 @@ public class UiPlaybackManager {
     public UiPlaybackManager(ProjectRepository projectRepository, TimelineState timelineState, PlaybackFrameAccessor playbackController,
             AudioStreamService audioStreamService, UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository, JavaByteArrayConverter javaByteArrayConverter,
             List<AudioPlayedListener> audioPlayedListeners, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
-            UiProjectRepository uiProjectRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder, DisplayUpdaterService displayUpdaterService) {
+            UiProjectRepository uiProjectRepository, GlobalTimelinePositionHolder globalTimelinePositionHolder, DisplayUpdaterService displayUpdaterService,
+            GlobalKeyCombinationAttacher globalKeyCombinationAttacher) {
         this.projectRepository = projectRepository;
         this.timelineState = timelineState;
         this.playbackFrameAccessor = playbackController;
@@ -85,6 +88,7 @@ public class UiPlaybackManager {
         this.uiProjectRepository = uiProjectRepository;
         this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.displayUpdaterService = displayUpdaterService;
+        this.globalKeyCombinationAttacher = globalKeyCombinationAttacher;
 
         scheduledExecutorService.scheduleAtFixedRate(() -> handleStuckPlayback(), 5000, 5000, TimeUnit.MILLISECONDS);
 
@@ -368,6 +372,7 @@ public class UiPlaybackManager {
         stage.setScene(scene);
         stage.show();
 
+        globalKeyCombinationAttacher.setMainWindowStage(stage);
         scene.setOnKeyPressed(e -> {
             if (e.getCode().equals(KeyCode.ESCAPE)) {
                 stage.close();

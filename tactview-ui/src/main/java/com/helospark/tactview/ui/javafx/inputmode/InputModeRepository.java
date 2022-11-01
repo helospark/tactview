@@ -97,8 +97,8 @@ public class InputModeRepository implements CleanableMode {
         this.inputModeConsumer.add(inputModeConsumer);
     }
 
-    public void requestPoint(Consumer<Point> consumer, SizeFunction sizeFunction) {
-        InputTypeStrategy<Point> currentStrategy = new PointInputTypeStrategy();
+    public void requestPoint(Consumer<Point> consumer, SizeFunction sizeFunction, Point previousValue) {
+        InputTypeStrategy<Point> currentStrategy = new PointInputTypeStrategy(previousValue);
         this.inputModeInput = new InputModeInput<>(Point.class, consumer, currentStrategy, sizeFunction);
         inputModeChanged(true);
         Platform.runLater(() -> updateCanvasWithStrategy(canvas.getGraphicsContext2D(), null));
@@ -306,6 +306,21 @@ public class InputModeRepository implements CleanableMode {
     @Override
     public void clean() {
         reset();
+    }
+
+    @Override
+    public boolean isClean() {
+        return inputModeInput == null;
+    }
+
+    @Override
+    public int cleanPriority() {
+        return 100;
+    }
+
+    @Override
+    public boolean shouldConsumeCleanEvent() {
+        return true;
     }
 
 }

@@ -132,6 +132,11 @@ public class SelectedNodeRepository implements CleanableMode {
         clearAllSelectedItems();
     }
 
+    @Override
+    public boolean isClean() {
+        return selectedClips.isEmpty() && selectedEffects.isEmpty();
+    }
+
     public void addSelectedClips(List<String> clipIds) {
         clipIds.stream()
                 .forEach(clipId -> addSelectedClip(clipId));

@@ -6,7 +6,11 @@ import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -35,7 +39,9 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     private AVCodecBasedAudioMediaDecoderImplementation implementation;
     private MediaCache mediaCache;
     private MemoryManager memoryManager;
+
     private ThreadPoolExecutor prefetchExecutor;
+    private Map<PrefetchKey, CompletableFuture<Void>> readFutures = new ConcurrentHashMap<>();
 
     public AVCodecAudioMediaDecoderDecorator(AVCodecBasedAudioMediaDecoderImplementation implementation, MediaCache mediaCache, MemoryManager memoryManager,
             @Qualifier("prefetchThreadPoolExecutorService") ThreadPoolExecutor prefetchExecutor) {
@@ -53,6 +59,14 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
 
         if (!request.isAvoidPrefetch()) {
             schedulePrefetchJobIfNeeded(request, hashKey);
+        }
+
+        PrefetchKey prefetchKey = new PrefetchKey(hashKey, getCacheStartPosition(request));
+        CompletableFuture<Void> prefetchFuture = readFutures.get(prefetchKey);
+
+        if (prefetchFuture != null) {
+            LOGGER.debug("Waiting for the prefetch future at {}", prefetchKey);
+            prefetchFuture.join();
         }
 
         Optional<MediaDataFrame> cachedResult = mediaCache.findInCache(hashKey, request.getStart().getSeconds());
@@ -74,9 +88,14 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
     private void schedulePrefetchJobIfNeeded(AudioMediaDataRequest request, String hashKey) {
         BigDecimal correctedStartPosition = getCacheStartPosition(request).add(BigDecimal.valueOf(MINIMUM_LENGTH_TO_READ));
         BigDecimal distance = correctedStartPosition.subtract(request.getStart().getSeconds());
-        if (mediaCache.findInCache(hashKey, correctedStartPosition).isEmpty() && distance.compareTo(BigDecimal.valueOf(4)) < 0) {
-            prefetchExecutor.execute(() -> {
-                if (mediaCache.findInCache(hashKey, correctedStartPosition).isEmpty()) {
+        PrefetchKey prefetchKey = new PrefetchKey(hashKey, correctedStartPosition);
+        if (mediaCache.findInCache(hashKey, correctedStartPosition).isEmpty() &&
+                distance.compareTo(BigDecimal.valueOf(4)) < 0 &&
+                readFutures.get(prefetchKey) == null) {
+            CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                LOGGER.debug("Prefetching audio (1) at {} due to read at {}", correctedStartPosition, request.getStart().getSeconds());
+                if (mediaCache.findInCache(hashKey, correctedStartPosition).isEmpty()
+                        && readFutures.get(prefetchKey) == null) {
                     LOGGER.debug("Prefetching audio at {} due to read at {}", correctedStartPosition, request.getStart().getSeconds());
                     AudioMediaDataRequest newRequest = AudioMediaDataRequest.builderFrom(request)
                             .withAvoidPrefetch(true)
@@ -88,7 +107,9 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
                     GlobalMemoryManagerAccessor.memoryManager.returnBuffers(result.getFrames());
                     LOGGER.debug("Prefetching audio done at {}", correctedStartPosition);
                 }
+                readFutures.remove(prefetchKey);
             });
+            readFutures.put(prefetchKey, completableFuture);
         }
     }
 
@@ -195,4 +216,36 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
 
     }
 
+    static class PrefetchKey {
+        String hashkey;
+        BigDecimal position;
+
+        public PrefetchKey(String hashkey, BigDecimal position) {
+            this.hashkey = hashkey;
+            this.position = position;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(hashkey, position);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            PrefetchKey other = (PrefetchKey) obj;
+            return Objects.equals(hashkey, other.hashkey) && Objects.equals(position, other.position);
+        }
+
+        @Override
+        public String toString() {
+            return "PrefetchKey [hashkey=" + hashkey + ", position=" + position + "]";
+        }
+
+    }
 }

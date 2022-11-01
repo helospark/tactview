@@ -428,4 +428,9 @@ public class PropertyView implements CleanableMode {
         closeCurrentPage();
     }
 
+    @Override
+    public boolean isClean() {
+        return shownEntries == null;
+    }
+
 }
