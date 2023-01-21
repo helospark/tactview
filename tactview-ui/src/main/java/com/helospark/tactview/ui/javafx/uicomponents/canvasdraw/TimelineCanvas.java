@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -13,8 +15,8 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Component;
-import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.timeline.NonIntersectingIntervalList;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineChannel;
@@ -106,7 +108,7 @@ public class TimelineCanvas implements ScenePostProcessor {
     private SelectedNodeRepository selectedNodeRepository;
     private GlobalTimelinePositionHolder uiTimelineManager;
     private NameToIdRepository nameToIdRepository;
-    private ScheduledExecutorService scheduledExecutorService;
+    private ScheduledExecutorService scheduledExecutorService = createCanvasRedrawSceduler();
     private MarkerRepository markerRepository;
     private TimelineCanvasClickHandler timelineCanvasClickHandler;
     private TimelineCanvasContextMenuRequestedHandler timelineCanvasContextMenuRequestedHandler;
@@ -132,7 +134,7 @@ public class TimelineCanvas implements ScenePostProcessor {
             TimelinePatternRepository timelinePatternRepository, DragRepository dragRepository,
             SelectedNodeRepository selectedNodeRepository,
             GlobalTimelinePositionHolder uiTimelineManager, TimelineCanvasContextMenuRequestedHandler timelineCanvasContextMenuRequestedHandler,
-            NameToIdRepository nameToIdRepository, @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService,
+            NameToIdRepository nameToIdRepository,
             MarkerRepository markerRepository, TimelineCanvasClickHandler timelineCanvasClickHandler,
             TimelineCanvasOnDragOverHandler timelineCanvasOnDragOverHandler, TimelineCanvasElementClickHandler timelineCanvasElementClickHandler,
             TimelineCanvasTimelineHeaderClickHandler timelineCanvasTimelineHeaderClickHandler) {
@@ -144,13 +146,17 @@ public class TimelineCanvas implements ScenePostProcessor {
         this.selectedNodeRepository = selectedNodeRepository;
         this.uiTimelineManager = uiTimelineManager;
         this.nameToIdRepository = nameToIdRepository;
-        this.scheduledExecutorService = scheduledExecutorService;
         this.markerRepository = markerRepository;
         this.timelineCanvasClickHandler = timelineCanvasClickHandler;
         this.timelineCanvasContextMenuRequestedHandler = timelineCanvasContextMenuRequestedHandler;
         this.timelineCanvasOnDragOverHandler = timelineCanvasOnDragOverHandler;
         this.timelineCanvasElementClickHandler = timelineCanvasElementClickHandler;
         this.timelineCanvasTimelineHeaderClickHandler = timelineCanvasTimelineHeaderClickHandler;
+    }
+
+    private ScheduledExecutorService createCanvasRedrawSceduler() {
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("canavs-redraw-executors-%d").build();
+        return new ScheduledThreadPoolExecutor(1, namedThreadFactory);
     }
 
     @PostConstruct
@@ -208,7 +214,7 @@ public class TimelineCanvas implements ScenePostProcessor {
                 });
             }
 
-        }, 0, 40, TimeUnit.MILLISECONDS);
+        }, 0, 30, TimeUnit.MILLISECONDS);
     }
 
     private void redrawClipIfVisible(String clipId) {

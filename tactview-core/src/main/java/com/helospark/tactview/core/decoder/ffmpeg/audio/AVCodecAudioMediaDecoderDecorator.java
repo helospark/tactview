@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +67,11 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
 
         if (prefetchFuture != null) {
             LOGGER.debug("Waiting for the prefetch future at {}", prefetchKey);
-            prefetchFuture.join();
+            try {
+                prefetchFuture.get(2000, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                LOGGER.error("Timeout while waiting for prefetch", e);
+            }
         }
 
         Optional<MediaDataFrame> cachedResult = mediaCache.findInCache(hashKey, request.getStart().getSeconds());
@@ -108,7 +113,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
                     LOGGER.debug("Prefetching audio done at {}", correctedStartPosition);
                 }
                 readFutures.remove(prefetchKey);
-            });
+            }, prefetchExecutor);
             readFutures.put(prefetchKey, completableFuture);
         }
     }
