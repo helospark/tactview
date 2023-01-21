@@ -124,7 +124,7 @@ public class TestRenderDialogUi {
         RenderRequest request = RenderRequest.builder()
                 .withWidth(width)
                 .withHeight(height)
-                .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 100, RoundingMode.HALF_UP))
+                .withStep(BigDecimal.ONE.divide(projectRepository.getFps(), 10, RoundingMode.HALF_UP))
                 .withFps(fps)
                 .withStartPosition(startPosition)
                 .withEndPosition(endPosition)

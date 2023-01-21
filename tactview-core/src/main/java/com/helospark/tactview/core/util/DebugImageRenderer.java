@@ -19,10 +19,15 @@ import com.helospark.tactview.core.timeline.image.ReadOnlyClipImage;
  */
 @Deprecated
 public class DebugImageRenderer {
+    private static IndependentPixelOperationImpl pixelOperations = null;
+
+    static {
+        pixelOperations = new IndependentPixelOperationImpl();
+    }
 
     public static void render(ByteBuffer buffer, int width, int height) {
         try {
-            ByteBufferToImageConverter converter = new ByteBufferToImageConverterImpl(new IndependentPixelOperationImpl());
+            ByteBufferToImageConverter converter = new ByteBufferToImageConverterImpl(pixelOperations);
             BufferedImage image = converter.byteBufferToBufferedImageWithAlpha(buffer, width, height);
             String filename = "/tmp/debug_" + System.currentTimeMillis();
             ImageIO.write(image, "png", new File(filename));
@@ -35,7 +40,7 @@ public class DebugImageRenderer {
     @Deprecated
     public static void render(ByteBuffer buffer, int width, int height, String filename) {
         try {
-            ByteBufferToImageConverter converter = new ByteBufferToImageConverterImpl(new IndependentPixelOperationImpl());
+            ByteBufferToImageConverter converter = new ByteBufferToImageConverterImpl(pixelOperations);
             BufferedImage image = converter.byteBufferToBufferedImageWithAlpha(buffer, width, height);
             ImageIO.write(image, "png", new File("/tmp/" + filename));
             System.out.println(filename);

@@ -50,7 +50,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
         bytesPerSample = 4;
         numberOfChannels = 2;
         fps = BigDecimal.valueOf(24);
-        frameTime = BigDecimal.ONE.divide(fps, 100, RoundingMode.HALF_UP);
+        frameTime = BigDecimal.ONE.divide(fps, 10, RoundingMode.HALF_UP);
         messagingService.sendAsyncMessage(new ProjectSizeChangedMessage(ProjectSizeChangeType.CLEARED));
     }
 
@@ -59,7 +59,7 @@ public class ProjectRepository implements SaveLoadContributor, ResettableBean {
         this.width = width;
         this.height = height;
         this.fps = fps;
-        this.frameTime = BigDecimal.ONE.divide(fps, 100, RoundingMode.HALF_UP);
+        this.frameTime = BigDecimal.ONE.divide(fps, 10, RoundingMode.HALF_UP);
         messagingService.sendAsyncMessage(new ProjectSizeChangedMessage(ProjectSizeChangeType.VIDEO));
     }
 

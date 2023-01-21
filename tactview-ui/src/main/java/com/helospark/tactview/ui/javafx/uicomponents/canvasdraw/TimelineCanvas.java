@@ -702,8 +702,6 @@ public class TimelineCanvas implements ScenePostProcessor {
         bottomBar.setMin(0);
         bottomBar.setMax(timelineWidth);
 
-        clearCanvas();
-
         double visibleAreaStartY = calculateScrolledY();
         if (visibleAreaStartY < 0) {
             visibleAreaStartY = 0;
@@ -713,6 +711,8 @@ public class TimelineCanvas implements ScenePostProcessor {
         double channelStartY = TIMELINE_TIMESCALE_HEIGHT + CHANNEL_PADDING;
 
         if (fullRedraw || previouslyCachedImage == null) {
+            long startFullRender = System.currentTimeMillis();
+            clearCanvas();
             List<TimelineUiCacheElement> newCachedElements = new ArrayList<>();
 
             for (int i = 0; i < timelineAccessor.getChannels().size(); ++i) {
@@ -727,6 +727,13 @@ public class TimelineCanvas implements ScenePostProcessor {
 
                         double clipX = timelineState.secondsToPixelsWidthZoomAndTranslate(interval.getStartPosition());
                         double clipEndX = timelineState.secondsToPixelsWidthZoomAndTranslate(interval.getEndPosition());
+
+                        if (clipX > canvas.getWidth()) {
+                            break;
+                        }
+                        if (clipEndX < 0) {
+                            continue;
+                        }
 
                         double clipWidth = clipEndX - clipX;
                         double clipY = channelStartY - visibleAreaStartY;
@@ -758,6 +765,13 @@ public class TimelineCanvas implements ScenePostProcessor {
                                 double effectX = timelineState.secondsToPixelsWidthZoomAndTranslate(effect.getGlobalInterval().getStartPosition());
                                 double effectEndX = timelineState.secondsToPixelsWidthZoomAndTranslate(effect.getGlobalInterval().getEndPosition());
                                 double effectY = clipY + MIN_CHANNEL_HEIGHT + EFFECT_HEIGHT * j;
+
+                                if (effectEndX < 0) {
+                                    continue;
+                                }
+                                if (effectX > canvas.getWidth()) {
+                                    continue;
+                                }
 
                                 if (effectEndX > clipEndX) {
                                     effectEndX = clipEndX;
@@ -825,7 +839,16 @@ public class TimelineCanvas implements ScenePostProcessor {
             rightBar.setMax(channelStartY);
             drawTimelineTitles();
 
-            previouslyCachedImage = canvas.snapshot(new SnapshotParameters(), null);
+            long endFullRender = System.currentTimeMillis();
+
+            long renderTook = (endFullRender - startFullRender);
+
+            if (renderTook > 30) {
+                previouslyCachedImage = canvas.snapshot(new SnapshotParameters(), null);
+            } else {
+                previouslyCachedImage = null;
+            }
+
             cachedVisibleElements = newCachedElements;
         } else {
             graphics.drawImage(previouslyCachedImage, 0, 0);
@@ -997,9 +1020,11 @@ public class TimelineCanvas implements ScenePostProcessor {
 
     private void drawVerticalLineAtPosition(TimelinePosition seconds, Color color) {
         int position = timelineState.secondsToPixelsWidthZoomAndTranslate(seconds);
-        graphics.setStroke(color);
-        graphics.setLineWidth(1.0);
-        graphics.strokeLine(position, 0, position, canvas.getHeight());
+        if (position >= 0 && position < canvas.getWidth()) {
+            graphics.setStroke(color);
+            graphics.setLineWidth(1.0);
+            graphics.strokeLine(position, 0, position, canvas.getHeight());
+        }
     }
 
     private void drawSpecialPositionLine(double visibleAreaStartY) {
@@ -1138,9 +1163,11 @@ public class TimelineCanvas implements ScenePostProcessor {
 
     private void drawPlaybackLine() {
         double x = timelineState.secondsToPixelsWidthZoomAndTranslate(timelineState.getPlaybackPosition());
-        graphics.setStroke(Color.YELLOW);
-        graphics.setLineWidth(2.0);
-        graphics.strokeLine(x, 0, x, canvas.getHeight());
+        if (x >= 0 && x < canvas.getWidth()) {
+            graphics.setStroke(Color.YELLOW);
+            graphics.setLineWidth(2.0);
+            graphics.strokeLine(x, 0, x, canvas.getHeight());
+        }
     }
 
     @Override

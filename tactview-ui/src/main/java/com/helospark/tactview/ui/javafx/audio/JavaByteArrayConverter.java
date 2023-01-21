@@ -28,6 +28,13 @@ public class JavaByteArrayConverter {
                     for (int i = 0; i < bytes; ++i) {
                         result[sample * bytes * numberOfChannels + channel * bytes + i] = bytesToAdd[i];
                     }
+                } else if (channels == 2 && originalNumberOfChannels == 1) {
+                    int channelToUse = 0;
+                    int rescaledSample = audioFrameResult.getRescaledSample(channelToUse, audioFrameResult.getBytesPerSample(), audioFrameResult.getSamplePerSecond(), sample);
+                    byte[] bytesToAdd = toBytes(rescaledSample, bytes);
+                    for (int i = 0; i < bytes; ++i) {
+                        result[sample * bytes * numberOfChannels + channel * bytes + i] = bytesToAdd[i];
+                    }
                 } else {
                     for (int i = 0; i < bytes; ++i) {
                         result[sample * bytes * numberOfChannels + channel * bytes + i] = 0;

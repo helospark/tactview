@@ -158,4 +158,17 @@ public class LinkClipRepository implements SaveLoadContributor {
         }
     }
 
+    public List<List<String>> unlinkAllConnectedClips(List<String> linkedClipIds) {
+        List<List<String>> originallyLinked = new ArrayList<>();
+        for (var entry : linkedClipIds) {
+            List<String> linkedClip = new ArrayList<>(getLinkedClips(entry));
+            for (var a : linkedClip) {
+                List<String> unlinked = List.of(entry, a);
+                unlinkClipIds(unlinked);
+                originallyLinked.add(unlinked);
+            }
+        }
+        return originallyLinked;
+    }
+
 }
