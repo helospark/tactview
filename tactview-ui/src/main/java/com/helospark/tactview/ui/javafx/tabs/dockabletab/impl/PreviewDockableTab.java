@@ -13,6 +13,7 @@ import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.init.PostInitializationArgsCallback;
 import com.helospark.tactview.core.repository.ProjectRepository;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.util.AudioRmsCalculator;
 import com.helospark.tactview.core.util.messaging.MessagingService;
@@ -72,6 +73,7 @@ public class PreviewDockableTab extends AbstractCachingDockableTabFactory implem
             SingleFullImageViewController fullScreenRenderer,
             GlobalTimelinePositionHolder globalTimelinePositionHolder,
             GlobalKeyCombinationAttacher globalKeyCombinationAttacher,
+            TimelineManagerAccessor timelineManagerAccessor,
 
             MessagingService messagingService,
 
@@ -102,7 +104,8 @@ public class PreviewDockableTab extends AbstractCachingDockableTabFactory implem
         this.playbackPreferenceRepository = new UiPlaybackPreferenceRepository();
 
         this.displayUpdaterService = new DisplayUpdaterService(playbackController, uiProjectRepository, globalDirtyClipManager, displayUpdateListeners,
-                messagingService, scheduledExecutorService, selectedNodeRepository, canvasStateHolder, globalTimelinePositionHolder, playbackPreferenceRepository);
+                messagingService, scheduledExecutorService, selectedNodeRepository, canvasStateHolder, globalTimelinePositionHolder, playbackPreferenceRepository,
+                timelineManagerAccessor);
         this.displayUpdaterService.setCanvas(canvas);
         displayUpdaterService.init();
 

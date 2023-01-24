@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.helospark.lightdi.annotation.Qualifier;
 import com.helospark.tactview.core.timeline.GlobalDirtyClipManager;
+import com.helospark.tactview.core.timeline.TimelineManagerAccessor;
 import com.helospark.tactview.core.timeline.TimelinePosition;
 import com.helospark.tactview.core.timeline.TimelineRenderResult.RegularRectangle;
 import com.helospark.tactview.core.util.messaging.AffectedModifiedIntervalAware;
@@ -60,6 +61,7 @@ public class DisplayUpdaterService {
     private final List<DisplayUpdatedListener> displayUpdateListeners;
     private final SelectedNodeRepository selectedNodeRepository;
     private final CanvasStateHolder canvasStateHolder;
+    private final TimelineManagerAccessor timelineManager;
 
     private FullScreenData fullscreenData = null;
 
@@ -80,7 +82,7 @@ public class DisplayUpdaterService {
             GlobalDirtyClipManager globalDirtyClipManager, List<DisplayUpdatedListener> displayUpdateListeners, MessagingService messagingService,
             @Qualifier("generalTaskScheduledService") ScheduledExecutorService scheduledExecutorService, SelectedNodeRepository selectedNodeRepository,
             CanvasStateHolder canvasStateHolder, GlobalTimelinePositionHolder globalTimelinePositionHolder,
-            UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository) {
+            UiPlaybackPreferenceRepository uiPlaybackPreferenceRepository, TimelineManagerAccessor timelineManager) {
         this.playbackFrameAccessor = playbackController;
         this.uiProjectRepostiory = uiProjectRepostiory;
         this.globalDirtyClipManager = globalDirtyClipManager;
@@ -91,6 +93,7 @@ public class DisplayUpdaterService {
         this.canvasStateHolder = canvasStateHolder;
         this.globalTimelinePositionHolder = globalTimelinePositionHolder;
         this.uiPlaybackPreferenceRepository = uiPlaybackPreferenceRepository;
+        this.timelineManager = timelineManager;
     }
 
     @PostConstruct
@@ -106,7 +109,17 @@ public class DisplayUpdaterService {
             // this could be optimized based on the affected interval
             framecache.clear();
         });
-        messagingService.register(ClipSelectionChangedMessage.class, message -> updateCurrentPositionWithoutInvalidatedCache());
+        messagingService.register(ClipSelectionChangedMessage.class, message -> {
+            boolean updateNeeded = timelineManager.findIntersectingClips(cachePosition)
+                    .stream()
+                    .filter(a -> a.equals(message.getClip()))
+                    .findAny()
+                    .map(a -> true)
+                    .orElse(false);
+            if (updateNeeded) {
+                updateCurrentPositionWithoutInvalidatedCache();
+            }
+        });
 
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {

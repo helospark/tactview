@@ -191,7 +191,8 @@ public class TrimmingDockableTab extends AbstractCachingDockableTabFactory imple
         this.playbackPreferenceRepository = new UiPlaybackPreferenceRepository();
 
         this.displayUpdaterService = new DisplayUpdaterService(playbackController, uiProjectRepository, globalDirtyClipManager, displayUpdateListeners,
-                messagingService, scheduledExecutorService, selectedNodeRepository, canvasStateHolder, trimmerTimelinePositionHolder, playbackPreferenceRepository);
+                messagingService, scheduledExecutorService, selectedNodeRepository, canvasStateHolder, trimmerTimelinePositionHolder, playbackPreferenceRepository,
+                globalTimelineManagerAccessor);
         this.displayUpdaterService.setCanvas(canvas);
         displayUpdaterService.init();
 
