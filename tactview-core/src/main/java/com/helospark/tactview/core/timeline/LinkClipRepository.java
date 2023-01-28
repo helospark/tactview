@@ -39,7 +39,7 @@ public class LinkClipRepository implements SaveLoadContributor {
         });
     }
 
-    public void linkClip(String clipId, String otherClipId) {
+    private void linkClipOneWay(String clipId, String otherClipId) {
         if (clipId.equals(otherClipId)) {
             return;
         }
@@ -59,14 +59,18 @@ public class LinkClipRepository implements SaveLoadContributor {
         return linkedClips.getOrDefault(clipId, Collections.emptyList());
     }
 
+    public void linkClips(String clip1, String clip2) {
+        linkClips(List.of(clip1, clip2));
+    }
+
     public void linkClips(String clipId, List<TimelineClip> clips) {
         clips.stream()
-                .forEach(clip -> linkClip(clipId, clip.getId()));
+                .forEach(clip -> linkClipOneWay(clipId, clip.getId()));
     }
 
     public void linkClipIds(String clipId, List<String> clips) {
         clips.stream()
-                .forEach(clip -> linkClip(clipId, clip));
+                .forEach(clip -> linkClipOneWay(clipId, clip));
     }
 
     public void removeClip(String elementId) {
@@ -100,12 +104,6 @@ public class LinkClipRepository implements SaveLoadContributor {
     }
 
     public void linkClips(List<String> linkedClipIds) {
-        for (var clipId : linkedClipIds) {
-            linkClipIds(clipId, linkedClipIds);
-        }
-    }
-
-    public void unlinkClips(List<String> linkedClipIds) {
         for (var clipId : linkedClipIds) {
             linkClipIds(clipId, linkedClipIds);
         }
@@ -153,7 +151,7 @@ public class LinkClipRepository implements SaveLoadContributor {
     public void linkClips(Map<String, List<String>> newLinks) {
         for (var entry : newLinks.entrySet()) {
             for (var element : entry.getValue()) {
-                linkClip(entry.getKey(), element);
+                linkClipOneWay(entry.getKey(), element);
             }
         }
     }

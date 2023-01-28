@@ -327,7 +327,7 @@ public class TimelineCanvasOnDragOverHandler {
             TimelineClip originalElement = entry.getValue();
             for (var link : links) {
                 TimelineClip addedElement = findElementInMapById(originalToNewClipMap, link).getValue();
-                linkClipRepository.linkClip(originalElement.getId(), addedElement.getId());
+                linkClipRepository.linkClips(List.of(originalElement.getId(), addedElement.getId()));
             }
         }
     }

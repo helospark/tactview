@@ -65,7 +65,7 @@ public class ReplaceTimelineWithSubtimelineCommand implements UiCommand {
                 addedIds.add(newAudioClip.getId());
             }
             if (newVideoClip != null && newAudioClip != null) {
-                linkClipRepository.linkClip(newVideoClip.getId(), newAudioClip.getId());
+                linkClipRepository.linkClips(List.of(newVideoClip.getId(), newAudioClip.getId()));
             }
         }
     }

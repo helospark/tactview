@@ -30,6 +30,7 @@ public class RemoveClipService {
 
     public void removeClips(Collection<String> clipIds) {
         List<RemoveClipCommand> commands = clipIds.stream()
+                .filter(clipId -> timelineManager.findClipById(clipId).isPresent())
                 .map(clipId -> createCommand(clipId))
                 .collect(Collectors.toList());
         if (commands.size() > 0) {

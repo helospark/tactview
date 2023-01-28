@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.helospark.lightdi.annotation.Component;
+import com.helospark.tactview.core.timeline.message.ClipRemovedMessage;
+import com.helospark.tactview.core.timeline.message.EffectRemovedMessage;
 import com.helospark.tactview.core.util.messaging.MessagingService;
 import com.helospark.tactview.ui.javafx.repository.selection.ChangeType;
 import com.helospark.tactview.ui.javafx.repository.selection.ClipSelectionChangedMessage;
@@ -24,6 +26,13 @@ public class SelectedNodeRepository implements CleanableMode {
 
     public SelectedNodeRepository(MessagingService messagingService) {
         this.messagingService = messagingService;
+
+        messagingService.register(ClipRemovedMessage.class, message -> {
+            selectedClips.remove(message.getElementId());
+        });
+        messagingService.register(EffectRemovedMessage.class, message -> {
+            selectedEffects.remove(message.getEffectId());
+        });
     }
 
     public Optional<String> getPrimarySelectedClip() {

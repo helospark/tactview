@@ -71,7 +71,7 @@ public class SharpenEffect extends StatelessVideoEffect {
     protected List<ValueProviderDescriptor> getValueProvidersInternal() {
         ValueProviderDescriptor blurRadiusProviderDescriptor = ValueProviderDescriptor.builder()
                 .withKeyframeableEffect(blurRadiusProvider)
-                .withName("Blur radius")
+                .withName("Kernel size")
                 .build();
 
         ValueProviderDescriptor strengthProviderDescriptor = ValueProviderDescriptor.builder()

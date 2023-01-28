@@ -65,7 +65,7 @@ public class CutClipCommand implements UiCommand {
                 List<String> second = cuttedPartIds.get(linkedIndex);
 
                 for (int k = 0; k < first.size(); ++k) {
-                    linkClipRepository.linkClip(first.get(k), second.get(k));
+                    linkClipRepository.linkClips(List.of(first.get(k), second.get(k)));
                     createdLinks.put(first.get(k), second.get(k));
                 }
             }
@@ -81,7 +81,10 @@ public class CutClipCommand implements UiCommand {
             timelineManager.addClip(originalChannel.get(i), originalCuttedClip.get(i));
         }
         for (var entry : originalLinkedClips.entrySet()) {
-            linkClipRepository.linkClip(entry.getKey(), entry.getValue());
+            linkClipRepository.linkClips(List.of(entry.getKey(), entry.getValue()));
+        }
+        for (var entry : createdLinks.entrySet()) {
+            linkClipRepository.unlinkClipIds(List.of(entry.getKey(), entry.getValue()));
         }
 
         originalCuttedClip.clear();

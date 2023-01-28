@@ -22,7 +22,7 @@ public class LinkClipsCommand implements UiCommand {
 
     @Override
     public void revert() {
-        linkClipRepository.unlinkClips(linkedClipIds);
+        linkClipRepository.unlinkClipIds(linkedClipIds);
     }
 
 }
