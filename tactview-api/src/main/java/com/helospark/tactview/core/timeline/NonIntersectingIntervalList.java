@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class NonIntersectingIntervalList<T extends IntervalAware> implements Iterable<T> {
-    private final List<T> intervalAwares = new ArrayList<>();
+    private final List<T> intervalAwares = new CopyOnWriteArrayList<>();
 
     public boolean canAddInterval(TimelineInterval interval) {
         return computeIntersectingIntervals(interval).isEmpty();

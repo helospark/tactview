@@ -63,6 +63,7 @@ public class MediaCache {
         executorService.scheduleWithFixedDelay(() -> {
             try {
                 if (approximateSize >= maximumSizeHint * 0.8) {
+                    logger.debug("Memory manager size is {} maximum is {}, scheduling cleanup", approximateSize, maximumSizeHint);
                     doImmediateCleanup((int) (maximumSizeHint * 0.5));
                 } else {
                     logger.debug("Mediacache is within size limits, fill ratio {}", (double) approximateSize / maximumSizeHint);

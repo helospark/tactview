@@ -37,8 +37,8 @@ public class FrameBufferMerger {
                             .withScale(request.getScale())
                             .build();
                     ClipImage transitionedImage = frames.get(i).videoTransition.get().applyTransition(transitionRequest);
-                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(output.getBuffer());
-                    output = transitionedImage;
+                    alphaBlitService.alphaBlitFrame(output, transitionedImage, width, height, frames.get(i).blendModeStrategy, frames.get(i).globalAlpha);
+                    GlobalMemoryManagerAccessor.memoryManager.returnBuffer(transitionedImage.getBuffer());
                 } else {
                     alphaBlitService.alphaBlitFrame(output, frames.get(i).clipFrameResult, width, height, frames.get(i).blendModeStrategy, frames.get(i).globalAlpha);
                 }

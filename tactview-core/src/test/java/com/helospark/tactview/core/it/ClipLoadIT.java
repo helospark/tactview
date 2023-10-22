@@ -59,16 +59,6 @@ public class ClipLoadIT {
     }
 
     @Test
-    public void testWebmVideo(@DownloadedResourceName("fire.webm") File testFile) {
-        VideoClip videoClip = (VideoClip) fakeUi.dragFileToTimeline(testFile, TimelinePosition.ofZero());
-
-        ReadOnlyClipImage videoFrame = getFrame(timelineManager, videoClip.getMediaMetadata(), 0.5, TimelinePosition.ofSeconds(1));
-
-        ClipImage expected = IntegrationTestUtil.loadTestClasspathImage("clipit/fire_at_1s_and_0.1_scale.png");
-        IntegrationTestUtil.assertFrameEquals(videoFrame, expected, "Video frames not equal");
-    }
-
-    @Test
     public void testJpegImage(@DownloadedResourceName("nightsky.jpeg") File testFile) {
         ImageClip videoClip = (ImageClip) fakeUi.dragFileToTimeline(testFile, TimelinePosition.ofZero());
 

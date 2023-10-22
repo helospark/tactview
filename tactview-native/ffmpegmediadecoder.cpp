@@ -699,20 +699,18 @@ extern "C" {
             }
             DEBUG("Using FFMPEG filter expression " << hwFilterExpression);
 
-            if (capability.needsScaling || capability.needsFormatConversion) {
-                int fromW = capability.needsScaling ? element->pCodecCtx->width : element->width;
-                int fromH = capability.needsScaling ? element->pCodecCtx->height : element->height;
-                element->hwSwsContext = sws_getContext(fromW,
-                                                        fromH,
-                                                        capability.outputFormat,
-                                                        element->width,
-                                                        element->height,
-                                                        AV_PIX_FMT_RGBA,
-                                                        SWS_FAST_BILINEAR,
-                                                        NULL,
-                                                        NULL,
-                                                        NULL);
-            }
+            int fromW = capability.needsScaling ? element->pCodecCtx->width : element->width;
+            int fromH = capability.needsScaling ? element->pCodecCtx->height : element->height;
+            element->hwSwsContext = sws_getContext(fromW,
+                                                    fromH,
+                                                    capability.outputFormat,
+                                                    element->width,
+                                                    element->height,
+                                                    AV_PIX_FMT_RGBA,
+                                                    SWS_FAST_BILINEAR,
+                                                    NULL,
+                                                    NULL,
+                                                    NULL);
         }
 
 
@@ -770,13 +768,9 @@ extern "C" {
             }
             
 
-            if (element->hwScaleCapability.needsFormatConversion || element->hwScaleCapability.needsScaling) {
-                sws_scale(element->hwSwsContext, (uint8_t const * const *)filt_frame->data,
-                        filt_frame->linesize, 0, filt_frame->height,
-                        pFrameRGB->data, pFrameRGB->linesize);
-            } else {
-                memcpy(pFrameRGB->data, filt_frame->data, element->width*element->height*4);
-            }
+            sws_scale(element->hwSwsContext, (uint8_t const * const *)filt_frame->data,
+                    filt_frame->linesize, 0, filt_frame->height,
+                    pFrameRGB->data, pFrameRGB->linesize);
 
 
             av_frame_free(&filt_frame);

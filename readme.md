@@ -28,6 +28,12 @@ You can install from the helospark apt repository on Ubuntu and other Debian bas
 
 After install you can find Tactview either in your OS's program menu and under /opt/tactview/
 
+For best performance on Intel iGPU, also install
+
+    sudo apt-get install intel-media-va-driver-non-free
+
+So hardware accelerated decode and encode is available.
+
 ## Development
 
 See [setting up development environment](docs/getting-started/development-environment.md)

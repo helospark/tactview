@@ -77,14 +77,22 @@ public class AudioImagePatternService {
             graphics.drawLine(0, y, width, y);
         }
 
+        int sampleRateToUse = projectRepository.getSampleRate();
+        if (sampleRateToUse > 8000) {
+            sampleRateToUse = 8000;
+        }
+        int bytesPerSampleToUse = projectRepository.getBytesPerSample();
+        if (bytesPerSampleToUse > 2) {
+            bytesPerSampleToUse = 2;
+        }
         for (int i = 0; i <= numberOfSamplesToCollect; ++i) {
             TimelinePosition position = audibleTimelineClip.getInterval().getStartPosition().add(BigDecimal.valueOf(visibleStartPosition)).add(timeJump.multiply(BigDecimal.valueOf(i)));
             AudioRequest frameRequest = AudioRequest.builder()
                     .withApplyEffects(false)
                     .withPosition(position)
                     .withLength(new TimelineLength(timeJump))
-                    .withSampleRate(projectRepository.getSampleRate())
-                    .withBytesPerSample(projectRepository.getBytesPerSample())
+                    .withSampleRate(sampleRateToUse)
+                    .withBytesPerSample(bytesPerSampleToUse)
                     .withNumberOfChannels(projectRepository.getNumberOfChannels())
                     .withEvaluationContext(createEvaluationContext(position))
                     .build();

@@ -84,7 +84,7 @@ public class AVCodecAudioMediaDecoderDecorator implements AudioMediaDecoder {
         } else {
             FileReadResult result = readFromFile(request);
             int realStartSample = secondsToBytes(result.data.startTime, request.getExpectedBytesPerSample(), sampleRate);
-            mediaCache.cacheMedia(hashKey, new MediaHashValue(List.of(result.data), result.endPosition, request.getStart().getSeconds()), false);
+            mediaCache.cacheMedia(hashKey, new MediaHashValue(List.of(result.data), result.endPosition, result.data.startTime), false);
 
             return copyRelevantParts(request, startSample - realStartSample, result.data.allDataFrames);
         }

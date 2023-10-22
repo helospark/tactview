@@ -66,7 +66,7 @@ if [ ! -d nv-codec-headers ]; then
 else
   cd nv-codec-headers
   git pull
-  # make clean
+#  make clean
 fi
 make
 make install
@@ -100,7 +100,7 @@ if [ "$RELEASE_BUILD" = false ]; then
   additional_ffmpeg_arguments="--enable-debug --disable-stripping"
 fi
 
-./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-nvenc --enable-libaom $additional_ffmpeg_arguments
+./configure  --prefix=/usr/local  --pkg-config-flags="--static"  --extra-libs="-lpthread -lm"    --enable-gpl   --enable-libass   --enable-libfreetype   --enable-libmp3lame   --enable-libopus   --enable-libvorbis   --enable-libvpx   --enable-libx264  --enable-vaapi --enable-libx265 --enable-shared --enable-pthreads --enable-version3 --enable-bzlib --enable-fontconfig --enable-iconv --enable-libbluray --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libshine --enable-libsnappy --enable-libtheora --enable-libtwolame --enable-libwebp --enable-libxml2 --enable-lzma --enable-zlib --enable-libvorbis --enable-libspeex --enable-libxvid --enable-cuvid --enable-libaom $additional_ffmpeg_arguments
 
 # --enable-libmfx - Intel HW accelerated encoding/decoding, could be useful
 # --enable-libopenjpeg - decode jpeg
